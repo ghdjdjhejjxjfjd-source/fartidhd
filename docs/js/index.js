@@ -64,6 +64,41 @@ function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
 }
 
+// Функция для получения баланса звезд
+async function getStarsBalance() {
+  try {
+    const user = getTelegramUser();
+    if (!user.tg_user_id) return 0;
+    
+    const API_BASE = "https://fayrat-production.up.railway.app";
+    const r = await fetch(`${API_BASE}/api/stars/balance/${user.tg_user_id}`);
+    if (r.ok) {
+      const data = await r.json();
+      return data.balance || 0;
+    }
+  } catch (e) {
+    console.error("Error fetching balance:", e);
+  }
+  return 0;
+}
+
+function getTelegramUser(){
+  const tg = window.Telegram?.WebApp;
+  if (!tg || !tg.initDataUnsafe?.user) return {};
+
+  const u = tg.initDataUnsafe.user;
+  return {
+    tg_user_id: u.id,
+    tg_username: u.username || "—",
+    tg_first_name: u.first_name || "—",
+  };
+}
+
+function showToast(message, type = 'info') {
+  // Простой alert пока нет тостов
+  alert(message);
+}
+
 function setPillLabel(btn, text){
   if (!btn) return;
 
@@ -96,7 +131,7 @@ function setImgLink(lang, theme){
     + "&theme=" + encodeURIComponent(theme);
 }
 
-// ===== i18n ===== (ТОЛЬКО НУЖНЫЕ ЯЗЫКИ)
+// ===== i18n =====
 const I18N = {
   ru: { btn:"Чат с ИИ", img:"Генерация картинки", sub:"Быстрые ответы • Память • Заметки", ver:"miniapp v2", lang:"Язык интерфейса", sheet:"Язык" },
   kk: { btn:"AI чат", img:"Сурет генерациясы", sub:"Жылдам жауаптар • Есте сақтау • Жазбалар", ver:"miniapp v2", lang:"Тіл", sheet:"Тіл" },
@@ -115,12 +150,15 @@ const LANGS = [
   { code:"fr", label:"Français (FR)" },
 ];
 
+// ===== THEMES с ценами =====
 const THEMES = [
-  { code:"blue", label:"Синий" },
-  { code:"black", label:"Черный" },
-  { code:"purple", label:"Фиолетовый" },
-  { code:"green", label:"Зеленый" },
-  { code:"gray", label:"Серый" },
+  { code:"blue", label:"Синий", price: 0 },
+  { code:"black", label:"Черный", price: 0 },
+  { code:"purple", label:"Фиолетовый", price: 0 },
+  { code:"green", label:"Зеленый", price: 0 },
+  { code:"gray", label:"Серый", price: 0 },
+  { code:"telegram", label:"Telegram стиль", price: 100 },
+  { code:"ios", label:"iOS стиль", price: 100 },
 ];
 
 function themeLabel(theme){
@@ -146,7 +184,7 @@ function paintSelectedTheme(theme){
   });
 }
 
-function setLang(lang){
+async function setLang(lang){
   const t = I18N[lang] || I18N.ru;
 
   if (chatBtn) chatBtn.textContent = t.btn;
@@ -166,7 +204,22 @@ function setLang(lang){
   setImgLink(lang, getSavedTheme());
 }
 
-function setTheme(theme){
+async function setTheme(theme){
+  // Проверяем доступность темы
+  const themeData = THEMES.find(t => t.code === theme);
+  if (!themeData) return;
+  
+  // Если тема платная - проверяем баланс
+  if (themeData.price > 0) {
+    const balance = await getStarsBalance();
+    if (balance < themeData.price) {
+      showToast(`❌ Недостаточно звезд. Нужно ${themeData.price} ⭐`, 'error');
+      return;
+    }
+    // Здесь можно списать звезды через API
+    showToast(`✅ Тема "${themeData.label}" активирована!`, 'success');
+  }
+  
   applyTheme(theme);
   saveTheme(theme);
   paintSelectedTheme(theme);
@@ -229,7 +282,11 @@ function buildThemeList(){
     b.type = "button";
     b.className = "themeItem";
     b.setAttribute("data-theme", x.code);
-    b.innerHTML = `<span>${x.label}</span><span class="check">✓</span>`;
+    
+    // Добавляем цену в название если платная
+    const priceText = x.price > 0 ? ` (${x.price} ⭐)` : "";
+    b.innerHTML = `<span>${x.label}${priceText}</span><span class="check">✓</span>`;
+    
     b.addEventListener("click", () => {
       setTheme(x.code);
       closeTheme();
