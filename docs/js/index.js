@@ -23,7 +23,6 @@ if (tg) {
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
 const STORAGE_PURCHASED_THEMES = "purchased_themes_v1";
-const STORAGE_NOTIFICATIONS = "shown_notifications_v1";
 
 // ===== DOM =====
 const chatBtn = document.getElementById("chatBtn");
@@ -78,28 +77,6 @@ function addPurchasedTheme(theme) {
     if (!purchased.includes(theme)) {
       purchased.push(theme);
       localStorage.setItem(STORAGE_PURCHASED_THEMES, JSON.stringify(purchased));
-    }
-  } catch(e) {}
-}
-
-// Проверка показывали ли уведомление
-function hasShownNotification(key) {
-  try {
-    const shown = localStorage.getItem(STORAGE_NOTIFICATIONS);
-    const list = shown ? JSON.parse(shown) : [];
-    return list.includes(key);
-  } catch(e) {
-    return false;
-  }
-}
-
-function markNotificationShown(key) {
-  try {
-    const shown = localStorage.getItem(STORAGE_NOTIFICATIONS);
-    const list = shown ? JSON.parse(shown) : [];
-    if (!list.includes(key)) {
-      list.push(key);
-      localStorage.setItem(STORAGE_NOTIFICATIONS, JSON.stringify(list));
     }
   } catch(e) {}
 }
@@ -160,8 +137,13 @@ function getTelegramUser(){
   };
 }
 
-// Уведомление (показывается всегда)
+// Уведомление (только на главной)
 function showNotification(message, type = 'success') {
+  // Проверяем что мы на главной странице
+  if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
+    return; // Не показываем на других страницах
+  }
+  
   const toast = document.createElement('div');
   toast.className = 'toast-notification';
   toast.textContent = message;
@@ -170,14 +152,6 @@ function showNotification(message, type = 'success') {
   setTimeout(() => {
     toast.remove();
   }, 3000);
-}
-
-// Одноразовое уведомление (только первый раз)
-function showOneTimeNotification(message, key, type = 'success') {
-  if (hasShownNotification(key)) return;
-  
-  showNotification(message, type);
-  markNotificationShown(key);
 }
 
 function setPillLabel(btn, text){
@@ -248,8 +222,7 @@ const THEMES = [
   { code:"purple", label:"Фиолетовый", price: 0 },
   { code:"green", label:"Зеленый", price: 0 },
   { code:"gray", label:"Серый", price: 0 },
-  { code:"telegram", label:"Telegram стиль", price: 100 },
-  { code:"ios", label:"iOS стиль", price: 100 },
+  { code:"ios", label:"iOS стиль", price: 100 },  // iOS стиль платный
 ];
 
 function themeLabel(theme){
@@ -325,8 +298,8 @@ async function setTheme(theme){
     // Добавляем в купленные
     addPurchasedTheme(theme);
     
-    // Показываем одноразовое уведомление
-    showOneTimeNotification(`✅ Тема "${themeData.label}" активирована!`, `theme_${theme}`);
+    // Показываем уведомление о покупке
+    showNotification(`✅ Тема "${themeData.label}" активирована!`);
   }
   
   applyTheme(theme);
