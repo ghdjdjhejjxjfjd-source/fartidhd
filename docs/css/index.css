@@ -3,7 +3,7 @@
 :root{
   --vh: 100vh;
 
-  /* ✅ голубой фон (DEFAULT = blue) */
+  /* ✅ DEFAULT THEME (blue) */
   --bgTop:#0b5fa8;
   --bgMid:#083d74;
   --bgBot:#051f3d;
@@ -11,48 +11,114 @@
   --text: rgba(255,255,255,.94);
   --muted: rgba(255,255,255,.62);
 
-  --glass: rgba(255,255,255,.08);  /* сделал менее ярким */
-  --glass2: rgba(255,255,255,.04); /* сделал менее ярким */
-  --stroke: rgba(255,255,255,.14);  /* сделал менее ярким */
+  --glass: rgba(255,255,255,.08);
+  --glass2: rgba(255,255,255,.04);
+  --stroke: rgba(255,255,255,.14);
 
-  /* ✅ свечения (сделал менее яркими) */
   --glow:  rgba(90,190,255,.20);
   --glow2: rgba(120,220,255,.15);
   --glow3: rgba(255,255,255,.08);
+  
+  --accent1: #3aa0ff;
+  --accent2: #0a84ff;
 }
 
-/* ✅ ТЕМЫ */
+/* ✅ TELEGRAM THEME (копия Telegram) */
+:root[data-theme="telegram"]{
+  --bgTop:#567b99;
+  --bgMid:#3e5f78;
+  --bgBot:#2a4052;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.7);
+  --glass: rgba(255,255,255,.12);
+  --glass2: rgba(255,255,255,.08);
+  --stroke: rgba(255,255,255,.18);
+  --accent1: #3390ec;
+  --accent2: #2778c7;
+  --glow: rgba(51,144,236,.3);
+  --glow2: rgba(51,144,236,.2);
+}
+
+/* ✅ iOS THEME (стеклянный) */
+:root[data-theme="ios"]{
+  --bgTop: rgba(255,255,255,0.8);
+  --bgMid: rgba(255,255,255,0.6);
+  --bgBot: rgba(255,255,255,0.4);
+  --text: #000000;
+  --muted: #666666;
+  --glass: rgba(255,255,255,0.3);
+  --glass2: rgba(255,255,255,0.2);
+  --stroke: rgba(255,255,255,0.5);
+  --accent1: #007aff;
+  --accent2: #0051d5;
+  --glow: rgba(0,122,255,0.2);
+  --glow2: rgba(0,122,255,0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ✅ BLACK THEME */
 :root[data-theme="black"]{
   --bgTop:#0a0e15;
   --bgMid:#06090f;
   --bgBot:#03050a;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.03);
+  --stroke: rgba(255,255,255,.12);
+  --accent1: #6aa7ff;
+  --accent2: #2f7bff;
   --glow: rgba(100,130,190,.12);
   --glow2: rgba(80,110,170,.10);
-  --glow3: rgba(255,255,255,.05);
 }
+
+/* ✅ PURPLE THEME */
 :root[data-theme="purple"]{
   --bgTop:#2a1550;
   --bgMid:#180f30;
   --bgBot:#0a0716;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.03);
+  --stroke: rgba(255,255,255,.12);
+  --accent1: #b98cff;
+  --accent2: #7a5cff;
   --glow: rgba(160,100,220,.18);
   --glow2: rgba(120,80,200,.12);
-  --glow3: rgba(255,255,255,.08);
 }
+
+/* ✅ GREEN THEME */
 :root[data-theme="green"]{
   --bgTop:#0a5545;
   --bgMid:#083a30;
   --bgBot:#051f1a;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.03);
+  --stroke: rgba(255,255,255,.12);
+  --accent1: #2fd6a3;
+  --accent2: #11a87b;
   --glow: rgba(80,200,160,.15);
   --glow2: rgba(60,180,140,.12);
-  --glow3: rgba(255,255,255,.07);
 }
+
+/* ✅ GRAY THEME */
 :root[data-theme="gray"]{
   --bgTop:#1f2735;
   --bgMid:#141b28;
   --bgBot:#0b1018;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.03);
+  --stroke: rgba(255,255,255,.12);
+  --accent1: #7fb2ff;
+  --accent2: #4b8dff;
   --glow: rgba(150,170,200,.12);
   --glow2: rgba(120,140,180,.10);
-  --glow3: rgba(255,255,255,.06);
 }
 
 *{box-sizing:border-box}
@@ -79,7 +145,7 @@ body{
   );
 }
 
-/* ✅ стеклянные квадраты (менее яркие) */
+/* стеклянные квадраты */
 .cube{
   position:absolute;
   width:120px; height:120px;
@@ -96,7 +162,7 @@ body{
 .cube.small{ width:60px; height:60px; border-radius:16px; opacity:.75; }
 .cube.tiny{ width:34px; height:34px; border-radius:12px; opacity:.65; }
 
-/* ✅ анимации */
+/* анимации */
 .f1{ animation: drift1 10s ease-in-out infinite; }
 .f2{ animation: drift2 12s ease-in-out infinite; }
 .f3{ animation: drift3 11s ease-in-out infinite; }
@@ -111,7 +177,7 @@ body{
 @keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,-18px)} }
 @keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,16px)} }
 
-/* ✅ мягкие “шарики” (менее яркие) */
+/* мягкие шарики */
 .orb{
   position:absolute;
   width:260px; height:260px;
@@ -136,7 +202,7 @@ body{
   z-index:2;
 }
 
-/* ✅ карточка стекло (менее яркое) */
+/* карточка стекло */
 .card{
   width:min(520px, 100%);
   padding:22px;
@@ -148,7 +214,7 @@ body{
   box-shadow: 0 22px 60px rgba(0,0,0,.30);
 }
 
-/* ✅ КНОПКИ — вертикальное расположение */
+/* кнопки вертикально */
 .btn{
   display:block;
   width:100%;
@@ -165,11 +231,10 @@ body{
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset,
               0 18px 40px rgba(0,0,0,.25);
-  margin-bottom: 16px;  /* отступ между кнопками */
+  margin-bottom: 16px;
   transition: all 0.2s ease;
 }
 
-/* последняя кнопка без отступа */
 .btn:last-of-type {
   margin-bottom: 0;
 }
@@ -180,7 +245,7 @@ body{
 }
 
 .sub{
-  margin-top:24px;  /* увеличен отступ */
+  margin-top:24px;
   text-align:center;
   color:var(--muted);
   font-size:14px;
@@ -193,7 +258,7 @@ body{
   opacity:.5;
 }
 
-/* ✅ блок языка снизу */
+/* блок языка */
 .langBlock{
   margin-top:24px;
   border-top: 1px solid rgba(255,255,255,.10);
@@ -206,14 +271,14 @@ body{
   text-align:center;
 }
 
-/* ✅ “пилюля” выбора языка */
+/* пилюля выбора языка */
 .langPill{
   width:100%;
   border-radius:18px;
   padding:14px 14px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.14);
-  color: rgba(255,255,255,.92);
+  color: var(--text);
   outline:none;
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
@@ -235,9 +300,7 @@ body{
 .langPill:active{ transform: scale(.995); }
 .chev{ opacity:.8; }
 
-/* ========================= */
-/* ✅ Bottom Sheet Languages */
-/* ========================= */
+/* Bottom Sheet Languages */
 .langOverlay{
   position:fixed;
   inset:0;
@@ -337,9 +400,7 @@ body{
   transform: scale(1);
 }
 
-/* ========================= */
-/* ✅ THEME BUTTON (top-left) */
-/* ========================= */
+/* Theme Button */
 .themePill{
   position: fixed;
   top: calc(10px + env(safe-area-inset-top));
@@ -368,9 +429,7 @@ body{
 
 .themePill:active{ transform: scale(.98); }
 
-/* ========================= */
-/* ✅ Bottom Sheet Theme */
-/* ========================= */
+/* Bottom Sheet Theme */
 .themeOverlay{
   position:fixed;
   inset:0;
@@ -470,7 +529,7 @@ body{
   transform: scale(1);
 }
 
-/* ===== FULLSCREEN NO GAP ===== */
+/* FULLSCREEN */
 html, body {
   height: 100%;
   margin: 0;
