@@ -8,7 +8,7 @@ from flask_cors import CORS
 import requests
 
 from groq_client import ask_groq
-from payments import get_balance, spend_stars
+from payments import get_balance, add_stars, spend_stars, get_packages
 
 # ✅ Импортируем стабильность
 try:
@@ -22,8 +22,6 @@ except Exception as e:
     print(f"⚠️ Stability AI import error: {e}")
 
 api = Flask(__name__)
-
-# ✅ Разрешаем запросы с GitHub Pages
 CORS(api, origins=["https://fayrat11.github.io", "https://*.github.io"])
 
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
@@ -441,6 +439,66 @@ def api_stars_balance(user_id: int):
         "user_id": user_id,
         "balance": get_balance(user_id),
     })
+
+
+@api.get("/api/stars/packages")
+def api_stars_packages():
+    """Получить список пакетов"""
+    return jsonify({
+        "packages": get_packages(),
+        "currency": "USD",
+    })
+
+
+@api.post("/api/stars/add_test")
+def api_stars_add_test():
+    """Тестовое добавление звезд (для админов)"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    amount = data.get("amount", 100)
+    
+    if not user_id:
+        return jsonify({"error": "user_id required"}), 400
+    
+    add_stars(user_id, amount, "test")
+    
+    return jsonify({
+        "success": True,
+        "user_id": user_id,
+        "added": amount,
+        "new_balance": get_balance(user_id),
+    })
+
+
+# =========================
+# ✅ NEW ENDPOINT FOR SPENDING STARS (для покупки тем)
+# =========================
+@api.post("/api/stars/spend")
+def api_stars_spend():
+    """Списать звезды за покупку темы"""
+    data = request.get_json() or {}
+    tg_user_id = data.get("tg_user_id")
+    amount = data.get("amount", 0)
+    
+    if not tg_user_id or not amount:
+        return jsonify({"error": "missing data"}), 400
+    
+    try:
+        tg_user_id_int = int(tg_user_id)
+        amount_int = int(amount)
+        
+        success = spend_stars(tg_user_id_int, amount_int)
+        
+        if success:
+            return jsonify({
+                "success": True,
+                "new_balance": get_balance(tg_user_id_int)
+            })
+        else:
+            return jsonify({"error": "insufficient_funds"}), 402
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # =========================
