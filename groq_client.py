@@ -9,26 +9,50 @@ GROQ_MODEL = (os.getenv("GROQ_MODEL") or "llama-3.1-8b-instant").strip()
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-# Языки с их названиями
+# Только нужные языки
 LANGUAGES = {
-    "ru": { "name": "русский", "code": "ru", "flag": "🇷🇺" },
-    "kk": { "name": "казахский", "code": "kk", "flag": "🇰🇿" },
-    "en": { "name": "английский", "code": "en", "flag": "🇬🇧" },
-    "tr": { "name": "турецкий", "code": "tr", "flag": "🇹🇷" },
-    "uz": { "name": "узбекский", "code": "uz", "flag": "🇺🇿" },
-    "ky": { "name": "кыргызский", "code": "ky", "flag": "🇰🇬" },
-    "uk": { "name": "украинский", "code": "uk", "flag": "🇺🇦" },
-    "de": { "name": "немецкий", "code": "de", "flag": "🇩🇪" },
-    "es": { "name": "испанский", "code": "es", "flag": "🇪🇸" },
-    "fr": { "name": "французский", "code": "fr", "flag": "🇫🇷" },
+    "ru": { "name": "русском", "code": "ru" },
+    "kk": { "name": "казахском", "code": "kk" },
+    "en": { "name": "английском", "code": "en" },
+    "tr": { "name": "турецком", "code": "tr" },
+    "uk": { "name": "украинском", "code": "uk" },
+    "fr": { "name": "французском", "code": "fr" },
 }
 
-# Характеры
+# Подробные описания характеров
 PERSONAS = {
-    "friendly": "дружелюбный, теплый, используй смайлики 🙂",
-    "fun": "веселый, шутливый, используй 😄 😂",
-    "strict": "серьезный, без смайликов, коротко и по делу",
-    "smart": "умный, вдумчивый, используй 🤔 🧐",
+    "friendly": """
+        Ты дружелюбный собеседник. ВСЕГДА будь дружелюбным:
+        - Используй теплые слова
+        - Ставь смайлики в КАЖДОМ ответе: 🙂 😊 👍
+        - Проявляй интерес
+        - Спрашивай как дела
+        Примеры: "Привет! Как сам? 🙂", "Круто! 😊", "Понял, расскажи подробнее 👍"
+    """,
+    "fun": """
+        Ты веселый собеседник. ВСЕГДА будь веселым:
+        - Шути и используй юмор в КАЖДОМ ответе
+        - Ставь много смайликов: 😄 😂 😉 😎
+        - Будь энергичным и позитивным
+        - Подкалывай по-дружески
+        Примеры: "Ого, серьезно? 😄", "Класс! 😂", "Ну ты даешь! 😎"
+    """,
+    "strict": """
+        Ты серьезный собеседник. ВСЕГДА будь серьезным:
+        - НИКАКИХ смайликов
+        - Только факты и конкретика
+        - Коротко и ясно
+        - Без лишних слов
+        Примеры: "Да.", "Нет.", "Не знаю.", "Понял."
+    """,
+    "smart": """
+        Ты умный собеседник. ВСЕГДА будь вдумчивым:
+        - Давай содержательные ответы
+        - Используй умные смайлики: 🧐 🤔 📚
+        - Объясняй понятно
+        - Задавай умные вопросы
+        Примеры: "Интересный вопрос 🧐", "Давай разберемся 🤔", "Вот что я думаю 📚"
+    """,
 }
 
 def translate_text(text: str, target_lang: str = "en") -> str:
@@ -72,38 +96,38 @@ def ask_groq(
     target_lang = lang_info["name"]
     persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
     
-    # Переводим вопрос пользователя на английский (для лучшего понимания моделью)
+    # Переводим вопрос на английский
     english_question = translate_text(user_text, "en")
     
-    # Создаем промпт на английском (модель лучше понимает)
-    system_prompt = f"""You are a helpful chat assistant. Respond naturally like a human.
+    # Создаем промпт с УСИЛЕННЫМ характером
+    system_prompt = f"""You are a chat assistant. Your personality is VERY IMPORTANT - you MUST follow it EXACTLY.
 
-Personality: {persona_desc}
+YOUR PERSONALITY (follow this STRICTLY):
+{persona_desc}
 
-IMPORTANT: You MUST respond in {target_lang} language only!
+ADDITIONAL RULES:
+1. You MUST respond ONLY in {target_lang} language
+2. You MUST maintain your personality throughout the ENTIRE conversation
+3. If you're fun - be fun in EVERY message, use emojis EVERY time
+4. If you're strict - NEVER use emojis, be short in EVERY message
+5. Remember EVERYTHING from the conversation history
+6. Be consistent - don't change your style
 
-Rules:
-1. Answer in {target_lang} language
-2. Be natural and conversational
-3. Don't start every message with greetings
-4. Don't repeat yourself
-5. Never mention you're an AI
-
-User question: {english_question}
-
-Remember: Your response must be in {target_lang}."""
+Conversation history will be provided in the user message.
+Remember: Stick to your personality in EVERY response!"""
     
-    # Разные температуры для разных характеров
+    # Добавляем историю разговора в user_text
+    full_prompt = f"{system_prompt}\n\nUser message: {english_question}"
+    
     temps = {
-        "fun": 0.85,
-        "friendly": 0.75,
-        "smart": 0.7,
+        "fun": 0.9,
+        "friendly": 0.8,
+        "smart": 0.75,
         "strict": 0.5
     }
     temperature = temps.get(persona, 0.7)
 
     try:
-        # Получаем ответ от модели на английском
         resp = groq_client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
@@ -117,7 +141,7 @@ Remember: Your response must be in {target_lang}."""
         
         english_answer = (resp.choices[0].message.content or "").strip()
         
-        # Переводим ответ обратно на нужный язык
+        # Переводим ответ обратно
         if lang != "en":
             translated_answer = translate_text(english_answer, lang)
             if translated_answer:
@@ -127,18 +151,12 @@ Remember: Your response must be in {target_lang}."""
         
     except Exception as e:
         print(f"Groq error: {e}")
-        
-        # Сообщения об ошибках на разных языках
         error_messages = {
-            "ru": "Извините, произошла ошибка. Попробуйте позже.",
-            "kk": "Кешіріңіз, қате пайда болды. Кейінірек қайталаңыз.",
-            "en": "Sorry, an error occurred. Try again later.",
-            "tr": "Üzgünüm, bir hata oluştu. Daha sonra tekrar deneyin.",
-            "uz": "Kechirasiz, xatolik yuz berdi. Keyinroq qayta urinib ko'ring.",
-            "ky": "Кечиресиз, ката кетти. Кийинчерээк кайталаңыз.",
-            "uk": "Вибачте, сталася помилка. Спробуйте пізніше.",
-            "de": "Entschuldigung, ein Fehler ist aufgetreten. Versuchen Sie es später noch einmal.",
-            "es": "Lo siento, ocurrió un error. Inténtalo de nuevo más tarde.",
-            "fr": "Désolé, une erreur s'est produite. Réessayez plus tard."
+            "ru": "Извините, ошибка. Попробуйте позже.",
+            "kk": "Кешіріңіз, қате. Қайталаңыз.",
+            "en": "Sorry, error. Try again.",
+            "tr": "Üzgünüm, hata. Tekrar deneyin.",
+            "uk": "Вибачте, помилка. Спробуйте ще.",
+            "fr": "Désolé, erreur. Réessayez."
         }
         return error_messages.get(lang, error_messages["ru"])
