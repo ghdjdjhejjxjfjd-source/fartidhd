@@ -21,40 +21,47 @@
   
   --accent1: #3aa0ff;
   --accent2: #0a84ff;
+  
+  --card-bg: rgba(255,255,255,.06);
+  --btn-bg: rgba(255,255,255,.08);
 }
 
-/* ✅ TELEGRAM THEME (копия Telegram) */
+/* ✅ ТОЧНАЯ КОПИЯ TELEGRAM СТИЛЯ (как на скрине) */
 :root[data-theme="telegram"]{
-  --bgTop:#567b99;
-  --bgMid:#3e5f78;
-  --bgBot:#2a4052;
+  --bgTop: #2f6ea5;        /* Telegram blue top */
+  --bgMid: #1f5380;        /* Telegram blue mid */
+  --bgBot: #123456;        /* Telegram blue bottom */
   --text: #ffffff;
-  --muted: rgba(255,255,255,.7);
-  --glass: rgba(255,255,255,.12);
-  --glass2: rgba(255,255,255,.08);
-  --stroke: rgba(255,255,255,.18);
-  --accent1: #3390ec;
+  --muted: rgba(255,255,255,.8);
+  --glass: rgba(255,255,255,.15);
+  --glass2: rgba(255,255,255,.1);
+  --stroke: rgba(255,255,255,.2);
+  --accent1: #3390ec;       /* Telegram accent */
   --accent2: #2778c7;
+  --card-bg: rgba(255,255,255,.12);
+  --btn-bg: rgba(255,255,255,.1);
   --glow: rgba(51,144,236,.3);
   --glow2: rgba(51,144,236,.2);
 }
 
-/* ✅ iOS THEME (стеклянный) */
+/* ✅ ТОЧНАЯ КОПИЯ iOS СТИЛЯ (стеклянный, как на скрине) */
 :root[data-theme="ios"]{
-  --bgTop: rgba(255,255,255,0.8);
-  --bgMid: rgba(255,255,255,0.6);
-  --bgBot: rgba(255,255,255,0.4);
+  --bgTop: rgba(255,255,255,0.9);
+  --bgMid: rgba(255,255,255,0.8);
+  --bgBot: rgba(255,255,255,0.7);
   --text: #000000;
   --muted: #666666;
-  --glass: rgba(255,255,255,0.3);
-  --glass2: rgba(255,255,255,0.2);
-  --stroke: rgba(255,255,255,0.5);
-  --accent1: #007aff;
+  --glass: rgba(255,255,255,0.5);
+  --glass2: rgba(255,255,255,0.4);
+  --stroke: rgba(255,255,255,0.6);
+  --accent1: #007aff;       /* iOS blue */
   --accent2: #0051d5;
+  --card-bg: rgba(255,255,255,0.3);
+  --btn-bg: rgba(255,255,255,0.25);
   --glow: rgba(0,122,255,0.2);
   --glow2: rgba(0,122,255,0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 /* ✅ BLACK THEME */
@@ -69,6 +76,8 @@
   --stroke: rgba(255,255,255,.12);
   --accent1: #6aa7ff;
   --accent2: #2f7bff;
+  --card-bg: rgba(255,255,255,.05);
+  --btn-bg: rgba(255,255,255,.06);
   --glow: rgba(100,130,190,.12);
   --glow2: rgba(80,110,170,.10);
 }
@@ -85,6 +94,8 @@
   --stroke: rgba(255,255,255,.12);
   --accent1: #b98cff;
   --accent2: #7a5cff;
+  --card-bg: rgba(255,255,255,.05);
+  --btn-bg: rgba(255,255,255,.06);
   --glow: rgba(160,100,220,.18);
   --glow2: rgba(120,80,200,.12);
 }
@@ -101,6 +112,8 @@
   --stroke: rgba(255,255,255,.12);
   --accent1: #2fd6a3;
   --accent2: #11a87b;
+  --card-bg: rgba(255,255,255,.05);
+  --btn-bg: rgba(255,255,255,.06);
   --glow: rgba(80,200,160,.15);
   --glow2: rgba(60,180,140,.12);
 }
@@ -117,6 +130,8 @@
   --stroke: rgba(255,255,255,.12);
   --accent1: #7fb2ff;
   --accent2: #4b8dff;
+  --card-bg: rgba(255,255,255,.05);
+  --btn-bg: rgba(255,255,255,.06);
   --glow: rgba(150,170,200,.12);
   --glow2: rgba(120,140,180,.10);
 }
@@ -150,8 +165,8 @@ body{
   position:absolute;
   width:120px; height:120px;
   border-radius:18px;
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.15);
+  background: var(--glass);
+  border: 1px solid var(--stroke);
   backdrop-filter: blur(10px) saturate(140%);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
   box-shadow: 0 0 0 1px rgba(255,255,255,.05) inset;
@@ -182,7 +197,7 @@ body{
   position:absolute;
   width:260px; height:260px;
   border-radius:999px;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.15), rgba(90,190,255,.10) 45%, transparent 72%);
+  background: radial-gradient(circle at 30% 30%, var(--glass), var(--glow) 45%, transparent 72%);
   filter: blur(2px);
   opacity:.85;
   pointer-events:none;
@@ -207,8 +222,8 @@ body{
   width:min(520px, 100%);
   padding:22px;
   border-radius:26px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
+  background: var(--card-bg);
+  border: 1px solid var(--stroke);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   box-shadow: 0 22px 60px rgba(0,0,0,.30);
@@ -225,8 +240,8 @@ body{
   font-weight:900;
   color:var(--text);
   text-decoration:none;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.16);
+  background: var(--btn-bg);
+  border: 1px solid var(--stroke);
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset,
@@ -261,12 +276,12 @@ body{
 /* блок языка */
 .langBlock{
   margin-top:24px;
-  border-top: 1px solid rgba(255,255,255,.10);
+  border-top: 1px solid var(--stroke);
   padding-top:16px;
 }
 .langTitle{
   font-size:13px;
-  color: rgba(255,255,255,.65);
+  color: var(--muted);
   margin-bottom:12px;
   text-align:center;
 }
@@ -276,8 +291,8 @@ body{
   width:100%;
   border-radius:18px;
   padding:14px 14px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.14);
+  background: var(--btn-bg);
+  border: 1px solid var(--stroke);
   color: var(--text);
   outline:none;
   backdrop-filter: blur(14px) saturate(140%);
@@ -294,7 +309,7 @@ body{
 }
 
 .langPill:hover {
-  background: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.12);
 }
 
 .langPill:active{ transform: scale(.995); }
@@ -316,8 +331,8 @@ body{
   right:12px;
   bottom: calc(12px + env(safe-area-inset-bottom));
   border-radius:20px;
-  background: rgba(20,35,55,.75);
-  border: 1px solid rgba(255,255,255,.14);
+  background: var(--card-bg);
+  border: 1px solid var(--stroke);
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
   box-shadow: 0 20px 50px rgba(0,0,0,.35);
@@ -336,7 +351,7 @@ body{
   align-items:center;
   justify-content:space-between;
   padding:14px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
+  border-bottom: 1px solid var(--stroke);
 }
 
 .langSheetTitle{
@@ -347,9 +362,9 @@ body{
 
 .langClose{
   border:0;
-  background: rgba(255,255,255,.08);
+  background: var(--btn-bg);
   color: var(--text);
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid var(--stroke);
   border-radius:12px;
   padding:8px 10px;
   font-weight:900;
@@ -379,13 +394,13 @@ body{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid var(--stroke);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .langItem:hover{
-  background: rgba(255,255,255,.06);
+  background: var(--btn-bg);
 }
 
 .langItem .check{
@@ -408,8 +423,8 @@ body{
   z-index: 10000;
   padding: 10px 14px;
   border-radius: 20px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.14);
+  background: var(--btn-bg);
+  border: 1px solid var(--stroke);
   color: var(--text);
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
@@ -445,8 +460,8 @@ body{
   right:12px;
   bottom: calc(12px + env(safe-area-inset-bottom));
   border-radius:20px;
-  background: rgba(20,35,55,.75);
-  border: 1px solid rgba(255,255,255,.14);
+  background: var(--card-bg);
+  border: 1px solid var(--stroke);
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
   box-shadow: 0 20px 50px rgba(0,0,0,.35);
@@ -465,7 +480,7 @@ body{
   align-items:center;
   justify-content:space-between;
   padding:14px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
+  border-bottom: 1px solid var(--stroke);
 }
 
 .themeSheetTitle{
@@ -476,9 +491,9 @@ body{
 
 .themeClose{
   border:0;
-  background: rgba(255,255,255,.08);
+  background: var(--btn-bg);
   color: var(--text);
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid var(--stroke);
   border-radius:12px;
   padding:8px 10px;
   font-weight:900;
@@ -508,13 +523,13 @@ body{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid var(--stroke);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .themeItem:hover{
-  background: rgba(255,255,255,.06);
+  background: var(--btn-bg);
 }
 
 .themeItem .check{
@@ -542,4 +557,42 @@ main {
   min-height: calc(var(--vh, 100vh));
   padding-top: 0 !important;
   margin-top: 0 !important;
+}
+
+/* Toast уведомление (одноразовое) */
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-bg);
+  border: 1px solid var(--stroke);
+  border-radius: 30px;
+  padding: 12px 24px;
+  color: var(--text);
+  font-weight: 600;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  z-index: 100000;
+  animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+  pointer-events: none;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
 }
