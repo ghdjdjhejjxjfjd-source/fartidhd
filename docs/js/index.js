@@ -23,6 +23,7 @@ if (tg) {
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
 const STORAGE_PURCHASED_THEMES = "purchased_themes_v1";
+const STORAGE_NOTIFICATIONS = "shown_notifications_v1";
 
 // ===== DOM =====
 const chatBtn = document.getElementById("chatBtn");
@@ -81,6 +82,28 @@ function addPurchasedTheme(theme) {
   } catch(e) {}
 }
 
+// Проверка показывали ли уведомление
+function hasShownNotification(key) {
+  try {
+    const shown = localStorage.getItem(STORAGE_NOTIFICATIONS);
+    const list = shown ? JSON.parse(shown) : [];
+    return list.includes(key);
+  } catch(e) {
+    return false;
+  }
+}
+
+function markNotificationShown(key) {
+  try {
+    const shown = localStorage.getItem(STORAGE_NOTIFICATIONS);
+    const list = shown ? JSON.parse(shown) : [];
+    if (!list.includes(key)) {
+      list.push(key);
+      localStorage.setItem(STORAGE_NOTIFICATIONS, JSON.stringify(list));
+    }
+  } catch(e) {}
+}
+
 function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
 }
@@ -110,7 +133,6 @@ async function spendStars(amount) {
     if (!user.tg_user_id) return false;
     
     const API_BASE = "https://fayrat-production.up.railway.app";
-    // Этот эндпоинт нужно добавить в api.py
     const r = await fetch(`${API_BASE}/api/stars/spend`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -138,23 +160,24 @@ function getTelegramUser(){
   };
 }
 
-// Одноразовое уведомление
-function showOneTimeNotification(message, type = 'success') {
-  // Проверяем, показывали ли уже это уведомление
-  const notificationKey = `notification_${message}`;
-  if (localStorage.getItem(notificationKey)) return;
-  
+// Уведомление (показывается всегда)
+function showNotification(message, type = 'success') {
   const toast = document.createElement('div');
   toast.className = 'toast-notification';
   toast.textContent = message;
   document.body.appendChild(toast);
   
-  // Отмечаем что показали
-  localStorage.setItem(notificationKey, 'true');
-  
   setTimeout(() => {
     toast.remove();
   }, 3000);
+}
+
+// Одноразовое уведомление (только первый раз)
+function showOneTimeNotification(message, key, type = 'success') {
+  if (hasShownNotification(key)) return;
+  
+  showNotification(message, type);
+  markNotificationShown(key);
 }
 
 function setPillLabel(btn, text){
@@ -208,6 +231,16 @@ const LANGS = [
   { code:"fr", label:"Français (FR)" },
 ];
 
+// Названия языков для уведомлений
+const LANG_NAMES = {
+  ru: "Русский",
+  kk: "Қазақша",
+  en: "English",
+  tr: "Türkçe",
+  uk: "Українська",
+  fr: "Français"
+};
+
 // ===== THEMES с ценами =====
 const THEMES = [
   { code:"blue", label:"Синий", price: 0 },
@@ -260,6 +293,9 @@ async function setLang(lang){
 
   setChatLink(lang, getSavedTheme());
   setImgLink(lang, getSavedTheme());
+  
+  // Показываем уведомление о смене языка
+  showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
 }
 
 async function setTheme(theme){
@@ -275,14 +311,14 @@ async function setTheme(theme){
   if (themeData.price > 0 && !isPurchased) {
     const balance = await getStarsBalance();
     if (balance < themeData.price) {
-      alert(`❌ Недостаточно звезд. Нужно ${themeData.price} ⭐`);
+      showNotification(`❌ Недостаточно звезд. Нужно ${themeData.price} ⭐`, 'error');
       return;
     }
     
     // Списываем звезды
     const success = await spendStars(themeData.price);
     if (!success) {
-      alert("❌ Ошибка при покупке. Попробуйте позже.");
+      showNotification("❌ Ошибка при покупке. Попробуйте позже.", 'error');
       return;
     }
     
@@ -290,7 +326,7 @@ async function setTheme(theme){
     addPurchasedTheme(theme);
     
     // Показываем одноразовое уведомление
-    showOneTimeNotification(`✅ Тема "${themeData.label}" активирована!`, 'success');
+    showOneTimeNotification(`✅ Тема "${themeData.label}" активирована!`, `theme_${theme}`);
   }
   
   applyTheme(theme);
@@ -301,6 +337,11 @@ async function setTheme(theme){
 
   setChatLink(getSavedLang(), theme);
   setImgLink(getSavedLang(), theme);
+  
+  // Показываем уведомление о смене темы (для бесплатных тем)
+  if (themeData.price === 0) {
+    showNotification(`🎨 Тема изменена на ${themeData.label}`);
+  }
 }
 
 // ===== overlays =====
