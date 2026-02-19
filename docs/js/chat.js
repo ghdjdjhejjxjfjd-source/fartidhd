@@ -64,21 +64,20 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
     if (persist) {
       history.push({ role: type === "user" ? "user" : "assistant", text: String(text || "") });
-      if (history.length > 120) history = history.slice(-120);
+      // Увеличил лимит истории до 200 сообщений для лучшей памяти
+      if (history.length > 200) history = history.slice(-200);
       saveHistory(history);
     }
   }
 
   function getLang(){
     try{
-      // Сначала проверяем URL
       const urlLang = getLangFromUrl();
       if (urlLang) {
         console.log("Using language from URL:", urlLang);
         return urlLang;
       }
       
-      // Потом localStorage
       const stored = localStorage.getItem("miniapp_lang_v1");
       console.log("Using language from localStorage:", stored);
       return stored || "ru";
@@ -96,6 +95,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return localStorage.getItem("ai_style") || "steps";
   }
 
+  // Обновленный helloText только для нужных языков
   function helloText(){
     const lang = getLang();
     console.log("Hello text language:", lang);
@@ -105,11 +105,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       "kk": "👋 Сәлем! Бірдеңе жаз — мен осындамын.",
       "en": "👋 Hi! Write something — I'm here.",
       "tr": "👋 Merhaba! Bir şey yaz — buradayım.",
-      "uz": "👋 Salom! Biror narsa yoz — men shu yerdaman.",
-      "ky": "👋 Салам! Бир нерсе жаз — мен бул жактамын.",
       "uk": "👋 Привіт! Напиши щось — я на зв'язку.",
-      "de": "👋 Hallo! Schreib etwas — ich bin da.",
-      "es": "👋 ¡Hola! Escribe algo — estoy aquí.",
       "fr": "👋 Salut ! Écris quelque chose — je suis là."
     };
     
@@ -129,6 +125,67 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.scrollTop = chatEl.scrollHeight;
   }
 
+  // Улучшенная функция для построения промпта с полной историей
+  function buildPrompt(userText){
+    const lang = getLang();
+    const persona = getPersona();
+    const style = getStyle();
+    
+    // Берем до 50 последних сообщений для лучшего контекста
+    const maxHistory = 50;
+    const recentHistory = history.slice(-maxHistory);
+    
+    // Формируем полную историю разговора
+    let conversationHistory = "";
+    if (recentHistory.length > 0) {
+      conversationHistory = "Previous conversation:\n";
+      recentHistory.forEach(msg => {
+        const role = msg.role === "user" ? "User" : "Assistant";
+        conversationHistory += `${role}: ${msg.text}\n`;
+      });
+    } else {
+      conversationHistory = "No previous conversation.\n";
+    }
+
+    // Язык для ответа
+    const langNames = {
+      "ru": "Russian",
+      "kk": "Kazakh",
+      "en": "English",
+      "tr": "Turkish",
+      "uk": "Ukrainian",
+      "fr": "French"
+    };
+    const targetLang = langNames[lang] || "Russian";
+
+    // Стиль ответа
+    const styleDesc = {
+      "short": "Keep answers VERY short (1-2 sentences).",
+      "steps": "Answer step by step, structured.",
+      "detail": "Answer in detail but without unnecessary words."
+    }[style] || "Answer naturally.";
+
+    // Характер с усиленными инструкциями
+    const personaDesc = {
+      "friendly": "You are FRIENDLY and WARM. Use smileys 🙂 in EVERY message. Ask how they are doing. Be consistently friendly throughout the entire conversation.",
+      "fun": "You are FUN and HUMOROUS. Use lots of emojis 😄 😂 in EVERY message. Make jokes and be playful in EVERY response. Never be serious or boring.",
+      "strict": "You are STRICT and SERIOUS. NEVER use emojis. Be short and direct in EVERY message. Only facts, no emotions. Be consistently strict.",
+      "smart": "You are SMART and THOUGHTFUL. Use smart emojis 🧐 🤔 in EVERY message. Give detailed explanations. Be consistently intelligent."
+    }[persona] || "You are friendly and warm.";
+
+    return `${conversationHistory}
+Current user message: ${userText}
+
+IMPORTANT INSTRUCTIONS:
+1. Language: Respond ONLY in ${targetLang}
+2. Personality: ${personaDesc}
+3. Style: ${styleDesc}
+4. Remember the entire conversation history above
+5. Be consistent with your personality in this response
+
+Response:`;
+  }
+
   async function send(){
     const t = inputEl.value.trim();
     if(!t || sending) return;
@@ -145,8 +202,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       const persona = getPersona();
       const style = getStyle();
       
-      console.log("Sending with lang:", lang);
+      console.log("Sending with lang:", lang, "persona:", persona, "style:", style);
       
+      // Передаем параметры в askAI
       const answer = await askAI(t, lang, persona, style);
 
       removeTyping();
@@ -199,6 +257,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     saveHistory(history);
     try {
       await clearAIMemory();
+      console.log("Server memory cleared");
     } catch (e) {
       console.error("Failed to clear server memory:", e);
     }
