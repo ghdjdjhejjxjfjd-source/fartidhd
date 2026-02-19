@@ -288,6 +288,7 @@ def mem_clear(user_id: int) -> None:
     cur.execute("DELETE FROM chat_memory WHERE user_id=?", (user_id,))
     con.commit()
     con.close()
+    print(f"🧹 Memory cleared for user {user_id}")
 
 
 def build_memory_prompt(history: List[Dict[str, str]], user_text: str) -> str:
@@ -350,15 +351,9 @@ def api_memory_clear():
     if not tg_user_id_int:
         return jsonify({"error": "bad_user_id"}), 400
 
-    # доступ как в чате
-    a = get_access(tg_user_id_int)
-    if a["is_blocked"]:
-        return jsonify({"error": "blocked"}), 403
-    if not a["is_free"]:
-        return jsonify({"error": "payment_required"}), 402
-
+    # Очищаем память без проверок
     mem_clear(tg_user_id_int)
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "message": "Memory cleared"})
 
 
 @api.post("/api/chat")
