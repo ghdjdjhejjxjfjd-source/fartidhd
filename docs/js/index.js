@@ -35,10 +35,8 @@ const langList = document.getElementById("langList");
 const langClose = document.getElementById("langClose");
 const langSheetTitle = document.getElementById("langSheetTitle");
 
-// ✅ ДОБАВЛЕНО: кнопка генерации
 const imgBtn = document.getElementById("imgBtn");
 
-// ✅ theme UI
 const themeBtn = document.getElementById("themeBtn");
 const themeOverlay = document.getElementById("themeOverlay");
 const themeList = document.getElementById("themeList");
@@ -66,20 +64,14 @@ function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
 }
 
-/**
- * ✅ Безопасно меняет текст в кнопке, не трогая <span class="chev">
- * Работает даже если первый child — не текст.
- */
 function setPillLabel(btn, text){
   if (!btn) return;
 
-  // ищем первый текстовый узел
   let textNode = null;
   for (const n of btn.childNodes) {
     if (n && n.nodeType === Node.TEXT_NODE) { textNode = n; break; }
   }
 
-  // если нет — создаём текстовый узел в начало
   if (!textNode) {
     textNode = document.createTextNode("");
     btn.insertBefore(textNode, btn.firstChild);
@@ -96,7 +88,6 @@ function setChatLink(lang, theme){
     + "&theme=" + encodeURIComponent(theme);
 }
 
-// ✅ ДОБАВЛЕНО: ссылка для генерации
 function setImgLink(lang, theme){
   if (!imgBtn) return;
   const baseHref = "./image.html?v=1";
@@ -105,17 +96,13 @@ function setImgLink(lang, theme){
     + "&theme=" + encodeURIComponent(theme);
 }
 
-// ===== i18n =====
+// ===== i18n ===== (ТОЛЬКО НУЖНЫЕ ЯЗЫКИ)
 const I18N = {
   ru: { btn:"Чат с ИИ", img:"Генерация картинки", sub:"Быстрые ответы • Память • Заметки", ver:"miniapp v2", lang:"Язык интерфейса", sheet:"Язык" },
   kk: { btn:"AI чат", img:"Сурет генерациясы", sub:"Жылдам жауаптар • Есте сақтау • Жазбалар", ver:"miniapp v2", lang:"Тіл", sheet:"Тіл" },
   en: { btn:"AI Chat", img:"Image generation", sub:"Fast replies • Memory • Notes", ver:"miniapp v2", lang:"Language", sheet:"Language" },
   tr: { btn:"Yapay Zekâ Sohbet", img:"Görsel üretimi", sub:"Hızlı yanıtlar • Hafıza • Notlar", ver:"miniapp v2", lang:"Dil", sheet:"Dil" },
-  uz: { btn:"AI Chat", img:"Rasm yaratish", sub:"Tez javoblar • Xotira • Eslatmalar", ver:"miniapp v2", lang:"Til", sheet:"Til" },
-  ky: { btn:"AI чат", img:"Сүрөт генерациясы", sub:"Тез жооптор • Эс тутум • Жазмалар", ver:"miniapp v2", lang:"Тил", sheet:"Тил" },
   uk: { btn:"AI чат", img:"Генерація зображень", sub:"Швидкі відповіді • Пам’ять • Нотатки", ver:"miniapp v2", lang:"Мова", sheet:"Мова" },
-  de: { btn:"KI-Chat", img:"Bildgenerierung", sub:"Schnelle Antworten • Speicher • Notizen", ver:"miniapp v2", lang:"Sprache", sheet:"Sprache" },
-  es: { btn:"Chat IA", img:"Generación de imagen", sub:"Respuestas rápidas • Memoria • Notas", ver:"miniapp v2", lang:"Idioma", sheet:"Idioma" },
   fr: { btn:"Chat IA", img:"Génération d'image", sub:"Réponses rapides • Mémoire • Notes", ver:"miniapp v2", lang:"Langue", sheet:"Langue" },
 };
 
@@ -124,11 +111,7 @@ const LANGS = [
   { code:"kk", label:"Қазақша (KZ)" },
   { code:"en", label:"English (EN)" },
   { code:"tr", label:"Türkçe (TR)" },
-  { code:"uz", label:"O‘zbek (UZ)" },
-  { code:"ky", label:"Кыргызча (KG)" },
   { code:"uk", label:"Українська (UA)" },
-  { code:"de", label:"Deutsch (DE)" },
-  { code:"es", label:"Español (ES)" },
   { code:"fr", label:"Français (FR)" },
 ];
 
@@ -167,10 +150,7 @@ function setLang(lang){
   const t = I18N[lang] || I18N.ru;
 
   if (chatBtn) chatBtn.textContent = t.btn;
-
-  // ✅ ДОБАВЛЕНО: текст второй кнопки
   if (imgBtn) imgBtn.textContent = t.img;
-
   if (subText) subText.textContent = t.sub;
   if (verText) verText.textContent = t.ver;
   if (langTitle) langTitle.textContent = t.lang;
@@ -265,7 +245,6 @@ buildThemeList();
 setLang(getSavedLang());
 setTheme(getSavedTheme());
 
-// handlers (без падений)
 if (langBtn) langBtn.addEventListener("click", openLang);
 if (langClose) langClose.addEventListener("click", closeLang);
 if (langOverlay) langOverlay.addEventListener("click", (e) => {
