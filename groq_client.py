@@ -8,17 +8,58 @@ GROQ_MODEL = (os.getenv("GROQ_MODEL") or "llama-3.1-8b-instant").strip()
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-LANG_NAMES = {
-    "ru": "РУССКОМ",
-    "kk": "КАЗАХСКОМ",
-    "en": "АНГЛИЙСКОМ",
-    "tr": "ТУРЕЦКОМ",
-    "uz": "УЗБЕКСКОМ",
-    "ky": "КЫРГЫЗСКОМ",
-    "uk": "УКРАИНСКОМ",
-    "de": "НЕМЕЦКОМ",
-    "es": "ИСПАНСКОМ",
-    "fr": "ФРАНЦУЗСКОМ",
+# Подробные названия языков с примерами
+LANGUAGES = {
+    "ru": {
+        "name": "РУССКИЙ",
+        "example_q": "Привет, как дела?",
+        "example_a": "Привет! Нормально, а у тебя?"
+    },
+    "kk": {
+        "name": "ҚАЗАҚША",
+        "example_q": "Сәлем, қалың қалай?",
+        "example_a": "Сәлем! Жақсы, өзің қалайсың?"
+    },
+    "en": {
+        "name": "ENGLISH",
+        "example_q": "Hi, how are you?",
+        "example_a": "Hi! I'm good, how about you?"
+    },
+    "tr": {
+        "name": "TÜRKÇE",
+        "example_q": "Merhaba, nasılsın?",
+        "example_a": "Merhaba! İyiyim, sen nasılsın?"
+    },
+    "uz": {
+        "name": "O'ZBEKCHA",
+        "example_q": "Salom, qalaysiz?",
+        "example_a": "Salom! Yaxshiman, o'zingiz qalaysiz?"
+    },
+    "ky": {
+        "name": "КЫРГЫЗЧА",
+        "example_q": "Салам, кандайсың?",
+        "example_a": "Салам! Жакшы, өзүң кандайсың?"
+    },
+    "uk": {
+        "name": "УКРАЇНСЬКА",
+        "example_q": "Привіт, як справи?",
+        "example_a": "Привіт! Нормально, а в тебе?"
+    },
+    "de": {
+        "name": "DEUTSCH",
+        "example_q": "Hallo, wie geht's?",
+        "example_a": "Hallo! Gut, und dir?"
+    },
+    "es": {
+        "name": "ESPAÑOL",
+        "example_q": "¡Hola! ¿Cómo estás?",
+        "example_a": "¡Hola! Bien, ¿y tú?"
+    },
+    "fr": {
+        "name": "FRANÇAIS",
+        "example_q": "Salut, comment ça va?",
+        "example_a": "Salut! Ça va bien, et toi?"
+    }
 }
 
 PERSONAS = {
@@ -38,25 +79,41 @@ def ask_groq(
     if not groq_client:
         raise RuntimeError("GROQ_API_KEY is not set")
 
-    lang_name = LANG_NAMES.get(lang, "РУССКОМ")
+    # Получаем информацию о языке
+    lang_info = LANGUAGES.get(lang, LANGUAGES["ru"])
+    lang_name = lang_info["name"]
+    example_q = lang_info["example_q"]
+    example_a = lang_info["example_a"]
+    
     persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
     
-    # Очень строгий промпт с акцентом на язык
-    system_prompt = f"""ТЫ ДОЛЖЕН ОТВЕЧАТЬ ТОЛЬКО НА {lang_name} ЯЗЫКЕ. ЭТО ОБЯЗАТЕЛЬНО!
+    # Очень строгий промпт с примерами для каждого языка
+    system_prompt = f"""ТЫ ОБЯЗАН ОТВЕЧАТЬ ТОЛЬКО НА {lang_name} ЯЗЫКЕ. НИ СЛОВА НА ДРУГИХ ЯЗЫКАХ!
 
 Твой характер: {persona_desc}
 
+ПРИМЕР ДИАЛОГА НА {lang_name}:
+User: {example_q}
+Assistant: {example_a}
+
+ТЕПЕРЬ ТВОЯ ОЧЕРЕДЬ:
+
 ПРАВИЛА:
-1. Отвечай ТОЛЬКО на {lang_name} языке
-2. Ни слова на других языках
-3. Отвечай как обычный человек
-4. Не упоминай что ты ИИ
+1. Отвечай ТОЛЬКО на {lang_name}
+2. Используй слова и грамматику этого языка
+3. Не переключайся на другие языки
+4. Отвечай как обычный человек
+5. Не упоминай что ты ИИ
 
-Пример:
-User: Привет
-Assistant: Привет! Как дела?"""
+Если пользователь пишет на другом языке - всё равно отвечай на {lang_name}."""
 
-    temps = {"fun": 0.85, "friendly": 0.75, "smart": 0.7, "strict": 0.5}
+    # Разные температуры для разных персонажей
+    temps = {
+        "fun": 0.85,
+        "friendly": 0.75,
+        "smart": 0.7,
+        "strict": 0.5
+    }
     temperature = temps.get(persona, 0.7)
 
     try:
