@@ -22,7 +22,9 @@ except Exception as e:
     print(f"⚠️ Stability AI import error: {e}")
 
 api = Flask(__name__)
-CORS(api)
+
+# ✅ Разрешаем запросы с GitHub Pages
+CORS(api, origins=["https://fayrat11.github.io", "https://*.github.io"])
 
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
 
