@@ -1,4 +1,5 @@
-import { askAI } from "./api.js";
+// docs/js/chat.js
+import { askAI, getStarsBalance } from "./api.js";
 import { tg } from "./telegram.js";
 
 export const STORAGE_KEY = "chat_history_v1";
@@ -85,17 +86,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
   function helloText(){
     const lang = getLang();
-    // короткий привет под язык интерфейса (не критично, но приятно)
-    if (lang === "en") return "👋 Hey! Write something — I'm here.";
-    if (lang === "kk") return "👋 Сәлем! Бірдеңе жаз — мен осындамын.";
-    if (lang === "ky") return "👋 Салам! Бир нерсе жаз — мен бул жактамын.";
-    if (lang === "tr") return "👋 Selam! Bir şey yaz — buradayım.";
-    if (lang === "uz") return "👋 Salom! Biror narsa yoz — men shu yerdaman.";
-    if (lang === "uk") return "👋 Привіт! Напиши щось — я на звʼязку.";
-    if (lang === "de") return "👋 Hey! Schreib etwas — ich bin da.";
-    if (lang === "es") return "👋 ¡Hola! Escribe algo — aquí estoy.";
-    if (lang === "fr") return "👋 Salut ! Écris quelque chose — je suis là.";
-    return "👋 Привет! Напиши что-нибудь — я на связи.";
+    if (lang === "en") return "👋 Hey! Write something — I'm here. (1⭐ per message)";
+    if (lang === "kk") return "👋 Сәлем! Бірдеңе жаз — мен осындамын. (1⭐)";
+    if (lang === "ky") return "👋 Салам! Бир нерсе жаз — мен бул жактамын. (1⭐)";
+    if (lang === "tr") return "👋 Selam! Bir şey yaz — buradayım. (1⭐)";
+    if (lang === "uz") return "👋 Salom! Biror narsa yoz — men shu yerdaman. (1⭐)";
+    return "👋 Привет! Напиши что-нибудь — я на связи. (1⭐ за сообщение)";
   }
 
   function renderFromHistory(){
@@ -111,13 +107,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.scrollTop = chatEl.scrollHeight;
   }
 
-  // ------------------------------
-  // ✅ "ЖИВОЙ" ПРОМПТ + ЯЗЫК
-  // ------------------------------
-
   function uiPrefs(){
-    const style = localStorage.getItem("ai_style") || "steps";        // short | steps | detail
-    const persona = localStorage.getItem("ai_persona") || "friendly"; // friendly | fun | strict | smart
+    const style = localStorage.getItem("ai_style") || "steps";
+    const persona = localStorage.getItem("ai_persona") || "friendly";
     return { style, persona };
   }
 
@@ -182,6 +174,18 @@ Assistant:
 `.trim();
   }
 
+  // Функция для обновления баланса в меню
+  async function updateMenuBalance() {
+    try {
+      const balance = await getStarsBalance();
+      window.dispatchEvent(new CustomEvent('balanceUpdated', { 
+        detail: { balance: balance } 
+      }));
+    } catch (e) {
+      console.error("Failed to update balance", e);
+    }
+  }
+
   async function send(){
     const t = inputEl.value.trim();
     if(!t || sending) return;
@@ -202,9 +206,19 @@ Assistant:
 
       const out = (answer || "").trim();
       add("bot", out || "…", true);
+      
+      // Обновляем баланс после успешного ответа
+      await updateMenuBalance();
+      
     } catch(e){
       removeTyping();
-      add("bot", "❌ Ошибка: " + (e?.message || e), true);
+      
+      // Специальное сообщение для недостатка звезд
+      if (e.message.includes("Недостаточно звезд")) {
+        add("bot", "❌ " + e.message + "\n\nКупите звезды в меню: нажмите ⭐ в главном меню.", true);
+      } else {
+        add("bot", "❌ Ошибка: " + (e?.message || e), true);
+      }
     } finally{
       sending = false;
       sendBtnEl.disabled = false;
