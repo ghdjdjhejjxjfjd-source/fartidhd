@@ -64,9 +64,9 @@ function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
 }
 
-// Уведомление - упрощенная версия
+// Уведомление - показывается сразу
 function showNotification(message) {
-  console.log("🔔 Уведомление:", message); // Для отладки
+  console.log("🔔 Уведомление:", message);
   
   // Проверяем что мы на главной странице
   if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
@@ -94,7 +94,7 @@ function showNotification(message) {
     font-weight: 600;
     backdrop-filter: blur(10px);
     z-index: 100000;
-    animation: slideDown 0.3s ease;
+    animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   `;
   
   document.body.appendChild(toast);
@@ -106,7 +106,7 @@ function showNotification(message) {
   }, 3000);
 }
 
-// Добавляем анимацию
+// Добавляем анимации
 const style = document.createElement('style');
 style.textContent = `
   @keyframes slideDown {
@@ -119,12 +119,17 @@ style.textContent = `
       opacity: 1;
     }
   }
+  @keyframes fadeOut {
+    to {
+      opacity: 0;
+      transform: translate(-50%, -20px);
+    }
+  }
 `;
 document.head.appendChild(style);
 
 function setPillLabel(btn, text){
   if (!btn) return;
-  console.log("Setting pill label:", text);
   
   let textNode = null;
   for (const n of btn.childNodes) {
@@ -145,7 +150,6 @@ function setChatLink(lang, theme){
   chatBtn.href = baseHref
     + "&lang=" + encodeURIComponent(lang)
     + "&theme=" + encodeURIComponent(theme);
-  console.log("Chat link updated:", chatBtn.href);
 }
 
 function setImgLink(lang, theme){
@@ -154,7 +158,6 @@ function setImgLink(lang, theme){
   imgBtn.href = baseHref
     + "&lang=" + encodeURIComponent(lang)
     + "&theme=" + encodeURIComponent(theme);
-  console.log("Image link updated:", imgBtn.href);
 }
 
 // ===== i18n =====
@@ -324,14 +327,14 @@ function updateThemeList(lang) {
       span.textContent = label;
     }
   });
-  console.log("Theme list updated for language:", lang);
 }
 
-async function setLang(lang){
+function setLang(lang){
   console.log("setLang called with:", lang);
   
   const t = I18N[lang] || I18N.ru;
 
+  // Обновляем тексты
   if (chatBtn) chatBtn.textContent = t.btn;
   if (imgBtn) imgBtn.textContent = t.img;
   if (subText) subText.textContent = t.sub;
@@ -356,14 +359,16 @@ async function setLang(lang){
   setChatLink(lang, currentTheme);
   setImgLink(lang, currentTheme);
   
-  // Показываем уведомление
-  showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
-  
+  // Закрываем оверлей
   closeLang();
-  console.log("Language change complete");
+  
+  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ ПОСЛЕ ЗАКРЫТИЯ
+  setTimeout(() => {
+    showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
+  }, 100);
 }
 
-async function setTheme(theme){
+function setTheme(theme){
   console.log("setTheme called with:", theme);
   
   const currentLang = getSavedLang();
@@ -378,11 +383,13 @@ async function setTheme(theme){
   setChatLink(currentLang, theme);
   setImgLink(currentLang, theme);
   
-  // Показываем уведомление
-  showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
-  
+  // Закрываем оверлей
   closeTheme();
-  console.log("Theme change complete");
+  
+  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ ПОСЛЕ ЗАКРЫТИЯ
+  setTimeout(() => {
+    showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
+  }, 100);
 }
 
 // ===== overlays =====
@@ -391,14 +398,12 @@ function openLang(){
   langOverlay.classList.add("show");
   langOverlay.setAttribute("aria-hidden", "false");
   langBtn.setAttribute("aria-expanded", "true");
-  console.log("Language overlay opened");
 }
 function closeLang(){
   if (!langOverlay || !langBtn) return;
   langOverlay.classList.remove("show");
   langOverlay.setAttribute("aria-hidden", "true");
   langBtn.setAttribute("aria-expanded", "false");
-  console.log("Language overlay closed");
 }
 
 function openTheme(){
@@ -406,14 +411,12 @@ function openTheme(){
   themeOverlay.classList.add("show");
   themeOverlay.setAttribute("aria-hidden", "false");
   themeBtn.setAttribute("aria-expanded", "true");
-  console.log("Theme overlay opened");
 }
 function closeTheme(){
   if (!themeOverlay || !themeBtn) return;
   themeOverlay.classList.remove("show");
   themeOverlay.setAttribute("aria-hidden", "true");
   themeBtn.setAttribute("aria-expanded", "false");
-  console.log("Theme overlay closed");
 }
 
 function buildLangList(){
@@ -428,7 +431,6 @@ function buildLangList(){
     b.addEventListener("click", () => setLang(x.code));
     langList.appendChild(b);
   }
-  console.log("Language list built");
 }
 
 function buildThemeList(){
@@ -454,17 +456,14 @@ function buildThemeList(){
   if (themeSheetTitle) {
     themeSheetTitle.textContent = t.theme_title;
   }
-  console.log("Theme list built");
 }
 
 // ===== init =====
-console.log("Initializing app...");
 buildLangList();
 buildThemeList();
 
 const savedLang = getSavedLang();
 const savedTheme = getSavedTheme();
-console.log("Saved lang:", savedLang, "Saved theme:", savedTheme);
 
 const t = I18N[savedLang] || I18N.ru;
 if (chatBtn) chatBtn.textContent = t.btn;
@@ -502,5 +501,3 @@ if (themeOverlay) themeOverlay.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { closeLang(); closeTheme(); }
 });
-
-console.log("App initialized");
