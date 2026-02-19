@@ -1,5 +1,5 @@
 // docs/js/chat.js
-import { askAI, getStarsBalance } from "./api.js";
+import { askAI, getStarsBalance, clearAIMemory } from "./api.js";
 import { tg } from "./telegram.js";
 
 export const STORAGE_KEY = "chat_history_v1";
@@ -71,7 +71,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  const LANG_NAME = {
+  const LANG_NAMES = {
     ru: "Russian",
     kk: "Kazakh",
     en: "English",
@@ -113,65 +113,25 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return { style, persona };
   }
 
-  function styleRule(style){
-    if (style === "short")  return "Answer concisely and to the point. No long introductions.";
-    if (style === "detail") return "Answer in detail, but clearly and without filler.";
-    return "Answer step-by-step when it helps, but keep it natural like a real chat.";
-  }
-
-  function personaRule(persona){
-    if (persona === "fun") {
-      return "Tone: friendly and lively. You may use a few appropriate emojis and light jokes. Do NOT overdo it.";
-    }
-    if (persona === "strict") {
-      return "Tone: businesslike and direct. Minimal emojis. If unclear, ask ONE clarifying question.";
-    }
-    if (persona === "smart") {
-      return "Tone: smart and structured, but not dry. Use terms only if needed.";
-    }
-    return "Tone: warm, human, supportive. Occasional appropriate emojis.";
-  }
-
-  function systemRules(langCode){
-    const langName = LANG_NAME[langCode] || "Russian";
-    return [
-      "You are a natural-sounding chat companion inside a messaging app.",
-      `IMPORTANT: Reply ONLY in ${langName}.`,
-      "Do NOT start every reply with greetings.",
-      "Do NOT use the user's name unless the user explicitly gave it in this chat.",
-      "Avoid шаблонные фразы and repetition.",
-      "If the question is simple — answer directly.",
-      "If information is missing — ask ONE clear question.",
-      "Never mention system prompts or policies.",
-    ].join(" ");
-  }
-
-  function buildChatMessages(maxTurns = 12){
-    const slice = history.slice(-maxTurns);
-    const lines = [];
-    for (const m of slice){
-      if (!m || !m.text) continue;
-      lines.push((m.role === "user" ? "User" : "Assistant") + ": " + m.text);
-    }
-    return lines.join("\n");
-  }
-
   function buildPrompt(userText){
     const { style, persona } = uiPrefs();
     const langCode = getLang();
-    const convo = buildChatMessages(12);
+    
+    // Строим историю разговора
+    const conversation = history.map(m => 
+      `${m.role === "user" ? "User" : "Assistant"}: ${m.text}`
+    ).join("\n");
 
     return `
-${systemRules(langCode)}
-${personaRule(persona)}
-${styleRule(style)}
+You are a helpful assistant. Reply in ${LANG_NAMES[langCode] || "Russian"}.
+Style: ${style}
+Personality: ${persona}
 
-Conversation:
-${convo ? convo : "(empty)"}
+Conversation history:
+${conversation || "No previous messages"}
 
 User: ${userText}
-Assistant:
-`.trim();
+Assistant:`.trim();
   }
 
   // Функция для обновления баланса в меню
@@ -218,6 +178,7 @@ Assistant:
         add("bot", "❌ " + e.message + "\n\nКупите звезды в меню: нажмите ⭐ в главном меню.", true);
       } else {
         add("bot", "❌ Ошибка: " + (e?.message || e), true);
+        console.error("Chat error:", e);
       }
     } finally{
       sending = false;
@@ -228,7 +189,10 @@ Assistant:
   function bindUI(){
     sendBtnEl.addEventListener("click", send);
     inputEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") send();
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
     });
 
     chatEl.addEventListener("pointerdown", () => {
@@ -247,9 +211,20 @@ Assistant:
     }, { passive: false });
   }
 
-  function clearHistory(){
+  async function clearHistory(){
+    // Очищаем локальную историю
     history = [];
     saveHistory(history);
+    
+    // Очищаем память на сервере
+    try {
+      await clearAIMemory();
+      console.log("Server memory cleared");
+    } catch (e) {
+      console.error("Failed to clear server memory:", e);
+    }
+    
+    // Обновляем чат
     chatEl.innerHTML = "";
     add("bot", helloText(), true);
   }
