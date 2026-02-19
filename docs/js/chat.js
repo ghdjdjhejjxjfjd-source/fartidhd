@@ -24,7 +24,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let history = loadHistory();
   let sending = false;
 
-  // --- typing indicator helpers ---
   const TYPING_ID = "typing-indicator";
 
   function removeTyping(){
@@ -34,17 +33,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
   function addTyping(){
     removeTyping();
-
     const d = document.createElement("div");
     d.id = TYPING_ID;
     d.className = "msg bot typing";
-    d.innerHTML = `
-      <span class="typing-dots" aria-label="typing">
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-      </span>
-    `;
+    d.innerHTML = `<span class="typing-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>`;
     chatEl.appendChild(d);
     chatEl.scrollTop = chatEl.scrollHeight;
   }
@@ -71,26 +63,25 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  const LANG_NAMES = {
-    ru: "Russian",
-    kk: "Kazakh",
-    en: "English",
-    tr: "Turkish",
-    uz: "Uzbek",
-    ky: "Kyrgyz",
-    uk: "Ukrainian",
-    de: "German",
-    es: "Spanish",
-    fr: "French",
-  };
+  function getPersona(){
+    return localStorage.getItem("ai_persona") || "friendly";
+  }
+
+  function getStyle(){
+    return localStorage.getItem("ai_style") || "steps";
+  }
 
   function helloText(){
     const lang = getLang();
-    if (lang === "en") return "👋 Hey! Write something — I'm here.";
+    if (lang === "en") return "👋 Hi! Write something — I'm here.";
     if (lang === "kk") return "👋 Сәлем! Бірдеңе жаз — мен осындамын.";
     if (lang === "ky") return "👋 Салам! Бир нерсе жаз — мен бул жактамын.";
-    if (lang === "tr") return "👋 Selam! Bir şey yaz — buradayım.";
+    if (lang === "tr") return "👋 Merhaba! Bir şey yaz — buradayım.";
     if (lang === "uz") return "👋 Salom! Biror narsa yoz — men shu yerdaman.";
+    if (lang === "uk") return "👋 Привіт! Напиши щось — я на зв'язку.";
+    if (lang === "de") return "👋 Hallo! Schreib etwas — ich bin da.";
+    if (lang === "es") return "👋 ¡Hola! Escribe algo — estoy aquí.";
+    if (lang === "fr") return "👋 Salut ! Écris quelque chose — je suis là.";
     return "👋 Привет! Напиши что-нибудь — я на связи.";
   }
 
@@ -107,45 +98,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.scrollTop = chatEl.scrollHeight;
   }
 
-  function uiPrefs(){
-    const style = localStorage.getItem("ai_style") || "steps";
-    const persona = localStorage.getItem("ai_persona") || "friendly";
-    return { style, persona };
-  }
-
-  function buildPrompt(userText){
-    const { style, persona } = uiPrefs();
-    const langCode = getLang();
-    
-    // Строим историю разговора
-    const conversation = history.map(m => 
-      `${m.role === "user" ? "User" : "Assistant"}: ${m.text}`
-    ).join("\n");
-
-    return `
-You are a helpful assistant. Reply in ${LANG_NAMES[langCode] || "Russian"}.
-Style: ${style}
-Personality: ${persona}
-
-Conversation history:
-${conversation || "No previous messages"}
-
-User: ${userText}
-Assistant:`.trim();
-  }
-
-  // Функция для обновления баланса в меню
-  async function updateMenuBalance() {
-    try {
-      const balance = await getStarsBalance();
-      window.dispatchEvent(new CustomEvent('balanceUpdated', { 
-        detail: { balance: balance } 
-      }));
-    } catch (e) {
-      console.error("Failed to update balance", e);
-    }
-  }
-
   async function send(){
     const t = inputEl.value.trim();
     if(!t || sending) return;
@@ -155,25 +107,27 @@ Assistant:`.trim();
 
     add("user", t, true);
     inputEl.value = "";
-
     addTyping();
 
     try{
-      const prompt = buildPrompt(t);
-      const answer = await askAI(prompt);
+      // Получаем настройки
+      const lang = getLang();
+      const persona = getPersona();
+      const style = getStyle();
+      
+      // Отправляем запрос с явным указанием языка
+      const answer = await askAI(t, lang, persona, style);
 
       removeTyping();
 
       const out = (answer || "").trim();
       add("bot", out || "…", true);
       
-      // Обновляем баланс после успешного ответа
       await updateMenuBalance();
       
     } catch(e){
       removeTyping();
       
-      // Специальное сообщение для недостатка звезд
       if (e.message.includes("Недостаточно звезд")) {
         add("bot", "❌ " + e.message + "\n\nКупите звезды в меню: нажмите ⭐ в главном меню.", true);
       } else {
@@ -183,6 +137,15 @@ Assistant:`.trim();
     } finally{
       sending = false;
       sendBtnEl.disabled = false;
+    }
+  }
+
+  async function updateMenuBalance() {
+    try {
+      const balance = await getStarsBalance();
+      window.dispatchEvent(new CustomEvent('balanceUpdated', { detail: { balance } }));
+    } catch (e) {
+      console.error("Failed to update balance", e);
     }
   }
 
@@ -198,33 +161,16 @@ Assistant:`.trim();
     chatEl.addEventListener("pointerdown", () => {
       if (document.activeElement === inputEl) inputEl.blur();
     });
-
-    let lastTouchEnd = 0;
-    document.addEventListener("touchend", (e) => {
-      const now = Date.now();
-      if (now - lastTouchEnd <= 300) e.preventDefault();
-      lastTouchEnd = now;
-    }, { passive: false });
-
-    document.addEventListener("dblclick", (e) => {
-      e.preventDefault();
-    }, { passive: false });
   }
 
   async function clearHistory(){
-    // Очищаем локальную историю
     history = [];
     saveHistory(history);
-    
-    // Очищаем память на сервере
     try {
       await clearAIMemory();
-      console.log("Server memory cleared");
     } catch (e) {
       console.error("Failed to clear server memory:", e);
     }
-    
-    // Обновляем чат
     chatEl.innerHTML = "";
     add("bot", helloText(), true);
   }
