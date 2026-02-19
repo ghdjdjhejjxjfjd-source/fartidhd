@@ -23,6 +23,8 @@ if (tg) {
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
 const STORAGE_PURCHASED_THEMES = "purchased_themes_v1";
+const STORAGE_LAST_LANG = "last_lang_v1";
+const STORAGE_LAST_THEME = "last_theme_v1";
 
 // ===== DOM =====
 const chatBtn = document.getElementById("chatBtn");
@@ -53,12 +55,28 @@ function saveLang(lang){
   try{ localStorage.setItem(STORAGE_LANG, lang); }catch(e){}
 }
 
+function getLastLang(){
+  try{ return localStorage.getItem(STORAGE_LAST_LANG) || "ru"; }
+  catch(e){ return "ru"; }
+}
+function saveLastLang(lang){
+  try{ localStorage.setItem(STORAGE_LAST_LANG, lang); }catch(e){}
+}
+
 function getSavedTheme(){
   try{ return localStorage.getItem(STORAGE_THEME) || "blue"; }
   catch(e){ return "blue"; }
 }
 function saveTheme(theme){
   try{ localStorage.setItem(STORAGE_THEME, theme); }catch(e){}
+}
+
+function getLastTheme(){
+  try{ return localStorage.getItem(STORAGE_LAST_THEME) || "blue"; }
+  catch(e){ return "blue"; }
+}
+function saveLastTheme(theme){
+  try{ localStorage.setItem(STORAGE_LAST_THEME, theme); }catch(e){}
 }
 
 // Купленные темы
@@ -137,11 +155,11 @@ function getTelegramUser(){
   };
 }
 
-// Уведомление (только на главной)
+// Уведомление (только при реальной смене)
 function showNotification(message, type = 'success') {
   // Проверяем что мы на главной странице
   if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
-    return; // Не показываем на других страницах
+    return;
   }
   
   const toast = document.createElement('div');
@@ -186,14 +204,110 @@ function setImgLink(lang, theme){
     + "&theme=" + encodeURIComponent(theme);
 }
 
-// ===== i18n =====
+// ===== i18n с переводами для цветов =====
 const I18N = {
-  ru: { btn:"Чат с ИИ", img:"Генерация картинки", sub:"Быстрые ответы • Память • Заметки", ver:"miniapp v2", lang:"Язык интерфейса", sheet:"Язык" },
-  kk: { btn:"AI чат", img:"Сурет генерациясы", sub:"Жылдам жауаптар • Есте сақтау • Жазбалар", ver:"miniapp v2", lang:"Тіл", sheet:"Тіл" },
-  en: { btn:"AI Chat", img:"Image generation", sub:"Fast replies • Memory • Notes", ver:"miniapp v2", lang:"Language", sheet:"Language" },
-  tr: { btn:"Yapay Zekâ Sohbet", img:"Görsel üretimi", sub:"Hızlı yanıtlar • Hafıza • Notlar", ver:"miniapp v2", lang:"Dil", sheet:"Dil" },
-  uk: { btn:"AI чат", img:"Генерація зображень", sub:"Швидкі відповіді • Пам’ять • Нотатки", ver:"miniapp v2", lang:"Мова", sheet:"Мова" },
-  fr: { btn:"Chat IA", img:"Génération d'image", sub:"Réponses rapides • Mémoire • Notes", ver:"miniapp v2", lang:"Langue", sheet:"Langue" },
+  ru: { 
+    btn:"Чат с ИИ", 
+    img:"Генерация картинки", 
+    sub:"Быстрые ответы • Память • Заметки", 
+    ver:"miniapp v2", 
+    lang:"Язык интерфейса", 
+    sheet:"Язык",
+    colors: {
+      blue: "Синий",
+      black: "Черный",
+      purple: "Фиолетовый",
+      green: "Зеленый",
+      gray: "Серый",
+      ios: "iOS стиль"
+    },
+    theme_title: "Цвет"
+  },
+  kk: { 
+    btn:"AI чат", 
+    img:"Сурет генерациясы", 
+    sub:"Жылдам жауаптар • Есте сақтау • Жазбалар", 
+    ver:"miniapp v2", 
+    lang:"Тіл", 
+    sheet:"Тіл",
+    colors: {
+      blue: "Көк",
+      black: "Қара",
+      purple: "Күлгін",
+      green: "Жасыл",
+      gray: "Сұр",
+      ios: "iOS стилі"
+    },
+    theme_title: "Түс"
+  },
+  en: { 
+    btn:"AI Chat", 
+    img:"Image generation", 
+    sub:"Fast replies • Memory • Notes", 
+    ver:"miniapp v2", 
+    lang:"Language", 
+    sheet:"Language",
+    colors: {
+      blue: "Blue",
+      black: "Black",
+      purple: "Purple",
+      green: "Green",
+      gray: "Gray",
+      ios: "iOS style"
+    },
+    theme_title: "Color"
+  },
+  tr: { 
+    btn:"Yapay Zekâ Sohbet", 
+    img:"Görsel üretimi", 
+    sub:"Hızlı yanıtlar • Hafıza • Notlar", 
+    ver:"miniapp v2", 
+    lang:"Dil", 
+    sheet:"Dil",
+    colors: {
+      blue: "Mavi",
+      black: "Siyah",
+      purple: "Mor",
+      green: "Yeşil",
+      gray: "Gri",
+      ios: "iOS stili"
+    },
+    theme_title: "Renk"
+  },
+  uk: { 
+    btn:"AI чат", 
+    img:"Генерація зображень", 
+    sub:"Швидкі відповіді • Пам’ять • Нотатки", 
+    ver:"miniapp v2", 
+    lang:"Мова", 
+    sheet:"Мова",
+    colors: {
+      blue: "Синій",
+      black: "Чорний",
+      purple: "Фіолетовий",
+      green: "Зелений",
+      gray: "Сірий",
+      ios: "iOS стиль"
+    },
+    theme_title: "Колір"
+  },
+  fr: { 
+    btn:"Chat IA", 
+    img:"Génération d'image", 
+    sub:"Réponses rapides • Mémoire • Notes", 
+    ver:"miniapp v2", 
+    lang:"Langue", 
+    sheet:"Langue",
+    colors: {
+      blue: "Bleu",
+      black: "Noir",
+      purple: "Violet",
+      green: "Vert",
+      gray: "Gris",
+      ios: "Style iOS"
+    },
+    theme_title: "Couleur"
+  },
 };
 
 const LANGS = [
@@ -215,19 +329,19 @@ const LANG_NAMES = {
   fr: "Français"
 };
 
-// ===== THEMES с ценами =====
+// ===== THEMES =====
 const THEMES = [
-  { code:"blue", label:"Синий", price: 0 },
-  { code:"black", label:"Черный", price: 0 },
-  { code:"purple", label:"Фиолетовый", price: 0 },
-  { code:"green", label:"Зеленый", price: 0 },
-  { code:"gray", label:"Серый", price: 0 },
-  { code:"ios", label:"iOS стиль", price: 100 },  // iOS стиль платный
+  { code:"blue", price: 0 },
+  { code:"black", price: 0 },
+  { code:"purple", price: 0 },
+  { code:"green", price: 0 },
+  { code:"gray", price: 0 },
+  { code:"ios", price: 100 },
 ];
 
-function themeLabel(theme){
-  const f = THEMES.find(x => x.code === theme);
-  return f ? f.label : "Синий";
+function themeLabel(theme, lang = "ru"){
+  const t = I18N[lang] || I18N.ru;
+  return t.colors[theme] || theme;
 }
 
 function paintSelectedLang(lang){
@@ -249,6 +363,7 @@ function paintSelectedTheme(theme){
 }
 
 async function setLang(lang){
+  const oldLang = getLastLang();
   const t = I18N[lang] || I18N.ru;
 
   if (chatBtn) chatBtn.textContent = t.btn;
@@ -263,15 +378,26 @@ async function setLang(lang){
 
   saveLang(lang);
   paintSelectedLang(lang);
-
-  setChatLink(lang, getSavedTheme());
-  setImgLink(lang, getSavedTheme());
   
-  // Показываем уведомление о смене языка
-  showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
+  // Обновляем кнопку темы с новым языком
+  const currentTheme = getSavedTheme();
+  setPillLabel(themeBtn, t.theme_title + ": " + themeLabel(currentTheme, lang));
+
+  setChatLink(lang, currentTheme);
+  setImgLink(lang, currentTheme);
+  
+  // Показываем уведомление ТОЛЬКО если язык реально изменился
+  if (oldLang !== lang) {
+    showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
+    saveLastLang(lang);
+  }
 }
 
 async function setTheme(theme){
+  const oldTheme = getLastTheme();
+  const currentLang = getSavedLang();
+  const t = I18N[currentLang] || I18N.ru;
+  
   // Проверяем доступность темы
   const themeData = THEMES.find(t => t.code === theme);
   if (!themeData) return;
@@ -288,32 +414,28 @@ async function setTheme(theme){
       return;
     }
     
-    // Списываем звезды
     const success = await spendStars(themeData.price);
     if (!success) {
       showNotification("❌ Ошибка при покупке. Попробуйте позже.", 'error');
       return;
     }
     
-    // Добавляем в купленные
     addPurchasedTheme(theme);
-    
-    // Показываем уведомление о покупке
-    showNotification(`✅ Тема "${themeData.label}" активирована!`);
   }
   
   applyTheme(theme);
   saveTheme(theme);
   paintSelectedTheme(theme);
 
-  setPillLabel(themeBtn, "Цвет: " + themeLabel(theme));
+  setPillLabel(themeBtn, t.theme_title + ": " + themeLabel(theme, currentLang));
 
-  setChatLink(getSavedLang(), theme);
-  setImgLink(getSavedLang(), theme);
+  setChatLink(currentLang, theme);
+  setImgLink(currentLang, theme);
   
-  // Показываем уведомление о смене темы (для бесплатных тем)
-  if (themeData.price === 0) {
-    showNotification(`🎨 Тема изменена на ${themeData.label}`);
+  // Показываем уведомление ТОЛЬКО если тема реально изменилась
+  if (oldTheme !== theme) {
+    showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
+    saveLastTheme(theme);
   }
 }
 
@@ -365,6 +487,8 @@ function buildThemeList(){
   if (!themeList) return;
   themeList.innerHTML = "";
   
+  const currentLang = getSavedLang();
+  const t = I18N[currentLang] || I18N.ru;
   const purchasedThemes = getPurchasedThemes();
   
   for (const x of THEMES){
@@ -373,11 +497,11 @@ function buildThemeList(){
     b.className = "themeItem";
     b.setAttribute("data-theme", x.code);
     
-    // Для купленных тем цена не показывается
+    const label = t.colors[x.code] || x.code;
     const isPurchased = purchasedThemes.includes(x.code);
     const priceText = (x.price > 0 && !isPurchased) ? ` (${x.price} ⭐)` : "";
     
-    b.innerHTML = `<span>${x.label}${priceText}</span><span class="check">✓</span>`;
+    b.innerHTML = `<span>${label}${priceText}</span><span class="check">✓</span>`;
     
     b.addEventListener("click", () => {
       setTheme(x.code);
@@ -391,9 +515,35 @@ function buildThemeList(){
 buildLangList();
 buildThemeList();
 
-setLang(getSavedLang());
-setTheme(getSavedTheme());
+// Устанавливаем сохраненные значения без уведомлений
+const savedLang = getSavedLang();
+const savedTheme = getSavedTheme();
 
+// Сохраняем как последние
+saveLastLang(savedLang);
+saveLastTheme(savedTheme);
+
+// Применяем без уведомлений
+const t = I18N[savedLang] || I18N.ru;
+if (chatBtn) chatBtn.textContent = t.btn;
+if (imgBtn) imgBtn.textContent = t.img;
+if (subText) subText.textContent = t.sub;
+if (verText) verText.textContent = t.ver;
+if (langTitle) langTitle.textContent = t.lang;
+if (langSheetTitle) langSheetTitle.textContent = t.sheet;
+
+const found = LANGS.find(x => x.code === savedLang);
+setPillLabel(langBtn, found ? found.label : "Русский (RU)");
+paintSelectedLang(savedLang);
+
+applyTheme(savedTheme);
+setPillLabel(themeBtn, t.theme_title + ": " + themeLabel(savedTheme, savedLang));
+paintSelectedTheme(savedTheme);
+
+setChatLink(savedLang, savedTheme);
+setImgLink(savedLang, savedTheme);
+
+// handlers
 if (langBtn) langBtn.addEventListener("click", openLang);
 if (langClose) langClose.addEventListener("click", closeLang);
 if (langOverlay) langOverlay.addEventListener("click", (e) => {
