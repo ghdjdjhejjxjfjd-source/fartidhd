@@ -11,108 +11,92 @@
   --text: rgba(255,255,255,.94);
   --muted: rgba(255,255,255,.62);
 
-  --glass: rgba(255,255,255,.10);
-  --glass2: rgba(255,255,255,.06);
-  --stroke: rgba(255,255,255,.18);
+  --glass: rgba(255,255,255,.08);  /* сделал менее ярким */
+  --glass2: rgba(255,255,255,.04); /* сделал менее ярким */
+  --stroke: rgba(255,255,255,.14);  /* сделал менее ярким */
 
-  /* ✅ свечения (используются в фоне/кубах, чтобы темы реально работали) */
-  --glow:  rgba(90,190,255,.30);
-  --glow2: rgba(120,220,255,.22);
-  --glow3: rgba(255,255,255,.12);
+  /* ✅ свечения (сделал менее яркими) */
+  --glow:  rgba(90,190,255,.20);
+  --glow2: rgba(120,220,255,.15);
+  --glow3: rgba(255,255,255,.08);
 }
 
-/* ✅ ТЕМЫ (меняют только переменные) */
+/* ✅ ТЕМЫ */
 :root[data-theme="black"]{
-  /* ✅ ДЕЛАЕМ ЕЩЕ ЧЕРНЕЕ */
-  --bgTop:#05070b;
-  --bgMid:#03050a;
-  --bgBot:#010308;
-
-  /* ✅ слабое холодное свечение, чтобы кубы/текст читались */
-  --glow:  rgba(120,150,210,.14);
-  --glow2: rgba(90,120,190,.18);
-  --glow3: rgba(255,255,255,.07);
+  --bgTop:#0a0e15;
+  --bgMid:#06090f;
+  --bgBot:#03050a;
+  --glow: rgba(100,130,190,.12);
+  --glow2: rgba(80,110,170,.10);
+  --glow3: rgba(255,255,255,.05);
 }
 :root[data-theme="purple"]{
-  --bgTop:#3b1b6a;
-  --bgMid:#1e123d;
+  --bgTop:#2a1550;
+  --bgMid:#180f30;
   --bgBot:#0a0716;
-  --glow: rgba(200,120,255,.25);
-  --glow2: rgba(120,200,255,.18);
-  --glow3: rgba(255,255,255,.12);
+  --glow: rgba(160,100,220,.18);
+  --glow2: rgba(120,80,200,.12);
+  --glow3: rgba(255,255,255,.08);
 }
 :root[data-theme="green"]{
-  --bgTop:#0b6a55;
-  --bgMid:#0a3d34;
-  --bgBot:#061a16;
-  --glow: rgba(120,255,210,.22);
-  --glow2: rgba(120,220,255,.18);
-  --glow3: rgba(255,255,255,.11);
+  --bgTop:#0a5545;
+  --bgMid:#083a30;
+  --bgBot:#051f1a;
+  --glow: rgba(80,200,160,.15);
+  --glow2: rgba(60,180,140,.12);
+  --glow3: rgba(255,255,255,.07);
 }
 :root[data-theme="gray"]{
-  --bgTop:#2a3442;
-  --bgMid:#1a2330;
+  --bgTop:#1f2735;
+  --bgMid:#141b28;
   --bgBot:#0b1018;
-  --glow: rgba(200,220,255,.16);
-  --glow2: rgba(120,220,255,.16);
-  --glow3: rgba(255,255,255,.10);
+  --glow: rgba(150,170,200,.12);
+  --glow2: rgba(120,140,180,.10);
+  --glow3: rgba(255,255,255,.06);
 }
 
 *{box-sizing:border-box}
 
-/* ✅ FIX MENU: запрет zoom/pinch + запрет “резинки” страницы (не ломает верстку) */
 html,body{
   height:100%;
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
-
-  overflow:hidden;               /* ✅ страница не скроллится */
-  overscroll-behavior: none;     /* ✅ нет “уезда” вниз */
-  touch-action: manipulation;    /* ✅ меньше iOS zoom-жестов */
+  overflow:hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
 }
 
 body{
   height: var(--vh);
   color:var(--text);
-
   overflow:hidden;
-
-  /* ✅ фон теперь реально зависит от темы через --glow/--glow2/--glow3 */
-  background:
-  linear-gradient(
+  background: linear-gradient(
     180deg,
     var(--bgTop) 0%,
     var(--bgMid) 55%,
     var(--bgBot) 100%
   );
+}
 
-/* ✅ стеклянные квадраты */
+/* ✅ стеклянные квадраты (менее яркие) */
 .cube{
   position:absolute;
   width:120px; height:120px;
   border-radius:18px;
-
-  background: rgba(255,255,255,.07);
-  border: 1px solid rgba(255,255,255,.22);
-
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-
-  /* ✅ свечение кубов тоже theme-aware */
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.07) inset,
-    0 0 34px var(--glow2),
-    0 22px 60px rgba(0,0,0,.26);
-
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.15);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.05) inset;
   pointer-events:none;
-  opacity:.95;
+  opacity:.85;
 }
 
-.cube.small{ width:60px; height:60px; border-radius:16px; opacity:.82; }
-.cube.tiny{ width:34px; height:34px; border-radius:12px; opacity:.74; }
+.cube.small{ width:60px; height:60px; border-radius:16px; opacity:.75; }
+.cube.tiny{ width:34px; height:34px; border-radius:12px; opacity:.65; }
 
-/* ✅ анимации в разные стороны */
+/* ✅ анимации */
 .f1{ animation: drift1 10s ease-in-out infinite; }
 .f2{ animation: drift2 12s ease-in-out infinite; }
 .f3{ animation: drift3 11s ease-in-out infinite; }
@@ -127,20 +111,20 @@ body{
 @keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,-18px)} }
 @keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,16px)} }
 
-/* ✅ мягкие “шарики” */
+/* ✅ мягкие “шарики” (менее яркие) */
 .orb{
   position:absolute;
   width:260px; height:260px;
   border-radius:999px;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), rgba(90,190,255,.16) 45%, transparent 72%);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.15), rgba(90,190,255,.10) 45%, transparent 72%);
   filter: blur(2px);
-  opacity:.95;
+  opacity:.85;
   pointer-events:none;
 }
 .orb.o1{ left:-90px; top:140px; animation: drift2 14s ease-in-out infinite; }
-.orb.o2{ left:70%; top:6%; width:180px; height:180px; opacity:.78; animation: drift3 12s ease-in-out infinite; }
-.orb.o3{ left:52%; top:70%; width:120px; height:120px; opacity:.68; animation: drift4 11s ease-in-out infinite; }
-.orb.o4{ left:10%; top:72%; width:160px; height:160px; opacity:.72; animation: drift1 13s ease-in-out infinite; }
+.orb.o2{ left:70%; top:6%; width:180px; height:180px; opacity:.70; animation: drift3 12s ease-in-out infinite; }
+.orb.o3{ left:52%; top:70%; width:120px; height:120px; opacity:.60; animation: drift4 11s ease-in-out infinite; }
+.orb.o4{ left:10%; top:72%; width:160px; height:160px; opacity:.65; animation: drift1 13s ease-in-out infinite; }
 
 .wrap{
   position:relative;
@@ -152,19 +136,19 @@ body{
   z-index:2;
 }
 
-/* ✅ карточка стекло */
+/* ✅ карточка стекло (менее яркое) */
 .card{
   width:min(520px, 100%);
   padding:22px;
   border-radius:26px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.18);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  box-shadow: 0 22px 70px rgba(0,0,0,.35);
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 22px 60px rgba(0,0,0,.30);
 }
 
-/* ✅ КНОПКА — прозрачное стекло */
+/* ✅ КНОПКИ — вертикальное расположение */
 .btn{
   display:block;
   width:100%;
@@ -175,43 +159,50 @@ body{
   font-weight:900;
   color:var(--text);
   text-decoration:none;
-
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.22);
-
-  backdrop-filter: blur(22px) saturate(170%);
-  -webkit-backdrop-filter: blur(22px) saturate(170%);
-
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.08) inset,
-    0 18px 55px rgba(0,0,0,.32),
-    0 0 40px rgba(120,220,255,.22);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset,
+              0 18px 40px rgba(0,0,0,.25);
+  margin-bottom: 16px;  /* отступ между кнопками */
+  transition: all 0.2s ease;
 }
-.btn:active{ transform: scale(.995); }
+
+/* последняя кнопка без отступа */
+.btn:last-of-type {
+  margin-bottom: 0;
+}
+
+.btn:active{ 
+  transform: scale(.995);
+  background: rgba(255,255,255,.12);
+}
 
 .sub{
-  margin-top:14px;
+  margin-top:24px;  /* увеличен отступ */
   text-align:center;
   color:var(--muted);
   font-size:14px;
 }
+
 .ver{
-  margin-top:10px;
+  margin-top:12px;
   text-align:center;
   font-size:12px;
-  opacity:.55;
+  opacity:.5;
 }
 
 /* ✅ блок языка снизу */
 .langBlock{
-  margin-top:16px;
-  border-top: 1px solid rgba(255,255,255,.14);
-  padding-top:14px;
+  margin-top:24px;
+  border-top: 1px solid rgba(255,255,255,.10);
+  padding-top:16px;
 }
 .langTitle{
   font-size:13px;
-  color: rgba(255,255,255,.72);
-  margin-bottom:10px;
+  color: rgba(255,255,255,.65);
+  margin-bottom:12px;
   text-align:center;
 }
 
@@ -220,27 +211,29 @@ body{
   width:100%;
   border-radius:18px;
   padding:14px 14px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.14);
   color: rgba(255,255,255,.92);
   outline:none;
-
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  box-shadow: 0 10px 28px rgba(0,0,0,.22);
-
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
   font-size:16px;
   font-weight:800;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:12px;
-
   cursor:pointer;
+  transition: all 0.2s ease;
 }
+
+.langPill:hover {
+  background: rgba(255,255,255,.10);
+}
+
 .langPill:active{ transform: scale(.995); }
-.chev{ opacity:.9; }
+.chev{ opacity:.8; }
 
 /* ========================= */
 /* ✅ Bottom Sheet Languages */
@@ -249,7 +242,7 @@ body{
   position:fixed;
   inset:0;
   z-index:9999;
-  background: rgba(0,0,0,.35);
+  background: rgba(0,0,0,.30);
   display:none;
 }
 .langOverlay.show{ display:block; }
@@ -259,23 +252,16 @@ body{
   left:12px;
   right:12px;
   bottom: calc(12px + env(safe-area-inset-bottom));
-
   border-radius:20px;
-  background: rgba(20,40,70,.65);
-  border: 1px solid rgba(255,255,255,.18);
-
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-
-  box-shadow: 0 24px 70px rgba(0,0,0,.45);
-
+  background: rgba(20,35,55,.75);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: 0 20px 50px rgba(0,0,0,.35);
   overflow:hidden;
-
   transform: translateY(110%);
   opacity: 0;
-  transition:
-    transform .45s cubic-bezier(.22,.8,.22,1),
-    opacity   .35s ease;
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
 }
 .langOverlay.show .langSheet{
   transform: translateY(0);
@@ -287,22 +273,29 @@ body{
   align-items:center;
   justify-content:space-between;
   padding:14px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.14);
+  border-bottom: 1px solid rgba(255,255,255,.10);
 }
 
 .langSheetTitle{
   font-weight:900;
   letter-spacing:.2px;
+  color: var(--text);
 }
 
 .langClose{
   border:0;
-  background: rgba(255,255,255,.10);
-  color: rgba(255,255,255,.92);
-  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,.12);
   border-radius:12px;
   padding:8px 10px;
   font-weight:900;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.langClose:hover {
+  background: rgba(255,255,255,.12);
 }
 
 .langList{
@@ -317,25 +310,26 @@ body{
   padding:14px 14px;
   border:0;
   background: transparent;
-  color: rgba(255,255,255,.94);
+  color: var(--text);
   font-size:16px;
   font-weight:800;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
-
-  border-bottom: 1px solid rgba(255,255,255,.10);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.langItem:active{
+.langItem:hover{
   background: rgba(255,255,255,.06);
 }
 
 .langItem .check{
-  opacity:.0;
+  opacity:0;
   transform: scale(.9);
   transition: .15s ease;
+  color: var(--accent1);
 }
 
 .langItem.selected .check{
@@ -351,27 +345,28 @@ body{
   top: calc(10px + env(safe-area-inset-top));
   left: 10px;
   z-index: 10000;
-
-  padding: 10px 12px;
-  border-radius: 16px;
-
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.18);
-  color: rgba(255,255,255,.92);
-
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-
+  padding: 10px 14px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  color: var(--text);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
   font-size: 14px;
   font-weight: 900;
-
   display:flex;
   align-items:center;
   gap:10px;
-
-  box-shadow: 0 12px 28px rgba(0,0,0,.22);
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
-.themePill:active{ transform: scale(.995); }
+
+.themePill:hover {
+  background: rgba(255,255,255,.12);
+}
+
+.themePill:active{ transform: scale(.98); }
 
 /* ========================= */
 /* ✅ Bottom Sheet Theme */
@@ -380,7 +375,7 @@ body{
   position:fixed;
   inset:0;
   z-index:9998;
-  background: rgba(0,0,0,.35);
+  background: rgba(0,0,0,.30);
   display:none;
 }
 .themeOverlay.show{ display:block; }
@@ -390,23 +385,16 @@ body{
   left:12px;
   right:12px;
   bottom: calc(12px + env(safe-area-inset-bottom));
-
   border-radius:20px;
-  background: rgba(20,40,70,.65);
-  border: 1px solid rgba(255,255,255,.18);
-
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-
-  box-shadow: 0 24px 70px rgba(0,0,0,.45);
-
+  background: rgba(20,35,55,.75);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: 0 20px 50px rgba(0,0,0,.35);
   overflow:hidden;
-
   transform: translateY(110%);
   opacity: 0;
-  transition:
-    transform .45s cubic-bezier(.22,.8,.22,1),
-    opacity   .35s ease;
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
 }
 .themeOverlay.show .themeSheet{
   transform: translateY(0);
@@ -418,22 +406,29 @@ body{
   align-items:center;
   justify-content:space-between;
   padding:14px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.14);
+  border-bottom: 1px solid rgba(255,255,255,.10);
 }
 
 .themeSheetTitle{
   font-weight:900;
   letter-spacing:.2px;
+  color: var(--text);
 }
 
 .themeClose{
   border:0;
-  background: rgba(255,255,255,.10);
-  color: rgba(255,255,255,.92);
-  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,.12);
   border-radius:12px;
   padding:8px 10px;
   font-weight:900;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.themeClose:hover {
+  background: rgba(255,255,255,.12);
 }
 
 .themeList{
@@ -448,32 +443,34 @@ body{
   padding:14px 14px;
   border:0;
   background: transparent;
-  color: rgba(255,255,255,.94);
+  color: var(--text);
   font-size:16px;
   font-weight:800;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
-
-  border-bottom: 1px solid rgba(255,255,255,.10);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.themeItem:active{
+.themeItem:hover{
   background: rgba(255,255,255,.06);
 }
 
 .themeItem .check{
-  opacity:.0;
+  opacity:0;
   transform: scale(.9);
   transition: .15s ease;
+  color: var(--accent1);
 }
+
 .themeItem.selected .check{
   opacity:1;
   transform: scale(1);
 }
 
-/* ===== FULLSCREEN NO GAP (iOS) ===== */
+/* ===== FULLSCREEN NO GAP ===== */
 html, body {
   height: 100%;
   margin: 0;
@@ -484,12 +481,6 @@ html, body {
 #app,
 main {
   min-height: calc(var(--vh, 100vh));
-}
-
-.page,
-.screen,
-#app,
-main {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
