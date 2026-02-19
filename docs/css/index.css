@@ -26,17 +26,17 @@
   --btn-bg: rgba(255,255,255,.08);
 }
 
-/* ✅ ТОЧНАЯ КОПИЯ TELEGRAM СТИЛЯ (как на скрине) */
+/* ✅ ТОЧНАЯ КОПИЯ TELEGRAM СТИЛЯ (как в Telegram) */
 :root[data-theme="telegram"]{
-  --bgTop: #2f6ea5;        /* Telegram blue top */
-  --bgMid: #1f5380;        /* Telegram blue mid */
-  --bgBot: #123456;        /* Telegram blue bottom */
+  --bgTop: #567b99;        /* Telegram фон */
+  --bgMid: #3e5f78;
+  --bgBot: #2a4052;
   --text: #ffffff;
-  --muted: rgba(255,255,255,.8);
+  --muted: rgba(255,255,255,.7);
   --glass: rgba(255,255,255,.15);
   --glass2: rgba(255,255,255,.1);
   --stroke: rgba(255,255,255,.2);
-  --accent1: #3390ec;       /* Telegram accent */
+  --accent1: #3390ec;       /* Telegram синий */
   --accent2: #2778c7;
   --card-bg: rgba(255,255,255,.12);
   --btn-bg: rgba(255,255,255,.1);
@@ -44,22 +44,22 @@
   --glow2: rgba(51,144,236,.2);
 }
 
-/* ✅ ТОЧНАЯ КОПИЯ iOS СТИЛЯ (стеклянный, как на скрине) */
+/* ✅ iOS СТИЛЬ - ПОЛНОСТЬЮ СТЕКЛЯННЫЙ (прозрачный) */
 :root[data-theme="ios"]{
-  --bgTop: rgba(255,255,255,0.9);
-  --bgMid: rgba(255,255,255,0.8);
-  --bgBot: rgba(255,255,255,0.7);
-  --text: #000000;
-  --muted: #666666;
-  --glass: rgba(255,255,255,0.5);
-  --glass2: rgba(255,255,255,0.4);
-  --stroke: rgba(255,255,255,0.6);
-  --accent1: #007aff;       /* iOS blue */
+  --bgTop: rgba(255,255,255,0.2);
+  --bgMid: rgba(255,255,255,0.15);
+  --bgBot: rgba(255,255,255,0.1);
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.8);
+  --glass: rgba(255,255,255,0.25);
+  --glass2: rgba(255,255,255,0.2);
+  --stroke: rgba(255,255,255,0.3);
+  --accent1: #007aff;       /* iOS синий */
   --accent2: #0051d5;
-  --card-bg: rgba(255,255,255,0.3);
-  --btn-bg: rgba(255,255,255,0.25);
-  --glow: rgba(0,122,255,0.2);
-  --glow2: rgba(0,122,255,0.1);
+  --card-bg: rgba(255,255,255,0.15);
+  --btn-bg: rgba(255,255,255,0.2);
+  --glow: rgba(255,255,255,0.3);
+  --glow2: rgba(255,255,255,0.2);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
@@ -559,7 +559,7 @@ main {
   margin-top: 0 !important;
 }
 
-/* Toast уведомление (одноразовое) */
+/* Toast уведомление */
 .toast-notification {
   position: fixed;
   top: 20px;
@@ -577,6 +577,7 @@ main {
   z-index: 100000;
   animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   pointer-events: none;
+  white-space: nowrap;
 }
 
 @keyframes slideDown {
