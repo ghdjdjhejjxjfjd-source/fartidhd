@@ -5,6 +5,18 @@ const API_CHAT = API_BASE + "/api/chat";
 const API_CLEAR_MEMORY = API_BASE + "/api/memory/clear";
 const API_BALANCE = API_BASE + "/api/stars/balance";
 
+function getLang(){
+  return localStorage.getItem("miniapp_lang_v1") || "ru";
+}
+
+function getStyle(){
+  return localStorage.getItem("ai_style") || "steps";
+}
+
+function getPersona(){
+  return localStorage.getItem("ai_persona") || "friendly";
+}
+
 function getTelegramUser(){
   const tg = window.Telegram?.WebApp;
   if (!tg || !tg.initDataUnsafe?.user) return {};
@@ -17,21 +29,18 @@ function getTelegramUser(){
   };
 }
 
-export async function askAI(promptText, lang = "ru", persona = "friendly", style = "steps") {
+export async function askAI(promptText) {
   const user = getTelegramUser();
 
   const payload = {
     text: promptText,
-    lang: lang,              // Явно передаем язык
-    style: style,
-    persona: persona,
+    lang: getLang(),
+    style: getStyle(),
+    persona: getPersona(),
     tg_user_id: user.tg_user_id,
     tg_username: user.tg_username,
     tg_first_name: user.tg_first_name,
   };
-
-  console.log("Sending to API with lang:", lang);  // Для отладки
-  console.log("Full payload:", payload);
 
   try {
     const r = await fetch(API_CHAT, {
@@ -48,8 +57,6 @@ export async function askAI(promptText, lang = "ru", persona = "friendly", style
     }
 
     if (!r.ok) {
-      const errorText = await r.text();
-      console.error("API Error Response:", errorText);
       throw new Error("API error " + r.status);
     }
 
@@ -63,19 +70,14 @@ export async function askAI(promptText, lang = "ru", persona = "friendly", style
 
 export async function clearAIMemory() {
   const user = getTelegramUser();
-  if (!user.tg_user_id) return false;
-  
-  try {
-    const r = await fetch(API_CLEAR_MEMORY, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tg_user_id: user.tg_user_id }),
-    });
-    return r.ok;
-  } catch (e) {
-    console.error("Clear memory error:", e);
-    return false;
-  }
+
+  const r = await fetch(API_CLEAR_MEMORY, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tg_user_id: user.tg_user_id }),
+  });
+
+  return r.ok;
 }
 
 export async function getStarsBalance() {
