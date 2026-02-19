@@ -4,6 +4,20 @@ import { tg } from "./telegram.js";
 
 export const STORAGE_KEY = "chat_history_v1";
 
+// Функция для получения языка из URL
+function getLangFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const lang = urlParams.get('lang');
+  if (lang) {
+    try {
+      localStorage.setItem("miniapp_lang_v1", lang);
+      console.log("Language from URL saved:", lang);
+    } catch(e) {}
+    return lang;
+  }
+  return null;
+}
+
 export function loadHistory(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -57,8 +71,19 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
   function getLang(){
     try{
-      return localStorage.getItem("miniapp_lang_v1") || "ru";
+      // Сначала проверяем URL
+      const urlLang = getLangFromUrl();
+      if (urlLang) {
+        console.log("Using language from URL:", urlLang);
+        return urlLang;
+      }
+      
+      // Потом localStorage
+      const stored = localStorage.getItem("miniapp_lang_v1");
+      console.log("Using language from localStorage:", stored);
+      return stored || "ru";
     }catch(e){
+      console.error("Error getting language:", e);
       return "ru";
     }
   }
@@ -73,16 +98,22 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
   function helloText(){
     const lang = getLang();
-    if (lang === "en") return "👋 Hi! Write something — I'm here.";
-    if (lang === "kk") return "👋 Сәлем! Бірдеңе жаз — мен осындамын.";
-    if (lang === "ky") return "👋 Салам! Бир нерсе жаз — мен бул жактамын.";
-    if (lang === "tr") return "👋 Merhaba! Bir şey yaz — buradayım.";
-    if (lang === "uz") return "👋 Salom! Biror narsa yoz — men shu yerdaman.";
-    if (lang === "uk") return "👋 Привіт! Напиши щось — я на зв'язку.";
-    if (lang === "de") return "👋 Hallo! Schreib etwas — ich bin da.";
-    if (lang === "es") return "👋 ¡Hola! Escribe algo — estoy aquí.";
-    if (lang === "fr") return "👋 Salut ! Écris quelque chose — je suis là.";
-    return "👋 Привет! Напиши что-нибудь — я на связи.";
+    console.log("Hello text language:", lang);
+    
+    const hellos = {
+      "ru": "👋 Привет! Напиши что-нибудь — я на связи.",
+      "kk": "👋 Сәлем! Бірдеңе жаз — мен осындамын.",
+      "en": "👋 Hi! Write something — I'm here.",
+      "tr": "👋 Merhaba! Bir şey yaz — buradayım.",
+      "uz": "👋 Salom! Biror narsa yoz — men shu yerdaman.",
+      "ky": "👋 Салам! Бир нерсе жаз — мен бул жактамын.",
+      "uk": "👋 Привіт! Напиши щось — я на зв'язку.",
+      "de": "👋 Hallo! Schreib etwas — ich bin da.",
+      "es": "👋 ¡Hola! Escribe algo — estoy aquí.",
+      "fr": "👋 Salut ! Écris quelque chose — je suis là."
+    };
+    
+    return hellos[lang] || hellos["ru"];
   }
 
   function renderFromHistory(){
@@ -110,12 +141,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     addTyping();
 
     try{
-      // Получаем настройки
       const lang = getLang();
       const persona = getPersona();
       const style = getStyle();
       
-      // Отправляем запрос с явным указанием языка
+      console.log("Sending with lang:", lang);
+      
       const answer = await askAI(t, lang, persona, style);
 
       removeTyping();
