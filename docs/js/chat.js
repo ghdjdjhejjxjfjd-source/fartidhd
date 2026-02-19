@@ -86,12 +86,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
   function helloText(){
     const lang = getLang();
-    if (lang === "en") return "👋 Hey! Write something — I'm here. (1⭐ per message)";
-    if (lang === "kk") return "👋 Сәлем! Бірдеңе жаз — мен осындамын. (1⭐)";
-    if (lang === "ky") return "👋 Салам! Бир нерсе жаз — мен бул жактамын. (1⭐)";
-    if (lang === "tr") return "👋 Selam! Bir şey yaz — buradayım. (1⭐)";
-    if (lang === "uz") return "👋 Salom! Biror narsa yoz — men shu yerdaman. (1⭐)";
-    return "👋 Привет! Напиши что-нибудь — я на связи. (1⭐ за сообщение)";
+    if (lang === "en") return "👋 Hey! Write something — I'm here.";
+    if (lang === "kk") return "👋 Сәлем! Бірдеңе жаз — мен осындамын.";
+    if (lang === "ky") return "👋 Салам! Бир нерсе жаз — мен бул жактамын.";
+    if (lang === "tr") return "👋 Selam! Bir şey yaz — buradayım.";
+    if (lang === "uz") return "👋 Salom! Biror narsa yoz — men shu yerdaman.";
+    return "👋 Привет! Напиши что-нибудь — я на связи.";
   }
 
   function renderFromHistory(){
