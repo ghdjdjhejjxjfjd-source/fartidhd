@@ -64,41 +64,58 @@ function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
 }
 
-// Уведомление - показывается сразу и принудительно
+// Функция для получения цвета темы
+function getThemeColors() {
+  const root = getComputedStyle(document.documentElement);
+  return {
+    bg: root.getPropertyValue('--card-bg').trim() || 'rgba(0,0,0,0.8)',
+    accent: root.getPropertyValue('--accent1').trim() || '#3aa0ff',
+    text: root.getPropertyValue('--text').trim() || '#ffffff'
+  };
+}
+
+// Уведомление с цветом темы и задержкой 0.5 сек
 function showNotification(message) {
   console.log("🔔 Уведомление:", message);
   
-  // Удаляем старые уведомления
-  const oldToasts = document.querySelectorAll('.toast-notification');
-  oldToasts.forEach(toast => toast.remove());
-  
-  const toast = document.createElement('div');
-  toast.className = 'toast-notification';
-  toast.textContent = message;
-  toast.style.cssText = `
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.8);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 30px;
-    padding: 12px 24px;
-    color: white;
-    font-weight: 600;
-    backdrop-filter: blur(10px);
-    z-index: 100000;
-    animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-    pointer-events: none;
-  `;
-  
-  document.body.appendChild(toast);
-  console.log("✅ Уведомление добавлено в DOM");
-  
   setTimeout(() => {
-    toast.remove();
-    console.log("🗑️ Уведомление удалено");
-  }, 3000);
+    // Получаем цвета текущей темы
+    const colors = getThemeColors();
+    
+    // Удаляем старые уведомления
+    const oldToasts = document.querySelectorAll('.toast-notification');
+    oldToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: ${colors.bg};
+      border: 1px solid ${colors.accent}40;
+      border-radius: 30px;
+      padding: 12px 24px;
+      color: ${colors.text};
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 100000;
+      animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+      pointer-events: none;
+    `;
+    
+    document.body.appendChild(toast);
+    console.log("✅ Уведомление добавлено в DOM с цветом:", colors.accent);
+    
+    setTimeout(() => {
+      toast.remove();
+      console.log("🗑️ Уведомление удалено");
+    }, 3000);
+  }, 500); // Задержка 0.5 секунды
 }
 
 // Добавляем анимации
@@ -357,7 +374,7 @@ function setLang(lang){
   // Закрываем оверлей
   closeLang();
   
-  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ (без setTimeout)
+  // Показываем уведомление с задержкой 0.5 сек
   showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
 }
 
@@ -379,7 +396,7 @@ function setTheme(theme){
   // Закрываем оверлей
   closeTheme();
   
-  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ (без setTimeout)
+  // Показываем уведомление с задержкой 0.5 сек
   showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
 }
 
@@ -421,7 +438,6 @@ function buildLangList(){
     b.innerHTML = `<span>${x.label}</span><span class="check">✓</span>`;
     b.addEventListener("click", () => {
       setLang(x.code);
-      // Уведомление покажется внутри setLang
     });
     langList.appendChild(b);
   }
@@ -445,7 +461,6 @@ function buildThemeList(){
     
     b.addEventListener("click", () => {
       setTheme(x.code);
-      // Уведомление покажется внутри setTheme
     });
     themeList.appendChild(b);
   }
