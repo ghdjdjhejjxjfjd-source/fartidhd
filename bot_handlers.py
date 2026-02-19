@@ -119,9 +119,8 @@ def main_menu_for_user(user_id: int) -> InlineKeyboardMarkup:
         keyboard.append([InlineKeyboardButton("⛔ Доступ заблокирован", callback_data="tab:blocked")])
         return InlineKeyboardMarkup(keyboard)
 
-    # Баланс звезд (показываем стоимость сообщения)
-    balance_text = f"⭐ Баланс: {balance} звезд (1⭐ за сообщение)"
-    keyboard.append([InlineKeyboardButton(balance_text, callback_data="tab:balance")])
+    # Баланс звезд (УБРАЛИ текст о списании)
+    keyboard.append([InlineKeyboardButton(f"⭐ Баланс: {balance} звезд", callback_data="tab:balance")])
 
     # Mini App открывается если есть звезды ИЛИ пользователь free
     can_open_miniapp = (balance >= 1 or a.get("is_free")) and is_valid_https_url(MINIAPP_URL)
@@ -163,6 +162,7 @@ async def delete_prev_menu(bot, user_id: int):
         return
     try:
         await bot.delete_message(chat_id=chat_id, message_id=msg_id)
+        print(f"🗑️ Удалено старое меню для {user_id}")
     except Exception:
         pass
     clear_last_menu(user_id)
@@ -179,6 +179,11 @@ async def send_fresh_menu(bot, user_id: int, text: str):
         reply_markup=main_menu_for_user(user_id),
     )
     set_last_menu(user_id, user_id, m.message_id)
+
+
+async def update_user_menu(bot, user_id: int):
+    """Принудительно обновить меню пользователя"""
+    await send_fresh_menu(bot, user_id, MENU_TEXT)
 
 
 async def send_block_notice(bot, user_id: int):
@@ -203,7 +208,7 @@ async def edit_to_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, t
     # Для баланса показываем актуальное значение
     if tab_key == "balance":
         balance = get_balance(user_id)
-        text = f"⭐ Ваш баланс: {balance} звезд\n\nСтоимость одного сообщения: 1 ⭐"
+        text = f"⭐ Ваш баланс: {balance} звезд"
     
     # Для покупки звезд показываем специальную клавиатуру
     if tab_key == "buy_stars":
@@ -236,7 +241,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = (query.data or "").strip()
 
-    # обязательно отвечаем на callback, но НЕ шлём сообщений
     try:
         await query.answer()
     except Exception:
@@ -268,7 +272,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             stars = package["stars"]
             price = package["price_usd"]
             
-            # Здесь будет интеграция с оплатой
             await query.message.edit_text(
                 f"✅ Вы выбрали пакет {package['name']}\n"
                 f"⭐ {stars} звезд за ${price}\n\n"
@@ -283,5 +286,4 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         return
 
-    # если пришло что-то неизвестное — просто вернём меню
     await edit_to_menu(context, query, uid)
