@@ -1,8 +1,9 @@
-// app.js
+// docs/js/api.js
 
 const API_BASE = "https://instagroq-ai-bot-production.up.railway.app";
 const API_CHAT = API_BASE + "/api/chat";
 const API_CLEAR_MEMORY = API_BASE + "/api/memory/clear";
+const API_BALANCE = API_BASE + "/api/stars/balance";
 
 function getLang(){
   return localStorage.getItem("miniapp_lang_v1") || "ru";
@@ -37,8 +38,6 @@ export async function askAI(promptText) {
     lang: getLang(),
     style: getStyle(),
     persona: getPersona(),
-
-    // 🔥 ВАЖНО — имена как в api.py
     tg_user_id: user.tg_user_id,
     tg_username: user.tg_username,
     tg_first_name: user.tg_first_name,
@@ -49,6 +48,14 @@ export async function askAI(promptText) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+
+  // Проверяем ошибку недостатка звезд
+  if (r.status === 402) {
+    const data = await r.json();
+    if (data.error === "insufficient_stars") {
+      throw new Error("❌ Недостаточно звезд. Купите звезды в меню.");
+    }
+  }
 
   if (!r.ok) {
     throw new Error("API error " + r.status);
@@ -69,4 +76,21 @@ export async function clearAIMemory() {
   });
 
   return r.ok;
+}
+
+// ✅ получение баланса
+export async function getStarsBalance() {
+  const user = getTelegramUser();
+  if (!user.tg_user_id) return 0;
+  
+  try {
+    const r = await fetch(`${API_BALANCE}/${user.tg_user_id}`);
+    if (r.ok) {
+      const data = await r.json();
+      return data.balance || 0;
+    }
+  } catch (e) {
+    console.error("Error fetching balance:", e);
+  }
+  return 0;
 }
