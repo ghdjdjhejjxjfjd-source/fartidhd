@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from api import set_free, set_blocked, get_access
-from bot_handlers import send_fresh_menu, send_block_notice, update_user_menu
+from bot_handlers import send_fresh_menu, send_block_notice
 from payments import add_stars, get_balance
 
 ADMIN_USER_ID_RAW = (os.getenv("ADMIN_USER_ID") or "0").strip()
@@ -191,9 +191,6 @@ async def cmd_addstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
                      f"💰 Текущий баланс: {new_balance} ⭐"
             )
             
-            # ✅ ВАЖНО: обновляем меню пользователя
-            await update_user_menu(context.bot, uid)
-            
         except Exception as e:
             print(f"⚠️ Не удалось уведомить пользователя: {e}")
             
@@ -255,7 +252,6 @@ async def cmd_starstrans(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for i, (user_id, balance, total) in enumerate(top_users, 1):
             text += f"{i}. ID: {user_id}\n   💰 {balance} ⭐ (всего куплено: {total})\n\n"
         
-        # Разбиваем на части если длинное сообщение
         if len(text) > 4000:
             parts = [text[i:i+4000] for i in range(0, len(text), 4000)]
             for part in parts:
@@ -293,14 +289,11 @@ async def cmd_resetstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Стало: 0 ⭐"
         )
         
-        # ✅ Обновляем меню пользователя
-        await update_user_menu(context.bot, uid)
-        
     except Exception as e:
         await update.effective_message.reply_text(f"❌ Ошибка: {e}")
 
 
-# Функция для добавления в payments.py (нужно добавить)
+# Функции для payments.py
 def get_top_users(limit: int = 10):
     """Получить топ пользователей по звездам"""
     import sqlite3
