@@ -8,9 +8,7 @@ from flask_cors import CORS
 import requests
 
 from groq_client import ask_groq
-
-# ✅ Импортируем payments для работы со звездами
-from payments import get_balance, add_stars, get_packages  # spend_stars убрали
+from payments import get_balance, spend_stars
 
 # ✅ Импортируем стабильность
 try:
@@ -385,8 +383,20 @@ def api_chat():
         a = get_access(tg_user_id_int)
         if a["is_blocked"]:
             return jsonify({"error": "blocked"}), 403
+        
+        # ✅ Проверяем баланс звезд
+        balance = get_balance(tg_user_id_int)
+        
+        # Стоимость одного запроса - 1 звезда
+        COST_PER_MESSAGE = 1
+        
+        if balance < COST_PER_MESSAGE and not a["is_free"]:
+            return jsonify({"error": "insufficient_stars"}), 402
+            
+        # Если пользователь не FREE - списываем звезды
         if not a["is_free"]:
-            return jsonify({"error": "payment_required"}), 402
+            spend_stars(tg_user_id_int, COST_PER_MESSAGE)
+            
     else:
         return jsonify({"error": "payment_required"}), 402
 
@@ -433,35 +443,6 @@ def api_stars_balance(user_id: int):
     return jsonify({
         "user_id": user_id,
         "balance": get_balance(user_id),
-    })
-
-
-@api.get("/api/stars/packages")
-def api_stars_packages():
-    """Получить список пакетов"""
-    return jsonify({
-        "packages": get_packages(),
-        "currency": "USD",
-    })
-
-
-@api.post("/api/stars/add_test")
-def api_stars_add_test():
-    """Тестовое добавление звезд (для админов)"""
-    data = request.get_json() or {}
-    user_id = data.get("user_id")
-    amount = data.get("amount", 100)
-    
-    if not user_id:
-        return jsonify({"error": "user_id required"}), 400
-    
-    add_stars(user_id, amount, "test")
-    
-    return jsonify({
-        "success": True,
-        "user_id": user_id,
-        "added": amount,
-        "new_balance": get_balance(user_id),
     })
 
 
