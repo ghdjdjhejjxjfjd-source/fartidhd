@@ -22,7 +22,6 @@ if (tg) {
 // ===== storage keys =====
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
-const STORAGE_PURCHASED_THEMES = "purchased_themes_v1";
 const STORAGE_LAST_LANG = "last_lang_v1";
 const STORAGE_LAST_THEME = "last_theme_v1";
 
@@ -79,68 +78,8 @@ function saveLastTheme(theme){
   try{ localStorage.setItem(STORAGE_LAST_THEME, theme); }catch(e){}
 }
 
-// Купленные темы
-function getPurchasedThemes() {
-  try {
-    const purchased = localStorage.getItem(STORAGE_PURCHASED_THEMES);
-    return purchased ? JSON.parse(purchased) : [];
-  } catch(e) {
-    return [];
-  }
-}
-
-function addPurchasedTheme(theme) {
-  try {
-    const purchased = getPurchasedThemes();
-    if (!purchased.includes(theme)) {
-      purchased.push(theme);
-      localStorage.setItem(STORAGE_PURCHASED_THEMES, JSON.stringify(purchased));
-    }
-  } catch(e) {}
-}
-
 function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
-}
-
-// Функция для получения баланса звезд
-async function getStarsBalance() {
-  try {
-    const user = getTelegramUser();
-    if (!user.tg_user_id) return 0;
-    
-    const API_BASE = "https://fayrat-production.up.railway.app";
-    const r = await fetch(`${API_BASE}/api/stars/balance/${user.tg_user_id}`);
-    if (r.ok) {
-      const data = await r.json();
-      return data.balance || 0;
-    }
-  } catch (e) {
-    console.error("Error fetching balance:", e);
-  }
-  return 0;
-}
-
-// Функция для списания звезд
-async function spendStars(amount) {
-  try {
-    const user = getTelegramUser();
-    if (!user.tg_user_id) return false;
-    
-    const API_BASE = "https://fayrat-production.up.railway.app";
-    const r = await fetch(`${API_BASE}/api/stars/spend`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tg_user_id: user.tg_user_id,
-        amount: amount
-      })
-    });
-    return r.ok;
-  } catch (e) {
-    console.error("Error spending stars:", e);
-    return false;
-  }
 }
 
 function getTelegramUser(){
@@ -155,7 +94,7 @@ function getTelegramUser(){
   };
 }
 
-// Уведомление (только при реальной смене)
+// Уведомление
 function showNotification(message, type = 'success') {
   // Проверяем что мы на главной странице
   if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
@@ -213,15 +152,14 @@ const I18N = {
     ver:"miniapp v2", 
     lang:"Язык интерфейса", 
     sheet:"Язык",
+    theme_title: "Цвет",
     colors: {
       blue: "Синий",
       black: "Черный",
       purple: "Фиолетовый",
       green: "Зеленый",
-      gray: "Серый",
-      ios: "iOS стиль"
-    },
-    theme_title: "Цвет"
+      gray: "Серый"
+    }
   },
   kk: { 
     btn:"AI чат", 
@@ -230,15 +168,14 @@ const I18N = {
     ver:"miniapp v2", 
     lang:"Тіл", 
     sheet:"Тіл",
+    theme_title: "Түс",
     colors: {
       blue: "Көк",
       black: "Қара",
       purple: "Күлгін",
       green: "Жасыл",
-      gray: "Сұр",
-      ios: "iOS стилі"
-    },
-    theme_title: "Түс"
+      gray: "Сұр"
+    }
   },
   en: { 
     btn:"AI Chat", 
@@ -247,15 +184,14 @@ const I18N = {
     ver:"miniapp v2", 
     lang:"Language", 
     sheet:"Language",
+    theme_title: "Color",
     colors: {
       blue: "Blue",
       black: "Black",
       purple: "Purple",
       green: "Green",
-      gray: "Gray",
-      ios: "iOS style"
-    },
-    theme_title: "Color"
+      gray: "Gray"
+    }
   },
   tr: { 
     btn:"Yapay Zekâ Sohbet", 
@@ -264,15 +200,14 @@ const I18N = {
     ver:"miniapp v2", 
     lang:"Dil", 
     sheet:"Dil",
+    theme_title: "Renk",
     colors: {
       blue: "Mavi",
       black: "Siyah",
       purple: "Mor",
       green: "Yeşil",
-      gray: "Gri",
-      ios: "iOS stili"
-    },
-    theme_title: "Renk"
+      gray: "Gri"
+    }
   },
   uk: { 
     btn:"AI чат", 
@@ -281,15 +216,14 @@ const I18N = {
     ver:"miniapp v2", 
     lang:"Мова", 
     sheet:"Мова",
+    theme_title: "Колір",
     colors: {
       blue: "Синій",
       black: "Чорний",
       purple: "Фіолетовий",
       green: "Зелений",
-      gray: "Сірий",
-      ios: "iOS стиль"
-    },
-    theme_title: "Колір"
+      gray: "Сірий"
+    }
   },
   fr: { 
     btn:"Chat IA", 
@@ -298,15 +232,14 @@ const I18N = {
     ver:"miniapp v2", 
     lang:"Langue", 
     sheet:"Langue",
+    theme_title: "Couleur",
     colors: {
       blue: "Bleu",
       black: "Noir",
       purple: "Violet",
       green: "Vert",
-      gray: "Gris",
-      ios: "Style iOS"
-    },
-    theme_title: "Couleur"
+      gray: "Gris"
+    }
   },
 };
 
@@ -329,14 +262,13 @@ const LANG_NAMES = {
   fr: "Français"
 };
 
-// ===== THEMES =====
+// ===== THEMES ===== (без iOS)
 const THEMES = [
-  { code:"blue", price: 0 },
-  { code:"black", price: 0 },
-  { code:"purple", price: 0 },
-  { code:"green", price: 0 },
-  { code:"gray", price: 0 },
-  { code:"ios", price: 100 },
+  { code:"blue", label: "Синий" },
+  { code:"black", label: "Черный" },
+  { code:"purple", label: "Фиолетовый" },
+  { code:"green", label: "Зеленый" },
+  { code:"gray", label: "Серый" }
 ];
 
 function themeLabel(theme, lang = "ru"){
@@ -362,10 +294,38 @@ function paintSelectedTheme(theme){
   });
 }
 
+// Функция обновления списка цветов
+function updateThemeList(lang) {
+  if (!themeList) return;
+  
+  const t = I18N[lang] || I18N.ru;
+  const currentTheme = getSavedTheme();
+  
+  // Обновляем заголовок
+  if (themeSheetTitle) {
+    themeSheetTitle.textContent = t.theme_title;
+  }
+  
+  // Обновляем каждый элемент списка
+  const items = themeList.querySelectorAll(".themeItem");
+  items.forEach(btn => {
+    const code = btn.getAttribute("data-theme");
+    const themeData = THEMES.find(x => x.code === code);
+    if (themeData) {
+      const label = t.colors[code] || code;
+      const span = btn.querySelector("span:first-child");
+      if (span) {
+        span.textContent = label;
+      }
+    }
+  });
+}
+
 async function setLang(lang){
   const oldLang = getLastLang();
   const t = I18N[lang] || I18N.ru;
 
+  // Обновляем тексты интерфейса
   if (chatBtn) chatBtn.textContent = t.btn;
   if (imgBtn) imgBtn.textContent = t.img;
   if (subText) subText.textContent = t.sub;
@@ -382,11 +342,17 @@ async function setLang(lang){
   // Обновляем кнопку темы с новым языком
   const currentTheme = getSavedTheme();
   setPillLabel(themeBtn, t.theme_title + ": " + themeLabel(currentTheme, lang));
+  
+  // Обновляем заголовок темы и список цветов
+  if (themeSheetTitle) {
+    themeSheetTitle.textContent = t.theme_title;
+  }
+  updateThemeList(lang);
 
   setChatLink(lang, currentTheme);
   setImgLink(lang, currentTheme);
   
-  // Показываем уведомление ТОЛЬКО если язык реально изменился
+  // Показываем уведомление если язык изменился
   if (oldLang !== lang) {
     showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
     saveLastLang(lang);
@@ -398,30 +364,9 @@ async function setTheme(theme){
   const currentLang = getSavedLang();
   const t = I18N[currentLang] || I18N.ru;
   
-  // Проверяем доступность темы
+  // Проверяем существует ли тема
   const themeData = THEMES.find(t => t.code === theme);
   if (!themeData) return;
-  
-  // Проверяем куплена ли уже тема
-  const purchasedThemes = getPurchasedThemes();
-  const isPurchased = purchasedThemes.includes(theme);
-  
-  // Если тема платная и не куплена - пробуем купить
-  if (themeData.price > 0 && !isPurchased) {
-    const balance = await getStarsBalance();
-    if (balance < themeData.price) {
-      showNotification(`❌ Недостаточно звезд. Нужно ${themeData.price} ⭐`, 'error');
-      return;
-    }
-    
-    const success = await spendStars(themeData.price);
-    if (!success) {
-      showNotification("❌ Ошибка при покупке. Попробуйте позже.", 'error');
-      return;
-    }
-    
-    addPurchasedTheme(theme);
-  }
   
   applyTheme(theme);
   saveTheme(theme);
@@ -432,7 +377,7 @@ async function setTheme(theme){
   setChatLink(currentLang, theme);
   setImgLink(currentLang, theme);
   
-  // Показываем уведомление ТОЛЬКО если тема реально изменилась
+  // Показываем уведомление если тема изменилась
   if (oldTheme !== theme) {
     showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
     saveLastTheme(theme);
@@ -489,7 +434,6 @@ function buildThemeList(){
   
   const currentLang = getSavedLang();
   const t = I18N[currentLang] || I18N.ru;
-  const purchasedThemes = getPurchasedThemes();
   
   for (const x of THEMES){
     const b = document.createElement("button");
@@ -498,10 +442,7 @@ function buildThemeList(){
     b.setAttribute("data-theme", x.code);
     
     const label = t.colors[x.code] || x.code;
-    const isPurchased = purchasedThemes.includes(x.code);
-    const priceText = (x.price > 0 && !isPurchased) ? ` (${x.price} ⭐)` : "";
-    
-    b.innerHTML = `<span>${label}${priceText}</span><span class="check">✓</span>`;
+    b.innerHTML = `<span>${label}</span><span class="check">✓</span>`;
     
     b.addEventListener("click", () => {
       setTheme(x.code);
@@ -509,21 +450,26 @@ function buildThemeList(){
     });
     themeList.appendChild(b);
   }
+  
+  // Устанавливаем заголовок
+  if (themeSheetTitle) {
+    themeSheetTitle.textContent = t.theme_title;
+  }
 }
 
 // ===== init =====
 buildLangList();
 buildThemeList();
 
-// Устанавливаем сохраненные значения без уведомлений
+// Устанавливаем сохраненные значения
 const savedLang = getSavedLang();
 const savedTheme = getSavedTheme();
 
-// Сохраняем как последние
+// Сохраняем как последние (для уведомлений)
 saveLastLang(savedLang);
 saveLastTheme(savedTheme);
 
-// Применяем без уведомлений
+// Применяем настройки
 const t = I18N[savedLang] || I18N.ru;
 if (chatBtn) chatBtn.textContent = t.btn;
 if (imgBtn) imgBtn.textContent = t.img;
@@ -531,6 +477,7 @@ if (subText) subText.textContent = t.sub;
 if (verText) verText.textContent = t.ver;
 if (langTitle) langTitle.textContent = t.lang;
 if (langSheetTitle) langSheetTitle.textContent = t.sheet;
+if (themeSheetTitle) themeSheetTitle.textContent = t.theme_title;
 
 const found = LANGS.find(x => x.code === savedLang);
 setPillLabel(langBtn, found ? found.label : "Русский (RU)");
