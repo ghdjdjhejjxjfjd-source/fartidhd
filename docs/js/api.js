@@ -22,7 +22,7 @@ export async function askAI(promptText, lang = "ru", persona = "friendly", style
 
   const payload = {
     text: promptText,
-    lang: lang,              // ✅ Явно передаем язык
+    lang: lang,              // Явно передаем язык
     style: style,
     persona: persona,
     tg_user_id: user.tg_user_id,
@@ -30,7 +30,8 @@ export async function askAI(promptText, lang = "ru", persona = "friendly", style
     tg_first_name: user.tg_first_name,
   };
 
-  console.log("Sending with lang:", lang);  // Для отладки
+  console.log("Sending to API with lang:", lang);  // Для отладки
+  console.log("Full payload:", payload);
 
   try {
     const r = await fetch(API_CHAT, {
@@ -47,6 +48,8 @@ export async function askAI(promptText, lang = "ru", persona = "friendly", style
     }
 
     if (!r.ok) {
+      const errorText = await r.text();
+      console.error("API Error Response:", errorText);
       throw new Error("API error " + r.status);
     }
 
