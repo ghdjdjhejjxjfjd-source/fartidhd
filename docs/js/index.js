@@ -94,7 +94,7 @@ function getTelegramUser(){
   };
 }
 
-// Уведомление
+// Уведомление - показывается сразу
 function showNotification(message, type = 'success') {
   // Проверяем что мы на главной странице
   if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
@@ -262,7 +262,7 @@ const LANG_NAMES = {
   fr: "Français"
 };
 
-// ===== THEMES ===== (без iOS)
+// ===== THEMES =====
 const THEMES = [
   { code:"blue", label: "Синий" },
   { code:"black", label: "Черный" },
@@ -322,7 +322,6 @@ function updateThemeList(lang) {
 }
 
 async function setLang(lang){
-  const oldLang = getLastLang();
   const t = I18N[lang] || I18N.ru;
 
   // Обновляем тексты интерфейса
@@ -352,15 +351,12 @@ async function setLang(lang){
   setChatLink(lang, currentTheme);
   setImgLink(lang, currentTheme);
   
-  // Показываем уведомление если язык изменился
-  if (oldLang !== lang) {
-    showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
-    saveLastLang(lang);
-  }
+  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ!
+  showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
+  saveLastLang(lang);
 }
 
 async function setTheme(theme){
-  const oldTheme = getLastTheme();
   const currentLang = getSavedLang();
   const t = I18N[currentLang] || I18N.ru;
   
@@ -377,11 +373,9 @@ async function setTheme(theme){
   setChatLink(currentLang, theme);
   setImgLink(currentLang, theme);
   
-  // Показываем уведомление если тема изменилась
-  if (oldTheme !== theme) {
-    showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
-    saveLastTheme(theme);
-  }
+  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ!
+  showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
+  saveLastTheme(theme);
 }
 
 // ===== overlays =====
