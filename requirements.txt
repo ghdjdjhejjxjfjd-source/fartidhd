@@ -1,0 +1,7 @@
+python-telegram-bot>=21.0
+flask
+groq
+flask-cors
+requests
+Pillow>=9.5.0
+# stability-sdk убрали
