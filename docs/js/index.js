@@ -22,8 +22,6 @@ if (tg) {
 // ===== storage keys =====
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
-const STORAGE_LAST_LANG = "last_lang_v1";
-const STORAGE_LAST_THEME = "last_theme_v1";
 
 // ===== DOM =====
 const chatBtn = document.getElementById("chatBtn");
@@ -54,14 +52,6 @@ function saveLang(lang){
   try{ localStorage.setItem(STORAGE_LANG, lang); }catch(e){}
 }
 
-function getLastLang(){
-  try{ return localStorage.getItem(STORAGE_LAST_LANG) || "ru"; }
-  catch(e){ return "ru"; }
-}
-function saveLastLang(lang){
-  try{ localStorage.setItem(STORAGE_LAST_LANG, lang); }catch(e){}
-}
-
 function getSavedTheme(){
   try{ return localStorage.getItem(STORAGE_THEME) || "blue"; }
   catch(e){ return "blue"; }
@@ -70,50 +60,72 @@ function saveTheme(theme){
   try{ localStorage.setItem(STORAGE_THEME, theme); }catch(e){}
 }
 
-function getLastTheme(){
-  try{ return localStorage.getItem(STORAGE_LAST_THEME) || "blue"; }
-  catch(e){ return "blue"; }
-}
-function saveLastTheme(theme){
-  try{ localStorage.setItem(STORAGE_LAST_THEME, theme); }catch(e){}
-}
-
 function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
 }
 
-function getTelegramUser(){
-  const tg = window.Telegram?.WebApp;
-  if (!tg || !tg.initDataUnsafe?.user) return {};
-
-  const u = tg.initDataUnsafe.user;
-  return {
-    tg_user_id: u.id,
-    tg_username: u.username || "—",
-    tg_first_name: u.first_name || "—",
-  };
-}
-
-// Уведомление - показывается сразу
-function showNotification(message, type = 'success') {
+// Уведомление - упрощенная версия
+function showNotification(message) {
+  console.log("🔔 Уведомление:", message); // Для отладки
+  
   // Проверяем что мы на главной странице
   if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
+    console.log("Не главная страница, уведомление не показываем");
     return;
   }
+  
+  // Удаляем старые уведомления
+  const oldToasts = document.querySelectorAll('.toast-notification');
+  oldToasts.forEach(toast => toast.remove());
   
   const toast = document.createElement('div');
   toast.className = 'toast-notification';
   toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 30px;
+    padding: 12px 24px;
+    color: white;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    z-index: 100000;
+    animation: slideDown 0.3s ease;
+  `;
+  
   document.body.appendChild(toast);
+  console.log("✅ Уведомление добавлено в DOM");
   
   setTimeout(() => {
     toast.remove();
+    console.log("🗑️ Уведомление удалено");
   }, 3000);
 }
 
+// Добавляем анимацию
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideDown {
+    from {
+      transform: translate(-50%, -100%);
+      opacity: 0;
+    }
+    to {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+  }
+`;
+document.head.appendChild(style);
+
 function setPillLabel(btn, text){
   if (!btn) return;
-
+  console.log("Setting pill label:", text);
+  
   let textNode = null;
   for (const n of btn.childNodes) {
     if (n && n.nodeType === Node.TEXT_NODE) { textNode = n; break; }
@@ -133,6 +145,7 @@ function setChatLink(lang, theme){
   chatBtn.href = baseHref
     + "&lang=" + encodeURIComponent(lang)
     + "&theme=" + encodeURIComponent(theme);
+  console.log("Chat link updated:", chatBtn.href);
 }
 
 function setImgLink(lang, theme){
@@ -141,9 +154,10 @@ function setImgLink(lang, theme){
   imgBtn.href = baseHref
     + "&lang=" + encodeURIComponent(lang)
     + "&theme=" + encodeURIComponent(theme);
+  console.log("Image link updated:", imgBtn.href);
 }
 
-// ===== i18n с переводами для цветов =====
+// ===== i18n =====
 const I18N = {
   ru: { 
     btn:"Чат с ИИ", 
@@ -252,7 +266,6 @@ const LANGS = [
   { code:"fr", label:"Français (FR)" },
 ];
 
-// Названия языков для уведомлений
 const LANG_NAMES = {
   ru: "Русский",
   kk: "Қазақша",
@@ -262,7 +275,6 @@ const LANG_NAMES = {
   fr: "Français"
 };
 
-// ===== THEMES =====
 const THEMES = [
   { code:"blue", label: "Синий" },
   { code:"black", label: "Черный" },
@@ -294,37 +306,32 @@ function paintSelectedTheme(theme){
   });
 }
 
-// Функция обновления списка цветов
 function updateThemeList(lang) {
   if (!themeList) return;
   
   const t = I18N[lang] || I18N.ru;
-  const currentTheme = getSavedTheme();
   
-  // Обновляем заголовок
   if (themeSheetTitle) {
     themeSheetTitle.textContent = t.theme_title;
   }
   
-  // Обновляем каждый элемент списка
   const items = themeList.querySelectorAll(".themeItem");
   items.forEach(btn => {
     const code = btn.getAttribute("data-theme");
-    const themeData = THEMES.find(x => x.code === code);
-    if (themeData) {
-      const label = t.colors[code] || code;
-      const span = btn.querySelector("span:first-child");
-      if (span) {
-        span.textContent = label;
-      }
+    const label = t.colors[code] || code;
+    const span = btn.querySelector("span:first-child");
+    if (span) {
+      span.textContent = label;
     }
   });
+  console.log("Theme list updated for language:", lang);
 }
 
 async function setLang(lang){
+  console.log("setLang called with:", lang);
+  
   const t = I18N[lang] || I18N.ru;
 
-  // Обновляем тексты интерфейса
   if (chatBtn) chatBtn.textContent = t.btn;
   if (imgBtn) imgBtn.textContent = t.img;
   if (subText) subText.textContent = t.sub;
@@ -338,11 +345,9 @@ async function setLang(lang){
   saveLang(lang);
   paintSelectedLang(lang);
   
-  // Обновляем кнопку темы с новым языком
   const currentTheme = getSavedTheme();
   setPillLabel(themeBtn, t.theme_title + ": " + themeLabel(currentTheme, lang));
   
-  // Обновляем заголовок темы и список цветов
   if (themeSheetTitle) {
     themeSheetTitle.textContent = t.theme_title;
   }
@@ -351,18 +356,18 @@ async function setLang(lang){
   setChatLink(lang, currentTheme);
   setImgLink(lang, currentTheme);
   
-  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ!
+  // Показываем уведомление
   showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
-  saveLastLang(lang);
+  
+  closeLang();
+  console.log("Language change complete");
 }
 
 async function setTheme(theme){
+  console.log("setTheme called with:", theme);
+  
   const currentLang = getSavedLang();
   const t = I18N[currentLang] || I18N.ru;
-  
-  // Проверяем существует ли тема
-  const themeData = THEMES.find(t => t.code === theme);
-  if (!themeData) return;
   
   applyTheme(theme);
   saveTheme(theme);
@@ -373,9 +378,11 @@ async function setTheme(theme){
   setChatLink(currentLang, theme);
   setImgLink(currentLang, theme);
   
-  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ!
+  // Показываем уведомление
   showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
-  saveLastTheme(theme);
+  
+  closeTheme();
+  console.log("Theme change complete");
 }
 
 // ===== overlays =====
@@ -384,12 +391,14 @@ function openLang(){
   langOverlay.classList.add("show");
   langOverlay.setAttribute("aria-hidden", "false");
   langBtn.setAttribute("aria-expanded", "true");
+  console.log("Language overlay opened");
 }
 function closeLang(){
   if (!langOverlay || !langBtn) return;
   langOverlay.classList.remove("show");
   langOverlay.setAttribute("aria-hidden", "true");
   langBtn.setAttribute("aria-expanded", "false");
+  console.log("Language overlay closed");
 }
 
 function openTheme(){
@@ -397,12 +406,14 @@ function openTheme(){
   themeOverlay.classList.add("show");
   themeOverlay.setAttribute("aria-hidden", "false");
   themeBtn.setAttribute("aria-expanded", "true");
+  console.log("Theme overlay opened");
 }
 function closeTheme(){
   if (!themeOverlay || !themeBtn) return;
   themeOverlay.classList.remove("show");
   themeOverlay.setAttribute("aria-hidden", "true");
   themeBtn.setAttribute("aria-expanded", "false");
+  console.log("Theme overlay closed");
 }
 
 function buildLangList(){
@@ -414,12 +425,10 @@ function buildLangList(){
     b.className = "langItem";
     b.setAttribute("data-lang", x.code);
     b.innerHTML = `<span>${x.label}</span><span class="check">✓</span>`;
-    b.addEventListener("click", () => {
-      setLang(x.code);
-      closeLang();
-    });
+    b.addEventListener("click", () => setLang(x.code));
     langList.appendChild(b);
   }
+  console.log("Language list built");
 }
 
 function buildThemeList(){
@@ -438,32 +447,25 @@ function buildThemeList(){
     const label = t.colors[x.code] || x.code;
     b.innerHTML = `<span>${label}</span><span class="check">✓</span>`;
     
-    b.addEventListener("click", () => {
-      setTheme(x.code);
-      closeTheme();
-    });
+    b.addEventListener("click", () => setTheme(x.code));
     themeList.appendChild(b);
   }
   
-  // Устанавливаем заголовок
   if (themeSheetTitle) {
     themeSheetTitle.textContent = t.theme_title;
   }
+  console.log("Theme list built");
 }
 
 // ===== init =====
+console.log("Initializing app...");
 buildLangList();
 buildThemeList();
 
-// Устанавливаем сохраненные значения
 const savedLang = getSavedLang();
 const savedTheme = getSavedTheme();
+console.log("Saved lang:", savedLang, "Saved theme:", savedTheme);
 
-// Сохраняем как последние (для уведомлений)
-saveLastLang(savedLang);
-saveLastTheme(savedTheme);
-
-// Применяем настройки
 const t = I18N[savedLang] || I18N.ru;
 if (chatBtn) chatBtn.textContent = t.btn;
 if (imgBtn) imgBtn.textContent = t.img;
@@ -500,3 +502,5 @@ if (themeOverlay) themeOverlay.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { closeLang(); closeTheme(); }
 });
+
+console.log("App initialized");
