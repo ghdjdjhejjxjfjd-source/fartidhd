@@ -119,8 +119,9 @@ def main_menu_for_user(user_id: int) -> InlineKeyboardMarkup:
         keyboard.append([InlineKeyboardButton("⛔ Доступ заблокирован", callback_data="tab:blocked")])
         return InlineKeyboardMarkup(keyboard)
 
-    # Баланс звезд
-    keyboard.append([InlineKeyboardButton(f"⭐ Баланс: {balance} звезд", callback_data="tab:balance")])
+    # Баланс звезд (показываем стоимость сообщения)
+    balance_text = f"⭐ Баланс: {balance} звезд (1⭐ за сообщение)"
+    keyboard.append([InlineKeyboardButton(balance_text, callback_data="tab:balance")])
 
     # Mini App открывается если есть звезды ИЛИ пользователь free
     can_open_miniapp = (balance >= 1 or a.get("is_free")) and is_valid_https_url(MINIAPP_URL)
@@ -162,36 +163,22 @@ async def delete_prev_menu(bot, user_id: int):
         return
     try:
         await bot.delete_message(chat_id=chat_id, message_id=msg_id)
-        print(f"🗑️ Удалено старое меню для {user_id}")
-    except Exception as e:
-        print(f"⚠️ Не удалось удалить меню: {e}")
+    except Exception:
+        pass
     clear_last_menu(user_id)
 
 
-async def send_fresh_menu(bot, user_id: int, text: str, force: bool = False):
-    """Отправить свежее меню, удалив старое"""
-    
-    # Всегда удаляем предыдущее меню
+async def send_fresh_menu(bot, user_id: int, text: str):
+    # удаляем предыдущее меню
     await delete_prev_menu(bot, user_id)
 
     # отправляем новое
-    try:
-        m = await bot.send_message(
-            chat_id=user_id,
-            text=text,
-            reply_markup=main_menu_for_user(user_id),
-        )
-        set_last_menu(user_id, user_id, m.message_id)
-        print(f"✅ Новое меню отправлено {user_id}")
-        return m
-    except Exception as e:
-        print(f"❌ Ошибка отправки меню: {e}")
-        return None
-
-
-async def update_user_menu(bot, user_id: int):
-    """Принудительно обновить меню пользователя (при изменении баланса/прав)"""
-    await send_fresh_menu(bot, user_id, MENU_TEXT, force=True)
+    m = await bot.send_message(
+        chat_id=user_id,
+        text=text,
+        reply_markup=main_menu_for_user(user_id),
+    )
+    set_last_menu(user_id, user_id, m.message_id)
 
 
 async def send_block_notice(bot, user_id: int):
@@ -216,7 +203,7 @@ async def edit_to_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, t
     # Для баланса показываем актуальное значение
     if tab_key == "balance":
         balance = get_balance(user_id)
-        text = f"⭐ Ваш баланс: {balance} звезд"
+        text = f"⭐ Ваш баланс: {balance} звезд\n\nСтоимость одного сообщения: 1 ⭐"
     
     # Для покупки звезд показываем специальную клавиатуру
     if tab_key == "buy_stars":
@@ -249,7 +236,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = (query.data or "").strip()
 
-    # обязательно отвечаем на callback
+    # обязательно отвечаем на callback, но НЕ шлём сообщений
     try:
         await query.answer()
     except Exception:
