@@ -64,15 +64,9 @@ function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
 }
 
-// Уведомление - показывается сразу
+// Уведомление - показывается сразу и принудительно
 function showNotification(message) {
   console.log("🔔 Уведомление:", message);
-  
-  // Проверяем что мы на главной странице
-  if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
-    console.log("Не главная страница, уведомление не показываем");
-    return;
-  }
   
   // Удаляем старые уведомления
   const oldToasts = document.querySelectorAll('.toast-notification');
@@ -95,6 +89,7 @@ function showNotification(message) {
     backdrop-filter: blur(10px);
     z-index: 100000;
     animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    pointer-events: none;
   `;
   
   document.body.appendChild(toast);
@@ -362,10 +357,8 @@ function setLang(lang){
   // Закрываем оверлей
   closeLang();
   
-  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ ПОСЛЕ ЗАКРЫТИЯ
-  setTimeout(() => {
-    showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
-  }, 100);
+  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ (без setTimeout)
+  showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
 }
 
 function setTheme(theme){
@@ -386,10 +379,8 @@ function setTheme(theme){
   // Закрываем оверлей
   closeTheme();
   
-  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ ПОСЛЕ ЗАКРЫТИЯ
-  setTimeout(() => {
-    showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
-  }, 100);
+  // ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ СРАЗУ (без setTimeout)
+  showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
 }
 
 // ===== overlays =====
@@ -428,7 +419,10 @@ function buildLangList(){
     b.className = "langItem";
     b.setAttribute("data-lang", x.code);
     b.innerHTML = `<span>${x.label}</span><span class="check">✓</span>`;
-    b.addEventListener("click", () => setLang(x.code));
+    b.addEventListener("click", () => {
+      setLang(x.code);
+      // Уведомление покажется внутри setLang
+    });
     langList.appendChild(b);
   }
 }
@@ -449,7 +443,10 @@ function buildThemeList(){
     const label = t.colors[x.code] || x.code;
     b.innerHTML = `<span>${label}</span><span class="check">✓</span>`;
     
-    b.addEventListener("click", () => setTheme(x.code));
+    b.addEventListener("click", () => {
+      setTheme(x.code);
+      // Уведомление покажется внутри setTheme
+    });
     themeList.appendChild(b);
   }
   
