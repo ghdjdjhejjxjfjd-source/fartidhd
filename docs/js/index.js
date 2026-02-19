@@ -22,6 +22,7 @@ if (tg) {
 // ===== storage keys =====
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
+const STORAGE_PURCHASED_THEMES = "purchased_themes_v1";
 
 // ===== DOM =====
 const chatBtn = document.getElementById("chatBtn");
@@ -60,6 +61,26 @@ function saveTheme(theme){
   try{ localStorage.setItem(STORAGE_THEME, theme); }catch(e){}
 }
 
+// Купленные темы
+function getPurchasedThemes() {
+  try {
+    const purchased = localStorage.getItem(STORAGE_PURCHASED_THEMES);
+    return purchased ? JSON.parse(purchased) : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function addPurchasedTheme(theme) {
+  try {
+    const purchased = getPurchasedThemes();
+    if (!purchased.includes(theme)) {
+      purchased.push(theme);
+      localStorage.setItem(STORAGE_PURCHASED_THEMES, JSON.stringify(purchased));
+    }
+  } catch(e) {}
+}
+
 function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
 }
@@ -82,6 +103,29 @@ async function getStarsBalance() {
   return 0;
 }
 
+// Функция для списания звезд
+async function spendStars(amount) {
+  try {
+    const user = getTelegramUser();
+    if (!user.tg_user_id) return false;
+    
+    const API_BASE = "https://fayrat-production.up.railway.app";
+    // Этот эндпоинт нужно добавить в api.py
+    const r = await fetch(`${API_BASE}/api/stars/spend`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tg_user_id: user.tg_user_id,
+        amount: amount
+      })
+    });
+    return r.ok;
+  } catch (e) {
+    console.error("Error spending stars:", e);
+    return false;
+  }
+}
+
 function getTelegramUser(){
   const tg = window.Telegram?.WebApp;
   if (!tg || !tg.initDataUnsafe?.user) return {};
@@ -94,9 +138,23 @@ function getTelegramUser(){
   };
 }
 
-function showToast(message, type = 'info') {
-  // Простой alert пока нет тостов
-  alert(message);
+// Одноразовое уведомление
+function showOneTimeNotification(message, type = 'success') {
+  // Проверяем, показывали ли уже это уведомление
+  const notificationKey = `notification_${message}`;
+  if (localStorage.getItem(notificationKey)) return;
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast-notification';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  // Отмечаем что показали
+  localStorage.setItem(notificationKey, 'true');
+  
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
 }
 
 function setPillLabel(btn, text){
@@ -209,15 +267,30 @@ async function setTheme(theme){
   const themeData = THEMES.find(t => t.code === theme);
   if (!themeData) return;
   
-  // Если тема платная - проверяем баланс
-  if (themeData.price > 0) {
+  // Проверяем куплена ли уже тема
+  const purchasedThemes = getPurchasedThemes();
+  const isPurchased = purchasedThemes.includes(theme);
+  
+  // Если тема платная и не куплена - пробуем купить
+  if (themeData.price > 0 && !isPurchased) {
     const balance = await getStarsBalance();
     if (balance < themeData.price) {
-      showToast(`❌ Недостаточно звезд. Нужно ${themeData.price} ⭐`, 'error');
+      alert(`❌ Недостаточно звезд. Нужно ${themeData.price} ⭐`);
       return;
     }
-    // Здесь можно списать звезды через API
-    showToast(`✅ Тема "${themeData.label}" активирована!`, 'success');
+    
+    // Списываем звезды
+    const success = await spendStars(themeData.price);
+    if (!success) {
+      alert("❌ Ошибка при покупке. Попробуйте позже.");
+      return;
+    }
+    
+    // Добавляем в купленные
+    addPurchasedTheme(theme);
+    
+    // Показываем одноразовое уведомление
+    showOneTimeNotification(`✅ Тема "${themeData.label}" активирована!`, 'success');
   }
   
   applyTheme(theme);
@@ -277,14 +350,19 @@ function buildLangList(){
 function buildThemeList(){
   if (!themeList) return;
   themeList.innerHTML = "";
+  
+  const purchasedThemes = getPurchasedThemes();
+  
   for (const x of THEMES){
     const b = document.createElement("button");
     b.type = "button";
     b.className = "themeItem";
     b.setAttribute("data-theme", x.code);
     
-    // Добавляем цену в название если платная
-    const priceText = x.price > 0 ? ` (${x.price} ⭐)` : "";
+    // Для купленных тем цена не показывается
+    const isPurchased = purchasedThemes.includes(x.code);
+    const priceText = (x.price > 0 && !isPurchased) ? ` (${x.price} ⭐)` : "";
+    
     b.innerHTML = `<span>${x.label}${priceText}</span><span class="check">✓</span>`;
     
     b.addEventListener("click", () => {
