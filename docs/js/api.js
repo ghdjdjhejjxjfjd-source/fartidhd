@@ -1,6 +1,7 @@
 // docs/js/api.js
 
-const API_BASE = "https://instagroq-ai-bot-production.up.railway.app";
+// ✅ ВАШ АКТУАЛЬНЫЙ URL НА RAILWAY
+const API_BASE = "https://fayrat-production.up.railway.app";
 const API_CHAT = API_BASE + "/api/chat";
 const API_CLEAR_MEMORY = API_BASE + "/api/memory/clear";
 const API_BALANCE = API_BASE + "/api/stars/balance";
@@ -17,7 +18,6 @@ function getPersona(){
   return localStorage.getItem("ai_persona") || "friendly";
 }
 
-// ✅ Telegram user
 function getTelegramUser(){
   const tg = window.Telegram?.WebApp;
   if (!tg || !tg.initDataUnsafe?.user) return {};
@@ -43,29 +43,32 @@ export async function askAI(promptText) {
     tg_first_name: user.tg_first_name,
   };
 
-  const r = await fetch(API_CHAT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const r = await fetch(API_CHAT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-  // Проверяем ошибку недостатка звезд
-  if (r.status === 402) {
-    const data = await r.json();
-    if (data.error === "insufficient_stars") {
-      throw new Error("❌ Недостаточно звезд. Купите звезды в меню.");
+    if (r.status === 402) {
+      const data = await r.json();
+      if (data.error === "insufficient_stars") {
+        throw new Error("❌ Недостаточно звезд. Купите звезды в меню.");
+      }
     }
-  }
 
-  if (!r.ok) {
-    throw new Error("API error " + r.status);
-  }
+    if (!r.ok) {
+      throw new Error("API error " + r.status);
+    }
 
-  const data = await r.json();
-  return (data.reply || "").trim();
+    const data = await r.json();
+    return (data.reply || "").trim();
+  } catch (e) {
+    console.error("Chat error:", e);
+    throw e;
+  }
 }
 
-// ✅ очистка памяти ИИ на сервере
 export async function clearAIMemory() {
   const user = getTelegramUser();
 
@@ -78,7 +81,6 @@ export async function clearAIMemory() {
   return r.ok;
 }
 
-// ✅ получение баланса
 export async function getStarsBalance() {
   const user = getTelegramUser();
   if (!user.tg_user_id) return 0;
