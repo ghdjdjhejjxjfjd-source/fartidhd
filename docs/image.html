@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Генерация изображений</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try { return localStorage.getItem(KEY) || "blue"; }
+        catch(e) { return "blue"; }
+      }
+      const theme = getTheme();
+      document.documentElement.setAttribute("data-theme", theme);
+      try { localStorage.setItem(KEY, theme); } catch(e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/panels.css">
+  <link rel="stylesheet" href="./css/image.css">
+</head>
+
+<body>
+  <div class="top">
+    <a id="backBtn" href="./index.html">←</a>
+    <div class="title" id="pageTitle">Генерация</div>
+    <div class="spacer"></div>
+    <button class="gallery-btn" id="galleryBtn" aria-label="Мои работы">📚</button>
+  </div>
+
+  <main class="wrap" id="mainScreen">
+    <div class="search-bar">
+      <input type="text" id="searchModes" placeholder="🔍 Поиск режимов..." class="search-input">
+    </div>
+
+    <div class="modes-grid" id="modesGrid"></div>
+
+    <div class="bottom-stats">
+      <div class="balance-badge" id="balanceBadge">⭐ 0</div>
+      <button class="history-btn" id="historyBtn">📚 Мои работы</button>
+    </div>
+  </main>
+
+  <main class="wrap hidden" id="generationScreen">
+    <div class="generation-header">
+      <button class="back-btn" id="backFromGenBtn">←</button>
+      <div class="mode-title" id="currentModeTitle">Из текста</div>
+      <div class="mode-price" id="currentModePrice">4⭐</div>
+    </div>
+
+    <div class="result-area" id="resultArea">
+      <div class="preview-placeholder" id="previewPlaceholder">
+        <div class="placeholder-icon">🖼️</div>
+        <div class="placeholder-text">Изображение появится здесь</div>
+      </div>
+      <img class="result-image hidden" id="resultImage" alt="Generated image">
+      
+      <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Генерация... <span id="loadingTimer">0с</span></div>
+        <button class="cancel-btn" id="cancelGenBtn">✖ Отмена</button>
+      </div>
+    </div>
+
+    <div class="prompt-area">
+      <textarea 
+        id="promptInput" 
+        placeholder="📝 Опишите что хотите увидеть..." 
+        rows="3"
+        maxlength="1000"
+      ></textarea>
+    </div>
+
+    <button class="generate-btn" id="generateBtn">
+      <span class="btn-icon">✨</span>
+      Сгенерировать
+      <span class="price-tag" id="generatePrice">4⭐</span>
+    </button>
+
+    <div class="result-actions hidden" id="resultActions">
+      <div class="action-row">
+        <button class="action-btn" id="saveToGalleryBtn">
+          <span class="btn-icon">💾</span> Сохранить
+        </button>
+        <button class="action-btn" id="downloadBtn">
+          <span class="btn-icon">📥</span> Скачать
+        </button>
+        <button class="action-btn" id="copyPromptBtn">
+          <span class="btn-icon">📋</span> Копировать
+        </button>
+      </div>
+      <div class="action-row">
+        <button class="action-btn" id="regenerateBtn">
+          <span class="btn-icon">🔄</span> Заново
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <main class="wrap hidden" id="galleryScreen">
+    <div class="gallery-header">
+      <button class="back-btn" id="backFromGalleryBtn">←</button>
+      <div class="gallery-title">📚 Мои работы</div>
+      <button class="filter-btn" id="galleryFilterBtn">⚡</button>
+    </div>
+
+    <div class="gallery-tabs">
+      <button class="tab-btn active" data-tab="all">Все</button>
+      <button class="tab-btn" data-tab="favorites">❤️ Избранное</button>
+    </div>
+
+    <div class="gallery-search">
+      <input type="text" id="gallerySearch" placeholder="🔍 Поиск по промптам..." class="search-input">
+    </div>
+
+    <div class="gallery-grid" id="galleryGrid"></div>
+
+    <div class="empty-gallery hidden" id="emptyGallery">
+      <div class="empty-icon">🖼️</div>
+      <div class="empty-text">У вас пока нет сохраненных изображений</div>
+      <button class="generate-from-gallery" id="generateFromEmptyBtn">✨ Сгенерировать</button>
+    </div>
+  </main>
+
+  <main class="wrap hidden" id="viewScreen">
+    <div class="view-header">
+      <button class="back-btn" id="backFromViewBtn">←</button>
+      <div class="view-title">Просмотр</div>
+      <button class="delete-btn" id="deleteImageBtn">🗑️</button>
+    </div>
+
+    <div class="view-image-container">
+      <img class="view-image" id="viewImage" alt="Full size image">
+    </div>
+
+    <div class="view-details">
+      <div class="detail-item">
+        <span class="detail-label">📝 Промпт:</span>
+        <span class="detail-value" id="viewPrompt"></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">📅 Создано:</span>
+        <span class="detail-value" id="viewDate"></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">⭐ Стоимость:</span>
+        <span class="detail-value" id="viewCost"></span>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module" src="./js/image-page.js"></script>
+</body>
+</html>
