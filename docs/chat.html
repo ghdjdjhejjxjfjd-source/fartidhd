@@ -24,8 +24,8 @@
   </script>
 
   <link rel="stylesheet" href="./css/base.css?v=3">
-<link rel="stylesheet" href="./css/panels.css?v=3">
-<link rel="stylesheet" href="./css/chat.css?v=3">
+  <link rel="stylesheet" href="./css/panels.css?v=3">
+  <link rel="stylesheet" href="./css/chat.css?v=3">
 </head>
 
 <body>
@@ -39,14 +39,16 @@
 
   <div class="chat" id="chat"></div>
 
+  <!-- ✅ ИЗМЕНЕНО: input заменен на textarea для многострочного ввода -->
   <div class="input">
-    <input id="text"
-  placeholder="Напиши сообщение…"
-  autocomplete="on"
-  autocapitalize="sentences"
-  autocorrect="on"
-  spellcheck="true"
-/>
+    <textarea id="text"
+      placeholder="Напиши сообщение…"
+      autocomplete="on"
+      autocapitalize="sentences"
+      autocorrect="on"
+      spellcheck="true"
+      rows="1"
+    ></textarea>
     <button id="sendBtn">▶</button>
   </div>
 
@@ -166,40 +168,6 @@
         clear:"🧹 Temizle",
         close:"Kapat",
       },
-      uz: {
-        title:"AI Chat",
-        placeholder:"Xabar yoz…",
-        settings:"⚙️ Sozlamalar",
-        style:"Javob uslubi",
-        short:"Qisqa",
-        steps:"Bosqichma-bosqich",
-        detail:"Batafsil",
-        persona:"Ohang",
-        friendly:"Do‘stona",
-        fun:"Quvnoq",
-        strict:"Qat’iy",
-        smart:"Aqlli",
-        chat:"Chat",
-        clear:"🧹 Tozalash",
-        close:"Yopish",
-      },
-      ky: {
-        title:"AI чат",
-        placeholder:"Билдирүү жаз…",
-        settings:"⚙️ Орнотуулар",
-        style:"Жооп стили",
-        short:"Кыска",
-        steps:"Кадам-кадам",
-        detail:"Толук",
-        persona:"Мүнөз",
-        friendly:"Достук",
-        fun:"Көңүлдүү",
-        strict:"Катуу",
-        smart:"Акылдуу",
-        chat:"Чат",
-        clear:"🧹 Тазалоо",
-        close:"Жабуу",
-      },
       uk: {
         title:"AI чат",
         placeholder:"Напишіть повідомлення…",
@@ -216,40 +184,6 @@
         chat:"Чат",
         clear:"🧹 Очистити",
         close:"Закрити",
-      },
-      de: {
-        title:"KI-Chat",
-        placeholder:"Nachricht schreiben…",
-        settings:"⚙️ Einstellungen",
-        style:"Antwortstil",
-        short:"Kurz",
-        steps:"Schrittweise",
-        detail:"Detailliert",
-        persona:"Ton",
-        friendly:"Freundlich",
-        fun:"Locker",
-        strict:"Streng",
-        smart:"Schlau",
-        chat:"Chat",
-        clear:"🧹 Leeren",
-        close:"Schließen",
-      },
-      es: {
-        title:"Chat IA",
-        placeholder:"Escribe un mensaje…",
-        settings:"⚙️ Ajustes",
-        style:"Estilo",
-        short:"Corto",
-        steps:"Por pasos",
-        detail:"Detallado",
-        persona:"Tono",
-        friendly:"Amable",
-        fun:"Divertido",
-        strict:"Estricto",
-        smart:"Listo",
-        chat:"Chat",
-        clear:"🧹 Borrar",
-        close:"Cerrar",
       },
       fr: {
         title:"Chat IA",
