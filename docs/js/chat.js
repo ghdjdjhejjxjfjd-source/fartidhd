@@ -60,15 +60,15 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     try {
       await navigator.clipboard.writeText(text);
       
-      // Меняем кнопку на "Скопировано!"
-      const originalText = button.innerHTML;
+      // Меняем иконку на галочку
+      const originalIcon = button.innerHTML;
       button.classList.add('copied');
-      button.innerHTML = `<span class="action-icon">✓</span><span class="action-text">Скопировано!</span>`;
+      button.innerHTML = `✓`;
       
       // Через 2 секунды возвращаем обратно
       setTimeout(() => {
         button.classList.remove('copied');
-        button.innerHTML = originalText;
+        button.innerHTML = originalIcon;
       }, 2000);
       
     } catch (err) {
@@ -89,25 +89,27 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  // Функция создания кнопок для сообщения
+  // Функция создания кнопок для сообщения (только иконки)
   function createMessageActions(messageText, messageId) {
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'message-actions';
     actionsDiv.setAttribute('data-message-id', messageId);
     
-    // Кнопка копировать
+    // Кнопка копировать (только иконка)
     const copyBtn = document.createElement('button');
     copyBtn.className = 'action-btn copy-btn';
-    copyBtn.innerHTML = `<span class="action-icon">📋</span><span class="action-text">Копировать</span>`;
+    copyBtn.innerHTML = `📋`;
+    copyBtn.title = 'Копировать текст';
     copyBtn.onclick = (e) => {
       e.stopPropagation();
       copyText(messageText, copyBtn);
     };
     
-    // Кнопка поделиться
+    // Кнопка поделиться (только иконка)
     const shareBtn = document.createElement('button');
     shareBtn.className = 'action-btn share-btn';
-    shareBtn.innerHTML = `<span class="action-icon">📤</span><span class="action-text">Поделиться</span>`;
+    shareBtn.innerHTML = `📤`;
+    shareBtn.title = 'Поделиться';
     shareBtn.onclick = (e) => {
       e.stopPropagation();
       shareText(messageText);
