@@ -2,169 +2,104 @@
 
 :root{
   --vh: 100vh;
+
+  /* ✅ DEFAULT THEME (blue) */
+  --bgTop:#0b5fa8;
+  --bgMid:#083d74;
+  --bgBot:#051f3d;
+
+  --text: rgba(255,255,255,.94);
+  --muted: rgba(255,255,255,.62);
+
+  --glass: rgba(255,255,255,.08);
+  --glass2: rgba(255,255,255,.04);
+  --stroke: rgba(255,255,255,.14);
+
+  --glow:  rgba(90,190,255,.20);
+  --glow2: rgba(120,220,255,.15);
+  --glow3: rgba(255,255,255,.08);
+  
+  --accent1: #3aa0ff;
+  --accent2: #0a84ff;
+  
+  --card-bg: rgba(255,255,255,.06);
+  --btn-bg: rgba(255,255,255,.12);  /* было .08, стало .12 - ярче */
+  --btn-hover: rgba(255,255,255,.2);  /* добавлено для наведения */
 }
 
-/* ================================================= */
-/* ✅ ТЕМА СИНЯЯ - разнообразие оттенков */
-/* ================================================= */
-:root[data-theme="blue"]{
-  /* фон - глубокий синий */
-  --bgTop: #0a2a4a;
-  --bgMid: #0a1e35;
-  --bgBot: #051020;
-  
-  /* текст */
-  --text: rgba(255,255,255,.95);
-  --muted: rgba(200,220,255,.7);
-  
-  /* стеклянные элементы - разные оттенки синего */
-  --glass: rgba(70, 130, 255, 0.2);    /* ярко-синий */
-  --glass2: rgba(100, 150, 255, 0.15);  /* светло-синий */
-  --stroke: rgba(50, 100, 200, 0.4);    /* темно-синий */
-  
-  /* свечения */
-  --glow: rgba(70, 130, 255, 0.3);
-  --glow2: rgba(100, 180, 255, 0.2);
-  --glow3: rgba(150, 200, 255, 0.1);
-  
-  /* акценты */
-  --accent1: #3a80ff;  /* ярко-синий */
-  --accent2: #1a5ac0;  /* темно-синий */
-  
-  /* карточки и кнопки - разные оттенки */
-  --card-bg: rgba(40, 100, 200, 0.15);
-  --btn-bg: rgba(60, 120, 230, 0.2);
-  --btn-hover: rgba(80, 140, 255, 0.3);
-  --pill-bg: rgba(30, 80, 180, 0.25);
-}
-
-/* ================================================= */
-/* ✅ ТЕМА ЧЕРНАЯ - разнообразие оттенков */
-/* ================================================= */
+/* ✅ ТЕМЫ */
 :root[data-theme="black"]{
-  /* фон - глубокий черный */
-  --bgTop: #0a0c12;
-  --bgMid: #07090f;
-  --bgBot: #03050a;
-  
-  /* текст */
+  --bgTop:#0a0e15;
+  --bgMid:#06090f;
+  --bgBot:#03050a;
   --text: #ffffff;
-  --muted: rgba(200,215,255,.6);
-  
-  /* стеклянные элементы - серо-синие оттенки */
-  --glass: rgba(80, 120, 200, 0.15);
-  --glass2: rgba(100, 140, 220, 0.1);
-  --stroke: rgba(120, 160, 240, 0.25);
-  
-  /* свечения */
-  --glow: rgba(90, 140, 230, 0.2);
-  --glow2: rgba(110, 160, 250, 0.15);
-  --glow3: rgba(130, 180, 255, 0.1);
-  
-  /* акценты */
-  --accent1: #6a8fdf;
-  --accent2: #3a5a9a;
-  
-  /* карточки и кнопки */
-  --card-bg: rgba(60, 90, 140, 0.12);
-  --btn-bg: rgba(70, 100, 160, 0.15);
-  --btn-hover: rgba(90, 130, 200, 0.25);
-  --pill-bg: rgba(50, 80, 130, 0.2);
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.03);
+  --stroke: rgba(255,255,255,.12);
+  --accent1: #6aa7ff;
+  --accent2: #2f7bff;
+  --card-bg: rgba(255,255,255,.05);
+  --btn-bg: rgba(255,255,255,.1);    /* ярче */
+  --btn-hover: rgba(255,255,255,.18);
+  --glow: rgba(100,130,190,.12);
+  --glow2: rgba(80,110,170,.10);
 }
 
-/* ================================================= */
-/* ✅ ТЕМА ФИОЛЕТОВАЯ - разнообразие оттенков */
-/* ================================================= */
 :root[data-theme="purple"]{
-  /* фон */
-  --bgTop: #1a0f2a;
-  --bgMid: #120a1f;
-  --bgBot: #0a0515;
-  
-  /* стеклянные элементы */
-  --glass: rgba(170, 100, 240, 0.2);
-  --glass2: rgba(150, 90, 220, 0.15);
-  --stroke: rgba(130, 70, 200, 0.3);
-  
-  /* свечения */
-  --glow: rgba(180, 110, 250, 0.25);
-  --glow2: rgba(160, 90, 230, 0.2);
-  --glow3: rgba(140, 70, 210, 0.15);
-  
-  /* акценты */
-  --accent1: #b07cff;
-  --accent2: #7a4acf;
-  
-  /* карточки и кнопки */
-  --card-bg: rgba(130, 70, 200, 0.15);
-  --btn-bg: rgba(150, 80, 220, 0.2);
-  --btn-hover: rgba(170, 100, 240, 0.3);
-  --pill-bg: rgba(110, 60, 180, 0.2);
+  --bgTop:#2a1550;
+  --bgMid:#180f30;
+  --bgBot:#0a0716;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.03);
+  --stroke: rgba(255,255,255,.12);
+  --accent1: #b98cff;
+  --accent2: #7a5cff;
+  --card-bg: rgba(255,255,255,.05);
+  --btn-bg: rgba(255,255,255,.1);
+  --btn-hover: rgba(255,255,255,.18);
+  --glow: rgba(160,100,220,.18);
+  --glow2: rgba(120,80,200,.12);
 }
 
-/* ================================================= */
-/* ✅ ТЕМА ЗЕЛЕНАЯ - разнообразие оттенков */
-/* ================================================= */
 :root[data-theme="green"]{
-  /* фон */
-  --bgTop: #0a2a1f;
-  --bgMid: #072015;
-  --bgBot: #03150e;
-  
-  /* стеклянные элементы */
-  --glass: rgba(40, 200, 140, 0.2);
-  --glass2: rgba(50, 180, 130, 0.15);
-  --stroke: rgba(30, 160, 110, 0.3);
-  
-  /* свечения */
-  --glow: rgba(60, 220, 160, 0.25);
-  --glow2: rgba(50, 190, 140, 0.2);
-  --glow3: rgba(40, 170, 120, 0.15);
-  
-  /* акценты */
+  --bgTop:#0a5545;
+  --bgMid:#083a30;
+  --bgBot:#051f1a;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.03);
+  --stroke: rgba(255,255,255,.12);
   --accent1: #2fd6a3;
-  --accent2: #1a8e6b;
-  
-  /* карточки и кнопки */
-  --card-bg: rgba(30, 160, 110, 0.15);
-  --btn-bg: rgba(40, 180, 130, 0.2);
-  --btn-hover: rgba(50, 200, 150, 0.3);
-  --pill-bg: rgba(20, 140, 90, 0.2);
+  --accent2: #11a87b;
+  --card-bg: rgba(255,255,255,.05);
+  --btn-bg: rgba(255,255,255,.1);
+  --btn-hover: rgba(255,255,255,.18);
+  --glow: rgba(80,200,160,.15);
+  --glow2: rgba(60,180,140,.12);
 }
 
-/* ================================================= */
-/* ✅ ТЕМА СЕРАЯ - разнообразие оттенков */
-/* ================================================= */
 :root[data-theme="gray"]{
-  /* фон */
-  --bgTop: #1a1f2a;
-  --bgMid: #121620;
-  --bgBot: #0a0e15;
-  
-  /* стеклянные элементы */
-  --glass: rgba(130, 160, 200, 0.15);
-  --glass2: rgba(110, 140, 180, 0.12);
-  --stroke: rgba(150, 180, 220, 0.2);
-  
-  /* свечения */
-  --glow: rgba(140, 170, 210, 0.2);
-  --glow2: rgba(120, 150, 190, 0.15);
-  --glow3: rgba(100, 130, 170, 0.1);
-  
-  /* акценты */
-  --accent1: #8aa5d9;
-  --accent2: #5a75a9;
-  
-  /* карточки и кнопки */
-  --card-bg: rgba(100, 130, 170, 0.12);
-  --btn-bg: rgba(110, 140, 180, 0.15);
-  --btn-hover: rgba(130, 160, 200, 0.25);
-  --pill-bg: rgba(90, 120, 160, 0.15);
+  --bgTop:#1f2735;
+  --bgMid:#141b28;
+  --bgBot:#0b1018;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(255,255,255,.06);
+  --glass2: rgba(255,255,255,.03);
+  --stroke: rgba(255,255,255,.12);
+  --accent1: #7fb2ff;
+  --accent2: #4b8dff;
+  --card-bg: rgba(255,255,255,.05);
+  --btn-bg: rgba(255,255,255,.1);
+  --btn-hover: rgba(255,255,255,.18);
+  --glow: rgba(150,170,200,.12);
+  --glow2: rgba(120,140,180,.10);
 }
 
-/* ================================================= */
-/* ✅ ОБЩИЕ СТИЛИ */
-/* ================================================= */
 *{box-sizing:border-box}
 
 html,body{
@@ -189,7 +124,7 @@ body{
   );
 }
 
-/* стеклянные квадраты - разные оттенки для каждого */
+/* стеклянные квадраты */
 .cube{
   position:absolute;
   width:120px; height:120px;
@@ -207,12 +142,12 @@ body{
 .cube.tiny{ width:34px; height:34px; border-radius:12px; opacity:.65; }
 
 /* анимации */
-.f1{ animation: drift1 7s ease-in-out infinite; }
-.f2{ animation: drift2 8s ease-in-out infinite; }
-.f3{ animation: drift3 7.5s ease-in-out infinite; }
-.f4{ animation: drift4 9s ease-in-out infinite; }
-.f5{ animation: drift5 6s ease-in-out infinite; }
-.f6{ animation: drift6 9.5s ease-in-out infinite; }
+.f1{ animation: drift1 10s ease-in-out infinite; }
+.f2{ animation: drift2 12s ease-in-out infinite; }
+.f3{ animation: drift3 11s ease-in-out infinite; }
+.f4{ animation: drift4 13s ease-in-out infinite; }
+.f5{ animation: drift5 9s  ease-in-out infinite; }
+.f6{ animation: drift6 14s ease-in-out infinite; }
 
 @keyframes drift1{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(18px,-22px)} }
 @keyframes drift2{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-22px,-14px)} }
@@ -226,7 +161,7 @@ body{
   position:absolute;
   width:260px; height:260px;
   border-radius:999px;
-  background: radial-gradient(circle at 30% 30%, var(--glass2), var(--glow) 45%, transparent 72%);
+  background: radial-gradient(circle at 30% 30%, var(--glass), var(--glow) 45%, transparent 72%);
   filter: blur(2px);
   opacity:.85;
   pointer-events:none;
@@ -246,7 +181,7 @@ body{
   z-index:2;
 }
 
-/* карточка - свой оттенок */
+/* карточка стекло */
 .card{
   width:min(520px, 100%);
   padding:22px;
@@ -258,7 +193,7 @@ body{
   box-shadow: 0 22px 60px rgba(0,0,0,.30);
 }
 
-/* кнопки - свой оттенок */
+/* кнопки - ЯРЧЕ */
 .btn{
   display:block;
   width:100%;
@@ -269,7 +204,7 @@ body{
   font-weight:900;
   color:var(--text);
   text-decoration:none;
-  background: var(--btn-bg);
+  background: var(--btn-bg);  /* теперь ярче */
   border: 1px solid var(--stroke);
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
@@ -285,7 +220,7 @@ body{
 
 .btn:active{ 
   transform: scale(.995);
-  background: var(--btn-hover);
+  background: var(--btn-hover);  /* эффект при нажатии */
 }
 
 .sub{
@@ -315,12 +250,12 @@ body{
   text-align:center;
 }
 
-/* пилюля выбора языка - свой оттенок */
+/* пилюля выбора языка */
 .langPill{
   width:100%;
   border-radius:18px;
   padding:14px 14px;
-  background: var(--pill-bg);
+  background: var(--btn-bg);
   border: 1px solid var(--stroke);
   color: var(--text);
   outline:none;
