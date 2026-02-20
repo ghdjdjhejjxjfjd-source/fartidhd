@@ -60,15 +60,21 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     try {
       await navigator.clipboard.writeText(text);
       
-      // Меняем иконку на галочку
-      const originalIcon = button.innerHTML;
+      // Сохраняем оригинальный SVG
+      const originalSvg = button.innerHTML;
       button.classList.add('copied');
-      button.innerHTML = `✓`;
+      
+      // Меняем на галочку (SVG)
+      button.innerHTML = `
+        <svg viewBox="0 0 24 24" width="20" height="20">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+        </svg>
+      `;
       
       // Через 2 секунды возвращаем обратно
       setTimeout(() => {
         button.classList.remove('copied');
-        button.innerHTML = originalIcon;
+        button.innerHTML = originalSvg;
       }, 2000);
       
     } catch (err) {
@@ -89,27 +95,35 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  // Функция создания кнопок для сообщения (только иконки)
+  // Функция создания кнопок для сообщения (SVG иконки)
   function createMessageActions(messageText, messageId) {
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'message-actions';
     actionsDiv.setAttribute('data-message-id', messageId);
     
-    // Кнопка копировать (только иконка)
+    // Кнопка копировать (SVG иконка)
     const copyBtn = document.createElement('button');
     copyBtn.className = 'action-btn copy-btn';
-    copyBtn.innerHTML = `📋`;
     copyBtn.title = 'Копировать текст';
+    copyBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="20" height="20">
+        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+      </svg>
+    `;
     copyBtn.onclick = (e) => {
       e.stopPropagation();
       copyText(messageText, copyBtn);
     };
     
-    // Кнопка поделиться (только иконка)
+    // Кнопка поделиться (SVG иконка)
     const shareBtn = document.createElement('button');
     shareBtn.className = 'action-btn share-btn';
-    shareBtn.innerHTML = `📤`;
     shareBtn.title = 'Поделиться';
+    shareBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="20" height="20">
+        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L7.04 9.81C6.5 9.31 5.79 9 5 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+      </svg>
+    `;
     shareBtn.onclick = (e) => {
       e.stopPropagation();
       shareText(messageText);
