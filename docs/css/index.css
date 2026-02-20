@@ -2,74 +2,106 @@
 
 :root{
   --vh: 100vh;
+}
 
-  /* ✅ DEFAULT THEME (blue) */
-  --bgTop:#0b5fa8;
-  --bgMid:#083d74;
-  --bgBot:#051f3d;
-
+/* ✅ БАЗОВАЯ ТЕМА (синяя) */
+:root[data-theme="blue"]{
+  --bgTop: #0b5fa8;
+  --bgMid: #083d74;
+  --bgBot: #051f3d;
   --text: rgba(255,255,255,.94);
   --muted: rgba(255,255,255,.62);
-
-  --glass: rgba(255,255,255,.08);
-  --glass2: rgba(255,255,255,.04);
-  --stroke: rgba(255,255,255,.14);
-
-  --glow:  rgba(90,190,255,.20);
-  --glow2: rgba(120,220,255,.15);
+  --glass: rgba(58, 160, 255, 0.15);  /* синий оттенок */
+  --glass2: rgba(58, 160, 255, 0.1);
+  --stroke: rgba(58, 160, 255, 0.3);
+  --glow: rgba(58, 160, 255, 0.3);
+  --glow2: rgba(58, 160, 255, 0.2);
   --glow3: rgba(255,255,255,.08);
-  
   --accent1: #3aa0ff;
   --accent2: #0a84ff;
-  
-  --card-bg: rgba(255,255,255,.06);
-  --btn-bg: rgba(255,255,255,.08);
+  --card-bg: rgba(58, 160, 255, 0.12);
+  --btn-bg: rgba(58, 160, 255, 0.15);
+  --btn-hover: rgba(58, 160, 255, 0.25);
 }
 
-/* ✅ ТЕМЫ */
+/* ✅ ЧЕРНАЯ ТЕМА */
 :root[data-theme="black"]{
-  --bgTop:#000000;  /* черный фон */
-  --bgMid:#000000;
-  --bgBot:#000000;
+  --bgTop: #0a0e15;
+  --bgMid: #06090f;
+  --bgBot: #03050a;
   --text: #ffffff;
-  --muted: rgba(255,255,255,.7);
-  --glass: rgba(255,255,255,.08);
-  --glass2: rgba(255,255,255,.04);
-  --stroke: rgba(255,255,255,.15);
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(106, 167, 255, 0.15);
+  --glass2: rgba(106, 167, 255, 0.1);
+  --stroke: rgba(106, 167, 255, 0.25);
+  --glow: rgba(106, 167, 255, 0.2);
+  --glow2: rgba(106, 167, 255, 0.15);
+  --glow3: rgba(255,255,255,.08);
   --accent1: #6aa7ff;
   --accent2: #2f7bff;
-  --card-bg: rgba(255,255,255,.1);  /* панель под кнопками */
-  --btn-bg: rgba(255,255,255,.08);
-  --glow: rgba(106,167,255,.2);
-  --glow2: rgba(106,167,255,.1);
-  --glow3: rgba(255,255,255,.08);
+  --card-bg: rgba(106, 167, 255, 0.12);
+  --btn-bg: rgba(106, 167, 255, 0.15);
+  --btn-hover: rgba(106, 167, 255, 0.25);
 }
 
+/* ✅ ФИОЛЕТОВАЯ ТЕМА */
 :root[data-theme="purple"]{
-  --bgTop:#2a1550;
-  --bgMid:#180f30;
-  --bgBot:#0a0716;
-  --glow: rgba(160,100,220,.18);
-  --glow2: rgba(120,80,200,.12);
-  --glow3: rgba(255,255,255,.08);
+  --bgTop: #2a1550;
+  --bgMid: #180f30;
+  --bgBot: #0a0716;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(185, 140, 255, 0.2);
+  --glass2: rgba(185, 140, 255, 0.15);
+  --stroke: rgba(185, 140, 255, 0.3);
+  --glow: rgba(185, 140, 255, 0.25);
+  --glow2: rgba(185, 140, 255, 0.2);
+  --glow3: rgba(255,255,255,.1);
+  --accent1: #b98cff;
+  --accent2: #7a5cff;
+  --card-bg: rgba(185, 140, 255, 0.15);
+  --btn-bg: rgba(185, 140, 255, 0.2);
+  --btn-hover: rgba(185, 140, 255, 0.3);
 }
 
+/* ✅ ЗЕЛЕНАЯ ТЕМА */
 :root[data-theme="green"]{
-  --bgTop:#0a5545;
-  --bgMid:#083a30;
-  --bgBot:#051f1a;
-  --glow: rgba(80,200,160,.15);
-  --glow2: rgba(60,180,140,.12);
-  --glow3: rgba(255,255,255,.07);
+  --bgTop: #0a5545;
+  --bgMid: #083a30;
+  --bgBot: #051f1a;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(47, 214, 163, 0.2);
+  --glass2: rgba(47, 214, 163, 0.15);
+  --stroke: rgba(47, 214, 163, 0.3);
+  --glow: rgba(47, 214, 163, 0.25);
+  --glow2: rgba(47, 214, 163, 0.2);
+  --glow3: rgba(255,255,255,.1);
+  --accent1: #2fd6a3;
+  --accent2: #11a87b;
+  --card-bg: rgba(47, 214, 163, 0.15);
+  --btn-bg: rgba(47, 214, 163, 0.2);
+  --btn-hover: rgba(47, 214, 163, 0.3);
 }
 
+/* ✅ СЕРАЯ ТЕМА */
 :root[data-theme="gray"]{
-  --bgTop:#1f2735;
-  --bgMid:#141b28;
-  --bgBot:#0b1018;
-  --glow: rgba(150,170,200,.12);
-  --glow2: rgba(120,140,180,.10);
-  --glow3: rgba(255,255,255,.06);
+  --bgTop: #1f2735;
+  --bgMid: #141b28;
+  --bgBot: #0b1018;
+  --text: #ffffff;
+  --muted: rgba(255,255,255,.6);
+  --glass: rgba(127, 178, 255, 0.15);
+  --glass2: rgba(127, 178, 255, 0.1);
+  --stroke: rgba(127, 178, 255, 0.25);
+  --glow: rgba(127, 178, 255, 0.2);
+  --glow2: rgba(127, 178, 255, 0.15);
+  --glow3: rgba(255,255,255,.08);
+  --accent1: #7fb2ff;
+  --accent2: #4b8dff;
+  --card-bg: rgba(127, 178, 255, 0.12);
+  --btn-bg: rgba(127, 178, 255, 0.15);
+  --btn-hover: rgba(127, 178, 255, 0.25);
 }
 
 *{box-sizing:border-box}
@@ -96,7 +128,7 @@ body{
   );
 }
 
-/* стеклянные квадраты - ускоренная анимация */
+/* стеклянные квадраты */
 .cube{
   position:absolute;
   width:120px; height:120px;
@@ -113,13 +145,13 @@ body{
 .cube.small{ width:60px; height:60px; border-radius:16px; opacity:.75; }
 .cube.tiny{ width:34px; height:34px; border-radius:12px; opacity:.65; }
 
-/* ✅ анимации - ускорены */
-.f1{ animation: drift1 7s ease-in-out infinite; }  /* было 10s */
-.f2{ animation: drift2 8s ease-in-out infinite; }  /* было 12s */
-.f3{ animation: drift3 7.5s ease-in-out infinite; } /* было 11s */
-.f4{ animation: drift4 9s ease-in-out infinite; }   /* было 13s */
-.f5{ animation: drift5 6s ease-in-out infinite; }   /* было 9s */
-.f6{ animation: drift6 9.5s ease-in-out infinite; } /* было 14s */
+/* анимации */
+.f1{ animation: drift1 7s ease-in-out infinite; }
+.f2{ animation: drift2 8s ease-in-out infinite; }
+.f3{ animation: drift3 7.5s ease-in-out infinite; }
+.f4{ animation: drift4 9s ease-in-out infinite; }
+.f5{ animation: drift5 6s ease-in-out infinite; }
+.f6{ animation: drift6 9.5s ease-in-out infinite; }
 
 @keyframes drift1{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(18px,-22px)} }
 @keyframes drift2{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-22px,-14px)} }
@@ -153,7 +185,7 @@ body{
   z-index:2;
 }
 
-/* карточка стекло - панель под кнопками */
+/* карточка стекло */
 .card{
   width:min(520px, 100%);
   padding:22px;
@@ -192,7 +224,7 @@ body{
 
 .btn:active{ 
   transform: scale(.995);
-  background: rgba(255,255,255,.12);
+  background: var(--btn-hover);
 }
 
 .sub{
@@ -245,7 +277,7 @@ body{
 }
 
 .langPill:hover {
-  background: rgba(255,255,255,.12);
+  background: var(--btn-hover);
 }
 
 .langPill:active{ transform: scale(.995); }
@@ -309,7 +341,7 @@ body{
 }
 
 .langClose:hover {
-  background: rgba(255,255,255,.12);
+  background: var(--btn-hover);
 }
 
 .langList{
@@ -375,7 +407,7 @@ body{
 }
 
 .themePill:hover {
-  background: rgba(255,255,255,.12);
+  background: var(--btn-hover);
 }
 
 .themePill:active{ transform: scale(.98); }
@@ -438,7 +470,7 @@ body{
 }
 
 .themeClose:hover {
-  background: rgba(255,255,255,.12);
+  background: var(--btn-hover);
 }
 
 .themeList{
