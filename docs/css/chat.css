@@ -33,11 +33,11 @@
 
 .msg{
   max-width:78%;
-  padding:10px 16px;  /* увеличены отступы */
-  border-radius:20px;  /* чуть больше скругление */
-  line-height:1.5;     /* увеличен межстрочный интервал */
-  font-size: 17px;     /* увеличен размер шрифта */
-  font-weight: 450;    /* немного lighter для лучшей читаемости */
+  padding:10px 16px;
+  border-radius:20px;
+  line-height:1.5;
+  font-size: 17px;
+  font-weight: 450;
   letter-spacing: 0.01em;
   white-space: pre-wrap;
   word-break: break-word;
@@ -148,7 +148,7 @@
 }
 
 /* ============================= */
-/* ✅ ВЕРХНЯЯ ПАНЕЛЬ - СТЕКЛЯННАЯ ДЛЯ НАДПИСИ */
+/* ✅ ВЕРХНЯЯ ПАНЕЛЬ */
 /* ============================= */
 .top{
   position: fixed;
@@ -159,7 +159,7 @@
   gap:10px;
   padding: 8px 14px;
   padding-top: calc(8px + env(safe-area-inset-top));
-  background: transparent;  /* прозрачный фон */
+  background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border-bottom: none;
@@ -170,7 +170,7 @@
   color:rgba(255,255,255,.9);
   text-decoration:none;
   font-size:16px;
-  background: rgba(255,255,255,.1);  /* стеклянный фон для кнопки назад */
+  background: rgba(255,255,255,.1);
   padding: 6px 12px;
   border-radius: 20px;
   backdrop-filter: blur(8px);
@@ -182,7 +182,7 @@
   font-weight:600; 
   font-size:17px;
   color: #ffffff;
-  background: rgba(255,255,255,.1);  /* стеклянный фон для заголовка */
+  background: rgba(255,255,255,.1);
   padding: 6px 16px;
   border-radius: 20px;
   backdrop-filter: blur(8px);
@@ -210,7 +210,7 @@
 }
 
 /* ============================= */
-/* ✅ ПОЛЕ ВВОДА - ТОЛЬКО ПОЛЕ И КНОПКА */
+/* ✅ ПОЛЕ ВВОДА - ФОН КАК У КНОПКИ НАСТРОЕК */
 /* ============================= */
 .input{
   flex:0 0 auto;
@@ -219,21 +219,20 @@
   gap: 10px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: transparent;  /* прозрачный фон */
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-top: none;
+  background: rgba(255,255,255,.1);  /* такой же как у кнопки настроек */
+  backdrop-filter: blur(8px);         /* такой же блюр */
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255,255,255,.08);
   min-height: 60px;
-  /* фон такой же как у чата */
 }
 
 .input textarea {
   flex: 1;
-  padding: 12px 18px;  /* увеличены отступы */
+  padding: 12px 18px;
   border-radius: 24px;
   border: 1px solid rgba(255,255,255,.22);
   outline: none;
-  font-size: 16px;  /* увеличен размер */
+  font-size: 16px;
   color: #0b1220;
   background: rgba(255,255,255,.92);
   box-shadow: 0 10px 24px rgba(0,0,0,.16);
