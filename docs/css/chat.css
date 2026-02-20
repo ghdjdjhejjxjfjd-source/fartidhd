@@ -35,7 +35,7 @@
   padding:8px 14px;
   border-radius:18px;
   line-height:1.4;
-  font-size: 16px;  /* увеличен с 15px до 16px - ТОЛЬКО ЗДЕСЬ */
+  font-size: 16px;
   font-weight: 500;
   white-space: pre-wrap;
   word-break: break-word;
@@ -62,7 +62,7 @@
   }
 }
 
-/* bot: стеклянный (без изменений) */
+/* bot: стеклянный (БЕЗ ИЗМЕНЕНИЙ) */
 .bot .msg{
   align-self:flex-start;
   background: rgba(255,255,255,.16);
@@ -72,13 +72,13 @@
   border-top-left-radius: 4px;
 }
 
-/* user: по теме (без изменений) */
+/* user: ЦВЕТ ИЗ ТЕМЫ, ОЧЕНЬ СЛАБЫЙ, БЕЗ ЯРКОСТИ */
 .user .msg{
   align-self:flex-end;
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.16);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--user-bg);  /* цвет из темы с низкой прозрачностью */
+  border: 1px solid var(--user-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 2px 6px rgba(0,0,0,.25);
   text-align: left;
   border-bottom-right-radius: 4px;
@@ -146,7 +146,7 @@
 }
 
 /* ============================= */
-/* ✅ ПОЛЕ ВВОДА - СДЕЛАЛ ФОН СВЕТЛЕЕ */
+/* ✅ ПОЛЕ ВВОДА */
 /* ============================= */
 .input{
   flex:0 0 auto;
@@ -155,7 +155,7 @@
   gap: 10px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: rgba(8,16,30,.35);  /* было .55, стало .35 - светлее */
+  background: rgba(8,16,30,.35);
   backdrop-filter: blur(32px) saturate(210%);
   -webkit-backdrop-filter: blur(32px) saturate(210%);
   border-top: 1px solid rgba(255,255,255,.08);
@@ -168,7 +168,7 @@
   border-radius: 20px;
   border: 1px solid rgba(255,255,255,.22);
   outline: none;
-  font-size: 15px;  /* вернул обратно 15px */
+  font-size: 15px;
   color: #0b1220;
   background: rgba(255,255,255,.92);
   box-shadow: 0 10px 24px rgba(0,0,0,.16);
@@ -256,22 +256,58 @@
 }
 
 /* ================================================= */
-/* ✅ ТЕМЫ */
+/* ✅ ТЕМЫ - ДЛЯ ПУЗЫРЯ ПОЛЬЗОВАТЕЛЯ (ОЧЕНЬ СЛАБЫЕ ЦВЕТА) */
 /* ================================================= */
+:root[data-theme="blue"] {
+  --accent1: #3aa0ff;
+  --accent2: #0a84ff;
+  --user-bg: rgba(58, 160, 255, 0.15);  /* очень слабый синий */
+  --user-border: rgba(58, 160, 255, 0.25);
+}
+
+:root[data-theme="black"] {
+  --accent1: #6aa7ff;
+  --accent2: #2f7bff;
+  --user-bg: rgba(106, 167, 255, 0.15);  /* очень слабый */
+  --user-border: rgba(106, 167, 255, 0.25);
+  --text: #ffffff;
+}
+
 :root[data-theme="black"] .user .msg{
-  background: linear-gradient(180deg, #1b2f55 0%, #0f1f3d 100%);
-  border: 1px solid rgba(120,160,255,.25);
-  box-shadow: 0 10px 26px rgba(0,0,0,.55), 0 0 18px rgba(80,120,255,.18);
+  background: var(--user-bg);
+  border: 1px solid var(--user-border);
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
 }
 
 :root[data-theme="black"] #sendBtn{
-  background: linear-gradient(180deg, #1e3a6a 0%, #102446 100%);
-  border: 1px solid rgba(120,160,255,.35);
-  box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 14px rgba(90,140,255,.25);
+  background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+  border: 1px solid rgba(255,255,255,.2);
+  box-shadow: 0 6px 18px rgba(0,0,0,.45);
 }
 
 :root[data-theme="black"] #sendBtn,
 :root[data-theme="black"] #sendBtn svg{
-  color: #e6efff;
-  fill: #e6efff;
+  color: #ffffff;
+  fill: #ffffff;
+}
+
+:root[data-theme="purple"] {
+  --accent1: #b98cff;
+  --accent2: #7a5cff;
+  --user-bg: rgba(185, 140, 255, 0.15);  /* очень слабый фиолетовый */
+  --user-border: rgba(185, 140, 255, 0.25);
+}
+
+:root[data-theme="green"] {
+  --accent1: #2fd6a3;
+  --accent2: #11a87b;
+  --user-bg: rgba(47, 214, 163, 0.15);  /* очень слабый зеленый */
+  --user-border: rgba(47, 214, 163, 0.25);
+}
+
+:root[data-theme="gray"] {
+  --accent1: #7fb2ff;
+  --accent2: #4b8dff;
+  --user-bg: rgba(127, 178, 255, 0.15);  /* очень слабый серо-синий */
+  --user-border: rgba(127, 178, 255, 0.25);
 }
