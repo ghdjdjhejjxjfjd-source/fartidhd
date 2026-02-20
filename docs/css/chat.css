@@ -74,13 +74,13 @@
 }
 
 /* ============================= */
-/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ (SVG иконки) */
+/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ (УМЕНЬШЕННЫЕ) */
 /* ============================= */
 .message-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 4px;
-  margin-left: 8px;
+  gap: 4px;
+  margin-top: 2px;
+  margin-left: 6px;
   opacity: 0;
   transform: translateY(-5px);
   transition: all 0.2s ease;
@@ -96,8 +96,8 @@
   background: rgba(255,255,255,.1);
   border: 1px solid rgba(255,255,255,.15);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   cursor: pointer;
   display: flex;
@@ -119,8 +119,8 @@
 }
 
 .action-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   fill: var(--text);
   transition: all 0.2s ease;
 }
@@ -203,4 +203,34 @@
 :root[data-theme="black"] #sendBtn svg{
   color: #e6efff;
   fill: #e6efff;
+}
+
+:root[data-theme="purple"] .action-btn:hover {
+  border-color: #b98cff;
+}
+
+:root[data-theme="purple"] .action-btn.copied {
+  background: rgba(185, 140, 255, 0.3);
+  border-color: #b98cff;
+  color: #b98cff;
+}
+
+:root[data-theme="green"] .action-btn:hover {
+  border-color: #2fd6a3;
+}
+
+:root[data-theme="green"] .action-btn.copied {
+  background: rgba(47, 214, 163, 0.3);
+  border-color: #2fd6a3;
+  color: #2fd6a3;
+}
+
+:root[data-theme="gray"] .action-btn:hover {
+  border-color: #7fb2ff;
+}
+
+:root[data-theme="gray"] .action-btn.copied {
+  background: rgba(127, 178, 255, 0.3);
+  border-color: #7fb2ff;
+  color: #7fb2ff;
 }
