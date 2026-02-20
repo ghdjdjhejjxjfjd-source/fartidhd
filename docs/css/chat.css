@@ -9,7 +9,6 @@
   gap:9px;
   min-height:0;
   touch-action: manipulation;
-  background: rgba(0,0,0,0.4);
 }
 
 /* ============================= */
@@ -34,9 +33,9 @@
 .msg{
   max-width:78%;
   padding:8px 14px;
-  border-radius:10px;
+  border-radius:18px;
   line-height:1.4;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 500;
   white-space: pre-wrap;
   word-break: break-word;
