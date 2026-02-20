@@ -6,7 +6,7 @@
   -webkit-overflow-scrolling: touch;
   display:flex;
   flex-direction:column;
-  gap:8px;  /* уменьшил зазор между сообщениями */
+  gap:4px;  /* ещё уменьшил зазор между сообщениями */
   min-height:0;
   touch-action: manipulation;
 }
@@ -18,6 +18,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  margin: 0;           /* убираем внешние отступы */
+  padding: 0;          /* убираем внутренние отступы */
 }
 
 .msg-wrapper.bot {
@@ -30,7 +32,7 @@
 
 .msg{
   max-width:78%;
-  padding:10px 14px;  /* уменьшил вертикальные отступы */
+  padding:8px 14px;    /* ещё уменьшил вертикальные отступы */
   border-radius:18px;
   line-height:1.4;
   font-size:15px;
@@ -44,8 +46,9 @@
   transform: translateY(6px) scale(0.98);
   animation: msgIn 0.38s ease-out forwards;
   will-change: transform, opacity;
-  width: fit-content;  /* ширина по содержимому */
-  max-width: 78%;      /* но не больше 78% */
+  width: fit-content;
+  max-width: 78%;
+  margin: 0;            /* убираем отступы у самого сообщения */
 }
 
 .msg.bot{ animation-duration: 0.42s; }
@@ -65,7 +68,7 @@
   border: 1px solid rgba(255,255,255,.18);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-top-left-radius: 4px;  /* маленький уголок слева */
+  border-top-left-radius: 4px;
 }
 
 /* user: по теме */
@@ -77,7 +80,7 @@
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 2px 6px rgba(0,0,0,.25);
   text-align: left;
-  border-bottom-right-radius: 4px;  /* маленький уголок справа */
+  border-bottom-right-radius: 4px;
 }
 
 /* ============================= */
@@ -86,28 +89,25 @@
 .message-actions {
   display: flex;
   gap: 4px;
-  margin-top: 4px;
+  margin: 0;            /* убираем все внешние отступы */
+  margin-top: 2px;      /* только маленький отступ сверху */
   margin-left: 8px;
   opacity: 0;
-  transform: translateY(-5px);
-  transition: all 0.2s ease;
-  pointer-events: none;  /* чтобы не мешали наведению */
+  transition: opacity 0.2s ease;
+  height: 0;            /* когда скрыты — не занимают место */
+  overflow: hidden;
+  pointer-events: none;
 }
 
-/* Показываем кнопки при клике на сообщение бота */
+/* Показываем кнопки при клике или наведении */
 .msg-wrapper.bot .msg:active + .message-actions,
 .msg-wrapper.bot .message-actions.show,
-.msg-wrapper.bot .message-actions:active {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-/* Также показываем при наведении (для десктопа) */
 .msg-wrapper.bot:hover .message-actions {
   opacity: 1;
-  transform: translateY(0);
+  height: 28px;         /* когда видны — занимают высоту кнопки */
+  margin-top: 4px;
   pointer-events: auto;
+  overflow: visible;
 }
 
 .action-btn {
@@ -158,7 +158,7 @@
 }
 
 /* ============================= */
-/* ✅ ПОЛЕ ВВОДА (РАСШИРЯЕТСЯ) */
+/* ✅ ПОЛЕ ВВОДА */
 /* ============================= */
 .input{
   flex:0 0 auto;
@@ -226,7 +226,7 @@
 /* ============================= */
 .msg.bot.typing{
   align-self: flex-start;
-  margin-bottom: 4px;
+  margin: 0;            /* убираем отступы */
   padding: 8px 12px;
   max-width: 70px;
   background: rgba(255,255,255,.12);
@@ -286,43 +286,4 @@
 :root[data-theme="black"] #sendBtn svg{
   color: #e6efff;
   fill: #e6efff;
-}
-
-:root[data-theme="purple"] .action-btn:hover {
-  border-color: #b98cff;
-}
-
-:root[data-theme="purple"] .action-btn.copied {
-  background: rgba(185, 140, 255, 0.3);
-  border-color: #b98cff;
-}
-
-:root[data-theme="purple"] .action-btn.copied svg {
-  fill: #b98cff;
-}
-
-:root[data-theme="green"] .action-btn:hover {
-  border-color: #2fd6a3;
-}
-
-:root[data-theme="green"] .action-btn.copied {
-  background: rgba(47, 214, 163, 0.3);
-  border-color: #2fd6a3;
-}
-
-:root[data-theme="green"] .action-btn.copied svg {
-  fill: #2fd6a3;
-}
-
-:root[data-theme="gray"] .action-btn:hover {
-  border-color: #7fb2ff;
-}
-
-:root[data-theme="gray"] .action-btn.copied {
-  background: rgba(127, 178, 255, 0.3);
-  border-color: #7fb2ff;
-}
-
-:root[data-theme="gray"] .action-btn.copied svg {
-  fill: #7fb2ff;
 }
