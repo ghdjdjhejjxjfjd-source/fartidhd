@@ -2,7 +2,6 @@
   flex:1 1 auto;
   padding:16px;
   padding-top: calc(60px + env(safe-area-inset-top));
-  padding-bottom: 16px;  /* добавил отступ снизу */
   overflow-y:auto;
   -webkit-overflow-scrolling: touch;
   display:flex;
@@ -75,18 +74,20 @@
   border-top-left-radius: 6px;
 }
 
-/* user: по теме */
+/* user: цвет из темы с легким блюром */
 .user .msg{
   align-self:flex-end;
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.16);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--accent1);  /* цвет темы */
+  opacity: 0.85;  /* легкая прозрачность */
+  border: 1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(4px);  /* легкий блюр */
+  -webkit-backdrop-filter: blur(4px);
   box-shadow: 0 2px 6px rgba(0,0,0,.25);
   text-align: left;
   border-bottom-right-radius: 6px;
   width: fit-content;
   display: inline-block;
+  color: #ffffff;  /* белый текст */
 }
 
 /* ============================= */
@@ -225,7 +226,7 @@
   -webkit-backdrop-filter: none;
   border-top: none;
   min-height: 60px;
-  margin-top: auto;  /* прижимает к низу */
+  margin-top: auto;
 }
 
 .input textarea {
@@ -322,22 +323,49 @@
 }
 
 /* ================================================= */
-/* ✅ ТЕМЫ */
+/* ✅ ТЕМЫ - акцентные цвета */
 /* ================================================= */
+:root[data-theme="blue"] {
+  --accent1: #3aa0ff;
+  --accent2: #0a84ff;
+}
+
+:root[data-theme="black"] {
+  --accent1: #6aa7ff;
+  --accent2: #2f7bff;
+}
+
+:root[data-theme="purple"] {
+  --accent1: #b98cff;
+  --accent2: #7a5cff;
+}
+
+:root[data-theme="green"] {
+  --accent1: #2fd6a3;
+  --accent2: #11a87b;
+}
+
+:root[data-theme="gray"] {
+  --accent1: #7fb2ff;
+  --accent2: #4b8dff;
+}
+
 :root[data-theme="black"] .user .msg{
-  background: linear-gradient(180deg, #1b2f55 0%, #0f1f3d 100%);
-  border: 1px solid rgba(120,160,255,.25);
-  box-shadow: 0 10px 26px rgba(0,0,0,.55), 0 0 18px rgba(80,120,255,.18);
+  background: var(--accent1);
+  opacity: 0.85;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,.2);
 }
 
 :root[data-theme="black"] #sendBtn{
-  background: linear-gradient(180deg, #1e3a6a 0%, #102446 100%);
-  border: 1px solid rgba(120,160,255,.35);
-  box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 14px rgba(90,140,255,.25);
+  background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+  border: 1px solid rgba(255,255,255,.2);
+  box-shadow: 0 6px 18px rgba(0,0,0,.45);
 }
 
 :root[data-theme="black"] #sendBtn,
 :root[data-theme="black"] #sendBtn svg{
-  color: #e6efff;
-  fill: #e6efff;
+  color: #ffffff;
+  fill: #ffffff;
 }
