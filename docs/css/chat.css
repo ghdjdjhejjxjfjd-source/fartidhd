@@ -65,7 +65,7 @@
 /* bot: стеклянный (без изменений) */
 .bot .msg{
   align-self:flex-start;
-  background: rgba(255,255,255,.16);
+  background: rgba(255,255,255,.12);
   border: 1px solid rgba(255,255,255,.18);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
