@@ -9,6 +9,7 @@
   gap:4px;
   min-height:0;
   touch-action: manipulation;
+  background: transparent; /* фон будет от темы */
 }
 
 /* ============================= */
@@ -62,21 +63,21 @@
   }
 }
 
-/* bot: изменено на .12 */
+/* bot: как было */
 .bot .msg{
   align-self:flex-start;
-  background: rgba(255,255,255,.12);  /* изменено с .16 на .12 */
+  background: rgba(255,255,255,.12);
   border: 1px solid rgba(255,255,255,.18);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-top-left-radius: 4px;
 }
 
-/* user: без изменений */
+/* user: добавлен свет (было .12, стало .16) */
 .user .msg{
   align-self:flex-end;
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.16);  /* увеличено с .12 до .16 */
+  border: 1px solid rgba(255,255,255,.2);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 2px 6px rgba(0,0,0,.25);
@@ -146,7 +147,7 @@
 }
 
 /* ============================= */
-/* ✅ ПОЛЕ ВВОДА - ПРОЗРАЧНОЕ */
+/* ✅ ПОЛЕ ВВОДА - УБРАНА ПОЛОСКА */
 /* ============================= */
 .input{
   flex:0 0 auto;
@@ -155,10 +156,10 @@
   gap: 10px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: transparent;  /* полностью прозрачный */
-  backdrop-filter: none;    /* убрал размытие */
+  background: transparent;  /* прозрачный */
+  backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  border-top: 1px solid rgba(255,255,255,.05);  /* очень тонкая граница */
+  border-top: none;  /* полоска убрана */
   min-height: 60px;
 }
 
@@ -256,22 +257,26 @@
 }
 
 /* ================================================= */
-/* ✅ ТЕМЫ */
+/* ✅ ТЕМЫ - фон чата теперь темнее через body */
 /* ================================================= */
+/* Эти стили работают вместе с base.css, где уже есть узоры */
+
 :root[data-theme="black"] .user .msg{
-  background: linear-gradient(180deg, #1b2f55 0%, #0f1f3d 100%);
-  border: 1px solid rgba(120,160,255,.25);
-  box-shadow: 0 10px 26px rgba(0,0,0,.55), 0 0 18px rgba(80,120,255,.18);
+  background: linear-gradient(180deg, #2a4070 0%, #1a2f55 100%);
+  border: 1px solid rgba(140,180,255,.3);
+  box-shadow: 0 8px 22px rgba(0,0,0,.45);
 }
 
 :root[data-theme="black"] #sendBtn{
-  background: linear-gradient(180deg, #1e3a6a 0%, #102446 100%);
-  border: 1px solid rgba(120,160,255,.35);
-  box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 14px rgba(90,140,255,.25);
+  background: linear-gradient(180deg, #2e4f8a 0%, #1a3a6a 100%);
+  border: 1px solid rgba(140,180,255,.4);
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
 }
 
 :root[data-theme="black"] #sendBtn,
 :root[data-theme="black"] #sendBtn svg{
-  color: #e6efff;
-  fill: #e6efff;
+  color: #ffffff;
+  fill: #ffffff;
 }
+
+/* Для остальных тем - фон остается как в base.css */
