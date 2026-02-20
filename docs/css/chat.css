@@ -62,7 +62,7 @@
   }
 }
 
-/* bot: стеклянный (БЕЗ ИЗМЕНЕНИЙ) */
+/* bot: стеклянный */
 .bot .msg{
   align-self:flex-start;
   background: rgba(255,255,255,.16);
@@ -72,10 +72,10 @@
   border-top-left-radius: 4px;
 }
 
-/* user: ЦВЕТ ИЗ ТЕМЫ, ОЧЕНЬ СЛАБЫЙ, БЕЗ ЯРКОСТИ */
+/* user: цвет из темы, очень слабый */
 .user .msg{
   align-self:flex-end;
-  background: var(--user-bg);  /* цвет из темы с низкой прозрачностью */
+  background: var(--user-bg);
   border: 1px solid var(--user-border);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -146,7 +146,7 @@
 }
 
 /* ============================= */
-/* ✅ ПОЛЕ ВВОДА */
+/* ✅ НИЖНЯЯ ПАНЕЛЬ - ПОЛНОСТЬЮ ПРОЗРАЧНАЯ */
 /* ============================= */
 .input{
   flex:0 0 auto;
@@ -155,10 +155,10 @@
   gap: 10px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: rgba(8,16,30,.35);
-  backdrop-filter: blur(32px) saturate(210%);
-  -webkit-backdrop-filter: blur(32px) saturate(210%);
-  border-top: 1px solid rgba(255,255,255,.08);
+  background: transparent;  /* ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ */
+  backdrop-filter: none;    /* УБРАЛ РАЗМЫТИЕ */
+  -webkit-backdrop-filter: none;
+  border-top: none;         /* УБРАЛ ГРАНИЦУ */
   min-height: 60px;
 }
 
@@ -210,6 +210,68 @@
 }
 
 /* ============================= */
+/* ✅ ВЕРХНЯЯ ПАНЕЛЬ - УБРАНА, ТОЛЬКО СТЕКЛЯННЫЙ ЗАГОЛОВОК */
+/* ============================= */
+.top{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 20;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 8px 14px;
+  padding-top: calc(8px + env(safe-area-inset-top));
+  background: transparent;  /* ПРОЗРАЧНЫЙ ФОН */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: none;
+  flex:0 0 auto;
+}
+
+.top a{
+  color:rgba(255,255,255,.9);
+  text-decoration:none;
+  font-size:16px;
+  background: rgba(255,255,255,.1);  /* СТЕКЛЯННЫЙ ФОН */
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+}
+
+.title{ 
+  font-weight:600; 
+  font-size:17px;
+  color: #ffffff;
+  background: rgba(255,255,255,.1);  /* СТЕКЛЯННЫЙ ФОН */
+  padding: 6px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+  margin-left: 4px;
+}
+
+.spacer{ flex:1; }
+
+.gear{
+  width:36px;
+  height:36px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.1);
+  color:#fff;
+  font-size:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: none;
+}
+
+/* ============================= */
 /* ✅ typing bubble */
 /* ============================= */
 .msg.bot.typing{
@@ -256,27 +318,21 @@
 }
 
 /* ================================================= */
-/* ✅ ТЕМЫ - ДЛЯ ПУЗЫРЯ ПОЛЬЗОВАТЕЛЯ (ОЧЕНЬ СЛАБЫЕ ЦВЕТА) */
+/* ✅ ТЕМЫ */
 /* ================================================= */
 :root[data-theme="blue"] {
   --accent1: #3aa0ff;
   --accent2: #0a84ff;
-  --user-bg: rgba(58, 160, 255, 0.15);  /* очень слабый синий */
+  --user-bg: rgba(58, 160, 255, 0.15);
   --user-border: rgba(58, 160, 255, 0.25);
 }
 
 :root[data-theme="black"] {
   --accent1: #6aa7ff;
   --accent2: #2f7bff;
-  --user-bg: rgba(106, 167, 255, 0.15);  /* очень слабый */
+  --user-bg: rgba(106, 167, 255, 0.15);
   --user-border: rgba(106, 167, 255, 0.25);
   --text: #ffffff;
-}
-
-:root[data-theme="black"] .user .msg{
-  background: var(--user-bg);
-  border: 1px solid var(--user-border);
-  box-shadow: 0 2px 6px rgba(0,0,0,.25);
 }
 
 :root[data-theme="black"] #sendBtn{
@@ -294,20 +350,20 @@
 :root[data-theme="purple"] {
   --accent1: #b98cff;
   --accent2: #7a5cff;
-  --user-bg: rgba(185, 140, 255, 0.15);  /* очень слабый фиолетовый */
+  --user-bg: rgba(185, 140, 255, 0.15);
   --user-border: rgba(185, 140, 255, 0.25);
 }
 
 :root[data-theme="green"] {
   --accent1: #2fd6a3;
   --accent2: #11a87b;
-  --user-bg: rgba(47, 214, 163, 0.15);  /* очень слабый зеленый */
+  --user-bg: rgba(47, 214, 163, 0.15);
   --user-border: rgba(47, 214, 163, 0.25);
 }
 
 :root[data-theme="gray"] {
   --accent1: #7fb2ff;
   --accent2: #4b8dff;
-  --user-bg: rgba(127, 178, 255, 0.15);  /* очень слабый серо-синий */
+  --user-bg: rgba(127, 178, 255, 0.15);
   --user-border: rgba(127, 178, 255, 0.25);
 }
