@@ -74,11 +74,11 @@
 }
 
 /* ============================= */
-/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ (без текста) */
+/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ (SVG иконки) */
 /* ============================= */
 .message-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   margin-top: 4px;
   margin-left: 8px;
   opacity: 0;
@@ -95,19 +95,17 @@
 .action-btn {
   background: rgba(255,255,255,.1);
   border: 1px solid rgba(255,255,255,.15);
-  border-radius: 50%;  /* Круглые кнопки */
-  width: 32px;
-  height: 32px;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
   padding: 0;
-  color: var(--text);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  font-size: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .action-btn:hover {
@@ -120,10 +118,24 @@
   transform: scale(0.95);
 }
 
+.action-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--text);
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover svg {
+  fill: var(--accent1);
+}
+
 .action-btn.copied {
-  background: rgba(46, 213, 115, 0.3);
+  background: rgba(46, 213, 115, 0.2);
   border-color: #2ed573;
-  color: #2ed573;
+}
+
+.action-btn.copied svg {
+  fill: #2ed573;
 }
 
 /* ============================= */
@@ -191,34 +203,4 @@
 :root[data-theme="black"] #sendBtn svg{
   color: #e6efff;
   fill: #e6efff;
-}
-
-:root[data-theme="purple"] .action-btn:hover {
-  border-color: #b98cff;
-}
-
-:root[data-theme="purple"] .action-btn.copied {
-  background: rgba(185, 140, 255, 0.3);
-  border-color: #b98cff;
-  color: #b98cff;
-}
-
-:root[data-theme="green"] .action-btn:hover {
-  border-color: #2fd6a3;
-}
-
-:root[data-theme="green"] .action-btn.copied {
-  background: rgba(47, 214, 163, 0.3);
-  border-color: #2fd6a3;
-  color: #2fd6a3;
-}
-
-:root[data-theme="gray"] .action-btn:hover {
-  border-color: #7fb2ff;
-}
-
-:root[data-theme="gray"] .action-btn.copied {
-  background: rgba(127, 178, 255, 0.3);
-  border-color: #7fb2ff;
-  color: #7fb2ff;
 }
