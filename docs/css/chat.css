@@ -46,9 +46,10 @@
   transform: translateY(6px) scale(0.98);
   animation: msgIn 0.38s ease-out forwards;
   will-change: transform, opacity;
-  width: fit-content;        /* ← ключевое свойство */
+  width: fit-content;
   max-width: 78%;
   margin: 0;
+  display: inline-block;        /* добавляем */
 }
 
 .msg.bot{ animation-duration: 0.42s; }
@@ -81,31 +82,20 @@
   box-shadow: 0 2px 6px rgba(0,0,0,.25);
   text-align: left;
   border-bottom-right-radius: 4px;
-  width: fit-content;        /* ← ключевое свойство */
+  width: fit-content;
+  display: inline-block;        /* добавляем */
 }
 
 /* ============================= */
-/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ */
+/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ (ВСЕГДА ВИДНЫ) */
 /* ============================= */
 .message-actions {
   display: flex;
   gap: 4px;
-  margin: 0;
-  margin-top: 2px;
-  margin-left: 8px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  height: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.msg-wrapper.bot .msg:active + .message-actions,
-.msg-wrapper.bot .message-actions.show,
-.msg-wrapper.bot:hover .message-actions {
-  opacity: 1;
-  height: 28px;
   margin-top: 4px;
+  margin-left: 8px;
+  opacity: 1;           /* всегда видимы */
+  height: 28px;         /* всегда занимают место */
   pointer-events: auto;
   overflow: visible;
 }
@@ -124,7 +114,6 @@
   transition: all 0.2s ease;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  pointer-events: auto;
 }
 
 .action-btn:hover {
