@@ -74,11 +74,11 @@
 }
 
 /* ============================= */
-/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ */
+/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ (без текста) */
 /* ============================= */
 .message-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-top: 4px;
   margin-left: 8px;
   opacity: 0;
@@ -95,51 +95,35 @@
 .action-btn {
   background: rgba(255,255,255,.1);
   border: 1px solid rgba(255,255,255,.15);
-  border-radius: 16px;
-  padding: 6px 12px;
-  font-size: 13px;
+  border-radius: 50%;  /* Круглые кнопки */
+  width: 32px;
+  height: 32px;
+  padding: 0;
   color: var(--text);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
   transition: all 0.2s ease;
+  font-size: 16px;
 }
 
 .action-btn:hover {
   background: rgba(255,255,255,.2);
   border-color: var(--accent1);
-  transform: scale(1.02);
+  transform: scale(1.1);
 }
 
 .action-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
 }
 
 .action-btn.copied {
   background: rgba(46, 213, 115, 0.3);
   border-color: #2ed573;
   color: #2ed573;
-}
-
-.action-btn.share-btn {
-  background: rgba(255,255,255,.1);
-}
-
-.action-btn.share-btn:hover {
-  background: rgba(255,255,255,.2);
-  border-color: var(--accent1);
-}
-
-/* иконки */
-.action-icon {
-  font-size: 14px;
-}
-
-.action-text {
-  font-weight: 500;
 }
 
 /* ============================= */
@@ -189,7 +173,7 @@
 }
 
 /* ================================================= */
-/* ✅ BLACK THEME */
+/* ✅ ТЕМЫ */
 /* ================================================= */
 :root[data-theme="black"] .user .msg{
   background: linear-gradient(180deg, #1b2f55 0%, #0f1f3d 100%);
@@ -209,9 +193,6 @@
   fill: #e6efff;
 }
 
-/* ================================================= */
-/* ✅ PURPLE THEME */
-/* ================================================= */
 :root[data-theme="purple"] .action-btn:hover {
   border-color: #b98cff;
 }
@@ -222,9 +203,6 @@
   color: #b98cff;
 }
 
-/* ================================================= */
-/* ✅ GREEN THEME */
-/* ================================================= */
 :root[data-theme="green"] .action-btn:hover {
   border-color: #2fd6a3;
 }
@@ -235,9 +213,6 @@
   color: #2fd6a3;
 }
 
-/* ================================================= */
-/* ✅ GRAY THEME */
-/* ================================================= */
 :root[data-theme="gray"] .action-btn:hover {
   border-color: #7fb2ff;
 }
