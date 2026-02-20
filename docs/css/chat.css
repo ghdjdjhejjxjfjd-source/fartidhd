@@ -1,5 +1,5 @@
 /* ============================= */
-/* ✅ ОСНОВНОЙ ЧАТ - мягкий, комфортный */
+/* ✅ ОСНОВНОЙ ЧАТ - МАКСИМАЛЬНО КОМФОРТНЫЙ */
 /* ============================= */
 .chat{
   flex:1 1 auto;
@@ -9,14 +9,14 @@
   -webkit-overflow-scrolling: touch;
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:8px;
   min-height:0;
   touch-action: manipulation;
-  background: transparent; /* фон будет от темы */
+  background: transparent;
 }
 
 /* ============================= */
-/* ✅ СООБЩЕНИЯ - мягкие, приятные */
+/* ✅ СООБЩЕНИЯ - КАК В МЕССЕНДЖЕРАХ */
 /* ============================= */
 .msg-wrapper {
   display: flex;
@@ -36,17 +36,17 @@
 
 .msg{
   max-width:78%;
-  padding:10px 16px;  /* чуть больше отступов для воздуха */
-  border-radius:20px;  /* более мягкие углы */
-  line-height:1.5;     /* увеличен межстрочный интервал */
-  font-size: 16px;     /* комфортный размер */
-  font-weight: 400;    /* нормальная жирность, не жирный */
-  letter-spacing: 0.01em; /* микроскопический интервал между буквами */
+  padding:10px 16px;
+  border-radius:20px;
+  line-height:1.5;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* очень мягкая тень */
+  box-shadow: none;  /* убираем все тени */
   opacity: 0;
   transform: translateY(6px) scale(0.98);
   animation: msgIn 0.38s ease-out forwards;
@@ -55,7 +55,7 @@
   max-width: 78%;
   margin: 0;
   display: inline-block;
-  color: var(--text); /* цвет из темы */
+  color: var(--text);
 }
 
 .msg.bot{ animation-duration: 0.42s; }
@@ -68,39 +68,40 @@
   }
 }
 
-/* bot: очень мягкий, полупрозрачный */
+/* bot: как в Telegram (светло-серый) */
 .bot .msg{
   align-self:flex-start;
-  background: rgba(255,255,255,0.08);  /* очень прозрачный */
-  border: 1px solid rgba(255,255,255,0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-top-left-radius: 6px;  /* мягкий уголок */
+  background: rgba(255,255,255,0.12);  /* единый фон для всех тем */
+  border: none;  /* убираем границы */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-top-left-radius: 6px;
+  color: #ffffff;  /* белый текст для читаемости */
 }
 
-/* user: по теме, но очень мягкий */
+/* user: цвет из темы, но приглушенный */
 .user .msg{
   align-self:flex-end;
-  background: rgba(255,255,255,0.06);  /* ещё прозрачнее */
-  border: 1px solid rgba(255,255,255,0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  background: var(--accent1);  /* цвет темы */
+  opacity: 0.9;  /* немного приглушаем */
+  border: none;
+  box-shadow: none;
   text-align: left;
   border-bottom-right-radius: 6px;
   width: fit-content;
   display: inline-block;
+  color: #ffffff;  /* белый текст всегда */
 }
 
 /* ============================= */
-/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ - очень тонкие */
+/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ - НЕЗАМЕТНЫЕ */
 /* ============================= */
 .message-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   margin-top: 2px;
   margin-left: 8px;
-  opacity: 0.5;  /* полупрозрачные в обычном состоянии */
+  opacity: 0.3;  /* очень незаметные */
   height: 20px;
   pointer-events: auto;
   overflow: visible;
@@ -109,7 +110,7 @@
 }
 
 .message-actions:hover {
-  opacity: 1;  /* становятся ярче при наведении */
+  opacity: 0.8;
 }
 
 .action-btn {
@@ -124,29 +125,19 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  opacity: 0.6;
-}
-
-.action-btn:hover {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-.action-btn:active {
-  transform: scale(0.95);
 }
 
 .action-btn svg {
   width: 16px;
   height: 16px;
-  fill: var(--text);
+  fill: #ffffff;  /* всегда белые */
+  opacity: 0.5;
   transition: all 0.2s ease;
-  opacity: 0.7;  /* мягкие иконки */
 }
 
 .action-btn:hover svg {
-  fill: var(--accent1);
   opacity: 1;
+  fill: #ffffff;
 }
 
 .action-btn.copied svg {
@@ -154,13 +145,8 @@
   opacity: 1;
 }
 
-.action-btn.copied {
-  background: transparent;
-  border: none;
-}
-
 /* ============================= */
-/* ✅ ПОЛЕ ВВОДА - очень мягкое */
+/* ✅ ПОЛЕ ВВОДА - МИНИМАЛИСТИЧНОЕ */
 /* ============================= */
 .input{
   flex:0 0 auto;
@@ -169,10 +155,10 @@
   gap: 8px;
   padding: 8px 16px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: rgba(8,16,30,0.2);  /* очень прозрачный */
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 1px solid rgba(255,255,255,0.05);
+  background: rgba(0,0,0,0.2);  /* темный полупрозрачный */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: none;
   min-height: 60px;
 }
 
@@ -180,12 +166,12 @@
   flex: 1;
   padding: 12px 18px;
   border-radius: 24px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: none;
   outline: none;
   font-size: 16px;
-  color: var(--text);
-  background: rgba(255,255,255,0.08);  /* прозрачный фон */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  color: #ffffff;
+  background: rgba(255,255,255,0.1);
+  box-shadow: none;
   caret-color: var(--accent1);
   resize: none;
   max-height: 120px;
@@ -194,8 +180,6 @@
   font-family: inherit;
   overflow-y: auto;
   transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 
 .input textarea::placeholder {
@@ -204,8 +188,7 @@
 }
 
 .input textarea:focus{
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.15);
 }
 
 .input button{
@@ -213,22 +196,19 @@
   border-radius:24px;
   border: none;
   font-size:16px;
-  font-weight:500;  /* менее жирный */
-  background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 100%);
-  color:#fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-weight:500;
+  background: var(--accent1);
+  color:#ffffff;
+  box-shadow: none;
   height: 48px;
   align-self: flex-end;
   cursor: pointer;
   transition: all 0.2s ease;
   opacity: 0.9;
-  letter-spacing: 0.5px;
 }
 
 .input button:hover {
   opacity: 1;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
 .input button:active {
@@ -241,20 +221,20 @@
 }
 
 /* ============================= */
-/* ✅ typing bubble - очень мягкий */
+/* ✅ typing bubble */
 /* ============================= */
 .msg.bot.typing{
   align-self: flex-start;
   margin: 0;
   padding: 10px 14px;
   max-width: 70px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.1);
+  border: none;
   border-radius: 20px;
   border-top-left-radius: 6px;
-  backdrop-filter: blur(8px) saturate(160%);
-  -webkit-backdrop-filter: blur(8px) saturate(160%);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -272,8 +252,8 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--text);
-  opacity: 0.3;
+  background: #ffffff;
+  opacity: 0.5;
   animation: typingPulse 1.2s infinite ease-in-out;
 }
 
@@ -281,67 +261,44 @@
 .typing .dot:nth-child(3){ animation-delay: .4s; }
 
 @keyframes typingPulse{
-  0%, 100% { opacity: 0.2; transform: translateY(0); }
-  50% { opacity: 0.8; transform: translateY(-3px); }
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-3px); }
 }
 
 /* ============================= */
-/* ✅ ТЕМЫ - адаптация под мягкий стиль */
+/* ✅ ТЕМЫ - ТОЛЬКО ЦВЕТ АКЦЕНТА */
 /* ============================= */
 
-/* Для каждой темы делаем мягкие акценты */
-:root[data-theme="blue"] .user .msg{
-  background: rgba(58, 160, 255, 0.1);  /* очень мягкий синий */
-  border-color: rgba(58, 160, 255, 0.15);
+:root[data-theme="blue"] {
+  --accent1: #3aa0ff;
 }
 
-:root[data-theme="blue"] .action-btn:hover svg {
-  fill: #3aa0ff;
+:root[data-theme="black"] {
+  --accent1: #6aa7ff;
 }
 
-:root[data-theme="black"] .user .msg{
-  background: rgba(106, 167, 255, 0.1);
-  border-color: rgba(106, 167, 255, 0.15);
+:root[data-theme="purple"] {
+  --accent1: #b98cff;
 }
 
-:root[data-theme="black"] .action-btn:hover svg {
-  fill: #6aa7ff;
+:root[data-theme="green"] {
+  --accent1: #2fd6a3;
 }
 
-:root[data-theme="purple"] .user .msg{
-  background: rgba(185, 140, 255, 0.1);
-  border-color: rgba(185, 140, 255, 0.15);
+:root[data-theme="gray"] {
+  --accent1: #7fb2ff;
 }
 
-:root[data-theme="purple"] .action-btn:hover svg {
-  fill: #b98cff;
-}
-
-:root[data-theme="green"] .user .msg{
-  background: rgba(47, 214, 163, 0.1);
-  border-color: rgba(47, 214, 163, 0.15);
-}
-
-:root[data-theme="green"] .action-btn:hover svg {
-  fill: #2fd6a3;
-}
-
-:root[data-theme="gray"] .user .msg{
-  background: rgba(127, 178, 255, 0.1);
-  border-color: rgba(127, 178, 255, 0.15);
-}
-
-:root[data-theme="gray"] .action-btn:hover svg {
-  fill: #7fb2ff;
+/* Текст всегда белый для читаемости */
+:root {
+  --text: #ffffff;
 }
 
 /* ============================= */
-/* ✅ ДОПОЛНИТЕЛЬНЫЕ УЛУЧШЕНИЯ */
+/* ✅ СКРОЛЛ - НЕЗАМЕТНЫЙ */
 /* ============================= */
-
-/* Плавный скролл */
 .chat::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .chat::-webkit-scrollbar-track {
@@ -349,22 +306,10 @@
 }
 
 .chat::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
 }
 
 .chat::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.3);
-}
-
-/* Убираем выделение текста при тапах */
-.msg {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* Плавные переходы для всех элементов */
-* {
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(255,255,255,0.2);
 }
