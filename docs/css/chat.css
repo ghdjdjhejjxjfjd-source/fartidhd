@@ -9,6 +9,7 @@
   gap:9px;
   min-height:0;
   touch-action: manipulation;
+  background: #000000;
 }
 
 /* ============================= */
