@@ -6,7 +6,7 @@
   -webkit-overflow-scrolling: touch;
   display:flex;
   flex-direction:column;
-  gap:10px;  /* ещё уменьшил зазор между сообщениями */
+  gap:4px;
   min-height:0;
   touch-action: manipulation;
 }
@@ -18,8 +18,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin: 0;           /* убираем внешние отступы */
-  padding: 0;          /* убираем внутренние отступы */
+  margin: 0;
+  padding: 0;
 }
 
 .msg-wrapper.bot {
@@ -32,7 +32,7 @@
 
 .msg{
   max-width:78%;
-  padding:8px 14px;    /* ещё уменьшил вертикальные отступы */
+  padding:8px 14px;
   border-radius:18px;
   line-height:1.4;
   font-size:15px;
@@ -46,9 +46,9 @@
   transform: translateY(6px) scale(0.98);
   animation: msgIn 0.38s ease-out forwards;
   will-change: transform, opacity;
-  width: fit-content;
+  width: fit-content;        /* ← ключевое свойство */
   max-width: 78%;
-  margin: 0;            /* убираем отступы у самого сообщения */
+  margin: 0;
 }
 
 .msg.bot{ animation-duration: 0.42s; }
@@ -81,6 +81,7 @@
   box-shadow: 0 2px 6px rgba(0,0,0,.25);
   text-align: left;
   border-bottom-right-radius: 4px;
+  width: fit-content;        /* ← ключевое свойство */
 }
 
 /* ============================= */
@@ -89,22 +90,21 @@
 .message-actions {
   display: flex;
   gap: 4px;
-  margin: 0;            /* убираем все внешние отступы */
-  margin-top: 2px;      /* только маленький отступ сверху */
+  margin: 0;
+  margin-top: 2px;
   margin-left: 8px;
   opacity: 0;
   transition: opacity 0.2s ease;
-  height: 0;            /* когда скрыты — не занимают место */
+  height: 0;
   overflow: hidden;
   pointer-events: none;
 }
 
-/* Показываем кнопки при клике или наведении */
 .msg-wrapper.bot .msg:active + .message-actions,
 .msg-wrapper.bot .message-actions.show,
 .msg-wrapper.bot:hover .message-actions {
   opacity: 1;
-  height: 28px;         /* когда видны — занимают высоту кнопки */
+  height: 28px;
   margin-top: 4px;
   pointer-events: auto;
   overflow: visible;
@@ -226,7 +226,7 @@
 /* ============================= */
 .msg.bot.typing{
   align-self: flex-start;
-  margin: 0;            /* убираем отступы */
+  margin: 0;
   padding: 8px 12px;
   max-width: 70px;
   background: rgba(255,255,255,.12);
