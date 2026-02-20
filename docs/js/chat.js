@@ -55,16 +55,119 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.scrollTop = chatEl.scrollHeight;
   }
 
+  // Функция для копирования текста
+  async function copyText(text, button) {
+    try {
+      await navigator.clipboard.writeText(text);
+      
+      // Меняем кнопку на "Скопировано!"
+      const originalText = button.innerHTML;
+      button.classList.add('copied');
+      button.innerHTML = `<span class="action-icon">✓</span><span class="action-text">Скопировано!</span>`;
+      
+      // Через 2 секунды возвращаем обратно
+      setTimeout(() => {
+        button.classList.remove('copied');
+        button.innerHTML = originalText;
+      }, 2000);
+      
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  }
+
+  // Функция для шаринга
+  function shareText(text) {
+    const message = encodeURIComponent(`🤖 InstaGroq AI:\n\n${text}\n\n— via @InstaGroqBot`);
+    
+    if (tg && tg.openTelegramLink) {
+      // Если в Telegram WebApp
+      tg.openTelegramLink(`https://t.me/share/url?url=&text=${message}`);
+    } else {
+      // В браузере
+      window.open(`https://t.me/share/url?url=&text=${message}`, '_blank');
+    }
+  }
+
+  // Функция создания кнопок для сообщения
+  function createMessageActions(messageText, messageId) {
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'message-actions';
+    actionsDiv.setAttribute('data-message-id', messageId);
+    
+    // Кнопка копировать
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'action-btn copy-btn';
+    copyBtn.innerHTML = `<span class="action-icon">📋</span><span class="action-text">Копировать</span>`;
+    copyBtn.onclick = (e) => {
+      e.stopPropagation();
+      copyText(messageText, copyBtn);
+    };
+    
+    // Кнопка поделиться
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'action-btn share-btn';
+    shareBtn.innerHTML = `<span class="action-icon">📤</span><span class="action-text">Поделиться</span>`;
+    shareBtn.onclick = (e) => {
+      e.stopPropagation();
+      shareText(messageText);
+    };
+    
+    actionsDiv.appendChild(copyBtn);
+    actionsDiv.appendChild(shareBtn);
+    
+    return actionsDiv;
+  }
+
   function add(type, text, persist=true){
-    const d = document.createElement("div");
-    d.className = "msg " + type;
-    d.textContent = text;
-    chatEl.appendChild(d);
+    const wrapper = document.createElement('div');
+    wrapper.className = `msg-wrapper ${type}`;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `msg ${type}`;
+    messageDiv.textContent = text;
+    
+    wrapper.appendChild(messageDiv);
+    
+    // Добавляем кнопки только для сообщений бота
+    if (type === 'bot') {
+      const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      wrapper.setAttribute('data-message-id', messageId);
+      
+      const actions = createMessageActions(text, messageId);
+      wrapper.appendChild(actions);
+      
+      // Показываем кнопки при наведении/тапе
+      let hideTimeout;
+      wrapper.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimeout);
+        actions.classList.add('show');
+      });
+      
+      wrapper.addEventListener('mouseleave', () => {
+        hideTimeout = setTimeout(() => {
+          if (!actions.matches(':hover')) {
+            actions.classList.remove('show');
+          }
+        }, 300);
+      });
+      
+      actions.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimeout);
+      });
+      
+      actions.addEventListener('mouseleave', () => {
+        hideTimeout = setTimeout(() => {
+          actions.classList.remove('show');
+        }, 300);
+      });
+    }
+    
+    chatEl.appendChild(wrapper);
     chatEl.scrollTop = chatEl.scrollHeight;
 
     if (persist) {
       history.push({ role: type === "user" ? "user" : "assistant", text: String(text || "") });
-      // Увеличил лимит истории до 200 сообщений для лучшей памяти
       if (history.length > 200) history = history.slice(-200);
       saveHistory(history);
     }
@@ -74,15 +177,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     try{
       const urlLang = getLangFromUrl();
       if (urlLang) {
-        console.log("Using language from URL:", urlLang);
         return urlLang;
       }
-      
       const stored = localStorage.getItem("miniapp_lang_v1");
-      console.log("Using language from localStorage:", stored);
       return stored || "ru";
     }catch(e){
-      console.error("Error getting language:", e);
       return "ru";
     }
   }
@@ -95,11 +194,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return localStorage.getItem("ai_style") || "steps";
   }
 
-  // Обновленный helloText только для нужных языков
   function helloText(){
     const lang = getLang();
-    console.log("Hello text language:", lang);
-    
     const hellos = {
       "ru": "👋 Привет! Напиши что-нибудь — я на связи.",
       "kk": "👋 Сәлем! Бірдеңе жаз — мен осындамын.",
@@ -108,7 +204,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       "uk": "👋 Привіт! Напиши щось — я на зв'язку.",
       "fr": "👋 Salut ! Écris quelque chose — je suis là."
     };
-    
     return hellos[lang] || hellos["ru"];
   }
 
@@ -125,17 +220,14 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.scrollTop = chatEl.scrollHeight;
   }
 
-  // Улучшенная функция для построения промпта с полной историей
   function buildPrompt(userText){
     const lang = getLang();
     const persona = getPersona();
     const style = getStyle();
     
-    // Берем до 50 последних сообщений для лучшего контекста
-    const maxHistory = 50;
+    const maxHistory = 20;
     const recentHistory = history.slice(-maxHistory);
     
-    // Формируем полную историю разговора
     let conversationHistory = "";
     if (recentHistory.length > 0) {
       conversationHistory = "Previous conversation:\n";
@@ -147,7 +239,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       conversationHistory = "No previous conversation.\n";
     }
 
-    // Язык для ответа
     const langNames = {
       "ru": "Russian",
       "kk": "Kazakh",
@@ -158,19 +249,17 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     };
     const targetLang = langNames[lang] || "Russian";
 
-    // Стиль ответа
     const styleDesc = {
       "short": "Keep answers VERY short (1-2 sentences).",
       "steps": "Answer step by step, structured.",
       "detail": "Answer in detail but without unnecessary words."
     }[style] || "Answer naturally.";
 
-    // Характер с усиленными инструкциями
     const personaDesc = {
-      "friendly": "You are FRIENDLY and WARM. Use smileys 🙂 in EVERY message. Ask how they are doing. Be consistently friendly throughout the entire conversation.",
-      "fun": "You are FUN and HUMOROUS. Use lots of emojis 😄 😂 in EVERY message. Make jokes and be playful in EVERY response. Never be serious or boring.",
-      "strict": "You are STRICT and SERIOUS. NEVER use emojis. Be short and direct in EVERY message. Only facts, no emotions. Be consistently strict.",
-      "smart": "You are SMART and THOUGHTFUL. Use smart emojis 🧐 🤔 in EVERY message. Give detailed explanations. Be consistently intelligent."
+      "friendly": "You are FRIENDLY and WARM. Use smileys 🙂 in EVERY message. Ask how they are doing.",
+      "fun": "You are FUN and HUMOROUS. Use lots of emojis 😄 😂 in EVERY message. Make jokes and be playful.",
+      "strict": "You are STRICT and SERIOUS. NEVER use emojis. Be short and direct. Only facts.",
+      "smart": "You are SMART and THOUGHTFUL. Use smart emojis 🧐 🤔 in EVERY message. Give detailed explanations."
     }[persona] || "You are friendly and warm.";
 
     return `${conversationHistory}
@@ -181,7 +270,6 @@ IMPORTANT INSTRUCTIONS:
 2. Personality: ${personaDesc}
 3. Style: ${styleDesc}
 4. Remember the entire conversation history above
-5. Be consistent with your personality in this response
 
 Response:`;
   }
@@ -202,9 +290,6 @@ Response:`;
       const persona = getPersona();
       const style = getStyle();
       
-      console.log("Sending with lang:", lang, "persona:", persona, "style:", style);
-      
-      // Передаем параметры в askAI
       const answer = await askAI(t, lang, persona, style);
 
       removeTyping();
@@ -257,7 +342,6 @@ Response:`;
     saveHistory(history);
     try {
       await clearAIMemory();
-      console.log("Server memory cleared");
     } catch (e) {
       console.error("Failed to clear server memory:", e);
     }
