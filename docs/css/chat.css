@@ -6,7 +6,7 @@
   -webkit-overflow-scrolling: touch;
   display:flex;
   flex-direction:column;
-  gap:4px;
+  gap:10px;
   min-height:0;
   touch-action: manipulation;
 }
@@ -49,7 +49,7 @@
   width: fit-content;
   max-width: 78%;
   margin: 0;
-  display: inline-block;        /* добавляем */
+  display: inline-block;
 }
 
 .msg.bot{ animation-duration: 0.42s; }
@@ -83,42 +83,41 @@
   text-align: left;
   border-bottom-right-radius: 4px;
   width: fit-content;
-  display: inline-block;        /* добавляем */
+  display: inline-block;
 }
 
 /* ============================= */
-/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ (ВСЕГДА ВИДНЫ) */
+/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ (ТОЛЬКО ИКОНКИ, БЕЗ КРУГА) */
 /* ============================= */
 .message-actions {
   display: flex;
-  gap: 4px;
+  gap: 8px;
   margin-top: 4px;
   margin-left: 8px;
-  opacity: 1;           /* всегда видимы */
-  height: 28px;         /* всегда занимают место */
+  opacity: 1;
+  height: 20px;
   pointer-events: auto;
   overflow: visible;
+  align-items: center;
 }
 
 .action-btn {
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.15);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  background: transparent;        /* убрали фон */
+  border: none;                   /* убрали обводку */
+  border-radius: 0;               /* убрали скругление */
+  width: 20px;
+  height: 20px;
   padding: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  opacity: 0.7;
 }
 
 .action-btn:hover {
-  background: rgba(255,255,255,.2);
-  border-color: var(--accent1);
+  opacity: 1;
   transform: scale(1.1);
 }
 
@@ -127,8 +126,8 @@
 }
 
 .action-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   fill: var(--text);
   transition: all 0.2s ease;
 }
@@ -137,13 +136,14 @@
   fill: var(--accent1);
 }
 
-.action-btn.copied {
-  background: rgba(46, 213, 115, 0.2);
-  border-color: #2ed573;
-}
-
 .action-btn.copied svg {
   fill: #2ed573;
+}
+
+/* убираем фон у скопированного состояния */
+.action-btn.copied {
+  background: transparent;
+  border: none;
 }
 
 /* ============================= */
