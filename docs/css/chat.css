@@ -6,7 +6,7 @@
   -webkit-overflow-scrolling: touch;
   display:flex;
   flex-direction:column;
-  gap:4px;  /* вернул как было */
+  gap:9px;  /* вернул как было */
   min-height:0;
   touch-action: manipulation;
 }
