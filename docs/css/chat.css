@@ -6,7 +6,7 @@
   -webkit-overflow-scrolling: touch;
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:8px;  /* уменьшил зазор между сообщениями */
   min-height:0;
   touch-action: manipulation;
 }
@@ -30,20 +30,22 @@
 
 .msg{
   max-width:78%;
-  padding:12px 14px;
+  padding:10px 14px;  /* уменьшил вертикальные отступы */
   border-radius:18px;
   line-height:1.4;
   font-size:15px;
   font-weight: 500;
-  white-space: pre-wrap;        /* Сохраняет пробелы и переносит слова */
-  word-break: break-word;       /* Переносит длинные слова */
-  word-wrap: break-word;        /* Для старых браузеров */
-  overflow-wrap: break-word;    /* Современный способ */
+  white-space: pre-wrap;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   box-shadow: 0 10px 26px rgba(0,0,0,.18);
   opacity: 0;
   transform: translateY(6px) scale(0.98);
   animation: msgIn 0.38s ease-out forwards;
   will-change: transform, opacity;
+  width: fit-content;  /* ширина по содержимому */
+  max-width: 78%;      /* но не больше 78% */
 }
 
 .msg.bot{ animation-duration: 0.42s; }
@@ -63,6 +65,7 @@
   border: 1px solid rgba(255,255,255,.18);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  border-top-left-radius: 4px;  /* маленький уголок слева */
 }
 
 /* user: по теме */
@@ -73,7 +76,8 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 2px 6px rgba(0,0,0,.25);
-  text-align: left;             /* Текст прижат влево */
+  text-align: left;
+  border-bottom-right-radius: 4px;  /* маленький уголок справа */
 }
 
 /* ============================= */
@@ -82,17 +86,28 @@
 .message-actions {
   display: flex;
   gap: 4px;
-  margin-top: 2px;
-  margin-left: 6px;
+  margin-top: 4px;
+  margin-left: 8px;
   opacity: 0;
   transform: translateY(-5px);
   transition: all 0.2s ease;
+  pointer-events: none;  /* чтобы не мешали наведению */
 }
 
-.msg-wrapper.bot:hover .message-actions,
-.msg-wrapper.bot .message-actions.show {
+/* Показываем кнопки при клике на сообщение бота */
+.msg-wrapper.bot .msg:active + .message-actions,
+.msg-wrapper.bot .message-actions.show,
+.msg-wrapper.bot .message-actions:active {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Также показываем при наведении (для десктопа) */
+.msg-wrapper.bot:hover .message-actions {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .action-btn {
@@ -109,6 +124,7 @@
   transition: all 0.2s ease;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  pointer-events: auto;
 }
 
 .action-btn:hover {
@@ -147,38 +163,34 @@
 .input{
   flex:0 0 auto;
   display: flex;
-  align-items: flex-end;        /* Выравнивание по низу */
+  align-items: flex-end;
   gap: 10px;
-  padding: 10px 12px;
-  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  padding: 8px 12px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
   background: rgba(8,16,30,.55);
-  background-color: rgba(8,16,30,.55);
   backdrop-filter: blur(32px) saturate(210%);
   -webkit-backdrop-filter: blur(32px) saturate(210%);
   border-top: 1px solid rgba(255,255,255,.08);
-  box-shadow: none;
-  min-height: 60px;             /* Минимальная высота */
+  min-height: 60px;
 }
 
 .input textarea {
   flex: 1;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-radius: 20px;
   border: 1px solid rgba(255,255,255,.22);
   outline: none;
   font-size: 15px;
   color: #0b1220;
   background: rgba(255,255,255,.92);
-  -webkit-appearance: none;
-  appearance: none;
   box-shadow: 0 10px 24px rgba(0,0,0,.16);
   caret-color: var(--accent2);
-  resize: none;                 /* Запрещаем ручное изменение размера */
-  max-height: 150px;            /* Максимальная высота */
-  min-height: 24px;             /* Минимальная высота */
+  resize: none;
+  max-height: 120px;
+  min-height: 24px;
   line-height: 1.4;
   font-family: inherit;
-  overflow-y: auto;             /* Скролл если больше 150px */
+  overflow-y: auto;
 }
 
 .input textarea:focus{
@@ -186,7 +198,7 @@
 }
 
 .input button{
-  padding:0 18px;
+  padding:0 16px;
   border-radius:18px;
   border:1px solid rgba(255,255,255,.14);
   font-size:16px;
@@ -194,8 +206,8 @@
   background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
   color:#fff;
   box-shadow: 0 12px 26px rgba(0,0,0,.18);
-  height: 48px;                 /* Фиксированная высота */
-  align-self: flex-end;         /* Выравнивание по низу */
+  height: 44px;
+  align-self: flex-end;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -214,13 +226,13 @@
 /* ============================= */
 .msg.bot.typing{
   align-self: flex-start;
-  margin-bottom: 6px;
-  transform: translateY(-4px);
-  padding: 6px 10px;
-  max-width: 64px;
+  margin-bottom: 4px;
+  padding: 8px 12px;
+  max-width: 70px;
   background: rgba(255,255,255,.12);
   border: 1px solid rgba(255,255,255,.18);
-  border-radius: 16px;
+  border-radius: 18px;
+  border-top-left-radius: 4px;
   backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   box-shadow: 0 8px 18px rgba(0,0,0,.18);
@@ -234,7 +246,7 @@
 .typing-dots{
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .typing .dot{
@@ -283,7 +295,6 @@
 :root[data-theme="purple"] .action-btn.copied {
   background: rgba(185, 140, 255, 0.3);
   border-color: #b98cff;
-  color: #b98cff;
 }
 
 :root[data-theme="purple"] .action-btn.copied svg {
@@ -297,7 +308,6 @@
 :root[data-theme="green"] .action-btn.copied {
   background: rgba(47, 214, 163, 0.3);
   border-color: #2fd6a3;
-  color: #2fd6a3;
 }
 
 :root[data-theme="green"] .action-btn.copied svg {
@@ -311,7 +321,6 @@
 :root[data-theme="gray"] .action-btn.copied {
   background: rgba(127, 178, 255, 0.3);
   border-color: #7fb2ff;
-  color: #7fb2ff;
 }
 
 :root[data-theme="gray"] .action-btn.copied svg {
