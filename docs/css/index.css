@@ -26,96 +26,50 @@
   --btn-bg: rgba(255,255,255,.08);
 }
 
-/* ✅ iOS СТИЛЬ - светло-голубой со стеклом */
-:root[data-theme="ios"]{
-  --bgTop: rgba(173, 216, 230, 0.25);      /* Светло-голубой */
-  --bgMid: rgba(173, 216, 230, 0.2);
-  --bgBot: rgba(173, 216, 230, 0.15);
-  --text: #ffffff;
-  --muted: rgba(255,255,255,.9);
-  --glass: rgba(255,255,255,0.25);
-  --glass2: rgba(255,255,255,0.2);
-  --stroke: rgba(255,255,255,0.35);        /* Более яркая обводка */
-  --accent1: #007aff;
-  --accent2: #0051d5;
-  --card-bg: rgba(255,255,255,0.18);        /* Более плотное стекло */
-  --btn-bg: rgba(255,255,255,0.22);         /* Более плотное стекло для кнопок */
-  --glow: rgba(255,255,255,0.3);
-  --glow2: rgba(255,255,255,0.2);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-}
-
-/* ✅ BLACK THEME */
+/* ✅ ТЕМЫ */
 :root[data-theme="black"]{
-  --bgTop:#0a0e15;
-  --bgMid:#06090f;
-  --bgBot:#03050a;
+  --bgTop:#000000;  /* черный фон */
+  --bgMid:#000000;
+  --bgBot:#000000;
   --text: #ffffff;
-  --muted: rgba(255,255,255,.6);
-  --glass: rgba(255,255,255,.06);
-  --glass2: rgba(255,255,255,.03);
-  --stroke: rgba(255,255,255,.12);
+  --muted: rgba(255,255,255,.7);
+  --glass: rgba(255,255,255,.08);
+  --glass2: rgba(255,255,255,.04);
+  --stroke: rgba(255,255,255,.15);
   --accent1: #6aa7ff;
   --accent2: #2f7bff;
-  --card-bg: rgba(255,255,255,.05);
-  --btn-bg: rgba(255,255,255,.06);
-  --glow: rgba(100,130,190,.12);
-  --glow2: rgba(80,110,170,.10);
+  --card-bg: rgba(255,255,255,.1);  /* панель под кнопками */
+  --btn-bg: rgba(255,255,255,.08);
+  --glow: rgba(106,167,255,.2);
+  --glow2: rgba(106,167,255,.1);
+  --glow3: rgba(255,255,255,.08);
 }
 
-/* ✅ PURPLE THEME */
 :root[data-theme="purple"]{
   --bgTop:#2a1550;
   --bgMid:#180f30;
   --bgBot:#0a0716;
-  --text: #ffffff;
-  --muted: rgba(255,255,255,.6);
-  --glass: rgba(255,255,255,.06);
-  --glass2: rgba(255,255,255,.03);
-  --stroke: rgba(255,255,255,.12);
-  --accent1: #b98cff;
-  --accent2: #7a5cff;
-  --card-bg: rgba(255,255,255,.05);
-  --btn-bg: rgba(255,255,255,.06);
   --glow: rgba(160,100,220,.18);
   --glow2: rgba(120,80,200,.12);
+  --glow3: rgba(255,255,255,.08);
 }
 
-/* ✅ GREEN THEME */
 :root[data-theme="green"]{
   --bgTop:#0a5545;
   --bgMid:#083a30;
   --bgBot:#051f1a;
-  --text: #ffffff;
-  --muted: rgba(255,255,255,.6);
-  --glass: rgba(255,255,255,.06);
-  --glass2: rgba(255,255,255,.03);
-  --stroke: rgba(255,255,255,.12);
-  --accent1: #2fd6a3;
-  --accent2: #11a87b;
-  --card-bg: rgba(255,255,255,.05);
-  --btn-bg: rgba(255,255,255,.06);
   --glow: rgba(80,200,160,.15);
   --glow2: rgba(60,180,140,.12);
+  --glow3: rgba(255,255,255,.07);
 }
 
-/* ✅ GRAY THEME */
 :root[data-theme="gray"]{
   --bgTop:#1f2735;
   --bgMid:#141b28;
   --bgBot:#0b1018;
-  --text: #ffffff;
-  --muted: rgba(255,255,255,.6);
-  --glass: rgba(255,255,255,.06);
-  --glass2: rgba(255,255,255,.03);
-  --stroke: rgba(255,255,255,.12);
-  --accent1: #7fb2ff;
-  --accent2: #4b8dff;
-  --card-bg: rgba(255,255,255,.05);
-  --btn-bg: rgba(255,255,255,.06);
   --glow: rgba(150,170,200,.12);
   --glow2: rgba(120,140,180,.10);
+  --glow3: rgba(255,255,255,.06);
 }
 
 *{box-sizing:border-box}
@@ -142,7 +96,7 @@ body{
   );
 }
 
-/* стеклянные квадраты */
+/* стеклянные квадраты - ускоренная анимация */
 .cube{
   position:absolute;
   width:120px; height:120px;
@@ -159,13 +113,13 @@ body{
 .cube.small{ width:60px; height:60px; border-radius:16px; opacity:.75; }
 .cube.tiny{ width:34px; height:34px; border-radius:12px; opacity:.65; }
 
-/* анимации */
-.f1{ animation: drift1 10s ease-in-out infinite; }
-.f2{ animation: drift2 12s ease-in-out infinite; }
-.f3{ animation: drift3 11s ease-in-out infinite; }
-.f4{ animation: drift4 13s ease-in-out infinite; }
-.f5{ animation: drift5 9s  ease-in-out infinite; }
-.f6{ animation: drift6 14s ease-in-out infinite; }
+/* ✅ анимации - ускорены */
+.f1{ animation: drift1 7s ease-in-out infinite; }  /* было 10s */
+.f2{ animation: drift2 8s ease-in-out infinite; }  /* было 12s */
+.f3{ animation: drift3 7.5s ease-in-out infinite; } /* было 11s */
+.f4{ animation: drift4 9s ease-in-out infinite; }   /* было 13s */
+.f5{ animation: drift5 6s ease-in-out infinite; }   /* было 9s */
+.f6{ animation: drift6 9.5s ease-in-out infinite; } /* было 14s */
 
 @keyframes drift1{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(18px,-22px)} }
 @keyframes drift2{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-22px,-14px)} }
@@ -199,7 +153,7 @@ body{
   z-index:2;
 }
 
-/* карточка стекло */
+/* карточка стекло - панель под кнопками */
 .card{
   width:min(520px, 100%);
   padding:22px;
@@ -211,7 +165,7 @@ body{
   box-shadow: 0 22px 60px rgba(0,0,0,.30);
 }
 
-/* кнопки вертикально */
+/* кнопки */
 .btn{
   display:block;
   width:100%;
@@ -541,7 +495,7 @@ main {
   margin-top: 0 !important;
 }
 
-/* Toast уведомление (только при смене) */
+/* Toast уведомление */
 .toast-notification {
   position: fixed;
   top: 20px;
