@@ -13,7 +13,8 @@
 
   --glass: rgba(255,255,255,.08);
   --glass2: rgba(255,255,255,.04);
-  --stroke: rgba(255,255,255,.14);
+  --stroke: rgba(255,255,255,.2);    /* увеличена яркость обводки */
+  --stroke-hover: rgba(255,255,255,.35); /* обводка при наведении */
 
   --glow:  rgba(90,190,255,.20);
   --glow2: rgba(120,220,255,.15);
@@ -23,8 +24,8 @@
   --accent2: #0a84ff;
   
   --card-bg: rgba(255,255,255,.06);
-  --btn-bg: rgba(255,255,255,.12);  /* было .08, стало .12 - ярче */
-  --btn-hover: rgba(255,255,255,.2);  /* добавлено для наведения */
+  --btn-bg: rgba(255,255,255,.12);
+  --btn-hover: rgba(255,255,255,.2);
 }
 
 /* ✅ ТЕМЫ */
@@ -36,11 +37,12 @@
   --muted: rgba(255,255,255,.6);
   --glass: rgba(255,255,255,.06);
   --glass2: rgba(255,255,255,.03);
-  --stroke: rgba(255,255,255,.12);
+  --stroke: rgba(255,255,255,.2);
+  --stroke-hover: rgba(255,255,255,.35);
   --accent1: #6aa7ff;
   --accent2: #2f7bff;
   --card-bg: rgba(255,255,255,.05);
-  --btn-bg: rgba(255,255,255,.1);    /* ярче */
+  --btn-bg: rgba(255,255,255,.1);
   --btn-hover: rgba(255,255,255,.18);
   --glow: rgba(100,130,190,.12);
   --glow2: rgba(80,110,170,.10);
@@ -54,7 +56,8 @@
   --muted: rgba(255,255,255,.6);
   --glass: rgba(255,255,255,.06);
   --glass2: rgba(255,255,255,.03);
-  --stroke: rgba(255,255,255,.12);
+  --stroke: rgba(255,255,255,.2);
+  --stroke-hover: rgba(255,255,255,.35);
   --accent1: #b98cff;
   --accent2: #7a5cff;
   --card-bg: rgba(255,255,255,.05);
@@ -72,7 +75,8 @@
   --muted: rgba(255,255,255,.6);
   --glass: rgba(255,255,255,.06);
   --glass2: rgba(255,255,255,.03);
-  --stroke: rgba(255,255,255,.12);
+  --stroke: rgba(255,255,255,.2);
+  --stroke-hover: rgba(255,255,255,.35);
   --accent1: #2fd6a3;
   --accent2: #11a87b;
   --card-bg: rgba(255,255,255,.05);
@@ -90,7 +94,8 @@
   --muted: rgba(255,255,255,.6);
   --glass: rgba(255,255,255,.06);
   --glass2: rgba(255,255,255,.03);
-  --stroke: rgba(255,255,255,.12);
+  --stroke: rgba(255,255,255,.2);
+  --stroke-hover: rgba(255,255,255,.35);
   --accent1: #7fb2ff;
   --accent2: #4b8dff;
   --card-bg: rgba(255,255,255,.05);
@@ -124,16 +129,17 @@ body{
   );
 }
 
-/* стеклянные квадраты */
+/* стеклянные квадраты - с обводкой */
 .cube{
   position:absolute;
   width:120px; height:120px;
   border-radius:18px;
   background: var(--glass);
-  border: 1px solid var(--stroke);
+  border: 1.5px solid var(--stroke);  /* более толстая обводка */
   backdrop-filter: blur(10px) saturate(140%);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.05) inset;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.05) inset,
+              0 0 15px var(--glow);  /* свечение */
   pointer-events:none;
   opacity:.85;
 }
@@ -156,12 +162,13 @@ body{
 @keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,-18px)} }
 @keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,16px)} }
 
-/* мягкие шарики */
+/* мягкие шарики - с обводкой */
 .orb{
   position:absolute;
   width:260px; height:260px;
   border-radius:999px;
   background: radial-gradient(circle at 30% 30%, var(--glass), var(--glow) 45%, transparent 72%);
+  border: 1px solid var(--stroke);
   filter: blur(2px);
   opacity:.85;
   pointer-events:none;
@@ -181,19 +188,21 @@ body{
   z-index:2;
 }
 
-/* карточка стекло */
+/* карточка стекло - с хорошей обводкой */
 .card{
   width:min(520px, 100%);
   padding:22px;
   border-radius:26px;
   background: var(--card-bg);
-  border: 1px solid var(--stroke);
+  border: 1.5px solid var(--stroke);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 22px 60px rgba(0,0,0,.30);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.05) inset,
+              0 22px 60px rgba(0,0,0,.30),
+              0 0 20px var(--glow);
 }
 
-/* кнопки - ЯРЧЕ */
+/* кнопки - с хорошей обводкой */
 .btn{
   display:block;
   width:100%;
@@ -204,12 +213,13 @@ body{
   font-weight:900;
   color:var(--text);
   text-decoration:none;
-  background: var(--btn-bg);  /* теперь ярче */
-  border: 1px solid var(--stroke);
+  background: var(--btn-bg);
+  border: 1.5px solid var(--stroke);
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset,
-              0 18px 40px rgba(0,0,0,.25);
+              0 18px 40px rgba(0,0,0,.25),
+              0 0 15px var(--glow);
   margin-bottom: 16px;
   transition: all 0.2s ease;
 }
@@ -218,9 +228,16 @@ body{
   margin-bottom: 0;
 }
 
+.btn:hover {
+  border-color: var(--stroke-hover);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset,
+              0 18px 40px rgba(0,0,0,.3),
+              0 0 25px var(--glow2);
+}
+
 .btn:active{ 
   transform: scale(.995);
-  background: var(--btn-hover);  /* эффект при нажатии */
+  background: var(--btn-hover);
 }
 
 .sub{
@@ -240,7 +257,7 @@ body{
 /* блок языка */
 .langBlock{
   margin-top:24px;
-  border-top: 1px solid var(--stroke);
+  border-top: 1.5px solid var(--stroke);
   padding-top:16px;
 }
 .langTitle{
@@ -250,18 +267,19 @@ body{
   text-align:center;
 }
 
-/* пилюля выбора языка */
+/* пилюля выбора языка - с обводкой */
 .langPill{
   width:100%;
   border-radius:18px;
   padding:14px 14px;
   background: var(--btn-bg);
-  border: 1px solid var(--stroke);
+  border: 1.5px solid var(--stroke);
   color: var(--text);
   outline:none;
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
-  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  box-shadow: 0 8px 20px rgba(0,0,0,.18),
+              0 0 10px var(--glow);
   font-size:16px;
   font-weight:800;
   display:flex;
@@ -274,12 +292,15 @@ body{
 
 .langPill:hover {
   background: var(--btn-hover);
+  border-color: var(--stroke-hover);
+  box-shadow: 0 8px 20px rgba(0,0,0,.25),
+              0 0 15px var(--glow2);
 }
 
 .langPill:active{ transform: scale(.995); }
 .chev{ opacity:.8; }
 
-/* Bottom Sheet Languages */
+/* Bottom Sheet Languages - с обводкой */
 .langOverlay{
   position:fixed;
   inset:0;
@@ -296,10 +317,11 @@ body{
   bottom: calc(12px + env(safe-area-inset-bottom));
   border-radius:20px;
   background: var(--card-bg);
-  border: 1px solid var(--stroke);
+  border: 1.5px solid var(--stroke);
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
-  box-shadow: 0 20px 50px rgba(0,0,0,.35);
+  box-shadow: 0 20px 50px rgba(0,0,0,.35),
+              0 0 20px var(--glow);
   overflow:hidden;
   transform: translateY(110%);
   opacity: 0;
@@ -315,7 +337,7 @@ body{
   align-items:center;
   justify-content:space-between;
   padding:14px 14px;
-  border-bottom: 1px solid var(--stroke);
+  border-bottom: 1.5px solid var(--stroke);
 }
 
 .langSheetTitle{
@@ -328,16 +350,18 @@ body{
   border:0;
   background: var(--btn-bg);
   color: var(--text);
-  border: 1px solid var(--stroke);
+  border: 1.5px solid var(--stroke);
   border-radius:12px;
   padding:8px 10px;
   font-weight:900;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 0 8px var(--glow);
 }
 
 .langClose:hover {
   background: var(--btn-hover);
+  border-color: var(--stroke-hover);
 }
 
 .langList{
@@ -351,6 +375,7 @@ body{
   text-align:left;
   padding:14px 14px;
   border:0;
+  border-bottom: 1px solid var(--stroke);
   background: transparent;
   color: var(--text);
   font-size:16px;
@@ -358,13 +383,13 @@ body{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  border-bottom: 1px solid var(--stroke);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .langItem:hover{
   background: var(--btn-bg);
+  border-bottom: 1px solid var(--stroke-hover);
 }
 
 .langItem .check{
@@ -379,7 +404,7 @@ body{
   transform: scale(1);
 }
 
-/* Theme Button */
+/* Theme Button - с обводкой */
 .themePill{
   position: fixed;
   top: calc(10px + env(safe-area-inset-top));
@@ -388,7 +413,7 @@ body{
   padding: 10px 14px;
   border-radius: 20px;
   background: var(--btn-bg);
-  border: 1px solid var(--stroke);
+  border: 1.5px solid var(--stroke);
   color: var(--text);
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
@@ -397,18 +422,22 @@ body{
   display:flex;
   align-items:center;
   gap:10px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  box-shadow: 0 8px 20px rgba(0,0,0,.18),
+              0 0 12px var(--glow);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .themePill:hover {
   background: var(--btn-hover);
+  border-color: var(--stroke-hover);
+  box-shadow: 0 8px 20px rgba(0,0,0,.25),
+              0 0 18px var(--glow2);
 }
 
 .themePill:active{ transform: scale(.98); }
 
-/* Bottom Sheet Theme */
+/* Bottom Sheet Theme - с обводкой */
 .themeOverlay{
   position:fixed;
   inset:0;
@@ -425,10 +454,11 @@ body{
   bottom: calc(12px + env(safe-area-inset-bottom));
   border-radius:20px;
   background: var(--card-bg);
-  border: 1px solid var(--stroke);
+  border: 1.5px solid var(--stroke);
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
-  box-shadow: 0 20px 50px rgba(0,0,0,.35);
+  box-shadow: 0 20px 50px rgba(0,0,0,.35),
+              0 0 20px var(--glow);
   overflow:hidden;
   transform: translateY(110%);
   opacity: 0;
@@ -444,7 +474,7 @@ body{
   align-items:center;
   justify-content:space-between;
   padding:14px 14px;
-  border-bottom: 1px solid var(--stroke);
+  border-bottom: 1.5px solid var(--stroke);
 }
 
 .themeSheetTitle{
@@ -457,16 +487,18 @@ body{
   border:0;
   background: var(--btn-bg);
   color: var(--text);
-  border: 1px solid var(--stroke);
+  border: 1.5px solid var(--stroke);
   border-radius:12px;
   padding:8px 10px;
   font-weight:900;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 0 8px var(--glow);
 }
 
 .themeClose:hover {
   background: var(--btn-hover);
+  border-color: var(--stroke-hover);
 }
 
 .themeList{
@@ -480,6 +512,7 @@ body{
   text-align:left;
   padding:14px 14px;
   border:0;
+  border-bottom: 1px solid var(--stroke);
   background: transparent;
   color: var(--text);
   font-size:16px;
@@ -487,13 +520,13 @@ body{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  border-bottom: 1px solid var(--stroke);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .themeItem:hover{
   background: var(--btn-bg);
+  border-bottom: 1px solid var(--stroke-hover);
 }
 
 .themeItem .check{
@@ -523,21 +556,22 @@ main {
   margin-top: 0 !important;
 }
 
-/* Toast уведомление */
+/* Toast уведомление - с обводкой */
 .toast-notification {
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--card-bg);
-  border: 1px solid var(--stroke);
+  border: 1.5px solid var(--stroke);
   border-radius: 30px;
   padding: 12px 24px;
   color: var(--text);
   font-weight: 600;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3),
+              0 0 15px var(--glow);
   z-index: 100000;
   animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   pointer-events: none;
