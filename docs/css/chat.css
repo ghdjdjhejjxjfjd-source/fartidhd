@@ -2,7 +2,7 @@
   flex:1 1 auto;
   padding:16px;
   padding-top: calc(60px + env(safe-area-inset-top));
-  padding-bottom: 80px;  /* отступ для поля ввода */
+  padding-bottom: 90px;  /* УВЕЛИЧЕНО - чтобы кнопки не скрывались */
   overflow-y:auto;
   -webkit-overflow-scrolling: touch;
   display:flex;
@@ -44,7 +44,7 @@
   word-break: break-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);  /* мягкая тень */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   opacity: 0;
   transform: translateY(6px) scale(0.98);
   animation: msgIn 0.38s ease-out forwards;
@@ -65,22 +65,21 @@
   }
 }
 
-/* bot: как в Telegram (темно-серый) */
+/* bot: ВОЗВРАЩАЕМ КАК БЫЛО - стеклянный */
 .bot .msg{
   align-self:flex-start;
-  background: rgba(30, 30, 35, 0.95);  /* темно-серый */
-  border: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background: rgba(255,255,255,.16);  /* как было */
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-top-left-radius: 6px;
   color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-/* user: темный вариант цвета темы (как в Telegram) */
+/* user: НЕ ТРОГАЕМ - темный вариант цвета темы */
 .user .msg{
   align-self:flex-end;
-  background: var(--accent-dark);  /* темный цвет темы */
+  background: var(--accent-dark);
   border: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -106,6 +105,7 @@
   overflow: visible;
   align-items: center;
   transition: opacity 0.2s ease;
+  z-index: 5;  /* чтобы были выше */
 }
 
 .message-actions:hover {
@@ -152,7 +152,7 @@
 }
 
 /* ============================= */
-/* ✅ ВЕРХНЯЯ ПАНЕЛЬ - ТАКОЙ ЖЕ ФОН */
+/* ✅ ВЕРХНЯЯ ПАНЕЛЬ */
 /* ============================= */
 .top{
   position: fixed;
@@ -163,7 +163,7 @@
   gap:10px;
   padding: 8px 14px;
   padding-top: calc(8px + env(safe-area-inset-top));
-  background: rgba(0,0,0,0.4);  /* ТОЧНО ТАКОЙ ЖЕ ФОН */
+  background: rgba(0,0,0,0.4);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -214,7 +214,7 @@
 }
 
 /* ============================= */
-/* ✅ ПОЛЕ ВВОДА - ТАКОЙ ЖЕ ФОН */
+/* ✅ ПОЛЕ ВВОДА - ПОЛНОСТЬЮ ПРОЗРАЧНОЕ */
 /* ============================= */
 .input{
   position: fixed;
@@ -226,10 +226,10 @@
   gap: 10px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: rgba(0,0,0,0.4);  /* ТОЧНО ТАКОЙ ЖЕ ФОН */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255,255,255,0.05);
+  background: transparent;  /* ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ */
+  backdrop-filter: none;    /* УБРАЛ РАЗМЫТИЕ */
+  -webkit-backdrop-filter: none;
+  border-top: none;         /* УБРАЛ ГРАНИЦУ */
   min-height: 60px;
   z-index: 10;
 }
@@ -242,7 +242,7 @@
   outline: none;
   font-size: 16px;
   color: #ffffff;
-  background: rgba(40, 40, 45, 0.8);  /* темный фон поля */
+  background: rgba(40, 40, 45, 0.8);
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   caret-color: var(--accent1);
   resize: none;
@@ -288,14 +288,18 @@
   margin: 0;
   padding: 10px 14px;
   max-width: 80px;
-  background: rgba(30, 30, 35, 0.95);
-  border: none;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.18);
   border-radius: 20px;
   border-top-left-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  opacity: 1;
+  animation: none;
 }
 
 .typing-dots{
@@ -322,34 +326,34 @@
 }
 
 /* ================================================= */
-/* ✅ ТЕМЫ - темные варианты для пузырей */
+/* ✅ ТЕМЫ */
 /* ================================================= */
 :root[data-theme="blue"] {
   --accent1: #3aa0ff;
   --accent2: #0a84ff;
-  --accent-dark: #1a4c8c;  /* темно-синий */
+  --accent-dark: #1a4c8c;
 }
 
 :root[data-theme="black"] {
   --accent1: #6aa7ff;
   --accent2: #2f7bff;
-  --accent-dark: #2a3f6a;  /* темно-сине-серый */
+  --accent-dark: #2a3f6a;
 }
 
 :root[data-theme="purple"] {
   --accent1: #b98cff;
   --accent2: #7a5cff;
-  --accent-dark: #4a2e7a;  /* темно-фиолетовый */
+  --accent-dark: #4a2e7a;
 }
 
 :root[data-theme="green"] {
   --accent1: #2fd6a3;
   --accent2: #11a87b;
-  --accent-dark: #1a5e4a;  /* темно-зеленый */
+  --accent-dark: #1a5e4a;
 }
 
 :root[data-theme="gray"] {
   --accent1: #7fb2ff;
   --accent2: #4b8dff;
-  --accent-dark: #3a4a6a;  /* темно-серо-синий */
+  --accent-dark: #3a4a6a;
 }
