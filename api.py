@@ -502,6 +502,53 @@ def api_stars_spend():
 
 
 # =========================
+# ✅ NEW ENDPOINT FOR SENDING PHOTOS TO TELEGRAM
+# =========================
+@api.post("/api/send-photo")
+def api_send_photo():
+    """Отправить фото пользователю в Telegram"""
+    try:
+        user_id = request.form.get('user_id')
+        image_file = request.files.get('image')
+        filename = request.form.get('filename', 'image.jpg')
+        
+        if not user_id or not image_file:
+            return jsonify({"error": "Missing data"}), 400
+            
+        # Читаем файл
+        image_data = image_file.read()
+        
+        # Отправляем через Telegram Bot API
+        bot_token = os.getenv("BOT_TOKEN")
+        if not bot_token:
+            return jsonify({"error": "BOT_TOKEN not configured"}), 500
+            
+        url = f"https://api.telegram.org/bot{bot_token}/sendPhoto"
+        
+        files = {
+            'photo': (filename, image_data, 'image/jpeg')
+        }
+        data = {
+            'chat_id': user_id,
+            'caption': f'✨ Улучшенное изображение\nОтправлено из Mini App'
+        }
+        
+        response = requests.post(url, files=files, data=data)
+        
+        if response.status_code == 200:
+            return jsonify({"success": True})
+        else:
+            error_data = response.json()
+            return jsonify({
+                "error": "Telegram API error", 
+                "details": error_data
+            }), 500
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# =========================
 # ✅ IMAGE GENERATION ENDPOINT
 # =========================
 @api.post("/api/image")
