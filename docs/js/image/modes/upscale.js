@@ -114,37 +114,43 @@ async function generateImage() {
     
     // Реальное улучшение качества
     setTimeout(() => {
-        const previewImg = document.getElementById('previewImg');
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = previewImg.naturalWidth * 2;
-        canvas.height = previewImg.naturalHeight * 2;
-        
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(previewImg, 0, 0, canvas.width, canvas.height);
-        
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            data[i] = Math.min(255, Math.max(0, (data[i] - 128) * 1.15 + 128));
-            data[i+1] = Math.min(255, Math.max(0, (data[i+1] - 128) * 1.15 + 128));
-            data[i+2] = Math.min(255, Math.max(0, (data[i+2] - 128) * 1.15 + 128));
+        try {
+            const previewImg = document.getElementById('previewImg');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = previewImg.naturalWidth * 2;
+            canvas.height = previewImg.naturalHeight * 2;
+            
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(previewImg, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, Math.max(0, (data[i] - 128) * 1.15 + 128));
+                data[i+1] = Math.min(255, Math.max(0, (data[i+1] - 128) * 1.15 + 128));
+                data[i+2] = Math.min(255, Math.max(0, (data[i+2] - 128) * 1.15 + 128));
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            currentImage = canvas.toDataURL('image/jpeg', 0.95);
+            
+            document.getElementById('resultImage').src = currentImage;
+            document.getElementById('resultImage').classList.remove('hidden');
+            document.getElementById('previewPlaceholder').classList.add('hidden');
+            document.getElementById('resultActions').classList.remove('hidden');
+            
+            endGeneration();
+            updateBalance();
+            showToast('✅ Качество улучшено!', 'success');
+        } catch (error) {
+            console.error('Upscale error:', error);
+            showToast('❌ Ошибка улучшения', 'error');
+            endGeneration();
         }
-        
-        ctx.putImageData(imageData, 0, 0);
-        currentImage = canvas.toDataURL('image/jpeg', 1.0);
-        
-        document.getElementById('resultImage').src = currentImage;
-        document.getElementById('resultImage').classList.remove('hidden');
-        document.getElementById('previewPlaceholder').classList.add('hidden');
-        document.getElementById('resultActions').classList.remove('hidden');
-        
-        endGeneration();
-        updateBalance();
-        showToast('✅ Качество улучшено!', 'success');
     }, 2000);
 }
 
@@ -169,37 +175,56 @@ function endGeneration() {
 }
 
 function saveToGallery() {
-    if (!currentImage) return;
+    if (!currentImage) {
+        showToast('❌ Нет изображения для сохранения', 'error');
+        return;
+    }
     
-    const imageData = {
-        id: Date.now().toString(),
-        dataUrl: currentImage,
-        prompt: `✨ Улучшено: ${originalFileName || 'изображение'}`,
-        mode: 'upscale',
-        modeName: 'Улучшить качество',
-        cost: 3,
-        favorite: false,
-        createdAt: new Date().toISOString()
-    };
-    
-    // Сохраняем в галерею
-    addToGallery(imageData);
-    
-    // Скачиваем файл
-    downloadImage();
+    try {
+        const imageData = {
+            id: Date.now().toString(),
+            dataUrl: currentImage,
+            prompt: `✨ Улучшено: ${originalFileName || 'изображение'}`,
+            mode: 'upscale',
+            modeName: 'Улучшить качество',
+            cost: 3,
+            favorite: false,
+            createdAt: new Date().toISOString()
+        };
+        
+        // Сохраняем в галерею
+        const success = addToGallery(imageData);
+        
+        if (success) {
+            showToast('✅ Сохранено в галерею', 'success');
+            // Скачиваем файл
+            downloadImage();
+        } else {
+            showToast('❌ Ошибка сохранения', 'error');
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        showToast('❌ Ошибка сохранения', 'error');
+    }
 }
 
 function downloadImage() {
     if (!currentImage) return;
     
-    const link = document.createElement('a');
-    const filename = originalFileName 
-        ? `${originalFileName}_enhanced.jpg` 
-        : `enhanced_${Date.now()}.jpg`;
-    
-    link.download = filename;
-    link.href = currentImage;
-    link.click();
+    try {
+        const link = document.createElement('a');
+        const filename = originalFileName 
+            ? `${originalFileName}_enhanced.jpg` 
+            : `enhanced_${Date.now()}.jpg`;
+        
+        link.download = filename;
+        link.href = currentImage;
+        link.click();
+        showToast('📥 Файл скачан', 'success');
+    } catch (error) {
+        console.error('Download error:', error);
+        showToast('❌ Ошибка скачивания', 'error');
+    }
 }
 
 function regenerateImage() {
