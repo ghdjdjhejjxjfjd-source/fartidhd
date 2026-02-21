@@ -1,7 +1,6 @@
 // docs/js/image/modes/upscale.js
 
 import { showToast, getBalance, updateBalance, setupKeyboardDismiss, getTelegramUser } from '../shared/utils.js';
-import { addToGallery } from '../shared/gallery.js';
 
 let currentImage = null;
 let isGenerating = false;
@@ -10,7 +9,10 @@ let timerInterval = null;
 let selectedFile = null;
 let originalFileName = null;
 
-const API_BASE = "https://fayrat-production.up.railway.app"; // ваш Railway URL
+const API_BASE = "https://fayrat-production.up.railway.app";
+
+// Загружаем Pica для высококачественного увеличения
+const pica = new Pica();
 
 export function initUpscale(container) {
     container.innerHTML = `
@@ -29,26 +31,25 @@ export function initUpscale(container) {
         <div class="result-area" id="resultArea">
             <div class="preview-placeholder" id="previewPlaceholder">
                 <div class="placeholder-icon">🔍</div>
-                <div class="placeholder-text">Результат появится здесь</div>
+                <div class="placeholder-text">Результат 4K появится здесь</div>
             </div>
-            <img class="result-image hidden" id="resultImage" alt="Upscaled image">
+            <img class="result-image hidden" id="resultImage" alt="4K image">
             
             <div class="loading-overlay hidden" id="loadingOverlay">
                 <div class="spinner"></div>
-                <div class="loading-text">Улучшение качества... <span id="loadingTimer">0с</span></div>
+                <div class="loading-text">Улучшение до 4K... <span id="loadingTimer">0с</span></div>
             </div>
         </div>
 
         <button class="generate-btn" id="generateBtn">
             <span class="btn-icon">🔍</span>
-            Улучшить качество
+            Улучшить до 4K
             <span class="price-tag" id="generatePrice">3⭐</span>
         </button>
 
         <div class="result-actions hidden" id="resultActions">
             <div class="action-row">
-                <button class="action-btn" id="saveToGalleryBtn" title="Сохранить">💾</button>
-                <button class="action-btn" id="sendToBotBtn" title="Отправить в бот">📤</button>
+                <button class="action-btn" id="saveToBotBtn" title="Сохранить в бот">💾</button>
                 <button class="action-btn" id="regenerateBtn" title="Заново">🔄</button>
             </div>
         </div>
@@ -67,8 +68,7 @@ export function initUpscale(container) {
     document.getElementById('fileInput').addEventListener('change', handleFileSelect);
     document.getElementById('removeFileBtn').addEventListener('click', removeFile);
     document.getElementById('generateBtn').addEventListener('click', generateImage);
-    document.getElementById('saveToGalleryBtn').addEventListener('click', saveToGallery);
-    document.getElementById('sendToBotBtn').addEventListener('click', sendToBot);
+    document.getElementById('saveToBotBtn').addEventListener('click', sendToBot);
     document.getElementById('regenerateBtn').addEventListener('click', regenerateImage);
 }
 
@@ -116,46 +116,64 @@ async function generateImage() {
     
     startGeneration();
     
-    // Реальное улучшение качества
-    setTimeout(() => {
-        try {
-            const previewImg = document.getElementById('previewImg');
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = previewImg.naturalWidth * 2;
-            canvas.height = previewImg.naturalHeight * 2;
-            
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(previewImg, 0, 0, canvas.width, canvas.height);
-            
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = Math.min(255, Math.max(0, (data[i] - 128) * 1.15 + 128));
-                data[i+1] = Math.min(255, Math.max(0, (data[i+1] - 128) * 1.15 + 128));
-                data[i+2] = Math.min(255, Math.max(0, (data[i+2] - 128) * 1.15 + 128));
+    try {
+        const previewImg = document.getElementById('previewImg');
+        
+        // Создаем canvas для 4K (3840x2160 или пропорционально)
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Рассчитываем размеры для 4K с сохранением пропорций
+        const maxWidth = 3840;
+        const maxHeight = 2160;
+        
+        let width = previewImg.naturalWidth;
+        let height = previewImg.naturalHeight;
+        
+        if (width > height) {
+            if (width > maxWidth) {
+                height = Math.round(height * (maxWidth / width));
+                width = maxWidth;
             }
-            
-            ctx.putImageData(imageData, 0, 0);
-            currentImage = canvas.toDataURL('image/jpeg', 0.95);
-            
-            document.getElementById('resultImage').src = currentImage;
-            document.getElementById('resultImage').classList.remove('hidden');
-            document.getElementById('previewPlaceholder').classList.add('hidden');
-            document.getElementById('resultActions').classList.remove('hidden');
-            
-            endGeneration();
-            updateBalance();
-            showToast('✅ Качество улучшено!', 'success');
-        } catch (error) {
-            console.error('Upscale error:', error);
-            showToast('❌ Ошибка улучшения', 'error');
-            endGeneration();
+        } else {
+            if (height > maxHeight) {
+                width = Math.round(width * (maxHeight / height));
+                height = maxHeight;
+            }
         }
-    }, 2000);
+        
+        // Ограничиваем минимальный размер
+        width = Math.max(width, previewImg.naturalWidth);
+        height = Math.max(height, previewImg.naturalHeight);
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Используем Pica для максимально качественного увеличения
+        await pica.resize(previewImg, canvas, {
+            quality: 3,  // Максимальное качество
+            alpha: true,
+            unsharpAmount: 0, // Без дополнительной резкости
+            unsharpRadius: 0,
+            unsharpThreshold: 0
+        });
+        
+        // Сохраняем с максимальным качеством
+        currentImage = canvas.toDataURL('image/jpeg', 1.0);
+        
+        document.getElementById('resultImage').src = currentImage;
+        document.getElementById('resultImage').classList.remove('hidden');
+        document.getElementById('previewPlaceholder').classList.add('hidden');
+        document.getElementById('resultActions').classList.remove('hidden');
+        
+        endGeneration();
+        updateBalance();
+        showToast('✅ Изображение улучшено до 4K', 'success');
+    } catch (error) {
+        console.error('Upscale error:', error);
+        showToast('❌ Ошибка улучшения', 'error');
+        endGeneration();
+    }
 }
 
 function startGeneration() {
@@ -176,37 +194,6 @@ function endGeneration() {
     document.getElementById('loadingOverlay').classList.add('hidden');
     document.getElementById('generateBtn').disabled = false;
     clearInterval(timerInterval);
-}
-
-function saveToGallery() {
-    if (!currentImage) {
-        showToast('❌ Нет изображения для сохранения', 'error');
-        return;
-    }
-    
-    try {
-        const imageData = {
-            id: Date.now().toString(),
-            dataUrl: currentImage,
-            prompt: `✨ Улучшено: ${originalFileName || 'изображение'}`,
-            mode: 'upscale',
-            modeName: 'Улучшить качество',
-            cost: 3,
-            favorite: false,
-            createdAt: new Date().toISOString()
-        };
-        
-        const success = addToGallery(imageData);
-        
-        if (success) {
-            showToast('✅ Сохранено в галерею', 'success');
-        } else {
-            showToast('❌ Ошибка сохранения', 'error');
-        }
-    } catch (error) {
-        console.error('Save error:', error);
-        showToast('❌ Ошибка сохранения', 'error');
-    }
 }
 
 async function sendToBot() {
@@ -234,8 +221,8 @@ async function sendToBot() {
         // Создаем FormData для отправки
         const formData = new FormData();
         formData.append('user_id', userId);
-        formData.append('image', blob, `${originalFileName || 'enhanced'}.jpg`);
-        formData.append('filename', `${originalFileName || 'enhanced'}.jpg`);
+        formData.append('image', blob, `${originalFileName || '4k'}.jpg`);
+        formData.append('filename', `${originalFileName || '4k'}.jpg`);
         
         // Отправляем на ваш сервер
         const serverResponse = await fetch(`${API_BASE}/api/send-photo`, {
@@ -246,7 +233,7 @@ async function sendToBot() {
         const result = await serverResponse.json();
         
         if (result.success) {
-            showToast('✅ Изображение отправлено в Telegram!', 'success');
+            showToast('✅ 4K изображение отправлено в Telegram!', 'success');
         } else {
             showToast('❌ Ошибка отправки: ' + (result.error || 'Неизвестная ошибка'), 'error');
         }
