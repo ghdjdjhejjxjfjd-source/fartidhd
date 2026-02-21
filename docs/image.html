@@ -7,6 +7,7 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+  <!-- ТЕМА -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
@@ -29,6 +30,11 @@
 </head>
 
 <body>
+  <!-- ТЕСТОВЫЙ ALERT - если появится, значит HTML работает -->
+  <script>
+    alert('✅ HTML загружен!');
+  </script>
+
   <div class="top">
     <a id="backBtn" href="./index.html">←</a>
     <div class="title" id="pageTitle">Генерация</div>
@@ -123,7 +129,17 @@
 
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Подключаем новый модуль -->
-  <script type="module" src="./js/image/index.js"></script>
+  <!-- Пробуем разные пути к скрипту -->
+  <script type="module">
+    import { MODES } from './js/image/modes/data.js';
+    console.log('✅ Скрипт загружен!');
+    console.log('Количество режимов:', MODES.length);
+    alert('✅ Скрипт сработал! Режимов: ' + MODES.length);
+  </script>
+
+  <!-- Если не работает, этот alert покажется -->
+  <script>
+    alert('⚠️ Если вы видите это, а предыдущий нет - проблема с путями');
+  </script>
 </body>
 </html>
