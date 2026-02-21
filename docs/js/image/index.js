@@ -1,6 +1,4 @@
 // docs/js/image/index.js
-alert('Скрипт запущен');
-alert('Количество режимов: ' + MODES.length);
 
 import { MODES } from './modes/data.js';
 import { initTxt2Img } from './modes/txt2img.js';
@@ -10,6 +8,10 @@ import { initInpaint } from './modes/inpaint.js';
 import { initUpscale } from './modes/upscale.js';
 import { initGallery } from './shared/gallery.js';
 import { showToast, updateBalance, showScreen } from './shared/utils.js';
+
+// ✅ alert ПОСЛЕ импорта
+alert('✅ Скрипт загружен');
+alert(`✅ Количество режимов: ${MODES.length}`);
 
 const tg = window.Telegram?.WebApp;
 let currentTheme = localStorage.getItem('miniapp_theme_v1') || 'blue';
@@ -75,7 +77,6 @@ function loadModes() {
 }
 
 function selectMode(mode) {
-    // Обновляем заголовок
     document.getElementById('currentModeTitle').textContent = mode.name;
     document.getElementById('currentModePrice').textContent = `${mode.price}⭐`;
     
@@ -84,7 +85,6 @@ function selectMode(mode) {
         modeIcon.textContent = mode.icon;
     }
     
-    // Очищаем и загружаем соответствующий режим
     const generationContent = document.getElementById('generationContent');
     
     switch(mode.id) {
@@ -107,12 +107,10 @@ function selectMode(mode) {
             console.error('Unknown mode:', mode.id);
     }
     
-    // Показываем экран генерации
     showScreen([mainScreen, galleryScreen, viewScreen], generationScreen);
 }
 
 function setupEventListeners() {
-    // Навигация
     document.getElementById('backBtn')?.addEventListener('click', () => {
         showScreen([generationScreen, galleryScreen, viewScreen], mainScreen);
     });
@@ -129,7 +127,6 @@ function setupEventListeners() {
         showScreen([mainScreen, generationScreen, galleryScreen], viewScreen);
     });
     
-    // Поиск режимов
     document.getElementById('searchModes')?.addEventListener('input', filterModes);
 }
 
@@ -142,5 +139,4 @@ function filterModes(e) {
     });
 }
 
-// Экспортируем для использования в других модулях
 export { showScreen };
