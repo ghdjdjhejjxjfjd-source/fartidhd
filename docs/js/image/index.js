@@ -1,4 +1,6 @@
 // docs/js/image/index.js
+alert('Скрипт запущен');
+alert('Количество режимов: ' + MODES.length);
 
 import { MODES } from './modes/data.js';
 import { initTxt2Img } from './modes/txt2img.js';
