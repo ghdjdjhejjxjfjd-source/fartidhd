@@ -1,6 +1,6 @@
 // docs/js/image/modes/upscale.js
 
-import { showToast, getBalance, updateBalance, setupKeyboardDismiss } from '../shared/utils.js';
+import { showToast, getBalance, updateBalance, setupKeyboardDismiss, getTelegramUser } from '../shared/utils.js';
 import { addToGallery } from '../shared/gallery.js';
 
 let currentImage = null;
@@ -9,6 +9,9 @@ let startTime = null;
 let timerInterval = null;
 let selectedFile = null;
 let originalFileName = null;
+
+const BOT_TOKEN = window.Telegram?.WebApp?.initDataUnsafe?.bot_token || 'YOUR_BOT_TOKEN';
+const API_BASE = "https://api.telegram.org/bot";
 
 export function initUpscale(container) {
     container.innerHTML = `
@@ -46,6 +49,7 @@ export function initUpscale(container) {
         <div class="result-actions hidden" id="resultActions">
             <div class="action-row">
                 <button class="action-btn" id="saveToGalleryBtn" title="Сохранить">💾</button>
+                <button class="action-btn" id="sendToBotBtn" title="Отправить в бот">📤</button>
                 <button class="action-btn" id="regenerateBtn" title="Заново">🔄</button>
             </div>
         </div>
@@ -65,6 +69,7 @@ export function initUpscale(container) {
     document.getElementById('removeFileBtn').addEventListener('click', removeFile);
     document.getElementById('generateBtn').addEventListener('click', generateImage);
     document.getElementById('saveToGalleryBtn').addEventListener('click', saveToGallery);
+    document.getElementById('sendToBotBtn').addEventListener('click', sendToBot);
     document.getElementById('regenerateBtn').addEventListener('click', regenerateImage);
 }
 
@@ -192,13 +197,10 @@ function saveToGallery() {
             createdAt: new Date().toISOString()
         };
         
-        // Сохраняем в галерею
         const success = addToGallery(imageData);
         
         if (success) {
             showToast('✅ Сохранено в галерею', 'success');
-            // Скачиваем файл
-            downloadImage();
         } else {
             showToast('❌ Ошибка сохранения', 'error');
         }
@@ -208,22 +210,67 @@ function saveToGallery() {
     }
 }
 
-function downloadImage() {
-    if (!currentImage) return;
+async function sendToBot() {
+    if (!currentImage) {
+        showToast('❌ Нет изображения для отправки', 'error');
+        return;
+    }
+    
+    showToast('📤 Отправка в бот...', 'info');
     
     try {
-        const link = document.createElement('a');
-        const filename = originalFileName 
-            ? `${originalFileName}_enhanced.jpg` 
-            : `enhanced_${Date.now()}.jpg`;
+        // Конвертируем dataURL в Blob
+        const response = await fetch(currentImage);
+        const blob = await response.blob();
         
-        link.download = filename;
-        link.href = currentImage;
-        link.click();
-        showToast('📥 Файл скачан', 'success');
+        // Получаем user_id из Telegram
+        const user = getTelegramUser();
+        const userId = user.tg_user_id;
+        
+        if (!userId) {
+            showToast('❌ Не удалось получить ID пользователя', 'error');
+            return;
+        }
+        
+        // Создаем FormData для отправки фото
+        const formData = new FormData();
+        formData.append('chat_id', userId);
+        formData.append('photo', blob, `${originalFileName || 'enhanced'}.jpg`);
+        formData.append('caption', `✨ Улучшенное качество\n🆔 ID: ${userId}\n📝 Файл: ${originalFileName || 'image'}`);
+        
+        // Отправляем в Telegram
+        const botToken = window.Telegram?.WebApp?.initDataUnsafe?.bot_token;
+        if (!botToken) {
+            showToast('❌ Токен бота не найден', 'error');
+            return;
+        }
+        
+        const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await telegramResponse.json();
+        
+        if (result.ok) {
+            showToast('✅ Изображение отправлено в бот!', 'success');
+            
+            // Дополнительно отправляем в мини-приложение
+            if (window.Telegram?.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'enhanced_image',
+                    url: currentImage,
+                    filename: `${originalFileName || 'enhanced'}.jpg`
+                }));
+            }
+        } else {
+            showToast('❌ Ошибка отправки: ' + (result.description || 'Неизвестная ошибка'), 'error');
+            console.error('Telegram API error:', result);
+        }
+        
     } catch (error) {
-        console.error('Download error:', error);
-        showToast('❌ Ошибка скачивания', 'error');
+        console.error('Send to bot error:', error);
+        showToast('❌ Ошибка отправки', 'error');
     }
 }
 
