@@ -1,5 +1,5 @@
 // docs/js/image-page.js
-import { MODES, setMode, getMode, setFile, getFile, resetState } from './image.js';
+import { MODES, setMode, getMode, setFile, getFile, resetState, getModeById } from './image.js';
 import { getGallery, addToGallery } from './image-gallery.js';
 
 const tg = window.Telegram?.WebApp;
@@ -38,23 +38,71 @@ function loadModes() {
     MODES.forEach(mode => {
         const card = document.createElement('div');
         card.className = 'mode-card';
+        card.setAttribute('data-mode', mode.id);
+        card.style.setProperty('--mode-bg', mode.bgColor);
+        
         card.innerHTML = `
-            <div class="mode-emoji">${mode.emoji}</div>
-            <div class="mode-name">${mode.name}</div>
-            <div class="mode-desc">${mode.description}</div>
-            <div class="mode-price">⭐ ${mode.price}</div>
+            <div class="mode-card-image">
+                <img src="${mode.image}" alt="${mode.name}" loading="lazy" 
+                     onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22${mode.bgColor.replace('#', '%23')}%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22white%22%20font-size%3D%2230%22%3E${mode.icon}%3C%2Ftext%3E%3C%2Fsvg%3E'">
+            </div>
+            <div class="mode-card-content">
+                <div class="mode-card-title">
+                    <span>${mode.icon}</span>
+                    <h3>${mode.name}</h3>
+                </div>
+                <div class="mode-card-description">${mode.description}</div>
+                <div class="mode-card-footer">
+                    <div class="mode-card-price">
+                        <span>⭐</span>
+                        <span>${mode.price}</span>
+                    </div>
+                    ${mode.popular ? '<div class="mode-card-badge">Популярное</div>' : ''}
+                </div>
+            </div>
         `;
+        
         card.addEventListener('click', () => selectMode(mode));
         grid.appendChild(card);
     });
+    
     console.log(`✅ Loaded ${MODES.length} modes`);
 }
 
 function selectMode(mode) {
     setMode(mode.id);
+    
+    // Обновляем заголовок и иконку
     document.getElementById('currentModeTitle').textContent = mode.name;
     document.getElementById('currentModePrice').textContent = `${mode.price}⭐`;
     document.getElementById('generatePrice').textContent = `${mode.price}⭐`;
+    
+    const modeIcon = document.getElementById('currentModeIcon');
+    if (modeIcon) {
+        modeIcon.textContent = mode.icon;
+    }
+    
+    // Показываем/скрываем секцию загрузки файла
+    const fileSection = document.getElementById('fileSection');
+    if (fileSection) {
+        fileSection.style.display = mode.needsFile ? 'block' : 'none';
+    }
+    
+    // Меняем подсказку в поле ввода
+    const promptInput = document.getElementById('promptInput');
+    if (promptInput) {
+        promptInput.placeholder = mode.placeholder || 'Опишите что хотите увидеть...';
+    }
+    
+    // Сбрасываем превью файла
+    const filePreview = document.getElementById('filePreview');
+    const previewImg = document.getElementById('previewImg');
+    if (filePreview && previewImg) {
+        filePreview.classList.add('hidden');
+        previewImg.src = '';
+    }
+    setFile(null);
+    
     showScreen(generationScreen);
 }
 
@@ -92,6 +140,58 @@ function setupEventListeners() {
     document.getElementById('generateFromEmptyBtn')?.addEventListener('click', () => {
         showScreen(mainScreen);
     });
+    
+    // Обработчики для загрузки файла
+    const pickFileBtn = document.getElementById('pickFileBtn');
+    const fileInput = document.getElementById('fileInput');
+    const removeFileBtn = document.getElementById('removeFileBtn');
+    
+    if (pickFileBtn && fileInput) {
+        pickFileBtn.addEventListener('click', () => fileInput.click());
+    }
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileSelect);
+    }
+    
+    if (removeFileBtn) {
+        removeFileBtn.addEventListener('click', removeFile);
+    }
+}
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        alert('Пожалуйста, выберите изображение');
+        return;
+    }
+    
+    setFile(file);
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const previewImg = document.getElementById('previewImg');
+        const filePreview = document.getElementById('filePreview');
+        
+        if (previewImg && filePreview) {
+            previewImg.src = e.target.result;
+            filePreview.classList.remove('hidden');
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeFile() {
+    setFile(null);
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    if (fileInput) fileInput.value = '';
+    if (filePreview) filePreview.classList.add('hidden');
+    if (previewImg) previewImg.src = '';
 }
 
 function showGallery() {
@@ -130,7 +230,7 @@ function loadGallery(filter = 'all', search = '') {
     grid.innerHTML = filtered.map(img => `
         <div class="gallery-item" data-id="${img.id}">
             <img src="${img.dataUrl}" alt="${img.prompt || 'image'}">
-            ${img.favorite ? '<div style="position:absolute; top:8px; right:8px;">❤️</div>' : ''}
+            ${img.favorite ? '<div class="gallery-item-favorite">❤️</div>' : ''}
         </div>
     `).join('');
     
@@ -155,16 +255,30 @@ async function generateImage() {
     if (isGenerating) return;
     
     const prompt = document.getElementById('promptInput')?.value.trim();
-    if (!prompt) {
-        showToast('Введите описание', 'error');
+    const mode = getMode();
+    
+    if (!mode) {
+        alert('Сначала выберите режим');
+        return;
+    }
+    
+    if (mode.needsFile && !getFile()) {
+        alert('Для этого режима нужно выбрать изображение');
+        return;
+    }
+    
+    if (!prompt && mode.id === 'txt2img') {
+        alert('Введите описание');
         return;
     }
     
     startGeneration();
     
+    // Имитация генерации (заменить на реальный API)
     setTimeout(() => {
         const mockImage = `https://picsum.photos/1024/1024?random=${Date.now()}`;
         currentImage = mockImage;
+        
         const resultImg = document.getElementById('resultImage');
         const placeholder = document.getElementById('previewPlaceholder');
         const actions = document.getElementById('resultActions');
@@ -256,9 +370,9 @@ function regenerateImage() {
 function filterModes(e) {
     const search = e.target.value.toLowerCase();
     document.querySelectorAll('.mode-card').forEach(card => {
-        const name = card.querySelector('.mode-name')?.textContent.toLowerCase() || '';
-        const desc = card.querySelector('.mode-desc')?.textContent.toLowerCase() || '';
-        card.style.display = (name.includes(search) || desc.includes(search)) ? 'flex' : 'none';
+        const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
+        const desc = card.querySelector('.mode-card-description')?.textContent.toLowerCase() || '';
+        card.style.display = (title.includes(search) || desc.includes(search)) ? 'flex' : 'none';
     });
 }
 
@@ -276,7 +390,20 @@ function switchGalleryTab(tab) {
 }
 
 async function getBalance() {
-    return 100;
+    try {
+        const user = getTelegramUser();
+        const response = await fetch(`/api/stars/balance/${user.tg_user_id}`);
+        const data = await response.json();
+        return data.balance || 0;
+    } catch {
+        return 100; // Заглушка
+    }
+}
+
+function getTelegramUser() {
+    const tg = window.Telegram?.WebApp;
+    if (!tg || !tg.initDataUnsafe?.user) return { tg_user_id: 0 };
+    return { tg_user_id: tg.initDataUnsafe.user.id };
 }
 
 function updateBalance() {
