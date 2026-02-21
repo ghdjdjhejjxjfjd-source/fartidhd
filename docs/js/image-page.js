@@ -72,7 +72,6 @@ function loadModes() {
 function selectMode(mode) {
     setMode(mode.id);
     
-    // Обновляем заголовок и иконку
     document.getElementById('currentModeTitle').textContent = mode.name;
     document.getElementById('currentModePrice').textContent = `${mode.price}⭐`;
     document.getElementById('generatePrice').textContent = `${mode.price}⭐`;
@@ -82,19 +81,16 @@ function selectMode(mode) {
         modeIcon.textContent = mode.icon;
     }
     
-    // Показываем/скрываем секцию загрузки файла
     const fileSection = document.getElementById('fileSection');
     if (fileSection) {
         fileSection.style.display = mode.needsFile ? 'block' : 'none';
     }
     
-    // Меняем подсказку в поле ввода
     const promptInput = document.getElementById('promptInput');
     if (promptInput) {
         promptInput.placeholder = mode.placeholder || 'Опишите что хотите увидеть...';
     }
     
-    // Сбрасываем превью файла
     const filePreview = document.getElementById('filePreview');
     const previewImg = document.getElementById('previewImg');
     if (filePreview && previewImg) {
@@ -132,6 +128,7 @@ function setupEventListeners() {
     document.getElementById('downloadBtn')?.addEventListener('click', downloadImage);
     document.getElementById('copyPromptBtn')?.addEventListener('click', copyPrompt);
     document.getElementById('regenerateBtn')?.addEventListener('click', regenerateImage);
+    document.getElementById('enhanceBtn')?.addEventListener('click', enhanceCurrentImage);
     
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', (e) => switchGalleryTab(e.target.dataset.tab));
@@ -141,7 +138,6 @@ function setupEventListeners() {
         showScreen(mainScreen);
     });
     
-    // Обработчики для загрузки файла
     const pickFileBtn = document.getElementById('pickFileBtn');
     const fileInput = document.getElementById('fileInput');
     const removeFileBtn = document.getElementById('removeFileBtn');
@@ -274,7 +270,6 @@ async function generateImage() {
     
     startGeneration();
     
-    // Имитация генерации (заменить на реальный API)
     setTimeout(() => {
         const mockImage = `https://picsum.photos/1024/1024?random=${Date.now()}`;
         currentImage = mockImage;
@@ -396,7 +391,7 @@ async function getBalance() {
         const data = await response.json();
         return data.balance || 0;
     } catch {
-        return 100; // Заглушка
+        return 100;
     }
 }
 
@@ -422,4 +417,102 @@ function showToast(message, type = 'info') {
     toast.textContent = message;
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
+}
+
+// =============================================
+// ✅ НОВАЯ ФУНКЦИЯ: УЛУЧШЕНИЕ КАЧЕСТВА ДО 4K
+// =============================================
+function enhanceTo4K(imageUrl) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = imageUrl;
+        
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d', { alpha: false });
+            
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            ctx.drawImage(img, 0, 0);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 1. Увеличиваем контраст
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, Math.max(0, (data[i] - 128) * 1.1 + 128));
+                data[i+1] = Math.min(255, Math.max(0, (data[i+1] - 128) * 1.1 + 128));
+                data[i+2] = Math.min(255, Math.max(0, (data[i+2] - 128) * 1.1 + 128));
+            }
+            
+            // 2. Увеличиваем насыщенность
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+                data[i] = Math.min(255, gray + (data[i] - gray) * 1.2);
+                data[i+1] = Math.min(255, gray + (data[i+1] - gray) * 1.2);
+                data[i+2] = Math.min(255, gray + (data[i+2] - gray) * 1.2);
+            }
+            
+            // 3. Повышение резкости
+            const sharpData = new Uint8ClampedArray(data.length);
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    for (let c = 0; c < 3; c++) {
+                        const val = data[idx + c];
+                        const left = data[idx - 4 + c];
+                        const right = data[idx + 4 + c];
+                        const top = data[idx - width * 4 + c];
+                        const bottom = data[idx + width * 4 + c];
+                        
+                        const sharpened = val + (val * 5 - left - right - top - bottom) * 0.15;
+                        sharpData[idx + c] = Math.min(255, Math.max(0, sharpened));
+                    }
+                    sharpData[idx + 3] = data[idx + 3];
+                }
+            }
+            
+            for (let i = 0; i < data.length; i++) {
+                if (sharpData[i] !== undefined) {
+                    data[i] = sharpData[i];
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            
+            const enhancedDataUrl = canvas.toDataURL('image/jpeg', 1.0);
+            resolve(enhancedDataUrl);
+        };
+        
+        img.onerror = () => {
+            console.error('Ошибка загрузки изображения');
+            resolve(imageUrl);
+        };
+    });
+}
+
+async function enhanceCurrentImage() {
+    if (!currentImage) return;
+    
+    showToast('✨ Улучшаем качество до 4K...', 'info');
+    
+    try {
+        const enhancedImage = await enhanceTo4K(currentImage);
+        currentImage = enhancedImage;
+        
+        const resultImg = document.getElementById('resultImage');
+        if (resultImg) {
+            resultImg.src = enhancedImage;
+        }
+        
+        showToast('✅ Качество улучшено!', 'success');
+    } catch (error) {
+        console.error('Enhance error:', error);
+        showToast('❌ Ошибка улучшения', 'error');
+    }
 }
