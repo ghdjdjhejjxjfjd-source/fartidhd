@@ -1,6 +1,6 @@
 // docs/js/image/modes/remove_bg.js
 
-import { showToast, getBalance, updateBalance } from '../shared/utils.js';
+import { showToast, getBalance, updateBalance, setupKeyboardDismiss } from '../shared/utils.js';
 import { addToGallery } from '../shared/gallery.js';
 
 let currentImage = null;
@@ -8,8 +8,8 @@ let isGenerating = false;
 let startTime = null;
 let timerInterval = null;
 let selectedFile = null;
+let originalFileName = null;
 
-// Инициализация режима "Удалить фон"
 export function initRemoveBg(container) {
     container.innerHTML = `
         <div class="file-section">
@@ -37,15 +37,6 @@ export function initRemoveBg(container) {
             </div>
         </div>
 
-        <div class="prompt-area">
-            <textarea 
-                id="promptInput" 
-                placeholder="Дополнительные инструкции (опционально)..." 
-                rows="2"
-                maxlength="500"
-            ></textarea>
-        </div>
-
         <button class="generate-btn" id="generateBtn">
             <span class="btn-icon">✂️</span>
             Удалить фон
@@ -54,28 +45,18 @@ export function initRemoveBg(container) {
 
         <div class="result-actions hidden" id="resultActions">
             <div class="action-row">
-                <button class="action-btn" id="saveToGalleryBtn">
-                    <span class="btn-icon">💾</span> Сохранить
-                </button>
-                <button class="action-btn" id="downloadBtn">
-                    <span class="btn-icon">📥</span> Скачать
-                </button>
-                <button class="action-btn" id="enhanceBtn">
-                    <span class="btn-icon">✨</span> 4K
-                </button>
-            </div>
-            <div class="action-row">
-                <button class="action-btn" id="copyPromptBtn">
-                    <span class="btn-icon">📋</span> Копировать
-                </button>
-                <button class="action-btn" id="regenerateBtn">
-                    <span class="btn-icon">🔄</span> Заново
-                </button>
+                <button class="action-btn" id="saveToGalleryBtn" title="Сохранить">💾</button>
+                <button class="action-btn" id="regenerateBtn" title="Заново">🔄</button>
             </div>
         </div>
     `;
     
-    // Обработчики
+    // Настройка закрытия клавиатуры
+    const chatArea = document.querySelector('.wrap');
+    if (chatArea) {
+        setupKeyboardDismiss(chatArea);
+    }
+    
     document.getElementById('pickFileBtn').addEventListener('click', () => {
         document.getElementById('fileInput').click();
     });
@@ -84,10 +65,7 @@ export function initRemoveBg(container) {
     document.getElementById('removeFileBtn').addEventListener('click', removeFile);
     document.getElementById('generateBtn').addEventListener('click', generateImage);
     document.getElementById('saveToGalleryBtn').addEventListener('click', saveToGallery);
-    document.getElementById('downloadBtn').addEventListener('click', downloadImage);
-    document.getElementById('copyPromptBtn').addEventListener('click', copyPrompt);
     document.getElementById('regenerateBtn').addEventListener('click', regenerateImage);
-    document.getElementById('enhanceBtn').addEventListener('click', enhanceCurrentImage);
 }
 
 function handleFileSelect(e) {
@@ -100,20 +78,19 @@ function handleFileSelect(e) {
     }
     
     selectedFile = file;
+    originalFileName = file.name.replace(/\.[^/.]+$/, "");
     
     const reader = new FileReader();
     reader.onload = (e) => {
-        const previewImg = document.getElementById('previewImg');
-        const filePreview = document.getElementById('filePreview');
-        
-        previewImg.src = e.target.result;
-        filePreview.classList.remove('hidden');
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('filePreview').classList.remove('hidden');
     };
     reader.readAsDataURL(file);
 }
 
 function removeFile() {
     selectedFile = null;
+    originalFileName = null;
     document.getElementById('fileInput').value = '';
     document.getElementById('filePreview').classList.add('hidden');
     document.getElementById('previewImg').src = '';
@@ -135,19 +112,14 @@ async function generateImage() {
     
     startGeneration();
     
-    // Имитация удаления фона
     setTimeout(() => {
         const mockImage = `https://picsum.photos/1024/1024?random=${Date.now()}`;
         currentImage = mockImage;
         
-        const resultImg = document.getElementById('resultImage');
-        const placeholder = document.getElementById('previewPlaceholder');
-        const actions = document.getElementById('resultActions');
-        
-        resultImg.src = mockImage;
-        resultImg.classList.remove('hidden');
-        placeholder.classList.add('hidden');
-        actions.classList.remove('hidden');
+        document.getElementById('resultImage').src = mockImage;
+        document.getElementById('resultImage').classList.remove('hidden');
+        document.getElementById('previewPlaceholder').classList.add('hidden');
+        document.getElementById('resultActions').classList.remove('hidden');
         
         endGeneration();
         updateBalance();
@@ -181,7 +153,7 @@ function saveToGallery() {
     const imageData = {
         id: Date.now().toString(),
         dataUrl: currentImage,
-        prompt: document.getElementById('promptInput')?.value || 'Удаление фона',
+        prompt: 'Удаление фона',
         mode: 'remove_bg',
         modeName: 'Удалить фон',
         cost: 6,
@@ -190,80 +162,23 @@ function saveToGallery() {
     };
     
     addToGallery(imageData);
+    downloadImage();
 }
 
 function downloadImage() {
     if (!currentImage) return;
+    
     const link = document.createElement('a');
-    link.download = `image-${Date.now()}.png`;
+    const filename = originalFileName 
+        ? `${originalFileName}_nobg.jpg` 
+        : `nobg_${Date.now()}.jpg`;
+    
+    link.download = filename;
     link.href = currentImage;
     link.click();
-    showToast('Скачивание...', 'success');
-}
-
-function copyPrompt() {
-    const prompt = document.getElementById('promptInput')?.value;
-    if (prompt) {
-        navigator.clipboard?.writeText(prompt);
-        showToast('Промпт скопирован', 'success');
-    }
+    showToast('Файл сохранен!', 'success');
 }
 
 function regenerateImage() {
     generateImage();
-}
-
-// Улучшение качества
-async function enhanceCurrentImage() {
-    if (!currentImage) return;
-    
-    showToast('✨ Улучшаем качество...', 'info');
-    
-    try {
-        const enhancedImage = await enhanceTo4K(currentImage);
-        currentImage = enhancedImage;
-        document.getElementById('resultImage').src = enhancedImage;
-        showToast('✅ Качество улучшено!', 'success');
-    } catch (error) {
-        showToast('❌ Ошибка улучшения', 'error');
-    }
-}
-
-function enhanceTo4K(imageUrl) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = imageUrl;
-        
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d', { alpha: false });
-            
-            canvas.width = img.width;
-            canvas.height = img.height;
-            
-            ctx.drawImage(img, 0, 0);
-            
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = Math.min(255, Math.max(0, (data[i] - 128) * 1.1 + 128));
-                data[i+1] = Math.min(255, Math.max(0, (data[i+1] - 128) * 1.1 + 128));
-                data[i+2] = Math.min(255, Math.max(0, (data[i+2] - 128) * 1.1 + 128));
-            }
-            
-            for (let i = 0; i < data.length; i += 4) {
-                const gray = (data[i] + data[i+1] + data[i+2]) / 3;
-                data[i] = Math.min(255, gray + (data[i] - gray) * 1.2);
-                data[i+1] = Math.min(255, gray + (data[i+1] - gray) * 1.2);
-                data[i+2] = Math.min(255, gray + (data[i+2] - gray) * 1.2);
-            }
-            
-            ctx.putImageData(imageData, 0, 0);
-            resolve(canvas.toDataURL('image/jpeg', 1.0));
-        };
-        
-        img.onerror = () => resolve(imageUrl);
-    });
 }
