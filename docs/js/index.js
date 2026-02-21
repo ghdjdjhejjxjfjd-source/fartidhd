@@ -1,3 +1,4 @@
+// docs/js/index.js
 const tg = window.Telegram?.WebApp;
 
 // ===== VH (Telegram/iOS) =====
@@ -23,165 +24,38 @@ if (tg) {
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
 
-// ===== DOM =====
+// ===== DOM элементы =====
 const chatBtn = document.getElementById("chatBtn");
+const imgBtn = document.getElementById("imgBtn");
 const subText = document.getElementById("subText");
 const verText = document.getElementById("verText");
 const langTitle = document.getElementById("langTitle");
 
 const langBtn = document.getElementById("langBtn");
+const langBtnText = document.getElementById("langBtnText");
 const langOverlay = document.getElementById("langOverlay");
 const langList = document.getElementById("langList");
 const langClose = document.getElementById("langClose");
 const langSheetTitle = document.getElementById("langSheetTitle");
 
-const imgBtn = document.getElementById("imgBtn");
-
 const themeBtn = document.getElementById("themeBtn");
+const themeBtnText = document.getElementById("themeBtnText");
 const themeOverlay = document.getElementById("themeOverlay");
 const themeList = document.getElementById("themeList");
 const themeClose = document.getElementById("themeClose");
 const themeSheetTitle = document.getElementById("themeSheetTitle");
 
-// ===== helpers =====
-function getSavedLang(){
-  try{ return localStorage.getItem(STORAGE_LANG) || "ru"; }
-  catch(e){ return "ru"; }
-}
-function saveLang(lang){
-  try{ localStorage.setItem(STORAGE_LANG, lang); }catch(e){}
-}
-
-function getSavedTheme(){
-  try{ return localStorage.getItem(STORAGE_THEME) || "blue"; }
-  catch(e){ return "blue"; }
-}
-function saveTheme(theme){
-  try{ localStorage.setItem(STORAGE_THEME, theme); }catch(e){}
-}
-
-function applyTheme(theme){
-  document.documentElement.setAttribute("data-theme", theme || "blue");
-}
-
-// Функция для получения цвета темы
-function getThemeColors() {
-  const root = getComputedStyle(document.documentElement);
-  return {
-    bg: root.getPropertyValue('--card-bg').trim() || 'rgba(0,0,0,0.8)',
-    accent: root.getPropertyValue('--accent1').trim() || '#3aa0ff',
-    text: root.getPropertyValue('--text').trim() || '#ffffff'
-  };
-}
-
-// Уведомление с цветом темы и задержкой 0.5 сек
-function showNotification(message) {
-  console.log("🔔 Уведомление:", message);
-  
-  setTimeout(() => {
-    // Получаем цвета текущей темы
-    const colors = getThemeColors();
-    
-    // Удаляем старые уведомления
-    const oldToasts = document.querySelectorAll('.toast-notification');
-    oldToasts.forEach(toast => toast.remove());
-    
-    const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: ${colors.bg};
-      border: 1px solid ${colors.accent}40;
-      border-radius: 30px;
-      padding: 12px 24px;
-      color: ${colors.text};
-      font-weight: 600;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      z-index: 100000;
-      animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-      pointer-events: none;
-    `;
-    
-    document.body.appendChild(toast);
-    console.log("✅ Уведомление добавлено в DOM с цветом:", colors.accent);
-    
-    setTimeout(() => {
-      toast.remove();
-      console.log("🗑️ Уведомление удалено");
-    }, 3000);
-  }, 500); // Задержка 0.5 секунды
-}
-
-// Добавляем анимации
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideDown {
-    from {
-      transform: translate(-50%, -100%);
-      opacity: 0;
-    }
-    to {
-      transform: translate(-50%, 0);
-      opacity: 1;
-    }
-  }
-  @keyframes fadeOut {
-    to {
-      opacity: 0;
-      transform: translate(-50%, -20px);
-    }
-  }
-`;
-document.head.appendChild(style);
-
-function setPillLabel(btn, text){
-  if (!btn) return;
-  
-  let textNode = null;
-  for (const n of btn.childNodes) {
-    if (n && n.nodeType === Node.TEXT_NODE) { textNode = n; break; }
-  }
-
-  if (!textNode) {
-    textNode = document.createTextNode("");
-    btn.insertBefore(textNode, btn.firstChild);
-  }
-
-  textNode.nodeValue = text + " ";
-}
-
-function setChatLink(lang, theme){
-  if (!chatBtn) return;
-  const baseHref = "./chat.html?v=2";
-  chatBtn.href = baseHref
-    + "&lang=" + encodeURIComponent(lang)
-    + "&theme=" + encodeURIComponent(theme);
-}
-
-function setImgLink(lang, theme){
-  if (!imgBtn) return;
-  const baseHref = "./image.html?v=1";
-  imgBtn.href = baseHref
-    + "&lang=" + encodeURIComponent(lang)
-    + "&theme=" + encodeURIComponent(theme);
-}
-
-// ===== i18n =====
+// ===== i18n словарь =====
 const I18N = {
   ru: { 
-    btn:"Чат с ИИ", 
-    img:"Генерация картинки", 
-    sub:"Быстрые ответы • Память • Заметки", 
-    ver:"miniapp v2", 
-    lang:"Язык интерфейса", 
-    sheet:"Язык",
-    theme_title: "Цвет",
+    chat: "Чат с ИИ", 
+    img: "Генерация картинки", 
+    sub: "Быстрые ответы • Память • Заметки", 
+    ver: "miniapp v2", 
+    lang: "Язык интерфейса", 
+    sheetLang: "Язык",
+    sheetTheme: "Цвет",
+    theme: "Цвет",
     colors: {
       blue: "Синий",
       black: "Черный",
@@ -191,13 +65,14 @@ const I18N = {
     }
   },
   kk: { 
-    btn:"AI чат", 
-    img:"Сурет генерациясы", 
-    sub:"Жылдам жауаптар • Есте сақтау • Жазбалар", 
-    ver:"miniapp v2", 
-    lang:"Тіл", 
-    sheet:"Тіл",
-    theme_title: "Түс",
+    chat: "AI чат", 
+    img: "Сурет генерациясы", 
+    sub: "Жылдам жауаптар • Есте сақтау • Жазбалар", 
+    ver: "miniapp v2", 
+    lang: "Тіл", 
+    sheetLang: "Тіл",
+    sheetTheme: "Түс",
+    theme: "Түс",
     colors: {
       blue: "Көк",
       black: "Қара",
@@ -207,13 +82,14 @@ const I18N = {
     }
   },
   en: { 
-    btn:"AI Chat", 
-    img:"Image generation", 
-    sub:"Fast replies • Memory • Notes", 
-    ver:"miniapp v2", 
-    lang:"Language", 
-    sheet:"Language",
-    theme_title: "Color",
+    chat: "AI Chat", 
+    img: "Image generation", 
+    sub: "Fast replies • Memory • Notes", 
+    ver: "miniapp v2", 
+    lang: "Language", 
+    sheetLang: "Language",
+    sheetTheme: "Color",
+    theme: "Color",
     colors: {
       blue: "Blue",
       black: "Black",
@@ -223,13 +99,14 @@ const I18N = {
     }
   },
   tr: { 
-    btn:"Yapay Zekâ Sohbet", 
-    img:"Görsel üretimi", 
-    sub:"Hızlı yanıtlar • Hafıza • Notlar", 
-    ver:"miniapp v2", 
-    lang:"Dil", 
-    sheet:"Dil",
-    theme_title: "Renk",
+    chat: "Yapay Zekâ Sohbet", 
+    img: "Görsel üretimi", 
+    sub: "Hızlı yanıtlar • Hafıza • Notlar", 
+    ver: "miniapp v2", 
+    lang: "Dil", 
+    sheetLang: "Dil",
+    sheetTheme: "Renk",
+    theme: "Renk",
     colors: {
       blue: "Mavi",
       black: "Siyah",
@@ -239,13 +116,14 @@ const I18N = {
     }
   },
   uk: { 
-    btn:"AI чат", 
-    img:"Генерація зображень", 
-    sub:"Швидкі відповіді • Пам’ять • Нотатки", 
-    ver:"miniapp v2", 
-    lang:"Мова", 
-    sheet:"Мова",
-    theme_title: "Колір",
+    chat: "AI чат", 
+    img: "Генерація зображень", 
+    sub: "Швидкі відповіді • Пам’ять • Нотатки", 
+    ver: "miniapp v2", 
+    lang: "Мова", 
+    sheetLang: "Мова",
+    sheetTheme: "Колір",
+    theme: "Колір",
     colors: {
       blue: "Синій",
       black: "Чорний",
@@ -255,13 +133,14 @@ const I18N = {
     }
   },
   fr: { 
-    btn:"Chat IA", 
-    img:"Génération d'image", 
-    sub:"Réponses rapides • Mémoire • Notes", 
-    ver:"miniapp v2", 
-    lang:"Langue", 
-    sheet:"Langue",
-    theme_title: "Couleur",
+    chat: "Chat IA", 
+    img: "Génération d'image", 
+    sub: "Réponses rapides • Mémoire • Notes", 
+    ver: "miniapp v2", 
+    lang: "Langue", 
+    sheetLang: "Langue",
+    sheetTheme: "Couleur",
+    theme: "Couleur",
     colors: {
       blue: "Bleu",
       black: "Noir",
@@ -272,35 +151,123 @@ const I18N = {
   },
 };
 
+// ===== Списки =====
 const LANGS = [
-  { code:"ru", label:"Русский (RU)" },
-  { code:"kk", label:"Қазақша (KZ)" },
-  { code:"en", label:"English (EN)" },
-  { code:"tr", label:"Türkçe (TR)" },
-  { code:"uk", label:"Українська (UA)" },
-  { code:"fr", label:"Français (FR)" },
+  { code: "ru", label: "Русский (RU)" },
+  { code: "kk", label: "Қазақша (KZ)" },
+  { code: "en", label: "English (EN)" },
+  { code: "tr", label: "Türkçe (TR)" },
+  { code: "uk", label: "Українська (UA)" },
+  { code: "fr", label: "Français (FR)" },
 ];
-
-const LANG_NAMES = {
-  ru: "Русский",
-  kk: "Қазақша",
-  en: "English",
-  tr: "Türkçe",
-  uk: "Українська",
-  fr: "Français"
-};
 
 const THEMES = [
-  { code:"blue", label: "Синий" },
-  { code:"black", label: "Черный" },
-  { code:"purple", label: "Фиолетовый" },
-  { code:"green", label: "Зеленый" },
-  { code:"gray", label: "Серый" }
+  { code: "blue", label: { ru: "Синий", kk: "Көк", en: "Blue", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
+  { code: "black", label: { ru: "Черный", kk: "Қара", en: "Black", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
+  { code: "purple", label: { ru: "Фиолетовый", kk: "Күлгін", en: "Purple", tr: "Mor", uk: "Фіолетовий", fr: "Violet" } },
+  { code: "green", label: { ru: "Зеленый", kk: "Жасыл", en: "Green", tr: "Yeşil", uk: "Зелений", fr: "Vert" } },
+  { code: "gray", label: { ru: "Серый", kk: "Сұр", en: "Gray", tr: "Gri", uk: "Сірий", fr: "Gris" } },
 ];
 
-function themeLabel(theme, lang = "ru"){
+// ===== helpers =====
+function getSavedLang(){
+  try{ return localStorage.getItem(STORAGE_LANG) || "ru"; }
+  catch(e){ return "ru"; }
+}
+
+function saveLang(lang){
+  try{ localStorage.setItem(STORAGE_LANG, lang); }catch(e){}
+}
+
+function getSavedTheme(){
+  try{ return localStorage.getItem(STORAGE_THEME) || "blue"; }
+  catch(e){ return "blue"; }
+}
+
+function saveTheme(theme){
+  try{ localStorage.setItem(STORAGE_THEME, theme); }catch(e){}
+}
+
+function applyTheme(theme){
+  document.documentElement.setAttribute("data-theme", theme || "blue");
+}
+
+// ===== Уведомления =====
+function showNotification(message) {
+  setTimeout(() => {
+    const oldToasts = document.querySelectorAll('.toast-notification');
+    oldToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }, 500);
+}
+
+// ===== Обновление ссылок =====
+function updateLinks(lang, theme){
+  if (chatBtn) {
+    chatBtn.href = `./chat.html?v=2&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  }
+  if (imgBtn) {
+    imgBtn.href = `./image.html?v=1&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  }
+}
+
+// ===== Обновление UI =====
+function updateUILanguage(lang){
   const t = I18N[lang] || I18N.ru;
-  return t.colors[theme] || theme;
+  
+  // Обновляем тексты
+  if (chatBtn) chatBtn.textContent = t.chat;
+  if (imgBtn) imgBtn.textContent = t.img;
+  if (subText) subText.textContent = t.sub;
+  if (verText) verText.textContent = t.ver;
+  if (langTitle) langTitle.textContent = t.lang;
+  if (langSheetTitle) langSheetTitle.textContent = t.sheetLang;
+  if (themeSheetTitle) themeSheetTitle.textContent = t.sheetTheme;
+  
+  // Обновляем текст на кнопке языка
+  const foundLang = LANGS.find(x => x.code === lang);
+  if (langBtnText) {
+    langBtnText.textContent = foundLang ? foundLang.label : "Русский (RU)";
+  }
+  
+  // Обновляем выделение в списке языков
+  paintSelectedLang(lang);
+  
+  // Обновляем текст на кнопке темы
+  const currentTheme = getSavedTheme();
+  if (themeBtnText) {
+    themeBtnText.textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
+  }
+  
+  // Обновляем список тем
+  updateThemeList(lang);
+}
+
+function getThemeLabel(themeCode, lang){
+  const theme = THEMES.find(t => t.code === themeCode);
+  if (!theme) return themeCode;
+  return theme.label[lang] || theme.label.ru || themeCode;
+}
+
+function updateThemeList(lang){
+  if (!themeList) return;
+  
+  const items = themeList.querySelectorAll('.themeItem');
+  items.forEach(item => {
+    const code = item.getAttribute('data-theme');
+    const labelSpan = item.querySelector('.theme-label');
+    if (labelSpan) {
+      labelSpan.textContent = getThemeLabel(code, lang);
+    }
+  });
 }
 
 function paintSelectedLang(lang){
@@ -321,92 +288,49 @@ function paintSelectedTheme(theme){
   });
 }
 
-function updateThemeList(lang) {
-  if (!themeList) return;
-  
-  const t = I18N[lang] || I18N.ru;
-  
-  if (themeSheetTitle) {
-    themeSheetTitle.textContent = t.theme_title;
-  }
-  
-  const items = themeList.querySelectorAll(".themeItem");
-  items.forEach(btn => {
-    const code = btn.getAttribute("data-theme");
-    const label = t.colors[code] || code;
-    const span = btn.querySelector("span:first-child");
-    if (span) {
-      span.textContent = label;
-    }
-  });
-}
-
+// ===== Установка языка =====
 function setLang(lang){
-  console.log("setLang called with:", lang);
+  console.log("setLang:", lang);
   
-  const t = I18N[lang] || I18N.ru;
-
-  // Обновляем тексты
-  if (chatBtn) chatBtn.textContent = t.btn;
-  if (imgBtn) imgBtn.textContent = t.img;
-  if (subText) subText.textContent = t.sub;
-  if (verText) verText.textContent = t.ver;
-  if (langTitle) langTitle.textContent = t.lang;
-  if (langSheetTitle) langSheetTitle.textContent = t.sheet;
-
-  const found = LANGS.find(x => x.code === lang);
-  setPillLabel(langBtn, found ? found.label : "Русский (RU)");
-
   saveLang(lang);
-  paintSelectedLang(lang);
+  updateUILanguage(lang);
   
   const currentTheme = getSavedTheme();
-  setPillLabel(themeBtn, t.theme_title + ": " + themeLabel(currentTheme, lang));
+  updateLinks(lang, currentTheme);
   
-  if (themeSheetTitle) {
-    themeSheetTitle.textContent = t.theme_title;
-  }
-  updateThemeList(lang);
-
-  setChatLink(lang, currentTheme);
-  setImgLink(lang, currentTheme);
-  
-  // Закрываем оверлей
   closeLang();
-  
-  // Показываем уведомление с задержкой 0.5 сек
-  showNotification(`🌐 Язык изменен на ${LANG_NAMES[lang] || lang}`);
+  showNotification(`🌐 ${I18N[lang]?.sheetLang || "Language"}: ${LANGS.find(l => l.code === lang)?.label || lang}`);
 }
 
+// ===== Установка темы =====
 function setTheme(theme){
-  console.log("setTheme called with:", theme);
-  
-  const currentLang = getSavedLang();
-  const t = I18N[currentLang] || I18N.ru;
+  console.log("setTheme:", theme);
   
   applyTheme(theme);
   saveTheme(theme);
   paintSelectedTheme(theme);
-
-  setPillLabel(themeBtn, t.theme_title + ": " + themeLabel(theme, currentLang));
-
-  setChatLink(currentLang, theme);
-  setImgLink(currentLang, theme);
   
-  // Закрываем оверлей
+  const currentLang = getSavedLang();
+  const t = I18N[currentLang] || I18N.ru;
+  
+  if (themeBtnText) {
+    themeBtnText.textContent = `${t.theme}: ${getThemeLabel(theme, currentLang)}`;
+  }
+  
+  updateLinks(currentLang, theme);
+  
   closeTheme();
-  
-  // Показываем уведомление с задержкой 0.5 сек
-  showNotification(`🎨 Тема изменена на ${themeLabel(theme, currentLang)}`);
+  showNotification(`🎨 ${t.sheetTheme}: ${getThemeLabel(theme, currentLang)}`);
 }
 
-// ===== overlays =====
+// ===== Overlay controls =====
 function openLang(){
   if (!langOverlay || !langBtn) return;
   langOverlay.classList.add("show");
   langOverlay.setAttribute("aria-hidden", "false");
   langBtn.setAttribute("aria-expanded", "true");
 }
+
 function closeLang(){
   if (!langOverlay || !langBtn) return;
   langOverlay.classList.remove("show");
@@ -420,6 +344,7 @@ function openTheme(){
   themeOverlay.setAttribute("aria-hidden", "false");
   themeBtn.setAttribute("aria-expanded", "true");
 }
+
 function closeTheme(){
   if (!themeOverlay || !themeBtn) return;
   themeOverlay.classList.remove("show");
@@ -427,89 +352,83 @@ function closeTheme(){
   themeBtn.setAttribute("aria-expanded", "false");
 }
 
+// ===== Сборка списков =====
 function buildLangList(){
   if (!langList) return;
+  
   langList.innerHTML = "";
-  for (const x of LANGS){
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "langItem";
-    b.setAttribute("data-lang", x.code);
-    b.innerHTML = `<span>${x.label}</span><span class="check">✓</span>`;
-    b.addEventListener("click", () => {
-      setLang(x.code);
-    });
-    langList.appendChild(b);
-  }
+  LANGS.forEach(lang => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "langItem";
+    btn.setAttribute("data-lang", lang.code);
+    btn.innerHTML = `<span>${lang.label}</span><span class="check">✓</span>`;
+    btn.addEventListener("click", () => setLang(lang.code));
+    langList.appendChild(btn);
+  });
 }
 
 function buildThemeList(){
   if (!themeList) return;
+  
   themeList.innerHTML = "";
-  
-  const currentLang = getSavedLang();
-  const t = I18N[currentLang] || I18N.ru;
-  
-  for (const x of THEMES){
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "themeItem";
-    b.setAttribute("data-theme", x.code);
-    
-    const label = t.colors[x.code] || x.code;
-    b.innerHTML = `<span>${label}</span><span class="check">✓</span>`;
-    
-    b.addEventListener("click", () => {
-      setTheme(x.code);
-    });
-    themeList.appendChild(b);
-  }
-  
-  if (themeSheetTitle) {
-    themeSheetTitle.textContent = t.theme_title;
-  }
+  THEMES.forEach(theme => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "themeItem";
+    btn.setAttribute("data-theme", theme.code);
+    btn.innerHTML = `<span class="theme-label">${theme.label.ru}</span><span class="check">✓</span>`;
+    btn.addEventListener("click", () => setTheme(theme.code));
+    themeList.appendChild(btn);
+  });
 }
 
-// ===== init =====
-buildLangList();
-buildThemeList();
+// ===== Инициализация =====
+function init(){
+  // Сборка списков
+  buildLangList();
+  buildThemeList();
+  
+  // Загрузка сохраненных значений
+  const savedLang = getSavedLang();
+  const savedTheme = getSavedTheme();
+  
+  // Применение темы
+  applyTheme(savedTheme);
+  
+  // Обновление UI
+  updateUILanguage(savedLang);
+  paintSelectedTheme(savedTheme);
+  
+  // Обновление ссылок
+  updateLinks(savedLang, savedTheme);
+  
+  // Обработчики для языка
+  if (langBtn) langBtn.addEventListener("click", openLang);
+  if (langClose) langClose.addEventListener("click", closeLang);
+  if (langOverlay) {
+    langOverlay.addEventListener("click", (e) => {
+      if (e.target === langOverlay) closeLang();
+    });
+  }
+  
+  // Обработчики для темы
+  if (themeBtn) themeBtn.addEventListener("click", openTheme);
+  if (themeClose) themeClose.addEventListener("click", closeTheme);
+  if (themeOverlay) {
+    themeOverlay.addEventListener("click", (e) => {
+      if (e.target === themeOverlay) closeTheme();
+    });
+  }
+  
+  // Закрытие по Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeLang();
+      closeTheme();
+    }
+  });
+}
 
-const savedLang = getSavedLang();
-const savedTheme = getSavedTheme();
-
-const t = I18N[savedLang] || I18N.ru;
-if (chatBtn) chatBtn.textContent = t.btn;
-if (imgBtn) imgBtn.textContent = t.img;
-if (subText) subText.textContent = t.sub;
-if (verText) verText.textContent = t.ver;
-if (langTitle) langTitle.textContent = t.lang;
-if (langSheetTitle) langSheetTitle.textContent = t.sheet;
-if (themeSheetTitle) themeSheetTitle.textContent = t.theme_title;
-
-const found = LANGS.find(x => x.code === savedLang);
-setPillLabel(langBtn, found ? found.label : "Русский (RU)");
-paintSelectedLang(savedLang);
-
-applyTheme(savedTheme);
-setPillLabel(themeBtn, t.theme_title + ": " + themeLabel(savedTheme, savedLang));
-paintSelectedTheme(savedTheme);
-
-setChatLink(savedLang, savedTheme);
-setImgLink(savedLang, savedTheme);
-
-// handlers
-if (langBtn) langBtn.addEventListener("click", openLang);
-if (langClose) langClose.addEventListener("click", closeLang);
-if (langOverlay) langOverlay.addEventListener("click", (e) => {
-  if (e.target === langOverlay) closeLang();
-});
-
-if (themeBtn) themeBtn.addEventListener("click", openTheme);
-if (themeClose) themeClose.addEventListener("click", closeTheme);
-if (themeOverlay) themeOverlay.addEventListener("click", (e) => {
-  if (e.target === themeOverlay) closeTheme();
-});
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { closeLang(); closeTheme(); }
-});
+// Запуск
+init();
