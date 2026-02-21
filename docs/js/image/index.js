@@ -1,5 +1,3 @@
-// docs/js/image/index.js
-
 import { MODES } from './modes/data.js';
 import { initTxt2Img } from './modes/txt2img.js';
 import { initImg2Img } from './modes/img2img.js';
@@ -8,10 +6,6 @@ import { initInpaint } from './modes/inpaint.js';
 import { initUpscale } from './modes/upscale.js';
 import { initGallery } from './shared/gallery.js';
 import { showToast, updateBalance, showScreen } from './shared/utils.js';
-
-// ✅ alert ПОСЛЕ импорта
-alert('✅ Скрипт загружен');
-alert(`✅ Количество режимов: ${MODES.length}`);
 
 const tg = window.Telegram?.WebApp;
 let currentTheme = localStorage.getItem('miniapp_theme_v1') || 'blue';
@@ -51,8 +45,7 @@ function loadModes() {
         
         card.innerHTML = `
             <div class="mode-card-image">
-                <img src="${mode.image}" alt="${mode.name}" loading="lazy" 
-                     onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22${mode.bgColor.replace('#', '%23')}%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22white%22%20font-size%3D%2230%22%3E${mode.icon}%3C%2Ftext%3E%3C%2Fsvg%3E'">
+                <img src="${mode.image}" alt="${mode.name}" loading="lazy">
             </div>
             <div class="mode-card-content">
                 <div class="mode-card-title">
@@ -86,6 +79,7 @@ function selectMode(mode) {
     }
     
     const generationContent = document.getElementById('generationContent');
+    generationContent.innerHTML = '';
     
     switch(mode.id) {
         case 'txt2img':
@@ -103,8 +97,6 @@ function selectMode(mode) {
         case 'upscale':
             initUpscale(generationContent);
             break;
-        default:
-            console.error('Unknown mode:', mode.id);
     }
     
     showScreen([mainScreen, galleryScreen, viewScreen], generationScreen);
