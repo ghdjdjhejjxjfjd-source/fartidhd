@@ -7,6 +7,7 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+  <!-- ТЕМА -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
@@ -36,6 +37,7 @@
     <button class="gallery-btn" id="galleryBtn" aria-label="Мои работы">📚</button>
   </div>
 
+  <!-- Главный экран с режимами -->
   <main class="wrap" id="mainScreen">
     <div class="search-bar">
       <input type="text" id="searchModes" placeholder="🔍 Поиск режимов..." class="search-input">
@@ -49,11 +51,30 @@
     </div>
   </main>
 
+  <!-- Экран генерации -->
   <main class="wrap hidden" id="generationScreen">
     <div class="generation-header">
       <button class="back-btn" id="backFromGenBtn">←</button>
-      <div class="mode-title" id="currentModeTitle">Из текста</div>
-      <div class="mode-price" id="currentModePrice">4⭐</div>
+      <div class="mode-context">
+        <div class="mode-icon" id="currentModeIcon">✏️</div>
+        <div class="mode-info">
+          <div class="mode-name" id="currentModeTitle">Генерация</div>
+          <div class="mode-price" id="currentModePrice">4⭐</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Секция для загрузки файла -->
+    <div class="file-section hidden" id="fileSection">
+      <input type="file" id="fileInput" accept="image/*" hidden>
+      <button class="file-btn" id="pickFileBtn">
+        <span class="btn-icon">📁</span>
+        Выбрать изображение
+      </button>
+      <div class="file-preview hidden" id="filePreview">
+        <img id="previewImg" alt="Preview">
+        <button class="remove-file" id="removeFileBtn">✕</button>
+      </div>
     </div>
 
     <div class="result-area" id="resultArea">
@@ -73,7 +94,7 @@
     <div class="prompt-area">
       <textarea 
         id="promptInput" 
-        placeholder="📝 Опишите что хотите увидеть..." 
+        placeholder="Опишите что хотите увидеть..." 
         rows="3"
         maxlength="1000"
       ></textarea>
@@ -105,6 +126,7 @@
     </div>
   </main>
 
+  <!-- Экран галереи -->
   <main class="wrap hidden" id="galleryScreen">
     <div class="gallery-header">
       <button class="back-btn" id="backFromGalleryBtn">←</button>
@@ -130,6 +152,7 @@
     </div>
   </main>
 
+  <!-- Экран просмотра -->
   <main class="wrap hidden" id="viewScreen">
     <div class="view-header">
       <button class="back-btn" id="backFromViewBtn">←</button>
