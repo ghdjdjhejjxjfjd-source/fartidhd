@@ -65,35 +65,27 @@
 }
 
 /* ============================= */
-/* ✅ КАРТОЧКИ РЕЖИМОВ */
+/* ✅ КАРТОЧКИ РЕЖИМОВ - ЯРКИЙ ТЕСТ */
 /* ============================= */
 .modes-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  display: block !important;
+  background-color: #ff0000 !important;
+  min-height: 300px !important;
+  padding: 20px !important;
+  border: 5px solid yellow !important;
+  margin: 10px !important;
 }
 
 .mode-card {
-  width: 100%;
-  border-radius: 24px;
-  overflow: hidden;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.mode-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-
-.mode-card > div {
-  border-radius: 24px !important;
+  display: block !important;
+  background-color: #0000ff !important;
+  color: white !important;
+  padding: 20px !important;
+  margin: 10px !important;
+  border-radius: 10px !important;
+  font-size: 20px !important;
+  text-align: center !important;
+  border: 2px solid white !important;
 }
 
 /* ============================= */
@@ -491,27 +483,4 @@
 /* ============================= */
 .hidden {
   display: none !important;
-}
-/* ============================= */
-/* ✅ КАРТОЧКИ РЕЖИМОВ - СРОЧНО! */
-/* ============================= */
-.modes-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    padding: 16px !important;
-}
-
-.mode-card {
-    display: block !important;
-    width: 100% !important;
-    border-radius: 24px !important;
-    overflow: hidden !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-}
-
-.mode-card > div {
-    border-radius: 24px !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
 }
