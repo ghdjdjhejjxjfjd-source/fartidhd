@@ -1,0 +1,17 @@
+.modes-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+}
+
+.mode-card {
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.mode-card:hover {
+    transform: scale(1.02);
+}
