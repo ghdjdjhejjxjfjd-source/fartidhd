@@ -492,3 +492,26 @@
 .hidden {
   display: none !important;
 }
+/* ============================= */
+/* ✅ КАРТОЧКИ РЕЖИМОВ - СРОЧНО! */
+/* ============================= */
+.modes-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 16px !important;
+}
+
+.mode-card {
+    display: block !important;
+    width: 100% !important;
+    border-radius: 24px !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.mode-card > div {
+    border-radius: 24px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+}
