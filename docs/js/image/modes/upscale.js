@@ -144,7 +144,7 @@ async function generateImage() {
         
         endGeneration();
         updateBalance();
-        showToast('Качество улучшено!', 'success');
+        showToast('✅ Качество улучшено!', 'success');
     }, 2000);
 }
 
@@ -174,7 +174,7 @@ function saveToGallery() {
     const imageData = {
         id: Date.now().toString(),
         dataUrl: currentImage,
-        prompt: `Улучшено: ${originalFileName || 'image'}`,
+        prompt: `✨ Улучшено: ${originalFileName || 'изображение'}`,
         mode: 'upscale',
         modeName: 'Улучшить качество',
         cost: 3,
@@ -182,7 +182,10 @@ function saveToGallery() {
         createdAt: new Date().toISOString()
     };
     
+    // Сохраняем в галерею
     addToGallery(imageData);
+    
+    // Скачиваем файл
     downloadImage();
 }
 
@@ -197,7 +200,6 @@ function downloadImage() {
     link.download = filename;
     link.href = currentImage;
     link.click();
-    showToast('Файл сохранен!', 'success');
 }
 
 function regenerateImage() {
