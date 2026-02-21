@@ -6,9 +6,10 @@
   -webkit-overflow-scrolling: touch;
   display:flex;
   flex-direction:column;
-  gap:9px;
+  gap:4px;
   min-height:0;
   touch-action: manipulation;
+  background: rgba(0,0,0,0.7);  /* было 0.4, стало 0.7 - на 30% темнее */
 }
 
 /* ============================= */
@@ -33,9 +34,9 @@
 .msg{
   max-width:78%;
   padding:8px 14px;
-  border-radius:18px;
+  border-radius:17px;
   line-height:1.4;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 500;
   white-space: pre-wrap;
   word-break: break-word;
