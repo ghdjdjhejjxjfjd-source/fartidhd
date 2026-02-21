@@ -3,8 +3,8 @@
 :root {
   --vh: 100vh;
   
-  /* ✅ НЕМНОГО УМЕНЬШИЛ ЯРКОСТЬ */
-  --bgDark: 0.65;  /* было 0.70, стало темнее */
+  /* ✅ немного уменьшил яркость */
+  --bgDark: 0.65;
   
   --bgTop: #0b2d55;
   --bgMid: #081f3f;
@@ -14,13 +14,9 @@
   --accent2: #0a84ff;
   
   --text: #fff;
-  
-  /* ✅ ДОБАВИЛ ПЕРЕМЕННЫЕ ДЛЯ СВЕЧЕНИЯ */
-  --glow-opacity: 0.4;
-  --glow-size: 20px;
 }
 
-/* темы (оставляем как у тебя) */
+/* темы */
 :root[data-theme="black"]{
   --bgTop:#0b0f18;
   --bgMid:#070b12;
@@ -76,7 +72,7 @@ body {
   overflow: hidden;
 }
 
-/* ✅ ФОН (твой, но с уменьшенной яркостью) */
+/* ✅ только градиент, без узоров и кругов */
 body::after {
   content: "";
   position: fixed;
@@ -86,22 +82,10 @@ body::after {
   background: var(--bgTop);
   background-repeat: no-repeat;
   background-color: var(--bgTop);
-  filter: brightness(var(--bgDark));  /* теперь 0.65 вместо 0.70 */
+  filter: brightness(var(--bgDark));
 }
 
-/* ✅ ПАТТЕРН (твой) */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  opacity: .22;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%23b9d2ff' stroke-opacity='0.55' stroke-width='2'%3E%3Cpath d='M36 34c10-10 28-10 38 0 10 10 10 28 0 38-10 10-28 10-38 0-10-10-10-28 0-38z'/%3E%3Cpath d='M160 40c0 10-8 18-18 18s-18-8-18-18 8-18 18-18 18 8 18 18z'/%3E%3Cpath d='M62 140c0-12 10-22 22-22s22 10 22 22-10 22-22 22-22-10-22-22z'/%3E%3Cpath d='M150 150l18 18M168 150l-18 18'/%3E%3Cpath d='M120 108h28M134 94v28'/%3E%3Cpath d='M24 190h28M38 176v28'/%3E%3Cpath d='M186 94c6 0 10 4 10 10s-4 10-10 10-10-4-10-10 4-10 4-10z'/%3E%3Cpath d='M94 64c0 6-4 10-10 10s-10-4-10-10 4-10 10-10 10 4 10 10z'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 260px 260px;
-  background-repeat: repeat;
-  mix-blend-mode: screen;
-}
+/* ❌ УБРАЛ: body::before с узорами */
 
 /* контент поверх */
 body > * {
@@ -110,7 +94,7 @@ body > * {
 }
 
 /* ========================= */
-/* ПЛАВАЮЩИЕ КВАДРАТИКИ (твои) */
+/* ✅ МНОГО КУБИКОВ */
 /* ========================= */
 .cube {
   position: absolute;
@@ -140,7 +124,17 @@ body > * {
   opacity: .65;
 }
 
-/* анимации (твои) */
+/* ✅ ЕЩЁ БОЛЬШЕ КУБИКОВ (добавил новые позиции) */
+.cube.extra1 { left: 15%; top: 45%; }
+.cube.extra2 { left: 85%; top: 75%; }
+.cube.extra3 { left: 45%; top: 15%; }
+.cube.extra4 { left: 72%; top: 40%; }
+.cube.extra5 { left: 25%; top: 80%; }
+.cube.extra6 { left: 92%; top: 20%; }
+.cube.extra7 { left: 8%; top: 55%; }
+.cube.extra8 { left: 38%; top: 88%; }
+
+/* анимации */
 .f1 { animation: drift1 10s ease-in-out infinite; }
 .f2 { animation: drift2 12s ease-in-out infinite; }
 .f3 { animation: drift3 11s ease-in-out infinite; }
@@ -155,23 +149,7 @@ body > * {
 @keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,-18px)} }
 @keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,16px)} }
 
-/* мягкие шарики (твои) */
-.orb {
-  position: absolute;
-  width: 260px;
-  height: 260px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.08), rgba(255,255,255,.02) 45%, transparent 72%);
-  border: 1px solid rgba(255,255,255,.1);
-  filter: blur(2px);
-  opacity: .85;
-  pointer-events: none;
-}
-
-.orb.o1 { left:-90px; top:140px; animation: drift2 14s ease-in-out infinite; }
-.orb.o2 { left:70%; top:6%; width:180px; height:180px; opacity:.70; animation: drift3 12s ease-in-out infinite; }
-.orb.o3 { left:52%; top:70%; width:120px; height:120px; opacity:.60; animation: drift4 11s ease-in-out infinite; }
-.orb.o4 { left:10%; top:72%; width:160px; height:160px; opacity:.65; animation: drift1 13s ease-in-out infinite; }
+/* ❌ УБРАЛ: .orb (круги) полностью */
 
 /* ========================= */
 /* ОСНОВНОЙ КОНТЕЙНЕР */
@@ -202,7 +180,7 @@ body > * {
 }
 
 /* ========================= */
-/* КНОПКИ - ВСЕ СО СВЕЧЕНИЕМ */
+/* КНОПКИ */
 /* ========================= */
 .btn {
   display: block;
@@ -222,58 +200,21 @@ body > * {
               0 18px 40px rgba(0,0,0,.25);
   margin-bottom: 16px;
   transition: all 0.2s ease;
-  
-  /* ✅ ДОБАВИЛ СВЕЧЕНИЕ */
-  position: relative;
-  overflow: hidden;
 }
 
-/* ✅ СВЕЧЕНИЕ ПРИ НАВЕДЕНИИ */
-.btn:hover {
-  border-color: rgba(255, 255, 255, .35);
-  box-shadow: 
-    0 0 0 1px rgba(255,255,255,.1) inset,
-    0 18px 40px rgba(0,0,0,.3),
-    0 0 25px var(--accent1);  /* свечение цветом темы */
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, .18);
-}
-
+/* ✅ свечение ТОЛЬКО при нажатии, убрал с hover */
 .btn:active {
   transform: scale(.995);
-}
-
-/* ✅ Первая кнопка (Чат с ИИ) - с усиленным свечением */
-.btn:first-of-type {
-  background: rgba(255, 255, 255, .15);
-  border-color: rgba(255, 255, 255, .3);
-  box-shadow: 
-    0 0 0 1px rgba(255,255,255,.08) inset,
-    0 18px 40px rgba(0,0,0,.3),
-    0 0 20px var(--accent1);
-}
-
-.btn:first-of-type:hover {
-  box-shadow: 
-    0 0 0 1px rgba(255,255,255,.12) inset,
-    0 20px 45px rgba(0,0,0,.35),
-    0 0 35px var(--accent1);
-}
-
-/* ✅ Вторая кнопка (Генерация) - тоже со свечением */
-.btn:last-of-type {
-  margin-bottom: 0;
-  box-shadow: 
-    0 0 0 1px rgba(255,255,255,.06) inset,
-    0 18px 40px rgba(0,0,0,.25),
-    0 0 15px rgba(255,255,255,0.1);
-}
-
-.btn:last-of-type:hover {
   box-shadow: 
     0 0 0 1px rgba(255,255,255,.1) inset,
     0 18px 40px rgba(0,0,0,.3),
     0 0 25px var(--accent1);
+}
+
+/* ✅ обычное состояние без свечения */
+.btn:hover {
+  border-color: rgba(255, 255, 255, .35);
+  background: rgba(255, 255, 255, .18);
 }
 
 /* ========================= */
@@ -293,7 +234,6 @@ body > * {
   opacity: .5;
 }
 
-/* БЛОК ЯЗЫКА */
 .langBlock {
   margin-top: 24px;
   border-top: 1.5px solid rgba(255, 255, 255, .2);
@@ -307,7 +247,6 @@ body > * {
   text-align: center;
 }
 
-/* ✅ КНОПКА ЯЗЫКА - СО СВЕЧЕНИЕМ */
 .langPill {
   width: 100%;
   border-radius: 18px;
@@ -332,21 +271,17 @@ body > * {
 .langPill:hover {
   background: rgba(255, 255, 255, .18);
   border-color: rgba(255, 255, 255, .35);
-  box-shadow: 
-    0 8px 20px rgba(0,0,0,.25),
-    0 0 25px var(--accent1);  /* свечение */
-  transform: translateY(-2px);
 }
 
 .langPill:active {
   transform: scale(.995);
+  box-shadow: 0 8px 20px rgba(0,0,0,.25), 0 0 25px var(--accent1);
 }
 
 .chev {
   opacity: .8;
 }
 
-/* ✅ КНОПКА ТЕМЫ - СО СВЕЧЕНИЕМ */
 .themePill {
   position: fixed;
   top: calc(10px + env(safe-area-inset-top));
@@ -372,14 +307,11 @@ body > * {
 .themePill:hover {
   background: rgba(255, 255, 255, .18);
   border-color: rgba(255, 255, 255, .35);
-  box-shadow: 
-    0 8px 20px rgba(0,0,0,.25),
-    0 0 25px var(--accent1);  /* свечение */
-  transform: translateY(-2px);
 }
 
 .themePill:active {
   transform: scale(.98);
+  box-shadow: 0 8px 20px rgba(0,0,0,.25), 0 0 25px var(--accent1);
 }
 
 /* ========================= */
@@ -448,7 +380,6 @@ body > * {
 .langClose:hover, .themeClose:hover {
   background: rgba(255, 255, 255, .18);
   border-color: rgba(255, 255, 255, .35);
-  box-shadow: 0 0 15px var(--accent1);
 }
 
 .langList, .themeList {
@@ -492,9 +423,6 @@ body > * {
   transform: scale(1);
 }
 
-/* ========================= */
-/* УВЕДОМЛЕНИЯ */
-/* ========================= */
 .toast-notification {
   position: fixed;
   top: 20px;
@@ -508,7 +436,7 @@ body > * {
   font-weight: 600;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 25px var(--accent1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
   z-index: 100000;
   animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   pointer-events: none;
