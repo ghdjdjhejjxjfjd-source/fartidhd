@@ -47,3 +47,20 @@ export function showScreen(screens, screenToShow) {
     });
     if (screenToShow) screenToShow.classList.remove('hidden');
 }
+
+// Закрытие клавиатуры при тапе
+export function setupKeyboardDismiss(element) {
+    if (!element) return;
+    
+    element.addEventListener('mousedown', (e) => {
+        if (e.target === element) {
+            document.activeElement?.blur();
+        }
+    });
+    
+    element.addEventListener('touchstart', (e) => {
+        if (e.target === element) {
+            document.activeElement?.blur();
+        }
+    });
+}
