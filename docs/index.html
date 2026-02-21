@@ -39,29 +39,38 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="./css/base.css?v=3">
-  <link rel="stylesheet" href="./css/index.css?v=4">
+  <link rel="stylesheet" href="./css/index.css?v=5">
 </head>
 
 <body>
-  <!-- КНОПКА ТЕМЫ (справа сверху) -->
-  <button class="themePill" id="themeBtn" type="button" aria-haspopup="dialog" aria-expanded="false">
-    <span id="themeBtnText">Цвет: Синий</span>
-    <span class="chev">▾</span>
+  <button class="themePill" id="themeBtn" type="button">
+    Цвет: Синий <span class="chev">▾</span>
   </button>
 
-  <!-- Декоративные элементы -->
-  <div class="orb o1"></div>
-  <div class="orb o2"></div>
-  <div class="orb o3"></div>
+  <!-- ✅ МНОГО КУБИКОВ (20 штук) -->
+  <div class="cube f1" style="left:5%; top:8%"></div>
+  <div class="cube small f2" style="left:15%; top:25%"></div>
+  <div class="cube tiny f3" style="left:25%; top:12%"></div>
+  <div class="cube f4" style="left:35%; top:40%"></div>
+  <div class="cube small f5" style="left:45%; top:18%"></div>
+  <div class="cube tiny f6" style="left:55%; top:65%"></div>
+  <div class="cube f1" style="left:65%; top:30%"></div>
+  <div class="cube small f2" style="left:75%; top:55%"></div>
+  <div class="cube tiny f3" style="left:85%; top:15%"></div>
+  <div class="cube f4" style="left:92%; top:75%"></div>
+  
+  <div class="cube f5" style="left:8%; top:70%"></div>
+  <div class="cube small f6" style="left:18%; top:85%"></div>
+  <div class="cube tiny f1" style="left:28%; top:50%"></div>
+  <div class="cube f2" style="left:38%; top:92%"></div>
+  <div class="cube small f3" style="left:48%; top:5%"></div>
+  <div class="cube tiny f4" style="left:58%; top:45%"></div>
+  <div class="cube f5" style="left:68%; top:88%"></div>
+  <div class="cube small f6" style="left:78%; top:72%"></div>
+  <div class="cube tiny f1" style="left:88%; top:35%"></div>
+  <div class="cube f2" style="left:95%; top:60%"></div>
 
-  <div class="cube f1" style="left:8%; top:10%"></div>
-  <div class="cube small f2" style="left:62%; top:8%"></div>
-  <div class="cube tiny f3" style="left:78%; top:22%"></div>
-  <div class="cube f4" style="left:10%; top:58%"></div>
-  <div class="cube small f1" style="left:74%; top:66%"></div>
-  <div class="cube tiny f2" style="left:42%; top:26%"></div>
-  <div class="cube tiny f3" style="left:56%; top:78%"></div>
+  <!-- ❌ УБРАЛ: .orb (круги) -->
 
   <div class="wrap">
     <div class="card">
@@ -73,17 +82,15 @@
 
       <div class="langBlock">
         <div class="langTitle" id="langTitle">Язык интерфейса</div>
-        <button class="langPill" id="langBtn" type="button" aria-haspopup="dialog" aria-expanded="false">
-          <span id="langBtnText">Русский (RU)</span>
-          <span class="chev">▾</span>
+        <button class="langPill" id="langBtn" type="button">
+          Русский (RU) <span class="chev">▾</span>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Bottom Sheet для языка -->
-  <div class="langOverlay" id="langOverlay" aria-hidden="true">
-    <div class="langSheet" role="dialog" aria-modal="true" aria-label="Language selector">
+  <div class="langOverlay" id="langOverlay">
+    <div class="langSheet">
       <div class="langSheetHeader">
         <div class="langSheetTitle" id="langSheetTitle">Язык</div>
         <button class="langClose" id="langClose" type="button">✕</button>
@@ -92,9 +99,8 @@
     </div>
   </div>
 
-  <!-- Bottom Sheet для темы -->
-  <div class="themeOverlay" id="themeOverlay" aria-hidden="true">
-    <div class="themeSheet" role="dialog" aria-modal="true" aria-label="Theme selector">
+  <div class="themeOverlay" id="themeOverlay">
+    <div class="themeSheet">
       <div class="themeSheetHeader">
         <div class="themeSheetTitle" id="themeSheetTitle">Цвет</div>
         <button class="themeClose" id="themeClose" type="button">✕</button>
