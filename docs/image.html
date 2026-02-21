@@ -7,7 +7,6 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- ТЕМА -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
@@ -37,7 +36,6 @@
     <button class="gallery-btn" id="galleryBtn" aria-label="Мои работы">📚</button>
   </div>
 
-  <!-- Главный экран с режимами -->
   <main class="wrap" id="mainScreen">
     <div class="search-bar">
       <input type="text" id="searchModes" placeholder="🔍 Поиск режимов..." class="search-input">
@@ -51,7 +49,6 @@
     </div>
   </main>
 
-  <!-- Экран генерации -->
   <main class="wrap hidden" id="generationScreen">
     <div class="generation-header">
       <button class="back-btn" id="backFromGenBtn">←</button>
@@ -64,7 +61,6 @@
       </div>
     </div>
 
-    <!-- Секция для загрузки файла -->
     <div class="file-section hidden" id="fileSection">
       <input type="file" id="fileInput" accept="image/*" hidden>
       <button class="file-btn" id="pickFileBtn">
@@ -106,6 +102,7 @@
       <span class="price-tag" id="generatePrice">4⭐</span>
     </button>
 
+    <!-- resultActions с новой кнопкой 4K -->
     <div class="result-actions hidden" id="resultActions">
       <div class="action-row">
         <button class="action-btn" id="saveToGalleryBtn">
@@ -114,11 +111,14 @@
         <button class="action-btn" id="downloadBtn">
           <span class="btn-icon">📥</span> Скачать
         </button>
-        <button class="action-btn" id="copyPromptBtn">
-          <span class="btn-icon">📋</span> Копировать
+        <button class="action-btn" id="enhanceBtn">
+          <span class="btn-icon">✨</span> 4K
         </button>
       </div>
       <div class="action-row">
+        <button class="action-btn" id="copyPromptBtn">
+          <span class="btn-icon">📋</span> Копировать
+        </button>
         <button class="action-btn" id="regenerateBtn">
           <span class="btn-icon">🔄</span> Заново
         </button>
@@ -126,7 +126,6 @@
     </div>
   </main>
 
-  <!-- Экран галереи -->
   <main class="wrap hidden" id="galleryScreen">
     <div class="gallery-header">
       <button class="back-btn" id="backFromGalleryBtn">←</button>
@@ -152,7 +151,6 @@
     </div>
   </main>
 
-  <!-- Экран просмотра -->
   <main class="wrap hidden" id="viewScreen">
     <div class="view-header">
       <button class="back-btn" id="backFromViewBtn">←</button>
