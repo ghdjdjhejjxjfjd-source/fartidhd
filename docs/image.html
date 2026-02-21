@@ -36,6 +36,7 @@
     <button class="gallery-btn" id="galleryBtn" aria-label="Мои работы">📚</button>
   </div>
 
+  <!-- Главный экран с режимами -->
   <main class="wrap" id="mainScreen">
     <div class="search-bar">
       <input type="text" id="searchModes" placeholder="🔍 Поиск режимов..." class="search-input">
@@ -49,6 +50,7 @@
     </div>
   </main>
 
+  <!-- Экран генерации -->
   <main class="wrap hidden" id="generationScreen">
     <div class="generation-header">
       <button class="back-btn" id="backFromGenBtn">←</button>
@@ -60,72 +62,12 @@
         </div>
       </div>
     </div>
-
-    <div class="file-section hidden" id="fileSection">
-      <input type="file" id="fileInput" accept="image/*" hidden>
-      <button class="file-btn" id="pickFileBtn">
-        <span class="btn-icon">📁</span>
-        Выбрать изображение
-      </button>
-      <div class="file-preview hidden" id="filePreview">
-        <img id="previewImg" alt="Preview">
-        <button class="remove-file" id="removeFileBtn">✕</button>
-      </div>
-    </div>
-
-    <div class="result-area" id="resultArea">
-      <div class="preview-placeholder" id="previewPlaceholder">
-        <div class="placeholder-icon">🖼️</div>
-        <div class="placeholder-text">Изображение появится здесь</div>
-      </div>
-      <img class="result-image hidden" id="resultImage" alt="Generated image">
-      
-      <div class="loading-overlay hidden" id="loadingOverlay">
-        <div class="spinner"></div>
-        <div class="loading-text">Генерация... <span id="loadingTimer">0с</span></div>
-        <button class="cancel-btn" id="cancelGenBtn">✖ Отмена</button>
-      </div>
-    </div>
-
-    <div class="prompt-area">
-      <textarea 
-        id="promptInput" 
-        placeholder="Опишите что хотите увидеть..." 
-        rows="3"
-        maxlength="1000"
-      ></textarea>
-    </div>
-
-    <button class="generate-btn" id="generateBtn">
-      <span class="btn-icon">✨</span>
-      Сгенерировать
-      <span class="price-tag" id="generatePrice">4⭐</span>
-    </button>
-
-    <!-- resultActions с новой кнопкой 4K -->
-    <div class="result-actions hidden" id="resultActions">
-      <div class="action-row">
-        <button class="action-btn" id="saveToGalleryBtn">
-          <span class="btn-icon">💾</span> Сохранить
-        </button>
-        <button class="action-btn" id="downloadBtn">
-          <span class="btn-icon">📥</span> Скачать
-        </button>
-        <button class="action-btn" id="enhanceBtn">
-          <span class="btn-icon">✨</span> 4K
-        </button>
-      </div>
-      <div class="action-row">
-        <button class="action-btn" id="copyPromptBtn">
-          <span class="btn-icon">📋</span> Копировать
-        </button>
-        <button class="action-btn" id="regenerateBtn">
-          <span class="btn-icon">🔄</span> Заново
-        </button>
-      </div>
-    </div>
+    
+    <!-- Контейнер для динамического контента режимов -->
+    <div id="generationContent"></div>
   </main>
 
+  <!-- Экран галереи -->
   <main class="wrap hidden" id="galleryScreen">
     <div class="gallery-header">
       <button class="back-btn" id="backFromGalleryBtn">←</button>
@@ -151,6 +93,7 @@
     </div>
   </main>
 
+  <!-- Экран просмотра -->
   <main class="wrap hidden" id="viewScreen">
     <div class="view-header">
       <button class="back-btn" id="backFromViewBtn">←</button>
@@ -180,6 +123,7 @@
 
   <div class="toast-container" id="toastContainer"></div>
 
-  <script type="module" src="./js/image-page.js"></script>
+  <!-- Подключаем новый модуль -->
+  <script type="module" src="./js/image/index.js"></script>
 </body>
 </html>
