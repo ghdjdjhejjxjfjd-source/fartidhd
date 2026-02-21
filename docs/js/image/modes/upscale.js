@@ -10,8 +10,7 @@ let timerInterval = null;
 let selectedFile = null;
 let originalFileName = null;
 
-const BOT_TOKEN = window.Telegram?.WebApp?.initDataUnsafe?.bot_token || 'YOUR_BOT_TOKEN';
-const API_BASE = "https://api.telegram.org/bot";
+const API_BASE = "https://fayrat-production.up.railway.app"; // ваш Railway URL
 
 export function initUpscale(container) {
     container.innerHTML = `
@@ -232,40 +231,24 @@ async function sendToBot() {
             return;
         }
         
-        // Создаем FormData для отправки фото
+        // Создаем FormData для отправки
         const formData = new FormData();
-        formData.append('chat_id', userId);
-        formData.append('photo', blob, `${originalFileName || 'enhanced'}.jpg`);
-        formData.append('caption', `✨ Улучшенное качество\n🆔 ID: ${userId}\n📝 Файл: ${originalFileName || 'image'}`);
+        formData.append('user_id', userId);
+        formData.append('image', blob, `${originalFileName || 'enhanced'}.jpg`);
+        formData.append('filename', `${originalFileName || 'enhanced'}.jpg`);
         
-        // Отправляем в Telegram
-        const botToken = window.Telegram?.WebApp?.initDataUnsafe?.bot_token;
-        if (!botToken) {
-            showToast('❌ Токен бота не найден', 'error');
-            return;
-        }
-        
-        const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+        // Отправляем на ваш сервер
+        const serverResponse = await fetch(`${API_BASE}/api/send-photo`, {
             method: 'POST',
             body: formData
         });
         
-        const result = await telegramResponse.json();
+        const result = await serverResponse.json();
         
-        if (result.ok) {
-            showToast('✅ Изображение отправлено в бот!', 'success');
-            
-            // Дополнительно отправляем в мини-приложение
-            if (window.Telegram?.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify({
-                    type: 'enhanced_image',
-                    url: currentImage,
-                    filename: `${originalFileName || 'enhanced'}.jpg`
-                }));
-            }
+        if (result.success) {
+            showToast('✅ Изображение отправлено в Telegram!', 'success');
         } else {
-            showToast('❌ Ошибка отправки: ' + (result.description || 'Неизвестная ошибка'), 'error');
-            console.error('Telegram API error:', result);
+            showToast('❌ Ошибка отправки: ' + (result.error || 'Неизвестная ошибка'), 'error');
         }
         
     } catch (error) {
