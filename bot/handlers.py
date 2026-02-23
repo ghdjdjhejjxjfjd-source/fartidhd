@@ -12,7 +12,7 @@ from .menu import main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, person
 from .settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from .chat import inline_chat_start
 from .image import inline_image_start
-from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, edit_to_tab
+from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, edit_to_tab, send_block_notice
 
 
 # =========================
@@ -129,3 +129,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         from .image import handle_image_generation
         await handle_image_generation(update, context, uid, text)
         context.user_data["in_image_mode"] = False
+
+
+# Экспортируем все нужные функции
+__all__ = [
+    'start',
+    'on_button',
+    'handle_message',
+    'send_block_notice'
+]
