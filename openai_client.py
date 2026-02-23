@@ -8,7 +8,7 @@ OPENAI_MODEL = (os.getenv("OPENAI_MODEL") or "gpt-3.5-turbo").strip()
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-# ИДЕАЛЬНЫЕ ХАРАКТЕРЫ
+# Характеры
 PERSONAS = {
     "friendly": """
         Ты дружелюбный собеседник.
@@ -79,7 +79,7 @@ def ask_openai(
     *,
     lang: str = "ru",
     persona: str = "friendly",
-    message_count: int = 0,
+    style: str = "steps",  # ✅ ДОБАВЛЕНО (но не используется, просто принимает)
 ) -> str:
     """
     Отправка запроса в OpenAI
@@ -140,19 +140,8 @@ def ask_openai(
         
         temperature = 0.3  # низкая температура для точного выполнения
     else:
-        # Если диалог слишком длинный (больше 200 сообщений) - сбрасываем контекст
-        if message_count > 200:
-            system_prompt = f"""Ты AI ассистент. Начинаем новый разговор.
-
-ТВОЙ ХАРАКТЕР:
-{persona_desc}
-
-ГЛАВНОЕ ПРАВИЛО:
-- СЛУШАЙСЯ ПОЛЬЗОВАТЕЛЯ ВО ВСЁМ
-- Отвечай как будто первый раз общаетесь
-- Будь свежим и энергичным"""
-        else:
-            system_prompt = f"""Ты AI ассистент. Говоришь на {target_lang} языке.
+        # Обычный режим
+        system_prompt = f"""Ты AI ассистент. Говоришь на {target_lang} языке.
 
 ТВОЙ ХАРАКТЕР (следуй ему):
 {persona_desc}
