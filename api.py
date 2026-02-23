@@ -52,7 +52,9 @@ def db_init():
             is_blocked INTEGER DEFAULT 0,
             updated_at TEXT,
             last_menu_chat_id INTEGER,
-            last_menu_message_id INTEGER
+            last_menu_message_id INTEGER,
+            use_mini_app INTEGER DEFAULT 1,
+            persona TEXT DEFAULT 'friendly'
         )
         """
     )
@@ -85,6 +87,14 @@ def _ensure_columns():
         pass
     try:
         cur.execute("ALTER TABLE access ADD COLUMN last_menu_message_id INTEGER")
+    except Exception:
+        pass
+    try:
+        cur.execute("ALTER TABLE access ADD COLUMN use_mini_app INTEGER DEFAULT 1")
+    except Exception:
+        pass
+    try:
+        cur.execute("ALTER TABLE access ADD COLUMN persona TEXT DEFAULT 'friendly'")
     except Exception:
         pass
     con.commit()
@@ -135,7 +145,7 @@ def get_access(user_id: int) -> Dict[str, Any]:
     con = db_conn()
     cur = con.cursor()
     cur.execute(
-        "SELECT is_free, is_blocked, updated_at, last_menu_chat_id, last_menu_message_id FROM access WHERE user_id=?",
+        "SELECT is_free, is_blocked, updated_at, last_menu_chat_id, last_menu_message_id, use_mini_app, persona FROM access WHERE user_id=?",
         (user_id,),
     )
     row = cur.fetchone()
@@ -148,6 +158,8 @@ def get_access(user_id: int) -> Dict[str, Any]:
             "updated_at": None,
             "last_menu_chat_id": None,
             "last_menu_message_id": None,
+            "use_mini_app": True,
+            "persona": "friendly",
         }
     return {
         "user_id": user_id,
@@ -156,6 +168,8 @@ def get_access(user_id: int) -> Dict[str, Any]:
         "updated_at": row[2],
         "last_menu_chat_id": row[3],
         "last_menu_message_id": row[4],
+        "use_mini_app": bool(row[5]) if row[5] is not None else True,
+        "persona": row[6] if row[6] else "friendly",
     }
 
 
@@ -204,6 +218,72 @@ def clear_last_menu(user_id: int) -> None:
 def get_last_menu(user_id: int) -> Tuple[Optional[int], Optional[int]]:
     a = get_access(user_id)
     return a.get("last_menu_chat_id"), a.get("last_menu_message_id")
+
+
+# =========================
+# ✅ НОВЫЕ ФУНКЦИИ ДЛЯ РЕЖИМА И ХАРАКТЕРА
+# =========================
+
+def get_use_mini_app(user_id: int) -> bool:
+    """Получить режим работы (True - Mini App, False - встроенный)"""
+    a = get_access(user_id)
+    return a.get("use_mini_app", True)
+
+
+def set_use_mini_app(user_id: int, value: bool) -> None:
+    """Установить режим работы"""
+    con = db_conn()
+    cur = con.cursor()
+    cur.execute(
+        """
+        UPDATE access
+        SET use_mini_app = ?, updated_at = ?
+        WHERE user_id = ?
+        """,
+        (1 if value else 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
+    )
+    if cur.rowcount == 0:
+        # Если записи нет, создаем
+        cur.execute(
+            """
+            INSERT INTO access (user_id, use_mini_app, updated_at)
+            VALUES (?, ?, ?)
+            """,
+            (user_id, 1 if value else 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        )
+    con.commit()
+    con.close()
+
+
+def get_user_persona(user_id: int) -> str:
+    """Получить характер ИИ пользователя"""
+    a = get_access(user_id)
+    return a.get("persona", "friendly")
+
+
+def set_user_persona(user_id: int, persona: str) -> None:
+    """Установить характер ИИ"""
+    con = db_conn()
+    cur = con.cursor()
+    cur.execute(
+        """
+        UPDATE access
+        SET persona = ?, updated_at = ?
+        WHERE user_id = ?
+        """,
+        (persona, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
+    )
+    if cur.rowcount == 0:
+        # Если записи нет, создаем
+        cur.execute(
+            """
+            INSERT INTO access (user_id, persona, updated_at)
+            VALUES (?, ?, ?)
+            """,
+            (user_id, persona, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        )
+    con.commit()
+    con.close()
 
 
 # =========================
@@ -397,7 +477,13 @@ def api_chat():
 
     lang = data.get("lang") or "ru"
     style = data.get("style") or "steps"
-    persona = data.get("persona") or "friendly"
+    
+    # ✅ Используем сохраненный характер пользователя
+    persona = data.get("persona")
+    if tg_user_id_int and not persona:
+        persona = get_user_persona(tg_user_id_int)
+    else:
+        persona = persona or "friendly"
 
     # ✅ берём историю + строим промпт с памятью
     history = mem_get(tg_user_id_int, limit=24)
@@ -711,3 +797,65 @@ def api_image():
             return jsonify({"error": "generation_timeout"}), 504
         else:
             return jsonify({"error": "generation_failed", "detail": error_msg[:100]}), 500
+
+
+# =========================
+# ✅ НОВЫЕ ЭНДПОИНТЫ ДЛЯ РЕЖИМА И ХАРАКТЕРА
+# =========================
+
+@api.get("/api/user/mode/<int:user_id>")
+def api_user_mode(user_id: int):
+    """Получить режим работы пользователя"""
+    return jsonify({
+        "user_id": user_id,
+        "use_mini_app": get_use_mini_app(user_id)
+    })
+
+
+@api.post("/api/user/mode")
+def api_set_user_mode():
+    """Установить режим работы"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    use_mini_app = data.get("use_mini_app")
+    
+    if not user_id or use_mini_app is None:
+        return jsonify({"error": "user_id and use_mini_app required"}), 400
+    
+    set_use_mini_app(user_id, use_mini_app)
+    return jsonify({
+        "success": True,
+        "user_id": user_id,
+        "use_mini_app": use_mini_app
+    })
+
+
+@api.get("/api/user/persona/<int:user_id>")
+def api_user_persona(user_id: int):
+    """Получить характер ИИ пользователя"""
+    return jsonify({
+        "user_id": user_id,
+        "persona": get_user_persona(user_id)
+    })
+
+
+@api.post("/api/user/persona")
+def api_set_user_persona():
+    """Установить характер ИИ"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    persona = data.get("persona")
+    
+    if not user_id or not persona:
+        return jsonify({"error": "user_id and persona required"}), 400
+    
+    valid_personas = ["friendly", "fun", "smart", "strict"]
+    if persona not in valid_personas:
+        return jsonify({"error": f"persona must be one of {valid_personas}"}), 400
+    
+    set_user_persona(user_id, persona)
+    return jsonify({
+        "success": True,
+        "user_id": user_id,
+        "persona": persona
+    })
