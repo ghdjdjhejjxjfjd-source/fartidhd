@@ -2,7 +2,11 @@ from flask import request, jsonify
 from datetime import datetime
 
 from .config import api, BOT_TOKEN, GROUP_ID, send_log_to_group
-from .db import get_access, get_use_mini_app, set_use_mini_app, get_user_persona, set_user_persona, get_user_lang, set_user_lang
+from .db import (
+    get_access, get_use_mini_app, set_use_mini_app, 
+    get_user_persona, set_user_persona, get_user_lang, set_user_lang,
+    increment_messages, increment_images, add_stars_spent
+)
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
 from groq_client import ask_groq
 from payments import get_balance, spend_stars
@@ -39,6 +43,70 @@ def test_log():
 @api.get("/api/access/<int:user_id>")
 def api_access(user_id: int):
     return jsonify(get_access(user_id))
+
+
+# =========================
+# STATS ENDPOINTS
+# =========================
+@api.get("/api/user/stats/<int:user_id>")
+def api_user_stats(user_id: int):
+    """Получить полную статистику пользователя"""
+    a = get_access(user_id)
+    balance = get_balance(user_id)
+    
+    return jsonify({
+        "user_id": user_id,
+        "registered_at": a.get("registered_at"),
+        "total_messages": a.get("total_messages", 0),
+        "total_images": a.get("total_images", 0),
+        "total_stars_spent": a.get("total_stars_spent", 0),
+        "stars_balance": balance,
+        "is_free": a.get("is_free", False),
+        "is_blocked": a.get("is_blocked", False),
+        "persona": a.get("persona", "friendly"),
+        "lang": a.get("lang", "ru"),
+        "use_mini_app": a.get("use_mini_app", True)
+    })
+
+
+@api.post("/api/user/stats/increment_message")
+def api_increment_message():
+    """Увеличить счетчик сообщений (для Mini App)"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    
+    if not user_id:
+        return jsonify({"error": "user_id required"}), 400
+    
+    increment_messages(user_id)
+    return jsonify({"success": True})
+
+
+@api.post("/api/user/stats/increment_image")
+def api_increment_image():
+    """Увеличить счетчик картинок (для Mini App)"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    
+    if not user_id:
+        return jsonify({"error": "user_id required"}), 400
+    
+    increment_images(user_id)
+    return jsonify({"success": True})
+
+
+@api.post("/api/user/stats/add_spent")
+def api_add_spent():
+    """Добавить потраченные звезды (для Mini App)"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    amount = data.get("amount", 0)
+    
+    if not user_id or not amount:
+        return jsonify({"error": "user_id and amount required"}), 400
+    
+    add_stars_spent(user_id, amount)
+    return jsonify({"success": True})
 
 
 # =========================
@@ -84,7 +152,7 @@ def api_chat():
         if a["is_blocked"]:
             return jsonify({"error": "blocked"}), 403
         
-        # ✅ Проверяем баланс звезд
+        # Проверяем баланс звезд
         balance = get_balance(tg_user_id_int)
         
         # Стоимость одного запроса - 1 звезда
@@ -96,6 +164,10 @@ def api_chat():
         # Если пользователь не FREE - списываем звезды
         if not a["is_free"]:
             spend_stars(tg_user_id_int, COST_PER_MESSAGE)
+            add_stars_spent(tg_user_id_int, COST_PER_MESSAGE)
+        
+        # ✅ Увеличиваем счетчик сообщений
+        increment_messages(tg_user_id_int)
             
     else:
         return jsonify({"error": "payment_required"}), 402
@@ -103,18 +175,18 @@ def api_chat():
     lang = data.get("lang") or get_user_lang(tg_user_id_int) or "ru"
     style = data.get("style") or "steps"
     
-    # ✅ Используем сохраненный характер пользователя
+    # Используем сохраненный характер пользователя
     persona = data.get("persona")
     if tg_user_id_int and not persona:
         persona = get_user_persona(tg_user_id_int)
     else:
         persona = persona or "friendly"
 
-    # ✅ берём историю + строим промпт с памятью
+    # берём историю + строим промпт с памятью
     history = mem_get(tg_user_id_int, limit=24)
     prompt_with_memory = build_memory_prompt(history, text)
 
-    # ✅ сохраняем user сообщение в память ДО ответа
+    # сохраняем user сообщение в память ДО ответа
     mem_add(tg_user_id_int, "user", text)
 
     try:
@@ -123,7 +195,7 @@ def api_chat():
         send_log_to_group(f"❌ Ошибка /api/chat: {e}")
         return jsonify({"error": str(e)}), 500
 
-    # ✅ сохраняем ответ в память
+    # сохраняем ответ в память
     mem_add(tg_user_id_int, "assistant", reply)
 
     time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
