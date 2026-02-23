@@ -3,16 +3,23 @@ from telegram.ext import ContextTypes
 
 from api import (
     get_access, get_last_menu, set_last_menu, clear_last_menu,
-    get_use_mini_app, get_user_persona, get_user_lang
+    get_use_mini_app, get_user_persona, get_user_lang, get_ai_mode,
+    mem_clear  # ✅ ДОБАВЛЕНО
 )
 from payments import get_balance, get_package
 
 from .config import send_log_http, build_start_log
-from .menu import main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, persona_settings_kb, lang_settings_kb, settings_kb, ai_mode_settings_kb, TAB_TEXT
+from .menu import (
+    main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, 
+    persona_settings_kb, lang_settings_kb, settings_kb, 
+    ai_mode_settings_kb, confirm_ai_mode_kb, TAB_TEXT  # ✅ ДОБАВЛЕНО confirm_ai_mode_kb
+)
 from .settings import handle_set_lang, handle_set_persona, handle_switch_mode, handle_set_ai_mode
 from .chat import inline_chat_start
 from .image import inline_image_start
 from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, edit_to_tab, send_block_notice
+
+import requests  # ✅ для отправки запроса в Mini App
 
 
 # =========================
@@ -82,9 +89,55 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_set_persona(update, context, query, uid, persona)
         return
     
-    if data.startswith("set_ai_mode:"):
-        ai_mode = data.split("set_ai_mode:", 1)[1].strip()
-        await handle_set_ai_mode(update, context, query, uid, ai_mode)
+    # ✅ ОБРАБОТКА ПОДТВЕРЖДЕНИЯ СМЕНЫ РЕЖИМА
+    if data.startswith("confirm_ai_mode:"):
+        new_mode = data.split("confirm_ai_mode:", 1)[1].strip()
+        current_mode = get_ai_mode(uid) or "fast"
+        
+        # Показываем подтверждение
+        mode_names = {"fast": "🚀 Быстрый", "quality": "💎 Качественный"}
+        text = TAB_TEXT["confirm_ai_mode_change"].format(
+            new_mode=mode_names.get(new_mode, new_mode),
+            current_mode=mode_names.get(current_mode, current_mode)
+        )
+        
+        try:
+            await query.message.edit_text(text, reply_markup=confirm_ai_mode_kb(uid, new_mode))
+            set_last_menu(uid, uid, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, uid)
+        return
+    
+    # ✅ ВЫПОЛНЕНИЕ СМЕНЫ РЕЖИМА ПОСЛЕ ПОДТВЕРЖДЕНИЯ
+    if data.startswith("execute_ai_mode:"):
+        new_mode = data.split("execute_ai_mode:", 1)[1].strip()
+        
+        # Очищаем память чата
+        mem_clear(uid)
+        print(f"🧹 Очищена память для пользователя {uid} при смене режима")
+        
+        # Меняем режим
+        from api import set_ai_mode
+        set_ai_mode(uid, new_mode)
+        
+        # Отправляем сигнал в Mini App на закрытие (если открыт)
+        try:
+            # Здесь можно отправить запрос в Mini App через вебхук
+            # Но проще - просто покажем сообщение
+            pass
+        except:
+            pass
+        
+        mode_names = {"fast": "🚀 Быстрый", "quality": "💎 Качественный"}
+        await query.message.edit_text(
+            f"✅ Режим изменен на {mode_names.get(new_mode, new_mode)}\n\n"
+            f"🧹 История чата очищена.\n"
+            f"При следующем открытии Mini App начнёте с чистого листа.",
+            reply_markup=tab_kb(uid)
+        )
+        
+        # Обновляем меню
+        await update_user_menu(context.bot, uid)
         return
     
     if data == "switch_to_miniapp":
@@ -124,7 +177,7 @@ async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id
             await send_fresh_menu(context.bot, user_id)
         return
     
-    # ✅ ОБРАБОТКА ДЛЯ РЕЖИМА ИИ
+    # Обработка для режима ИИ
     if tab_key == "ai_mode_settings":
         text = "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый (0.3 ⭐)\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный (1 ⭐)\n• Умнее и лучше\n• Для сложных задач"
         try:
@@ -141,7 +194,6 @@ async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id
 async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     """Показать профиль пользователя"""
     from datetime import datetime
-    from api import get_ai_mode
     
     a = get_access(user_id)
     balance = get_balance(user_id)
