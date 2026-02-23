@@ -8,7 +8,7 @@ from api import (
 from payments import get_balance, get_package
 
 from .config import send_log_http, build_start_log
-from .menu import main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, persona_settings_kb, lang_settings_kb, settings_kb, TAB_TEXT
+from .menu import main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, persona_settings_kb, lang_settings_kb, settings_kb, ai_mode_settings_kb, TAB_TEXT
 from .settings import handle_set_lang, handle_set_persona, handle_switch_mode, handle_set_ai_mode
 from .chat import inline_chat_start
 from .image import inline_image_start
@@ -114,11 +114,21 @@ async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id
         await show_profile(context, query, user_id)
         return
     
-    # ✅ СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ НАСТРОЕК
+    # Обработка для настроек
     if tab_key == "settings":
         text = "⚙️ Настройки\n\nВыбери раздел:"
         try:
             await query.message.edit_text(text, reply_markup=settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+        return
+    
+    # ✅ ОБРАБОТКА ДЛЯ РЕЖИМА ИИ
+    if tab_key == "ai_mode_settings":
+        text = "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый (0.3 ⭐)\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный (1 ⭐)\n• Умнее и лучше\n• Для сложных задач"
+        try:
+            await query.message.edit_text(text, reply_markup=ai_mode_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
