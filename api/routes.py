@@ -9,8 +9,8 @@ from .db import (
     increment_messages, increment_images, add_stars_spent
 )
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
-from groq_client import ask_groq  # ✅ Groq обратно
-from openai_client import ask_openai  # ✅ OpenAI
+from groq_client import ask_groq
+from openai_client import ask_openai
 from payments import get_balance, spend_stars
 
 import requests
@@ -195,31 +195,40 @@ def api_chat():
     mem_add(tg_user_id_int, "user", text)
 
     try:
-        # ✅ ВЫБОР МОДЕЛИ В ЗАВИСИМОСТИ ОТ РЕЖИМА
+        # ✅ ВЫБОР МОДЕЛИ БЕЗ FALLBACK
         ai_mode = get_ai_mode(tg_user_id_int) or "fast"
         
         if ai_mode == "fast":
-            # Быстрый режим - Groq (с историей)
+            # Быстрый режим - ТОЛЬКО Groq
             print(f"🚀 Использую Groq для пользователя {tg_user_id_int}")
             reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
+            
+            # Логируем успех
+            send_log_to_group(f"✅ Groq ответил пользователю {tg_user_id_int}")
+            
         else:
-            # Качественный режим - OpenAI (тоже с историей)
+            # Качественный режим - ТОЛЬКО OpenAI
             print(f"💎 Использую OpenAI для пользователя {tg_user_id_int}")
-            # Для OpenAI передаём тот же prompt_with_memory
             reply = ask_openai(prompt_with_memory, lang=lang, persona=persona)
             
+            # Логируем успех
+            send_log_to_group(f"✅ OpenAI ответил пользователю {tg_user_id_int}")
+            
     except Exception as e:
-        send_log_to_group(f"❌ Ошибка {ai_mode}: {e}")
-        # Если одна модель упала, пробуем другую
-        try:
-            if ai_mode == "fast":
-                # Если Groq упал, пробуем OpenAI
-                reply = ask_openai(prompt_with_memory, lang=lang, persona=persona)
-            else:
-                # Если OpenAI упал, пробуем Groq
-                reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
-        except:
-            return jsonify({"error": str(e)}), 500
+        # ❌ НИКАКОГО FALLBACK! Просто возвращаем ошибку
+        error_msg = f"❌ Ошибка в {ai_mode} режиме: {str(e)}"
+        print(error_msg)
+        send_log_to_group(f"❌ Сбой у пользователя {tg_user_id_int} в режиме {ai_mode}: {e}")
+        
+        # Возвращаем понятную ошибку пользователю
+        if ai_mode == "fast":
+            return jsonify({
+                "error": "🚫 Быстрый режим временно недоступен. Пожалуйста, переключитесь на Качественный режим в настройках или попробуйте позже."
+            }), 503
+        else:
+            return jsonify({
+                "error": "🚫 Качественный режим временно недоступен. Пожалуйста, попробуйте позже."
+            }), 503
 
     # сохраняем ответ в память
     mem_add(tg_user_id_int, "assistant", reply)
