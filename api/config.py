@@ -37,3 +37,25 @@ DB_PATH = os.getenv("ACCESS_DB_PATH") or "access.db"
 # Flask приложение (будет использоваться в __init__.py)
 api = Flask(__name__)
 CORS(api, origins=["https://fayrat11.github.io", "https://*.github.io"])
+# =========================
+# LOG FUNCTION
+# =========================
+def send_log_to_group(text: str):
+    """Отправить лог в Telegram группу"""
+    if not BOT_TOKEN:
+        return False, "BOT_TOKEN is empty"
+    if not GROUP_ID:
+        return False, "GROUP_ID is empty"
+
+    if len(text) > 3900:
+        text = text[:3900] + "\n…(truncated)"
+
+    try:
+        r = requests.post(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+            json={"chat_id": GROUP_ID, "text": text},
+            timeout=12,
+        )
+        return r.ok, r.text
+    except Exception as e:
+        return False, f"requests error: {e}"
