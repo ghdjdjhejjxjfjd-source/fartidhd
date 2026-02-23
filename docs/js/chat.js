@@ -42,7 +42,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let history = loadHistory();
   let sending = false;
   let currentUserId = tg?.initDataUnsafe?.user?.id || 0;
-  let isReloading = false; // Флаг, чтобы не очищать дважды
+  let isReloading = false;
 
   const TYPING_ID = "typing-indicator";
 
@@ -238,7 +238,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   }
 
   async function clearHistory(skipConfirm = false) {
-    // Если уже перезагружаемся - не очищаем второй раз
     if (isReloading) return false;
     
     if (!skipConfirm) {
@@ -272,13 +271,20 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       const currentMode = localStorage.getItem("current_ai_mode");
       if (currentMode && data.ai_mode !== currentMode) {
         // Режим изменился
-        isReloading = true; // Ставим флаг, чтобы не было двойной очистки
+        isReloading = true;
         
-        await clearHistory(true);
+        // Сначала очищаем localStorage
+        localStorage.removeItem(STORAGE_KEY);
         localStorage.setItem("current_ai_mode", data.ai_mode);
-        alert("🔄 Режим изменен. Чат очищен. Страница обновится...");
         
-        // Перезагружаем страницу через 1.5 секунды
+        // Очищаем серверную память
+        try {
+          await clearAIMemory();
+        } catch (e) {}
+        
+        alert("🔄 Режим изменен. Страница обновится...");
+        
+        // Перезагружаем страницу
         setTimeout(() => {
           window.location.reload();
         }, 1500);
@@ -375,7 +381,6 @@ Response:`;
       
       await updateMenuBalance();
       
-      // Проверяем режим после каждого ответа
       await checkModeChange();
       
     } catch(e){
