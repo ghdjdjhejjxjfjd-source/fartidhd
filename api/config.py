@@ -34,9 +34,10 @@ except Exception:
 # Путь к БД
 DB_PATH = os.getenv("ACCESS_DB_PATH") or "access.db"
 
-# Flask приложение (будет использоваться в __init__.py)
+# Flask приложение
 api = Flask(__name__)
 CORS(api, origins=["https://fayrat11.github.io", "https://*.github.io"])
+
 # =========================
 # LOG FUNCTION
 # =========================
