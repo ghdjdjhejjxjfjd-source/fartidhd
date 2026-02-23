@@ -42,6 +42,8 @@ TAB_TEXT = {
     "persona_settings": "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:",
     "lang_settings": "🌐 Язык\n\nВыбери язык интерфейса:",
     "ai_mode_settings": "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый (0.3 ⭐)\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный (1 ⭐)\n• Умнее и лучше\n• Для сложных задач",
+    # ✅ НОВЫЙ ТЕКСТ ДЛЯ ПОДТВЕРЖДЕНИЯ
+    "confirm_ai_mode_change": "⚠️ ПОДТВЕРЖДЕНИЕ\n\nВы выбрали режим: {new_mode}\n\nТекущий режим: {current_mode}\n\nПри смене режима:\n• История чата будет полностью очищена\n• Все предыдущие сообщения удалятся\n\nПродолжить?",
 }
 
 
@@ -91,12 +93,22 @@ def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     
     if current == "fast":
         keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый (0.3 ⭐)", callback_data="ignore")])
-        keyboard.append([InlineKeyboardButton("💎 Качественный (1 ⭐)", callback_data="set_ai_mode:quality")])
+        keyboard.append([InlineKeyboardButton("💎 Качественный (1 ⭐)", callback_data="confirm_ai_mode:quality")])
     else:
-        keyboard.append([InlineKeyboardButton("🚀 Быстрый (0.3 ⭐)", callback_data="set_ai_mode:fast")])
+        keyboard.append([InlineKeyboardButton("🚀 Быстрый (0.3 ⭐)", callback_data="confirm_ai_mode:fast")])
         keyboard.append([InlineKeyboardButton("✅ 💎 Качественный (1 ⭐)", callback_data="ignore")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
+    return InlineKeyboardMarkup(keyboard)
+
+
+# ✅ НОВАЯ КЛАВИАТУРА ДЛЯ ПОДТВЕРЖДЕНИЯ
+def confirm_ai_mode_kb(user_id: int, new_mode: str) -> InlineKeyboardMarkup:
+    """Клавиатура подтверждения смены режима"""
+    keyboard = [
+        [InlineKeyboardButton("✅ Да, сменить", callback_data=f"execute_ai_mode:{new_mode}")],
+        [InlineKeyboardButton("❌ Нет, отмена", callback_data="tab:ai_mode_settings")]
+    ]
     return InlineKeyboardMarkup(keyboard)
 
 
