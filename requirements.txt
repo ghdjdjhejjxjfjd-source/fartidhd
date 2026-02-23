@@ -4,4 +4,5 @@ groq
 flask-cors
 requests
 Pillow>=9.5.0
+openai>=1.0.0
 # stability-sdk убрали
