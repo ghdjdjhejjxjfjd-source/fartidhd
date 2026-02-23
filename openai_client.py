@@ -79,7 +79,7 @@ def ask_openai(
         raise RuntimeError("OPENAI_API_KEY is not set")
 
     # Если диалог слишком длинный (больше 20 сообщений) - сбрасываем контекст
-    if message_count > 20:
+    if message_count > 250:
         # Возвращаемся к базовому характеру без истории
         persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
         system_prompt = f"""Ты AI ассистент. Начинаем новый разговор.
