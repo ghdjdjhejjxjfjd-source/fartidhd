@@ -270,6 +270,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         await clearHistory(true);
         localStorage.setItem("current_ai_mode", data.ai_mode);
         alert("🔄 Режим изменен. Чат очищен.");
+        
+        // ✅ ПРИНУДИТЕЛЬНО ПЕРЕЗАГРУЖАЕМ СТРАНИЦУ ЧЕРЕЗ 1 СЕКУНДУ
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else if (!currentMode) {
         localStorage.setItem("current_ai_mode", data.ai_mode);
       }
@@ -408,8 +413,15 @@ Response:`;
     
     setTimeout(checkModeChange, 1000);
     
-    // ✅ ПРОВЕРЯЕМ КАЖДЫЕ 3 СЕКУНДЫ
-    setInterval(checkModeChange, 3000);
+    // ✅ ПРОВЕРЯЕМ КАЖДУЮ СЕКУНДУ
+    setInterval(checkModeChange, 1000);
+    
+    // ✅ ПРОВЕРЯЕМ ПРИ ВОЗВРАЩЕНИИ В ПРИЛОЖЕНИЕ
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        checkModeChange();
+      }
+    });
   }
 
   async function confirmClear(){
