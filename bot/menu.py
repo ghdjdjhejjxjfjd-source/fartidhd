@@ -61,7 +61,7 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
         [InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")],
         [InlineKeyboardButton("🔄 Режим работы", callback_data="tab:mode_settings")],
         [InlineKeyboardButton("🌐 Язык", callback_data="tab:lang_settings")],
-        [InlineKeyboardButton("⚡ Режим ИИ", callback_data="tab:ai_mode_settings")],  # НОВАЯ КНОПКА
+        [InlineKeyboardButton("⚡ Режим ИИ", callback_data="tab:ai_mode_settings")],
         [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -89,7 +89,6 @@ def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     
     keyboard = []
     
-    # Быстрый режим (0.3 ⭐)
     if current == "fast":
         keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый (0.3 ⭐)", callback_data="ignore")])
         keyboard.append([InlineKeyboardButton("💎 Качественный (1 ⭐)", callback_data="set_ai_mode:quality")])
@@ -135,7 +134,6 @@ def lang_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     ]
     
     keyboard = []
-    # По 2 в ряд
     row = []
     for i, (lang_id, lang_name) in enumerate(languages):
         mark = " ✅" if lang_id == current else ""
