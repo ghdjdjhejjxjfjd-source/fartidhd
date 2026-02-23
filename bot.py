@@ -1,7 +1,8 @@
 import os
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+from telegram import Update
 
-from bot_handlers import start, on_button
+from bot_handlers import start, on_button, handle_message
 from bot_admin import (
     cmd_whoami,
     cmd_free,
@@ -52,6 +53,18 @@ async def post_init(app: Application):
         print(f"⚠️ Не удалось установить админ-команды: {e}")
 
 
+async def error_handler(update: Update, context):
+    """Глобальный обработчик ошибок"""
+    try:
+        if update and update.effective_user:
+            user_id = update.effective_user.id
+            print(f"❌ Ошибка для пользователя {user_id}: {context.error}")
+        else:
+            print(f"❌ Ошибка: {context.error}")
+    except Exception as e:
+        print(f"❌ Критическая ошибка: {e}")
+
+
 def start_bot():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN is not set")
@@ -61,6 +74,9 @@ def start_bot():
     # user commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(on_button))
+    
+    # ✅ Новый обработчик для текстовых сообщений (чат в Telegram)
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # admin commands (работают в группе)
     app.add_handler(CommandHandler("whoami", cmd_whoami))
@@ -75,9 +91,13 @@ def start_bot():
     app.add_handler(CommandHandler("balance", cmd_balance))
     app.add_handler(CommandHandler("starstrans", cmd_starstrans))
     app.add_handler(CommandHandler("resetstars", cmd_resetstars))
+    
+    # Глобальный обработчик ошибок
+    app.add_error_handler(error_handler)
 
     print("🤖 Telegram bot started")
     print("✅ В личке: только /start")
     print("✅ В админ-группе: все команды")
+    print("✅ Добавлен обработчик сообщений для встроенного чата")
 
     app.run_polling(stop_signals=None, close_loop=False)
