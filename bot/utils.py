@@ -36,11 +36,11 @@ async def update_user_menu(bot, user_id: int):
 
 
 async def send_block_notice(bot, user_id: int):
+    """Отправить уведомление о блокировке"""
     await delete_prev_menu(bot, user_id)
     await bot.send_message(chat_id=user_id, text="⛔ Доступ заблокирован.")
 
 
-# ===== НОВЫЕ ФУНКЦИИ =====
 async def edit_to_menu(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     """Редактировать текущее сообщение в главное меню"""
     from .menu import main_menu_for_user
