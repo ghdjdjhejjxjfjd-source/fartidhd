@@ -271,21 +271,33 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return true;
   }
 
-  // ✅ Функция проверки смены режима
+  // ✅ Функция проверки смены режима (с ПОЛНЫМ URL)
   async function checkModeChange() {
-    if (!currentUserId) return;
+    if (!currentUserId) {
+      console.log("No user ID, skipping mode check");
+      return;
+    }
     
     try {
-      const res = await fetch(`/api/user/ai_mode/${currentUserId}`);
+      // Используем ПОЛНЫЙ URL вместо относительного
+      const API_BASE = "https://fayrat-production.up.railway.app";
+      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
+      
+      if (!res.ok) {
+        console.log("Mode check failed:", res.status);
+        return;
+      }
+      
       const data = await res.json();
+      console.log("Current mode from server:", data.ai_mode);
       
       const currentMode = localStorage.getItem("current_ai_mode");
       if (currentMode && data.ai_mode !== currentMode) {
         // Режим изменился! Очищаем чат
+        console.log("🔄 Mode changed from", currentMode, "to", data.ai_mode);
         await clearHistory(true);
         // Обновляем сохраненный режим
         localStorage.setItem("current_ai_mode", data.ai_mode);
-        console.log("🔄 Режим изменился, чат очищен");
       } else if (!currentMode) {
         localStorage.setItem("current_ai_mode", data.ai_mode);
       }
