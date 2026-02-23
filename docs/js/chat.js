@@ -42,6 +42,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let history = loadHistory();
   let sending = false;
   let currentUserId = tg?.initDataUnsafe?.user?.id || 0;
+  let isReloading = false; // Флаг, чтобы не очищать дважды
 
   const TYPING_ID = "typing-indicator";
 
@@ -237,6 +238,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   }
 
   async function clearHistory(skipConfirm = false) {
+    // Если уже перезагружаемся - не очищаем второй раз
+    if (isReloading) return false;
+    
     if (!skipConfirm) {
       const confirmed = await confirmClear();
       if (!confirmed) return false;
@@ -255,7 +259,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   }
 
   async function checkModeChange() {
-    if (!currentUserId) return;
+    if (!currentUserId || isReloading) return;
     
     try {
       const API_BASE = "https://fayrat-production.up.railway.app";
@@ -267,14 +271,18 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       
       const currentMode = localStorage.getItem("current_ai_mode");
       if (currentMode && data.ai_mode !== currentMode) {
+        // Режим изменился
+        isReloading = true; // Ставим флаг, чтобы не было двойной очистки
+        
         await clearHistory(true);
         localStorage.setItem("current_ai_mode", data.ai_mode);
-        alert("🔄 Режим изменен. Чат очищен.");
+        alert("🔄 Режим изменен. Чат очищен. Страница обновится...");
         
-        // ✅ ПРИНУДИТЕЛЬНО ПЕРЕЗАГРУЖАЕМ СТРАНИЦУ ЧЕРЕЗ 1 СЕКУНДУ
+        // Перезагружаем страницу через 1.5 секунды
         setTimeout(() => {
           window.location.reload();
-        }, 1000);
+        }, 1500);
+        
       } else if (!currentMode) {
         localStorage.setItem("current_ai_mode", data.ai_mode);
       }
@@ -367,6 +375,7 @@ Response:`;
       
       await updateMenuBalance();
       
+      // Проверяем режим после каждого ответа
       await checkModeChange();
       
     } catch(e){
@@ -412,13 +421,10 @@ Response:`;
     });
     
     setTimeout(checkModeChange, 1000);
+    setInterval(checkModeChange, 3000);
     
-    // ✅ ПРОВЕРЯЕМ КАЖДУЮ СЕКУНДУ
-    setInterval(checkModeChange, 1000);
-    
-    // ✅ ПРОВЕРЯЕМ ПРИ ВОЗВРАЩЕНИИ В ПРИЛОЖЕНИЕ
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
+      if (!document.hidden && !isReloading) {
         checkModeChange();
       }
     });
