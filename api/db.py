@@ -22,7 +22,11 @@ def db_init():
             last_menu_message_id INTEGER,
             use_mini_app INTEGER DEFAULT 1,
             persona TEXT DEFAULT 'friendly',
-            lang TEXT DEFAULT 'ru'
+            lang TEXT DEFAULT 'ru',
+            registered_at TEXT,
+            total_messages INTEGER DEFAULT 0,
+            total_images INTEGER DEFAULT 0,
+            total_stars_spent INTEGER DEFAULT 0
         )
         """
     )
@@ -32,7 +36,7 @@ def db_init():
         CREATE TABLE IF NOT EXISTS chat_memory (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
-            role TEXT NOT NULL,               -- "user" | "assistant"
+            role TEXT NOT NULL,
             text TEXT NOT NULL,
             created_at TEXT
         )
@@ -49,26 +53,25 @@ def _ensure_columns():
     """На случай если таблица была создана раньше без колонок."""
     con = db_conn()
     cur = con.cursor()
-    try:
-        cur.execute("ALTER TABLE access ADD COLUMN last_menu_chat_id INTEGER")
-    except Exception:
-        pass
-    try:
-        cur.execute("ALTER TABLE access ADD COLUMN last_menu_message_id INTEGER")
-    except Exception:
-        pass
-    try:
-        cur.execute("ALTER TABLE access ADD COLUMN use_mini_app INTEGER DEFAULT 1")
-    except Exception:
-        pass
-    try:
-        cur.execute("ALTER TABLE access ADD COLUMN persona TEXT DEFAULT 'friendly'")
-    except Exception:
-        pass
-    try:
-        cur.execute("ALTER TABLE access ADD COLUMN lang TEXT DEFAULT 'ru'")
-    except Exception:
-        pass
+    
+    columns_to_add = [
+        "last_menu_chat_id INTEGER",
+        "last_menu_message_id INTEGER",
+        "use_mini_app INTEGER DEFAULT 1",
+        "persona TEXT DEFAULT 'friendly'",
+        "lang TEXT DEFAULT 'ru'",
+        "registered_at TEXT",
+        "total_messages INTEGER DEFAULT 0",
+        "total_images INTEGER DEFAULT 0",
+        "total_stars_spent INTEGER DEFAULT 0"
+    ]
+    
+    for col in columns_to_add:
+        try:
+            cur.execute(f"ALTER TABLE access ADD COLUMN {col}")
+        except Exception:
+            pass
+    
     con.commit()
     con.close()
 
@@ -82,16 +85,27 @@ _ensure_columns()
 def set_free(user_id: int, value: bool) -> None:
     con = db_conn()
     cur = con.cursor()
-    cur.execute(
-        """
-        INSERT INTO access (user_id, is_free, is_blocked, updated_at)
-        VALUES (?, ?, COALESCE((SELECT is_blocked FROM access WHERE user_id=?), 0), ?)
-        ON CONFLICT(user_id) DO UPDATE SET
-            is_free=excluded.is_free,
-            updated_at=excluded.updated_at
-        """,
-        (user_id, 1 if value else 0, user_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-    )
+    
+    # Проверяем существует ли пользователь
+    cur.execute("SELECT user_id FROM access WHERE user_id = ?", (user_id,))
+    exists = cur.fetchone()
+    
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if exists:
+        cur.execute(
+            "UPDATE access SET is_free = ?, updated_at = ? WHERE user_id = ?",
+            (1 if value else 0, now, user_id)
+        )
+    else:
+        cur.execute(
+            """
+            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at)
+            VALUES (?, ?, 0, ?, ?)
+            """,
+            (user_id, 1 if value else 0, now, now)
+        )
+    
     con.commit()
     con.close()
 
@@ -99,16 +113,24 @@ def set_free(user_id: int, value: bool) -> None:
 def set_blocked(user_id: int, value: bool) -> None:
     con = db_conn()
     cur = con.cursor()
+    
     cur.execute(
         """
-        INSERT INTO access (user_id, is_free, is_blocked, updated_at)
-        VALUES (?, COALESCE((SELECT is_free FROM access WHERE user_id=?), 0), ?, ?)
-        ON CONFLICT(user_id) DO UPDATE SET
-            is_blocked=excluded.is_blocked,
-            updated_at=excluded.updated_at
+        UPDATE access
+        SET is_blocked = ?, updated_at = ?
+        WHERE user_id = ?
         """,
-        (user_id, user_id, 1 if value else 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        (1 if value else 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
     )
+    if cur.rowcount == 0:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute(
+            """
+            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at)
+            VALUES (?, 0, ?, ?, ?)
+            """,
+            (user_id, 1 if value else 0, now, now)
+        )
     con.commit()
     con.close()
 
@@ -117,11 +139,17 @@ def get_access(user_id: int) -> Dict[str, Any]:
     con = db_conn()
     cur = con.cursor()
     cur.execute(
-        "SELECT is_free, is_blocked, updated_at, last_menu_chat_id, last_menu_message_id, use_mini_app, persona, lang FROM access WHERE user_id=?",
+        """
+        SELECT is_free, is_blocked, updated_at, last_menu_chat_id, 
+               last_menu_message_id, use_mini_app, persona, lang,
+               registered_at, total_messages, total_images, total_stars_spent
+        FROM access WHERE user_id=?
+        """,
         (user_id,),
     )
     row = cur.fetchone()
     con.close()
+    
     if not row:
         return {
             "user_id": user_id,
@@ -133,7 +161,12 @@ def get_access(user_id: int) -> Dict[str, Any]:
             "use_mini_app": True,
             "persona": "friendly",
             "lang": "ru",
+            "registered_at": None,
+            "total_messages": 0,
+            "total_images": 0,
+            "total_stars_spent": 0,
         }
+    
     return {
         "user_id": user_id,
         "is_free": bool(row[0]),
@@ -144,32 +177,37 @@ def get_access(user_id: int) -> Dict[str, Any]:
         "use_mini_app": bool(row[5]) if row[5] is not None else True,
         "persona": row[6] if row[6] else "friendly",
         "lang": row[7] if row[7] else "ru",
+        "registered_at": row[8],
+        "total_messages": row[9] or 0,
+        "total_images": row[10] or 0,
+        "total_stars_spent": row[11] or 0,
     }
 
 
 def set_last_menu(user_id: int, chat_id: int, message_id: int) -> None:
     con = db_conn()
     cur = con.cursor()
+    
     cur.execute(
         """
-        INSERT INTO access (user_id, is_free, is_blocked, updated_at, last_menu_chat_id, last_menu_message_id)
-        VALUES (?, COALESCE((SELECT is_free FROM access WHERE user_id=?), 0),
-                COALESCE((SELECT is_blocked FROM access WHERE user_id=?), 0),
-                ?, ?, ?)
-        ON CONFLICT(user_id) DO UPDATE SET
-            last_menu_chat_id=excluded.last_menu_chat_id,
-            last_menu_message_id=excluded.last_menu_message_id,
-            updated_at=excluded.updated_at
+        UPDATE access
+        SET last_menu_chat_id = ?, last_menu_message_id = ?, updated_at = ?
+        WHERE user_id = ?
         """,
-        (
-            user_id,
-            user_id,
-            user_id,
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            chat_id,
-            message_id,
-        ),
+        (chat_id, message_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
     )
+    
+    if cur.rowcount == 0:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute(
+            """
+            INSERT INTO access (user_id, is_free, is_blocked, updated_at, 
+                               last_menu_chat_id, last_menu_message_id, registered_at)
+            VALUES (?, 0, 0, ?, ?, ?, ?)
+            """,
+            (user_id, now, chat_id, message_id, now)
+        )
+    
     con.commit()
     con.close()
 
@@ -180,8 +218,8 @@ def clear_last_menu(user_id: int) -> None:
     cur.execute(
         """
         UPDATE access
-        SET last_menu_chat_id=NULL, last_menu_message_id=NULL, updated_at=?
-        WHERE user_id=?
+        SET last_menu_chat_id = NULL, last_menu_message_id = NULL, updated_at = ?
+        WHERE user_id = ?
         """,
         (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
     )
@@ -195,7 +233,7 @@ def get_last_menu(user_id: int) -> Tuple[Optional[int], Optional[int]]:
 
 
 # =========================
-# НОВЫЕ ФУНКЦИИ
+# ФУНКЦИИ ДЛЯ НАСТРОЕК
 # =========================
 def get_use_mini_app(user_id: int) -> bool:
     a = get_access(user_id)
@@ -214,12 +252,13 @@ def set_use_mini_app(user_id: int, value: bool) -> None:
         (1 if value else 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
     )
     if cur.rowcount == 0:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, use_mini_app, updated_at)
-            VALUES (?, ?, ?)
+            INSERT INTO access (user_id, use_mini_app, updated_at, registered_at)
+            VALUES (?, ?, ?, ?)
             """,
-            (user_id, 1 if value else 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+            (user_id, 1 if value else 0, now, now)
         )
     con.commit()
     con.close()
@@ -242,12 +281,13 @@ def set_user_persona(user_id: int, persona: str) -> None:
         (persona, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
     )
     if cur.rowcount == 0:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, persona, updated_at)
-            VALUES (?, ?, ?)
+            INSERT INTO access (user_id, persona, updated_at, registered_at)
+            VALUES (?, ?, ?, ?)
             """,
-            (user_id, persona, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+            (user_id, persona, now, now)
         )
     con.commit()
     con.close()
@@ -270,12 +310,98 @@ def set_user_lang(user_id: int, lang: str) -> None:
         (lang, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
     )
     if cur.rowcount == 0:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, lang, updated_at)
-            VALUES (?, ?, ?)
+            INSERT INTO access (user_id, lang, updated_at, registered_at)
+            VALUES (?, ?, ?, ?)
             """,
-            (user_id, lang, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+            (user_id, lang, now, now)
         )
+    con.commit()
+    con.close()
+
+
+# =========================
+# ФУНКЦИИ ДЛЯ СТАТИСТИКИ
+# =========================
+def increment_messages(user_id: int):
+    """Увеличить счетчик сообщений"""
+    con = db_conn()
+    cur = con.cursor()
+    
+    # Сначала проверяем есть ли запись
+    cur.execute("SELECT user_id FROM access WHERE user_id = ?", (user_id,))
+    exists = cur.fetchone()
+    
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if exists:
+        cur.execute("""
+            UPDATE access 
+            SET total_messages = total_messages + 1,
+                updated_at = ?
+            WHERE user_id = ?
+        """, (now, user_id))
+    else:
+        cur.execute("""
+            INSERT INTO access (user_id, total_messages, updated_at, registered_at)
+            VALUES (?, 1, ?, ?)
+        """, (user_id_id:, now, now))
+    
+    con.commit()
+    con.close()
+
+
+def increment_images(user int):
+    """Увеличить счетчик картинок"""
+    con = db_conn()
+    cur = con.cursor()
+    
+    cur.execute("SELECT user_id FROM access WHERE user_id = ?", (user_id,))
+    exists = cur.fetchone()
+    
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if exists:
+        cur.execute("""
+            UPDATE access 
+            SET total_images = total_images + 1,
+                updated_at = ?
+            WHERE user_id = ?
+        """, (now, user_id))
+    else:
+        cur.execute("""
+            INSERT INTO access (user_id, total_images, updated_at, registered_at)
+            VALUES (?, 1, ?, ?)
+        """, (user_id, now, now))
+    
+    con.commit()
+    con.close()
+
+
+def add_stars_spent(user_id: int, amount: int):
+    """Добавить потраченные звезды"""
+    con = db_conn()
+    cur = con.cursor()
+    
+    cur.execute("SELECT user_id FROM access WHERE user_id = ?", (user_id,))
+    exists = cur.fetchone()
+    
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if exists:
+        cur.execute("""
+            UPDATE access 
+            SET total_stars_spent = total_stars_spent + ?,
+                updated_at = ?
+            WHERE user_id = ?
+        """, (amount, now, user_id))
+    else:
+        cur.execute("""
+            INSERT INTO access (user_id, total_stars_spent, updated_at, registered_at)
+            VALUES (?, ?, ?, ?)
+        """, (user_id, amount, now, now))
+    
     con.commit()
     con.close()
