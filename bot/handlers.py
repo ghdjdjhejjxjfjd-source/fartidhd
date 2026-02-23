@@ -8,7 +8,7 @@ from api import (
 from payments import get_balance, get_package
 
 from .config import send_log_http, build_start_log
-from .menu import main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, persona_settings_kb, lang_settings_kb
+from .menu import main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, persona_settings_kb, lang_settings_kb, TAB_TEXT
 from .settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from .chat import inline_chat_start
 from .image import inline_image_start
@@ -52,7 +52,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if data.startswith("tab:"):
         key = data.split("tab:", 1)[1].strip()
-        await edit_to_tab(context, query, uid, key)
+        await edit_to_tab_handler(context, query, uid, key)
         return
     
     if data.startswith("buy_stars:"):
@@ -99,6 +99,77 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     await edit_to_menu(context, query, uid)
+
+
+async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
+    """Обработчик открытия вкладок"""
+    
+    # Специальная обработка для профиля
+    if tab_key == "profile":
+        await show_profile(context, query, user_id)
+        return
+    
+    # Для остальных вкладок используем стандартный обработчик из utils
+    await edit_to_tab(context, query, user_id, tab_key)
+
+
+async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
+    """Показать профиль пользователя"""
+    from datetime import datetime
+    
+    a = get_access(user_id)
+    balance = get_balance(user_id)
+    persona = get_user_persona(user_id)
+    lang = get_user_lang(user_id)
+    use_mini_app = get_use_mini_app(user_id)
+    
+    # Словарь для названий характеров
+    persona_names = {
+        "friendly": "😊 Общительный",
+        "fun": "😂 Весёлый",
+        "smart": "🧐 Умный",
+        "strict": "😐 Строгий"
+    }
+    
+    # Словарь для названий языков
+    lang_names = {
+        "ru": "🇷🇺 Русский",
+        "en": "🇬🇧 English",
+        "kk": "🇰🇿 Қазақша",
+        "tr": "🇹🇷 Türkçe",
+        "uk": "🇺🇦 Українська",
+        "fr": "🇫🇷 Français"
+    }
+    
+    # Форматируем дату регистрации
+    registered = "неизвестно"
+    if a.get("registered_at"):
+        try:
+            reg_date = datetime.strptime(a["registered_at"], "%Y-%m-%d %H:%M:%S")
+            registered = reg_date.strftime("%d.%m.%Y")
+        except:
+            registered = a["registered_at"][:10]
+    
+    # Формируем текст профиля
+    text = TAB_TEXT["profile"].format(
+        user_id=user_id,
+        registered=registered,
+        messages=a.get("total_messages", 0),
+        images=a.get("total_images", 0),
+        spent=a.get("total_stars_spent", 0),
+        balance=balance,
+        persona=persona_names.get(persona, persona),
+        lang=lang_names.get(lang, lang),
+        mode="📱 Mini App" if use_mini_app else "💬 Встроенный",
+        free="✅ Да" if a.get("is_free") else "❌ Нет",
+        blocked="✅ Нет" if not a.get("is_blocked") else "❌ Да"
+    )
+    
+    try:
+        await query.message.edit_text(text, reply_markup=tab_kb(user_id))
+        set_last_menu(user_id, user_id, query.message.message_id)
+    except Exception:
+        await send_fresh_menu(context.bot, user_id)
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
