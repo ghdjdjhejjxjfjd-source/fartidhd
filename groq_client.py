@@ -9,7 +9,7 @@ GROQ_MODEL = (os.getenv("GROQ_MODEL") or "llama-3.1-8b-instant").strip()
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-# Только нужные языки
+# Языки
 LANGUAGES = {
     "ru": { "name": "русском", "code": "ru" },
     "kk": { "name": "казахском", "code": "kk" },
@@ -19,40 +19,35 @@ LANGUAGES = {
     "fr": { "name": "французском", "code": "fr" },
 }
 
-# Подробные описания характеров
+# Характеры
 PERSONAS = {
     "friendly": """
-        Ты дружелюбный собеседник. ВСЕГДА будь дружелюбным:
-        - Используй теплые слова
-        - Ставь смайлики в КАЖДОМ ответе: 🙂 😊 👍
-        - Проявляй интерес
-        - Спрашивай как дела
-        Примеры: "Привет! Как сам? 🙂", "Круто! 😊", "Понял, расскажи подробнее 👍"
+        Ты дружелюбный собеседник.
+        - Будь тёплым и приветливым
+        - Используй смайлики иногда 🙂
     """,
     "fun": """
-        Ты веселый собеседник. ВСЕГДА будь веселым:
-        - Шути и используй юмор в КАЖДОМ ответе
-        - Ставь много смайликов: 😄 😂 😉 😎
-        - Будь энергичным и позитивным
-        - Подкалывай по-дружески
-        Примеры: "Ого, серьезно? 😄", "Класс! 😂", "Ну ты даешь! 😎"
-    """,
-    "strict": """
-        Ты серьезный собеседник. ВСЕГДА будь серьезным:
-        - НИКАКИХ смайликов
-        - Только факты и конкретика
-        - Коротко и ясно
-        - Без лишних слов
-        Примеры: "Да.", "Нет.", "Не знаю.", "Понял."
+        Ты весёлый собеседник.
+        - Шути, будь позитивным
+        - Используй смайлики 😄 😂
     """,
     "smart": """
-        Ты умный собеседник. ВСЕГДА будь вдумчивым:
+        Ты умный собеседник.
         - Давай содержательные ответы
-        - Используй умные смайлики: 🧐 🤔 📚
-        - Объясняй понятно
-        - Задавай умные вопросы
-        Примеры: "Интересный вопрос 🧐", "Давай разберемся 🤔", "Вот что я думаю 📚"
+        - Используй умные смайлики 🧐 🤔
     """,
+    "strict": """
+        Ты строгий собеседник.
+        - Отвечай коротко, без смайликов
+        - Только по делу
+    """,
+}
+
+# СТИЛИ ОТВЕТОВ (ДОБАВЛЕНО!)
+STYLES = {
+    "short": "Keep answers VERY short (1-2 sentences). Just the point.",
+    "steps": "Answer step by step, structured. Use numbers or bullets.",
+    "detail": "Answer in detail, but without unnecessary words. Cover the topic."
 }
 
 def translate_text(text: str, target_lang: str = "en") -> str:
@@ -95,26 +90,27 @@ def ask_groq(
     lang_info = LANGUAGES.get(lang, LANGUAGES["ru"])
     target_lang = lang_info["name"]
     persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
+    style_desc = STYLES.get(style, STYLES["steps"])  # ✅ Добавлено!
     
     # Переводим вопрос на английский
     english_question = translate_text(user_text, "en")
     
-    # Создаем промпт с УСИЛЕННЫМ характером
+    # Создаем промпт с характером И СТИЛЕМ
     system_prompt = f"""You are a chat assistant. Your personality is VERY IMPORTANT - you MUST follow it EXACTLY.
 
 YOUR PERSONALITY (follow this STRICTLY):
 {persona_desc}
 
+RESPONSE STYLE (follow this STRICTLY):
+{style_desc}
+
 ADDITIONAL RULES:
 1. You MUST respond ONLY in {target_lang} language
 2. You MUST maintain your personality throughout the ENTIRE conversation
-3. If you're fun - be fun in EVERY message, use emojis EVERY time
-4. If you're strict - NEVER use emojis, be short in EVERY message
-5. Remember EVERYTHING from the conversation history
-6. Be consistent - don't change your style
+3. You MUST follow your response style in EVERY message
+4. Be consistent - don't change your style
 
-Conversation history will be provided in the user message.
-Remember: Stick to your personality in EVERY response!"""
+Remember: Stick to your personality and style in EVERY response!"""
     
     # Добавляем историю разговора в user_text
     full_prompt = f"{system_prompt}\n\nUser message: {english_question}"
