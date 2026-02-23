@@ -7,87 +7,12 @@ from api import (
 )
 from payments import get_balance, get_package
 
-from .config import send_log_http, build_start_log, MINIAPP_URL
+from .config import send_log_http, build_start_log
 from .menu import main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, persona_settings_kb, lang_settings_kb
 from .settings import handle_set_lang, handle_set_persona, handle_switch_mode
-from .chat import inline_chat_start, handle_chat_message
-from .image import inline_image_start, handle_image_generation
-
-import re
-
-# =========================
-# УПРАВЛЕНИЕ МЕНЮ
-# =========================
-async def delete_prev_menu(bot, user_id: int):
-    chat_id, msg_id = get_last_menu(user_id)
-    if not chat_id or not msg_id:
-        return
-    try:
-        await bot.delete_message(chat_id=chat_id, message_id=msg_id)
-        print(f"🗑️ Удалено старое меню для {user_id}")
-    except Exception:
-        pass
-    clear_last_menu(user_id)
-
-
-async def send_fresh_menu(bot, user_id: int, text: str = None):
-    await delete_prev_menu(bot, user_id)
-    
-    if text is None:
-        text = "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇"
-    
-    m = await bot.send_message(
-        chat_id=user_id,
-        text=text,
-        reply_markup=main_menu_for_user(user_id),
-    )
-    set_last_menu(user_id, user_id, m.message_id)
-
-
-async def update_user_menu(bot, user_id: int):
-    await send_fresh_menu(bot, user_id)
-
-
-async def send_block_notice(bot, user_id: int):
-    await delete_prev_menu(bot, user_id)
-    await bot.send_message(chat_id=user_id, text="⛔ Доступ заблокирован.")
-
-
-async def edit_to_menu(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
-    try:
-        await query.message.edit_text(
-            "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
-            reply_markup=main_menu_for_user(user_id)
-        )
-        set_last_menu(user_id, user_id, query.message.message_id)
-    except Exception:
-        await send_fresh_menu(context.bot, user_id)
-
-
-async def edit_to_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
-    from .menu import TAB_TEXT
-    text = TAB_TEXT.get(tab_key, "Раздел в разработке.")
-    
-    if tab_key == "balance":
-        balance = get_balance(user_id)
-        text = f"⭐ Ваш баланс: {balance} звезд"
-    
-    if tab_key == "buy_stars":
-        reply_markup = stars_kb(user_id)
-    elif tab_key == "mode_settings":
-        reply_markup = mode_settings_kb(user_id)
-    elif tab_key == "persona_settings":
-        reply_markup = persona_settings_kb(user_id)
-    elif tab_key == "lang_settings":
-        reply_markup = lang_settings_kb(user_id)
-    else:
-        reply_markup = tab_kb(user_id)
-    
-    try:
-        await query.message.edit_text(text, reply_markup=reply_markup)
-        set_last_menu(user_id, user_id, query.message.message_id)
-    except Exception:
-        await send_fresh_menu(context.bot, user_id)
+from .chat import inline_chat_start
+from .image import inline_image_start
+from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, edit_to_tab
 
 
 # =========================
@@ -196,9 +121,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     
     if context.user_data.get("in_chat_mode"):
+        from .chat import handle_chat_message
         await handle_chat_message(update, context, uid, text)
         context.user_data["in_chat_mode"] = False
         
     elif context.user_data.get("in_image_mode"):
+        from .image import handle_image_generation
         await handle_image_generation(update, context, uid, text)
         context.user_data["in_image_mode"] = False
