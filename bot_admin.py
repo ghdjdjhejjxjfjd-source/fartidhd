@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from api import set_free, set_blocked, get_access
-from bot_handlers import send_fresh_menu, send_block_notice, update_user_menu
+from bot.handlers import send_fresh_menu, send_block_notice, update_user_menu  # ИЗМЕНЕНО
 from payments import add_stars, get_balance
 
 ADMIN_USER_ID_RAW = (os.getenv("ADMIN_USER_ID") or "0").strip()
@@ -13,7 +13,6 @@ try:
 except Exception:
     ADMIN_USER_ID = 0
 
-# где разрешены админ-команды (в группе логов)
 GROUP_ID_RAW = (os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or "0").strip()
 try:
     ADMIN_GROUP_ID = int(GROUP_ID_RAW)
@@ -74,7 +73,7 @@ async def cmd_free(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     set_free(uid, True)
     await _push_menu(context, uid)
-    await update_user_menu(context.bot, uid)  # Обновляем меню
+    await update_user_menu(context.bot, uid)
 
     a = get_access(uid)
     await update.effective_message.reply_text(f"✅ FREE включен для {uid}\n{a}")
@@ -93,7 +92,7 @@ async def cmd_paid(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     set_free(uid, False)
     await _push_menu(context, uid)
-    await update_user_menu(context.bot, uid)  # Обновляем меню
+    await update_user_menu(context.bot, uid)
 
     a = get_access(uid)
     await update.effective_message.reply_text(f"✅ Теперь платно для {uid}\n{a}")
@@ -112,7 +111,7 @@ async def cmd_block(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     set_blocked(uid, True)
     await _push_menu(context, uid)
-    await update_user_menu(context.bot, uid)  # Обновляем меню
+    await update_user_menu(context.bot, uid)
 
     a = get_access(uid)
     await update.effective_message.reply_text(f"⛔ Заблокирован {uid}\n{a}")
@@ -131,7 +130,7 @@ async def cmd_unblock(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     set_blocked(uid, False)
     await _push_menu(context, uid)
-    await update_user_menu(context.bot, uid)  # Обновляем меню
+    await update_user_menu(context.bot, uid)
 
     a = get_access(uid)
     await update.effective_message.reply_text(f"✅ Разблокирован {uid}\n{a}")
@@ -151,12 +150,7 @@ async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(f"ℹ️ Статус {uid}\n{a}")
 
 
-# =========================
-#   НОВЫЕ КОМАНДЫ ДЛЯ ЗВЕЗД
-# =========================
-
 async def cmd_addstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Добавить звезды пользователю: /addstars <user_id> <amount>"""
     if not is_admin(update):
         return
     
@@ -187,7 +181,6 @@ async def cmd_addstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"💰 Новый баланс: {new_balance} ⭐"
         )
         
-        # Отправляем уведомление пользователю
         try:
             await context.bot.send_message(
                 chat_id=uid,
@@ -197,7 +190,6 @@ async def cmd_addstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             pass
             
-        # ✅ Обновляем меню пользователя
         await update_user_menu(context.bot, uid)
             
     except Exception as e:
@@ -205,7 +197,6 @@ async def cmd_addstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Показать баланс пользователя: /balance <user_id>"""
     if not is_admin(update):
         return
     
@@ -235,7 +226,6 @@ async def cmd_balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_starstrans(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Показать топ пользователей по звездам: /starstrans [limit]"""
     if not is_admin(update):
         return
     
@@ -270,7 +260,6 @@ async def cmd_starstrans(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_resetstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Сбросить баланс пользователя: /resetstars <user_id>"""
     if not is_admin(update):
         return
     
@@ -295,47 +284,7 @@ async def cmd_resetstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Стало: 0 ⭐"
         )
         
-        # ✅ Обновляем меню пользователя
         await update_user_menu(context.bot, uid)
         
     except Exception as e:
         await update.effective_message.reply_text(f"❌ Ошибка: {e}")
-
-
-# Функции для payments.py
-def get_top_users(limit: int = 10):
-    """Получить топ пользователей по звездам"""
-    import sqlite3
-    from payments import DB_PATH
-    
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT user_id, balance, total_purchased 
-        FROM star_balances 
-        WHERE balance > 0 
-        ORDER BY balance DESC 
-        LIMIT ?
-    """, (limit,))
-    rows = cur.fetchall()
-    conn.close()
-    return rows
-
-def reset_balance(user_id: int):
-    """Сбросить баланс пользователя"""
-    import sqlite3
-    from payments import DB_PATH
-    from datetime import datetime
-    
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    cur.execute("""
-        UPDATE star_balances 
-        SET balance = 0, updated_at = ? 
-        WHERE user_id = ?
-    """, (now, user_id))
-    
-    conn.commit()
-    conn.close()
