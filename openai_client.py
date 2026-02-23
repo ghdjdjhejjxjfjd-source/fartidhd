@@ -8,7 +8,7 @@ OPENAI_MODEL = (os.getenv("OPENAI_MODEL") or "gpt-3.5-turbo").strip()
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-# Характеры - ТОЛЬКО ОПИСАНИЕ, БЕЗ ПРИМЕРОВ!
+# Характеры - только описание стиля
 PERSONAS = {
     "friendly": """
         Ты дружелюбный собеседник.
@@ -69,7 +69,18 @@ def ask_openai(
     }
     target_lang = lang_names.get(lang, "русском")
     
-    # Формируем system prompt БЕЗ КОНКРЕТНЫХ ПРИМЕРОВ
+    # Определяем, является ли это началом диалога
+    # Если текст слишком короткий или похож на приветствие
+    is_greeting = len(user_text.strip()) < 20 and any(
+        word in user_text.lower() 
+        for word in ["привет", "здравствуй", "hello", "hi", "салам", "салем"]
+    )
+    
+    # Формируем system prompt с правилами
+    greeting_rule = ""
+    if not is_greeting:
+        greeting_rule = "6. НИКОГДА не начинай ответ со слов 'Привет' или 'Здравствуй'. Это продолжение разговора, просто отвечай по существу."
+    
     system_prompt = f"""Ты AI ассистент. Твой характер:
 
 {persona_desc}
@@ -79,14 +90,16 @@ def ask_openai(
 2. Придерживайся выбранного характера
 3. НИКОГДА не повторяй свои ответы
 4. Каждый ответ должен быть уникальным
-5. Будь естественным, как живой человек"""
+5. Будь естественным, как живой человек
+{greeting_rule}
+7. Продолжай разговор естественно, без лишних приветствий"""
 
-    # Температура для разнообразия (чуть выше, чтобы избежать повторений)
+    # Температура для разнообразия
     temps = {
-        "fun": 0.95,      # веселый - креативный
-        "friendly": 0.85,  # общительный - умеренно креативный
-        "smart": 0.7,     # умный - фактологичный
-        "strict": 0.5     # строгий - предсказуемый
+        "fun": 0.95,
+        "friendly": 0.85,
+        "smart": 0.7,
+        "strict": 0.5
     }
     temperature = temps.get(persona, 0.8)
 
@@ -99,8 +112,8 @@ def ask_openai(
             ],
             temperature=temperature,
             max_tokens=600,
-            presence_penalty=0.6,  # Штраф за повторение тем
-            frequency_penalty=0.6,  # Штраф за повторение слов
+            presence_penalty=0.6,
+            frequency_penalty=0.6,
         )
         
         reply = (response.choices[0].message.content or "").strip()
