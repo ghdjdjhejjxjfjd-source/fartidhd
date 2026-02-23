@@ -17,7 +17,7 @@ PERSONAS = {
         - Пиши тепло, приветливо
         - Смайлики: очень редко (1 на 3-4 сообщения)
         - Не используй одинаковые смайлики
-        - Разнообразь ответы
+        - Будь естественным
     """,
     
     "fun": """
@@ -50,16 +50,26 @@ PERSONAS = {
 
 # Стили ответов
 STYLES = {
-    "short": "Отвечай ОЧЕНЬ КОРОТКО, 1-2 предложения. Только суть.",
-    "steps": "Отвечай ПО ШАГАМ, структурированно. Используй цифры или маркеры.",
-    "detail": "Отвечай ПОДРОБНО, но без лишней воды. Раскрывай тему."
+    "short": "Keep answers VERY short (1-2 sentences).",
+    "steps": "Answer step by step, structured.",
+    "detail": "Answer in detail but without unnecessary words."
 }
 
+def extract_user_message(full_text: str) -> str:
+    """Извлекаем последнее сообщение пользователя из истории"""
+    if "User:" in full_text:
+        parts = full_text.split("User:")
+        last_part = parts[-1].strip()
+        if "Assistant:" in last_part:
+            return last_part.split("Assistant:")[0].strip()
+        return last_part
+    return full_text
+
 def ask_openai(
-    user_text: str,
+    user_text: str,  # Это может быть prompt_with_memory или просто текст
     *,
     lang: str = "ru",
-    persona: str = "friendly",  # ✅ ВАЖНО: получаем persona из запроса!
+    persona: str = "friendly",
     style: str = "steps",
 ) -> str:
     """
@@ -68,53 +78,53 @@ def ask_openai(
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
 
-    # ✅ ИСПОЛЬЗУЕМ persona из параметров!
-    persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
-    style_desc = STYLES.get(style, STYLES["steps"])
+    # Извлекаем текущее сообщение пользователя
+    current_message = extract_user_message(user_text)
     
-    print(f"🔍 OpenAI использует характер: {persona}")  # Отладка
-    
-    # Определяем язык
-    lang_names = {
-        "ru": "русском",
-        "kk": "казахском",
-        "en": "английском",
-        "tr": "турецком",
-        "uk": "украинском",
-        "fr": "французском"
-    }
-    target_lang = lang_names.get(lang, "русском")
-    
-    # Формируем промпт с характером
-    system_prompt = f"""Ты AI ассистент. Говоришь на {target_lang} языке.
+    # Если передан prompt_with_memory, используем его как контекст
+    if "Conversation:" in user_text or "User:" in user_text:
+        # Передаём всю историю как контекст
+        messages = [
+            {"role": "system", "content": f"Ты {persona} собеседник. {STYLES.get(style)} Отвечай на {lang} языке."},
+            {"role": "user", "content": user_text}
+        ]
+    else:
+        # Простой запрос без истории
+        persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
+        style_desc = STYLES.get(style, STYLES["steps"])
+        
+        lang_names = {
+            "ru": "русском", "kk": "казахском", "en": "английском",
+            "tr": "турецком", "uk": "украинском", "fr": "французском"
+        }
+        target_lang = lang_names.get(lang, "русском")
+        
+        system_prompt = f"""Ты {persona} собеседник. Говоришь на {target_lang} языке.
 
-ТВОЙ ХАРАКТЕР (это ОЧЕНЬ ВАЖНО, следуй ему СТРОГО):
+ТВОЙ ХАРАКТЕР:
 {persona_desc}
 
 СТИЛЬ ОТВЕТА:
 {style_desc}
 
 ВАЖНО:
-- НЕ повторяй одни и те же слова и смайлики
-- Каждый ответ должен быть уникальным
-- Следуй своему характеру в КАЖДОМ ответе"""
+- Не повторяйся
+- Будь естественным"""
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_text}
+        ]
 
-    # Температура под каждый характер
     temps = {
-        "fun": 0.95,
-        "friendly": 0.85,
-        "smart": 0.7,
-        "strict": 0.4
+        "fun": 0.95, "friendly": 0.85, "smart": 0.7, "strict": 0.4
     }
     temperature = temps.get(persona, 0.7)
 
     try:
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_text},
-            ],
+            messages=messages,
             temperature=temperature,
             max_tokens=600,
             presence_penalty=0.6,
