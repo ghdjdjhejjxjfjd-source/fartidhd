@@ -8,8 +8,11 @@ from .db import (
     set_use_mini_app, get_use_mini_app,
     set_free, set_blocked,
     increment_messages, increment_images, add_stars_spent,
-    get_ai_mode, set_ai_mode  # ✅ ДОБАВЛЕНО
+    get_ai_mode, set_ai_mode
 )
+
+# Импортируем функции из memory.py
+from .memory import mem_get, mem_add, mem_clear, build_memory_prompt  # ✅ ДОБАВЛЕНО
 
 # Импортируем все маршруты
 from . import routes
@@ -28,6 +31,7 @@ __all__ = [
     'set_use_mini_app', 'get_use_mini_app',
     'set_free', 'set_blocked',
     'increment_messages', 'increment_images', 'add_stars_spent',
-    'get_ai_mode', 'set_ai_mode',  # ✅ ДОБАВЛЕНО
+    'get_ai_mode', 'set_ai_mode',
+    'mem_get', 'mem_add', 'mem_clear', 'build_memory_prompt',  # ✅ ДОБАВЛЕНО
     'send_log_to_group'
 ]
