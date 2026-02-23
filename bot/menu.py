@@ -1,6 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
-from api import get_use_mini_app, get_user_persona, get_user_lang
+from api import get_use_mini_app, get_user_persona, get_user_lang, get_ai_mode
 from payments import get_balance
 from .config import MINIAPP_URL, is_valid_https_url
 
@@ -27,7 +27,8 @@ TAB_TEXT = {
                "⚙️ ТЕКУЩЕЕ\n"
                "🎭 Характер: {persona}\n"
                "🌐 Язык: {lang}\n"
-               "🔄 Режим: {mode}\n"
+               "🔄 Режим работы: {mode}\n"
+               "⚡ Режим ИИ: {ai_mode}\n"
                "💳 FREE: {free}\n"
                "⛔ Блок: {blocked}",
     "status": "📌 Статус\n\nРаздел в разработке.",
@@ -40,6 +41,7 @@ TAB_TEXT = {
     "mode_settings": "🔄 Режим работы\n\nВыбери как пользоваться ботом:",
     "persona_settings": "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:",
     "lang_settings": "🌐 Язык\n\nВыбери язык интерфейса:",
+    "ai_mode_settings": "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый (0.3 ⭐)\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный (1 ⭐)\n• Умнее и лучше\n• Для сложных задач",
 }
 
 
@@ -59,13 +61,14 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
         [InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")],
         [InlineKeyboardButton("🔄 Режим работы", callback_data="tab:mode_settings")],
         [InlineKeyboardButton("🌐 Язык", callback_data="tab:lang_settings")],
+        [InlineKeyboardButton("⚡ Режим ИИ", callback_data="tab:ai_mode_settings")],  # НОВАЯ КНОПКА
         [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 
 def mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
-    """Клавиатура выбора режима"""
+    """Клавиатура выбора режима работы (Mini App / Встроенный)"""
     use_mini_app = get_use_mini_app(user_id)
     
     keyboard = []
@@ -75,6 +78,24 @@ def mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     else:
         keyboard.append([InlineKeyboardButton("📱 Mini App", callback_data="switch_to_miniapp")])
         keyboard.append([InlineKeyboardButton("✅ Встроенный", callback_data="ignore")])
+    
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
+    return InlineKeyboardMarkup(keyboard)
+
+
+def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
+    """Клавиатура выбора режима ИИ (Быстрый / Качественный)"""
+    current = get_ai_mode(user_id) or "fast"
+    
+    keyboard = []
+    
+    # Быстрый режим (0.3 ⭐)
+    if current == "fast":
+        keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый (0.3 ⭐)", callback_data="ignore")])
+        keyboard.append([InlineKeyboardButton("💎 Качественный (1 ⭐)", callback_data="set_ai_mode:quality")])
+    else:
+        keyboard.append([InlineKeyboardButton("🚀 Быстрый (0.3 ⭐)", callback_data="set_ai_mode:fast")])
+        keyboard.append([InlineKeyboardButton("✅ 💎 Качественный (1 ⭐)", callback_data="ignore")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
     return InlineKeyboardMarkup(keyboard)
