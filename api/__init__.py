@@ -7,7 +7,8 @@ from .db import (
     set_user_persona, get_user_persona,
     set_use_mini_app, get_use_mini_app,
     set_free, set_blocked,
-    increment_messages, increment_images, add_stars_spent  # ✅ ДОБАВЛЕНО
+    increment_messages, increment_images, add_stars_spent,
+    get_ai_mode, set_ai_mode  # ✅ ДОБАВЛЕНО
 )
 
 # Импортируем все маршруты
@@ -26,6 +27,7 @@ __all__ = [
     'set_user_persona', 'get_user_persona',
     'set_use_mini_app', 'get_use_mini_app',
     'set_free', 'set_blocked',
-    'increment_messages', 'increment_images', 'add_stars_spent',  # ✅ ДОБАВЛЕНО
+    'increment_messages', 'increment_images', 'add_stars_spent',
+    'get_ai_mode', 'set_ai_mode',  # ✅ ДОБАВЛЕНО
     'send_log_to_group'
 ]
