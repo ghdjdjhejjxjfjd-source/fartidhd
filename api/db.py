@@ -347,13 +347,13 @@ def increment_messages(user_id: int):
         cur.execute("""
             INSERT INTO access (user_id, total_messages, updated_at, registered_at)
             VALUES (?, 1, ?, ?)
-        """, (user_id_id:, now, now))
+        """, (user_id, now, now))
     
     con.commit()
     con.close()
 
 
-def increment_images(user int):
+def increment_images(user_id: int):
     """Увеличить счетчик картинок"""
     con = db_conn()
     cur = con.cursor()
