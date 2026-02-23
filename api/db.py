@@ -26,7 +26,8 @@ def db_init():
             registered_at TEXT,
             total_messages INTEGER DEFAULT 0,
             total_images INTEGER DEFAULT 0,
-            total_stars_spent INTEGER DEFAULT 0
+            total_stars_spent INTEGER DEFAULT 0,
+            ai_mode TEXT DEFAULT 'fast'
         )
         """
     )
@@ -63,7 +64,8 @@ def _ensure_columns():
         "registered_at TEXT",
         "total_messages INTEGER DEFAULT 0",
         "total_images INTEGER DEFAULT 0",
-        "total_stars_spent INTEGER DEFAULT 0"
+        "total_stars_spent INTEGER DEFAULT 0",
+        "ai_mode TEXT DEFAULT 'fast'"
     ]
     
     for col in columns_to_add:
@@ -100,8 +102,8 @@ def set_free(user_id: int, value: bool) -> None:
     else:
         cur.execute(
             """
-            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at)
-            VALUES (?, ?, 0, ?, ?)
+            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode)
+            VALUES (?, ?, 0, ?, ?, 'fast')
             """,
             (user_id, 1 if value else 0, now, now)
         )
@@ -126,8 +128,8 @@ def set_blocked(user_id: int, value: bool) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at)
-            VALUES (?, 0, ?, ?, ?)
+            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode)
+            VALUES (?, 0, ?, ?, ?, 'fast')
             """,
             (user_id, 1 if value else 0, now, now)
         )
@@ -142,7 +144,8 @@ def get_access(user_id: int) -> Dict[str, Any]:
         """
         SELECT is_free, is_blocked, updated_at, last_menu_chat_id, 
                last_menu_message_id, use_mini_app, persona, lang,
-               registered_at, total_messages, total_images, total_stars_spent
+               registered_at, total_messages, total_images, total_stars_spent,
+               ai_mode
         FROM access WHERE user_id=?
         """,
         (user_id,),
@@ -165,6 +168,7 @@ def get_access(user_id: int) -> Dict[str, Any]:
             "total_messages": 0,
             "total_images": 0,
             "total_stars_spent": 0,
+            "ai_mode": "fast",
         }
     
     return {
@@ -181,6 +185,7 @@ def get_access(user_id: int) -> Dict[str, Any]:
         "total_messages": row[9] or 0,
         "total_images": row[10] or 0,
         "total_stars_spent": row[11] or 0,
+        "ai_mode": row[12] if row[12] else "fast",
     }
 
 
@@ -202,8 +207,8 @@ def set_last_menu(user_id: int, chat_id: int, message_id: int) -> None:
         cur.execute(
             """
             INSERT INTO access (user_id, is_free, is_blocked, updated_at, 
-                               last_menu_chat_id, last_menu_message_id, registered_at)
-            VALUES (?, 0, 0, ?, ?, ?, ?)
+                               last_menu_chat_id, last_menu_message_id, registered_at, ai_mode)
+            VALUES (?, 0, 0, ?, ?, ?, ?, 'fast')
             """,
             (user_id, now, chat_id, message_id, now)
         )
@@ -255,8 +260,8 @@ def set_use_mini_app(user_id: int, value: bool) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, use_mini_app, updated_at, registered_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO access (user_id, use_mini_app, updated_at, registered_at, ai_mode)
+            VALUES (?, ?, ?, ?, 'fast')
             """,
             (user_id, 1 if value else 0, now, now)
         )
@@ -284,8 +289,8 @@ def set_user_persona(user_id: int, persona: str) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, persona, updated_at, registered_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO access (user_id, persona, updated_at, registered_at, ai_mode)
+            VALUES (?, ?, ?, ?, 'fast')
             """,
             (user_id, persona, now, now)
         )
@@ -313,10 +318,47 @@ def set_user_lang(user_id: int, lang: str) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, lang, updated_at, registered_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO access (user_id, lang, updated_at, registered_at, ai_mode)
+            VALUES (?, ?, ?, ?, 'fast')
             """,
             (user_id, lang, now, now)
+        )
+    con.commit()
+    con.close()
+
+
+# =========================
+# НОВЫЕ ФУНКЦИИ ДЛЯ РЕЖИМА ИИ
+# =========================
+def get_ai_mode(user_id: int) -> str:
+    """Получить режим ИИ (fast/quality)"""
+    a = get_access(user_id)
+    return a.get("ai_mode", "fast")
+
+
+def set_ai_mode(user_id: int, mode: str) -> None:
+    """Установить режим ИИ"""
+    if mode not in ["fast", "quality"]:
+        mode = "fast"
+    
+    con = db_conn()
+    cur = con.cursor()
+    cur.execute(
+        """
+        UPDATE access
+        SET ai_mode = ?, updated_at = ?
+        WHERE user_id = ?
+        """,
+        (mode, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
+    )
+    if cur.rowcount == 0:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute(
+            """
+            INSERT INTO access (user_id, ai_mode, updated_at, registered_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (user_id, mode, now, now)
         )
     con.commit()
     con.close()
@@ -345,8 +387,8 @@ def increment_messages(user_id: int):
         """, (now, user_id))
     else:
         cur.execute("""
-            INSERT INTO access (user_id, total_messages, updated_at, registered_at)
-            VALUES (?, 1, ?, ?)
+            INSERT INTO access (user_id, total_messages, updated_at, registered_at, ai_mode)
+            VALUES (?, 1, ?, ?, 'fast')
         """, (user_id, now, now))
     
     con.commit()
@@ -372,8 +414,8 @@ def increment_images(user_id: int):
         """, (now, user_id))
     else:
         cur.execute("""
-            INSERT INTO access (user_id, total_images, updated_at, registered_at)
-            VALUES (?, 1, ?, ?)
+            INSERT INTO access (user_id, total_images, updated_at, registered_at, ai_mode)
+            VALUES (?, 1, ?, ?, 'fast')
         """, (user_id, now, now))
     
     con.commit()
@@ -399,8 +441,8 @@ def add_stars_spent(user_id: int, amount: int):
         """, (amount, now, user_id))
     else:
         cur.execute("""
-            INSERT INTO access (user_id, total_stars_spent, updated_at, registered_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO access (user_id, total_stars_spent, updated_at, registered_at, ai_mode)
+            VALUES (?, ?, ?, ?, 'fast')
         """, (user_id, amount, now, now))
     
     con.commit()
