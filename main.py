@@ -2,7 +2,7 @@ import os
 import threading
 
 from api import api
-from bot import start_bot
+from bot_runner import start_bot
 
 # Railway / ENV
 PORT = int(os.getenv("PORT", "8000"))
