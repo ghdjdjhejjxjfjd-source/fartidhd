@@ -5,12 +5,11 @@ from .config import api, BOT_TOKEN, GROUP_ID, send_log_to_group
 from .db import (
     get_access, get_use_mini_app, set_use_mini_app, 
     get_user_persona, set_user_persona, get_user_lang, set_user_lang,
-    get_ai_mode, set_ai_mode,  # ✅ НОВЫЕ ИМПОРТЫ
+    get_ai_mode, set_ai_mode,
     increment_messages, increment_images, add_stars_spent
 )
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
-from groq_client import ask_groq
-from openai_client import ask_openai  # ✅ ИМПОРТ OPENAI
+from openai_client import ask_openai  # ✅ ТОЛЬКО OPENAI
 from payments import get_balance, spend_stars
 
 import requests
@@ -68,7 +67,7 @@ def api_user_stats(user_id: int):
         "persona": a.get("persona", "friendly"),
         "lang": a.get("lang", "ru"),
         "use_mini_app": a.get("use_mini_app", True),
-        "ai_mode": a.get("ai_mode", "fast")  # ✅ ДОБАВЛЕНО
+        "ai_mode": a.get("ai_mode", "fast")
     })
 
 
@@ -158,7 +157,7 @@ def api_chat():
         # Проверяем баланс звезд
         balance = get_balance(tg_user_id_int)
         
-        # ✅ ОПРЕДЕЛЯЕМ СТОИМОСТЬ В ЗАВИСИМОСТИ ОТ РЕЖИМА ИИ
+        # Определяем стоимость в зависимости от режима ИИ
         ai_mode = get_ai_mode(tg_user_id_int) or "fast"
         COST_PER_MESSAGE = 0.3 if ai_mode == "fast" else 1.0
         
@@ -171,7 +170,7 @@ def api_chat():
             spend_stars(tg_user_id_int, COST_PER_MESSAGE)
             add_stars_spent(tg_user_id_int, COST_PER_MESSAGE)
         
-        # ✅ Увеличиваем счетчик сообщений
+        # Увеличиваем счетчик сообщений
         increment_messages(tg_user_id_int)
             
     else:
@@ -195,28 +194,16 @@ def api_chat():
     mem_add(tg_user_id_int, "user", text)
 
     try:
-        # ✅ ВЫБИРАЕМ МОДЕЛЬ В ЗАВИСИМОСТИ ОТ РЕЖИМА
+        # ✅ ТОЛЬКО OPENAI (Groq отключен)
         ai_mode = get_ai_mode(tg_user_id_int) or "fast"
+        print(f"💎 Использую OpenAI для пользователя {tg_user_id_int} (режим: {ai_mode})")
         
-        if ai_mode == "fast":
-            # Используем Groq (быстрый, дешевый)
-            reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
-        else:
-            # Используем OpenAI (качественный, дорогой)
-            # Для OpenAI не нужен style, только текст
-            reply = ask_openai(text, lang=lang, persona=persona)
+        # Для OpenAI не нужен style, только текст
+        reply = ask_openai(text, lang=lang, persona=persona)
             
     except Exception as e:
-        send_log_to_group(f"❌ Ошибка /api/chat: {e}")
-        # Пробуем использовать запасной вариант
-        try:
-            if ai_mode == "quality":
-                # Если OpenAI упал, пробуем Groq
-                reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
-            else:
-                return jsonify({"error": str(e)}), 500
-        except:
-            return jsonify({"error": str(e)}), 500
+        send_log_to_group(f"❌ Ошибка OpenAI: {e}")
+        return jsonify({"error": str(e)}), 500
 
     # сохраняем ответ в память
     mem_add(tg_user_id_int, "assistant", reply)
@@ -229,7 +216,7 @@ def api_chat():
         f"🆔 {tg_user_id_int}\n"
         f"💬 {text}\n\n"
         f"🤖 {reply}\n"
-        f"⚡ Режим: {'Быстрый' if ai_mode == 'fast' else 'Качественный'}"
+        f"⚡ Режим: {'Быстрый' if ai_mode == 'fast' else 'Качественный'} (OpenAI)"
     )
 
     return jsonify({"reply": reply})
@@ -386,7 +373,7 @@ def api_set_user_lang():
 
 
 # =========================
-# ✅ НОВЫЕ ЭНДПОИНТЫ ДЛЯ РЕЖИМА ИИ
+# ЭНДПОИНТЫ ДЛЯ РЕЖИМА ИИ
 # =========================
 
 @api.get("/api/user/ai_mode/<int:user_id>")
