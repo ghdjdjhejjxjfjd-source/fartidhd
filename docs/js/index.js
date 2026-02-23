@@ -238,14 +238,14 @@ function updateUILanguage(lang){
     langBtnText.textContent = foundLang ? foundLang.label : "Русский (RU)";
   }
   
-  // Обновляем выделение в списке языков
-  paintSelectedLang(lang);
-  
   // Обновляем текст на кнопке темы
   const currentTheme = getSavedTheme();
   if (themeBtnText) {
     themeBtnText.textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
   }
+  
+  // Обновляем выделение в списке языков
+  paintSelectedLang(lang);
   
   // Обновляем список тем
   updateThemeList(lang);
@@ -377,7 +377,12 @@ function buildThemeList(){
     btn.type = "button";
     btn.className = "themeItem";
     btn.setAttribute("data-theme", theme.code);
-    btn.innerHTML = `<span class="theme-label">${theme.label.ru}</span><span class="check">✓</span>`;
+    
+    // Устанавливаем начальный язык (русский) при создании
+    const currentLang = getSavedLang();
+    const labelText = theme.label[currentLang] || theme.label.ru;
+    btn.innerHTML = `<span class="theme-label">${labelText}</span><span class="check">✓</span>`;
+    
     btn.addEventListener("click", () => setTheme(theme.code));
     themeList.appendChild(btn);
   });
