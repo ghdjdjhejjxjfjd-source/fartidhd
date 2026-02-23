@@ -9,7 +9,8 @@ from .db import (
     increment_messages, increment_images, add_stars_spent
 )
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
-from openai_client import ask_openai  # ✅ ТОЛЬКО OPENAI
+from groq_client import ask_groq  # ✅ Groq обратно
+from openai_client import ask_openai  # ✅ OpenAI
 from payments import get_balance, spend_stars
 
 import requests
@@ -194,16 +195,31 @@ def api_chat():
     mem_add(tg_user_id_int, "user", text)
 
     try:
-        # ✅ ТОЛЬКО OPENAI (Groq отключен)
+        # ✅ ВЫБОР МОДЕЛИ В ЗАВИСИМОСТИ ОТ РЕЖИМА
         ai_mode = get_ai_mode(tg_user_id_int) or "fast"
-        print(f"💎 Использую OpenAI для пользователя {tg_user_id_int} (режим: {ai_mode})")
         
-        # Для OpenAI не нужен style, только текст
-        reply = ask_openai(text, lang=lang, persona=persona)
+        if ai_mode == "fast":
+            # Быстрый режим - Groq (с историей)
+            print(f"🚀 Использую Groq для пользователя {tg_user_id_int}")
+            reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
+        else:
+            # Качественный режим - OpenAI (тоже с историей)
+            print(f"💎 Использую OpenAI для пользователя {tg_user_id_int}")
+            # Для OpenAI передаём тот же prompt_with_memory
+            reply = ask_openai(prompt_with_memory, lang=lang, persona=persona)
             
     except Exception as e:
-        send_log_to_group(f"❌ Ошибка OpenAI: {e}")
-        return jsonify({"error": str(e)}), 500
+        send_log_to_group(f"❌ Ошибка {ai_mode}: {e}")
+        # Если одна модель упала, пробуем другую
+        try:
+            if ai_mode == "fast":
+                # Если Groq упал, пробуем OpenAI
+                reply = ask_openai(prompt_with_memory, lang=lang, persona=persona)
+            else:
+                # Если OpenAI упал, пробуем Groq
+                reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
+        except:
+            return jsonify({"error": str(e)}), 500
 
     # сохраняем ответ в память
     mem_add(tg_user_id_int, "assistant", reply)
@@ -216,7 +232,7 @@ def api_chat():
         f"🆔 {tg_user_id_int}\n"
         f"💬 {text}\n\n"
         f"🤖 {reply}\n"
-        f"⚡ Режим: {'Быстрый' if ai_mode == 'fast' else 'Качественный'} (OpenAI)"
+        f"⚡ Режим: {'Быстрый (Groq)' if ai_mode == 'fast' else 'Качественный (OpenAI)'}"
     )
 
     return jsonify({"reply": reply})
