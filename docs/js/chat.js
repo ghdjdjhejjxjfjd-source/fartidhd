@@ -34,7 +34,7 @@ export function saveHistory(list){
   }catch(e){}
 }
 
-// ✅ Функция для принудительной очистки чата (вызывается извне)
+// Функция для принудительной очистки чата (вызывается извне)
 export function forceClearChat(controller) {
   if (controller) {
     controller.clearHistory(true);
@@ -44,6 +44,7 @@ export function forceClearChat(controller) {
 export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let history = loadHistory();
   let sending = false;
+  let currentUserId = tg?.initDataUnsafe?.user?.id || 0;
 
   const TYPING_ID = "typing-indicator";
 
@@ -251,7 +252,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.scrollTop = chatEl.scrollHeight;
   }
 
-  // ✅ ОБНОВЛЕННАЯ ФУНКЦИЯ clearHistory
+  // Функция очистки истории
   async function clearHistory(skipConfirm = false) {
     if (!skipConfirm) {
       const confirmed = await confirmClear();
@@ -268,6 +269,29 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.innerHTML = "";
     add("bot", helloText(), true);
     return true;
+  }
+
+  // ✅ Функция проверки смены режима
+  async function checkModeChange() {
+    if (!currentUserId) return;
+    
+    try {
+      const res = await fetch(`/api/user/ai_mode/${currentUserId}`);
+      const data = await res.json();
+      
+      const currentMode = localStorage.getItem("current_ai_mode");
+      if (currentMode && data.ai_mode !== currentMode) {
+        // Режим изменился! Очищаем чат
+        await clearHistory(true);
+        // Обновляем сохраненный режим
+        localStorage.setItem("current_ai_mode", data.ai_mode);
+        console.log("🔄 Режим изменился, чат очищен");
+      } else if (!currentMode) {
+        localStorage.setItem("current_ai_mode", data.ai_mode);
+      }
+    } catch (err) {
+      console.log("Mode check error:", err);
+    }
   }
 
   function buildPrompt(userText){
@@ -355,6 +379,9 @@ Response:`;
       
       await updateMenuBalance();
       
+      // ✅ ПРОВЕРЯЕМ РЕЖИМ ПОСЛЕ КАЖДОГО ОТВЕТА
+      await checkModeChange();
+      
     } catch(e){
       removeTyping();
       
@@ -397,6 +424,9 @@ Response:`;
     chatEl.addEventListener("pointerdown", () => {
       if (document.activeElement === inputEl) inputEl.blur();
     });
+    
+    // ✅ ПРОВЕРЯЕМ РЕЖИМ ПРИ ЗАГРУЗКЕ
+    setTimeout(checkModeChange, 1000);
   }
 
   async function confirmClear(){
@@ -406,28 +436,6 @@ Response:`;
     }
     return window.confirm(msg);
   }
-
-  // ✅ Периодическая проверка смены режима (каждые 2 секунды)
-  function checkModeChange() {
-    // Запрашиваем текущий режим с сервера
-    fetch(`/api/user/ai_mode/${tg?.initDataUnsafe?.user?.id || 0}`)
-      .then(res => res.json())
-      .then(data => {
-        const currentMode = localStorage.getItem("current_ai_mode");
-        if (currentMode && data.ai_mode !== currentMode) {
-          // Режим изменился! Очищаем чат
-          clearHistory(true);
-          // Обновляем сохраненный режим
-          localStorage.setItem("current_ai_mode", data.ai_mode);
-        } else if (!currentMode) {
-          localStorage.setItem("current_ai_mode", data.ai_mode);
-        }
-      })
-      .catch(err => console.log("Mode check error:", err));
-  }
-
-  // Запускаем проверку каждые 2 секунды
-  setInterval(checkModeChange, 2000);
 
   return {
     renderFromHistory,
