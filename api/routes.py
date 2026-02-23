@@ -199,17 +199,18 @@ def api_chat():
         ai_mode = get_ai_mode(tg_user_id_int) or "fast"
         
         if ai_mode == "fast":
-            # Быстрый режим - ТОЛЬКО Groq
-            print(f"🚀 Использую Groq для пользователя {tg_user_id_int}")
+            # Быстрый режим - ТОЛЬКО Groq (со стилем)
+            print(f"🚀 Использую Groq для пользователя {tg_user_id_int} (стиль: {style})")
             reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
             
             # Логируем успех
             send_log_to_group(f"✅ Groq ответил пользователю {tg_user_id_int}")
             
         else:
-            # Качественный режим - ТОЛЬКО OpenAI
-            print(f"💎 Использую OpenAI для пользователя {tg_user_id_int}")
-            reply = ask_openai(prompt_with_memory, lang=lang, persona=persona)
+            # Качественный режим - ТОЛЬКО OpenAI (ТОЖЕ со стилем!)
+            print(f"💎 Использую OpenAI для пользователя {tg_user_id_int} (стиль: {style})")
+            # Передаём стиль в OpenAI
+            reply = ask_openai(prompt_with_memory, lang=lang, persona=persona, style=style)
             
             # Логируем успех
             send_log_to_group(f"✅ OpenAI ответил пользователю {tg_user_id_int}")
