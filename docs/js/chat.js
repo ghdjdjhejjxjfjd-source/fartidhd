@@ -4,7 +4,6 @@ import { tg } from "./telegram.js";
 
 export const STORAGE_KEY = "chat_history_v1";
 
-// Функция для получения языка из URL
 function getLangFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   const lang = urlParams.get('lang');
@@ -33,7 +32,6 @@ export function saveHistory(list){
   }catch(e){}
 }
 
-// Функция для принудительной очистки чата (вызывается извне)
 export function forceClearChat(controller) {
   if (controller) {
     controller.clearHistory(true);
@@ -62,7 +60,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.scrollTop = chatEl.scrollHeight;
   }
 
-  // Функция для автоматического расширения textarea
   function autoResizeTextarea() {
     if (inputEl && inputEl.tagName === 'TEXTAREA') {
       inputEl.style.height = 'auto';
@@ -70,7 +67,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  // Функция для копирования текста
   async function copyText(text, button) {
     try {
       await navigator.clipboard.writeText(text);
@@ -94,7 +90,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  // Функция для шаринга
   function shareText(text) {
     const message = encodeURIComponent(`🤖 InstaGroq AI:\n\n${text}\n\n— via @InstaGroqBot`);
     
@@ -105,7 +100,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  // Функция создания кнопок для сообщения
   function createMessageActions(messageText, messageId) {
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'message-actions';
@@ -242,7 +236,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.scrollTop = chatEl.scrollHeight;
   }
 
-  // Функция очистки истории
   async function clearHistory(skipConfirm = false) {
     if (!skipConfirm) {
       const confirmed = await confirmClear();
@@ -261,7 +254,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return true;
   }
 
-  // ✅ ПРОСТАЯ ФУНКЦИЯ ПРОВЕРКИ СМЕНЫ РЕЖИМА (С ALERT)
   async function checkModeChange() {
     if (!currentUserId) return;
     
@@ -275,10 +267,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       
       const currentMode = localStorage.getItem("current_ai_mode");
       if (currentMode && data.ai_mode !== currentMode) {
-        // Режим изменился - очищаем чат
         await clearHistory(true);
         localStorage.setItem("current_ai_mode", data.ai_mode);
-        // Показываем уведомление
         alert("🔄 Режим изменен. Чат очищен.");
       } else if (!currentMode) {
         localStorage.setItem("current_ai_mode", data.ai_mode);
@@ -372,7 +362,6 @@ Response:`;
       
       await updateMenuBalance();
       
-      // Проверяем режим после каждого ответа
       await checkModeChange();
       
     } catch(e){
@@ -417,8 +406,10 @@ Response:`;
       if (document.activeElement === inputEl) inputEl.blur();
     });
     
-    // Проверяем режим при загрузке
     setTimeout(checkModeChange, 1000);
+    
+    // ✅ ПРОВЕРЯЕМ КАЖДЫЕ 3 СЕКУНДЫ
+    setInterval(checkModeChange, 3000);
   }
 
   async function confirmClear(){
