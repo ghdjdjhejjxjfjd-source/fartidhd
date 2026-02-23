@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 import base64
 
-from api import get_access
+from api import get_access, increment_images, add_stars_spent
 from payments import get_balance, spend_stars
 from stability_client import generate_image
 from .config import send_log_http
@@ -55,9 +55,13 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
             caption=f"🖼 Промпт: {prompt}"
         )
         
+        # ✅ Обновляем статистику
+        increment_images(uid)
+        
         # Списываем звезды если не FREE (2 звезды)
         if not a.get("is_free"):
             spend_stars(uid, 2)
+            add_stars_spent(uid, 2)  # Добавляем в потраченные звезды
             
         # Логируем
         send_log_http(f"🖼 Генерация: {uid} -> {prompt[:50]}...")
