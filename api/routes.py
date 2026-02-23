@@ -5,10 +5,12 @@ from .config import api, BOT_TOKEN, GROUP_ID, send_log_to_group
 from .db import (
     get_access, get_use_mini_app, set_use_mini_app, 
     get_user_persona, set_user_persona, get_user_lang, set_user_lang,
+    get_ai_mode, set_ai_mode,  # ✅ НОВЫЕ ИМПОРТЫ
     increment_messages, increment_images, add_stars_spent
 )
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
 from groq_client import ask_groq
+from openai_client import ask_openai  # ✅ ИМПОРТ OPENAI
 from payments import get_balance, spend_stars
 
 import requests
@@ -65,7 +67,8 @@ def api_user_stats(user_id: int):
         "is_blocked": a.get("is_blocked", False),
         "persona": a.get("persona", "friendly"),
         "lang": a.get("lang", "ru"),
-        "use_mini_app": a.get("use_mini_app", True)
+        "use_mini_app": a.get("use_mini_app", True),
+        "ai_mode": a.get("ai_mode", "fast")  # ✅ ДОБАВЛЕНО
     })
 
 
@@ -155,14 +158,16 @@ def api_chat():
         # Проверяем баланс звезд
         balance = get_balance(tg_user_id_int)
         
-        # Стоимость одного запроса - 1 звезда
-        COST_PER_MESSAGE = 1
+        # ✅ ОПРЕДЕЛЯЕМ СТОИМОСТЬ В ЗАВИСИМОСТИ ОТ РЕЖИМА ИИ
+        ai_mode = get_ai_mode(tg_user_id_int) or "fast"
+        COST_PER_MESSAGE = 0.3 if ai_mode == "fast" else 1.0
         
-        if balance < COST_PER_MESSAGE and not a["is_free"]:
-            return jsonify({"error": "insufficient_stars"}), 402
-            
-        # Если пользователь не FREE - списываем звезды
+        # Для FREE пользователей всё бесплатно
         if not a["is_free"]:
+            if balance < COST_PER_MESSAGE:
+                return jsonify({"error": "insufficient_stars"}), 402
+            
+            # Списываем звезды
             spend_stars(tg_user_id_int, COST_PER_MESSAGE)
             add_stars_spent(tg_user_id_int, COST_PER_MESSAGE)
         
@@ -190,10 +195,28 @@ def api_chat():
     mem_add(tg_user_id_int, "user", text)
 
     try:
-        reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
+        # ✅ ВЫБИРАЕМ МОДЕЛЬ В ЗАВИСИМОСТИ ОТ РЕЖИМА
+        ai_mode = get_ai_mode(tg_user_id_int) or "fast"
+        
+        if ai_mode == "fast":
+            # Используем Groq (быстрый, дешевый)
+            reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
+        else:
+            # Используем OpenAI (качественный, дорогой)
+            # Для OpenAI не нужен style, только текст
+            reply = ask_openai(text, lang=lang, persona=persona)
+            
     except Exception as e:
         send_log_to_group(f"❌ Ошибка /api/chat: {e}")
-        return jsonify({"error": str(e)}), 500
+        # Пробуем использовать запасной вариант
+        try:
+            if ai_mode == "quality":
+                # Если OpenAI упал, пробуем Groq
+                reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
+            else:
+                return jsonify({"error": str(e)}), 500
+        except:
+            return jsonify({"error": str(e)}), 500
 
     # сохраняем ответ в память
     mem_add(tg_user_id_int, "assistant", reply)
@@ -205,7 +228,8 @@ def api_chat():
         f"👤 {tg_first_name} (@{tg_username})\n"
         f"🆔 {tg_user_id_int}\n"
         f"💬 {text}\n\n"
-        f"🤖 {reply}"
+        f"🤖 {reply}\n"
+        f"⚡ Режим: {'Быстрый' if ai_mode == 'fast' else 'Качественный'}"
     )
 
     return jsonify({"reply": reply})
@@ -358,4 +382,39 @@ def api_set_user_lang():
         "success": True,
         "user_id": user_id,
         "lang": lang
+    })
+
+
+# =========================
+# ✅ НОВЫЕ ЭНДПОИНТЫ ДЛЯ РЕЖИМА ИИ
+# =========================
+
+@api.get("/api/user/ai_mode/<int:user_id>")
+def api_user_ai_mode(user_id: int):
+    """Получить режим ИИ пользователя"""
+    return jsonify({
+        "user_id": user_id,
+        "ai_mode": get_ai_mode(user_id)
+    })
+
+
+@api.post("/api/user/ai_mode")
+def api_set_user_ai_mode():
+    """Установить режим ИИ"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    ai_mode = data.get("ai_mode")
+    
+    if not user_id or not ai_mode:
+        return jsonify({"error": "user_id and ai_mode required"}), 400
+    
+    valid_modes = ["fast", "quality"]
+    if ai_mode not in valid_modes:
+        return jsonify({"error": f"ai_mode must be one of {valid_modes}"}), 400
+    
+    set_ai_mode(user_id, ai_mode)
+    return jsonify({
+        "success": True,
+        "user_id": user_id,
+        "ai_mode": ai_mode
     })
