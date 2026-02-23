@@ -11,7 +11,6 @@ function getLangFromUrl() {
   if (lang) {
     try {
       localStorage.setItem("miniapp_lang_v1", lang);
-      console.log("Language from URL saved:", lang);
     } catch(e) {}
     return lang;
   }
@@ -76,18 +75,15 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     try {
       await navigator.clipboard.writeText(text);
       
-      // Сохраняем оригинальный SVG
       const originalSvg = button.innerHTML;
       button.classList.add('copied');
       
-      // Меняем на галочку (SVG)
       button.innerHTML = `
         <svg viewBox="0 0 24 24" width="16" height="16">
           <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
         </svg>
       `;
       
-      // Через 2 секунды возвращаем обратно
       setTimeout(() => {
         button.classList.remove('copied');
         button.innerHTML = originalSvg;
@@ -103,21 +99,18 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const message = encodeURIComponent(`🤖 InstaGroq AI:\n\n${text}\n\n— via @InstaGroqBot`);
     
     if (tg && tg.openTelegramLink) {
-      // Если в Telegram WebApp
       tg.openTelegramLink(`https://t.me/share/url?url=&text=${message}`);
     } else {
-      // В браузере
       window.open(`https://t.me/share/url?url=&text=${message}`, '_blank');
     }
   }
 
-  // Функция создания кнопок для сообщения (SVG иконки)
+  // Функция создания кнопок для сообщения
   function createMessageActions(messageText, messageId) {
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'message-actions';
     actionsDiv.setAttribute('data-message-id', messageId);
     
-    // Кнопка копировать (SVG иконка)
     const copyBtn = document.createElement('button');
     copyBtn.className = 'action-btn copy-btn';
     copyBtn.title = 'Копировать текст';
@@ -131,7 +124,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       copyText(messageText, copyBtn);
     };
     
-    // Кнопка поделиться (SVG иконка)
     const shareBtn = document.createElement('button');
     shareBtn.className = 'action-btn share-btn';
     shareBtn.title = 'Поделиться';
@@ -161,7 +153,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     
     wrapper.appendChild(messageDiv);
     
-    // Добавляем кнопки только для сообщений бота
     if (type === 'bot') {
       const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       wrapper.setAttribute('data-message-id', messageId);
@@ -169,7 +160,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       const actions = createMessageActions(text, messageId);
       wrapper.appendChild(actions);
       
-      // Показываем кнопки при наведении/тапе
       let hideTimeout;
       wrapper.addEventListener('mouseenter', () => {
         clearTimeout(hideTimeout);
@@ -271,33 +261,25 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return true;
   }
 
-  // ✅ Функция проверки смены режима (с ПОЛНЫМ URL)
+  // ✅ ПРОСТАЯ ФУНКЦИЯ ПРОВЕРКИ СМЕНЫ РЕЖИМА (С ALERT)
   async function checkModeChange() {
-    if (!currentUserId) {
-      console.log("No user ID, skipping mode check");
-      return;
-    }
+    if (!currentUserId) return;
     
     try {
-      // Используем ПОЛНЫЙ URL вместо относительного
       const API_BASE = "https://fayrat-production.up.railway.app";
       const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
       
-      if (!res.ok) {
-        console.log("Mode check failed:", res.status);
-        return;
-      }
+      if (!res.ok) return;
       
       const data = await res.json();
-      console.log("Current mode from server:", data.ai_mode);
       
       const currentMode = localStorage.getItem("current_ai_mode");
       if (currentMode && data.ai_mode !== currentMode) {
-        // Режим изменился! Очищаем чат
-        console.log("🔄 Mode changed from", currentMode, "to", data.ai_mode);
+        // Режим изменился - очищаем чат
         await clearHistory(true);
-        // Обновляем сохраненный режим
         localStorage.setItem("current_ai_mode", data.ai_mode);
+        // Показываем уведомление
+        alert("🔄 Режим изменен. Чат очищен.");
       } else if (!currentMode) {
         localStorage.setItem("current_ai_mode", data.ai_mode);
       }
@@ -370,7 +352,6 @@ Response:`;
     add("user", t, true);
     inputEl.value = "";
     
-    // Сбрасываем высоту textarea
     if (inputEl.tagName === 'TEXTAREA') {
       inputEl.style.height = 'auto';
     }
@@ -391,7 +372,7 @@ Response:`;
       
       await updateMenuBalance();
       
-      // ✅ ПРОВЕРЯЕМ РЕЖИМ ПОСЛЕ КАЖДОГО ОТВЕТА
+      // Проверяем режим после каждого ответа
       await checkModeChange();
       
     } catch(e){
@@ -421,7 +402,6 @@ Response:`;
   function bindUI(){
     sendBtnEl.addEventListener("click", send);
     
-    // Автоматическое расширение textarea
     if (inputEl.tagName === 'TEXTAREA') {
       inputEl.addEventListener('input', autoResizeTextarea);
     }
@@ -437,7 +417,7 @@ Response:`;
       if (document.activeElement === inputEl) inputEl.blur();
     });
     
-    // ✅ ПРОВЕРЯЕМ РЕЖИМ ПРИ ЗАГРУЗКЕ
+    // Проверяем режим при загрузке
     setTimeout(checkModeChange, 1000);
   }
 
