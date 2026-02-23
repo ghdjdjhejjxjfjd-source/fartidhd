@@ -9,7 +9,7 @@ from payments import get_balance, get_package
 
 from .config import send_log_http, build_start_log
 from .menu import main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, persona_settings_kb, lang_settings_kb, TAB_TEXT
-from .settings import handle_set_lang, handle_set_persona, handle_switch_mode
+from .settings import handle_set_lang, handle_set_persona, handle_switch_mode, handle_set_ai_mode  # ✅ ДОБАВЛЕНО
 from .chat import inline_chat_start
 from .image import inline_image_start
 from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, edit_to_tab, send_block_notice
@@ -82,6 +82,12 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_set_persona(update, context, query, uid, persona)
         return
     
+    # ✅ НОВЫЙ ОБРАБОТЧИК ДЛЯ РЕЖИМА ИИ
+    if data.startswith("set_ai_mode:"):
+        ai_mode = data.split("set_ai_mode:", 1)[1].strip()
+        await handle_set_ai_mode(update, context, query, uid, ai_mode)
+        return
+    
     if data == "switch_to_miniapp":
         await handle_switch_mode(update, context, query, uid, "miniapp")
         return
@@ -116,12 +122,14 @@ async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id
 async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     """Показать профиль пользователя"""
     from datetime import datetime
+    from api import get_ai_mode  # ✅ ДОБАВЛЕНО
     
     a = get_access(user_id)
     balance = get_balance(user_id)
     persona = get_user_persona(user_id)
     lang = get_user_lang(user_id)
     use_mini_app = get_use_mini_app(user_id)
+    ai_mode = get_ai_mode(user_id)  # ✅ ПОЛУЧАЕМ РЕЖИМ ИИ
     
     # Словарь для названий характеров
     persona_names = {
@@ -139,6 +147,12 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         "tr": "🇹🇷 Türkçe",
         "uk": "🇺🇦 Українська",
         "fr": "🇫🇷 Français"
+    }
+    
+    # Словарь для режимов ИИ
+    ai_mode_names = {
+        "fast": "🚀 Быстрый (0.3 ⭐)",
+        "quality": "💎 Качественный (1 ⭐)"
     }
     
     # Форматируем дату регистрации
@@ -161,6 +175,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         persona=persona_names.get(persona, persona),
         lang=lang_names.get(lang, lang),
         mode="📱 Mini App" if use_mini_app else "💬 Встроенный",
+        ai_mode=ai_mode_names.get(ai_mode, ai_mode),  # ✅ ДОБАВЛЕНО
         free="✅ Да" if a.get("is_free") else "❌ Нет",
         blocked="✅ Нет" if not a.get("is_blocked") else "❌ Да"
     )
