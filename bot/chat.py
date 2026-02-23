@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from api import get_access, get_user_persona, get_user_lang
+from api import get_access, get_user_persona, get_user_lang, increment_messages, add_stars_spent
 from payments import get_balance, spend_stars
 from groq_client import ask_groq
 from .config import send_log_http
@@ -51,9 +51,13 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         reply = ask_groq(text, lang=lang, persona=persona)
         await update.message.reply_text(reply)
         
+        # ✅ Обновляем статистику
+        increment_messages(uid)
+        
         # Списываем звезду если не FREE
         if not a.get("is_free"):
             spend_stars(uid, 1)
+            add_stars_spent(uid, 1)  # Добавляем в потраченные звезды
             
         # Логируем
         send_log_http(f"💬 Чат: {uid} -> {text[:50]}...")
