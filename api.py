@@ -54,7 +54,8 @@ def db_init():
             last_menu_chat_id INTEGER,
             last_menu_message_id INTEGER,
             use_mini_app INTEGER DEFAULT 1,
-            persona TEXT DEFAULT 'friendly'
+            persona TEXT DEFAULT 'friendly',
+            lang TEXT DEFAULT 'ru'
         )
         """
     )
@@ -95,6 +96,10 @@ def _ensure_columns():
         pass
     try:
         cur.execute("ALTER TABLE access ADD COLUMN persona TEXT DEFAULT 'friendly'")
+    except Exception:
+        pass
+    try:
+        cur.execute("ALTER TABLE access ADD COLUMN lang TEXT DEFAULT 'ru'")
     except Exception:
         pass
     con.commit()
@@ -145,7 +150,7 @@ def get_access(user_id: int) -> Dict[str, Any]:
     con = db_conn()
     cur = con.cursor()
     cur.execute(
-        "SELECT is_free, is_blocked, updated_at, last_menu_chat_id, last_menu_message_id, use_mini_app, persona FROM access WHERE user_id=?",
+        "SELECT is_free, is_blocked, updated_at, last_menu_chat_id, last_menu_message_id, use_mini_app, persona, lang FROM access WHERE user_id=?",
         (user_id,),
     )
     row = cur.fetchone()
@@ -160,6 +165,7 @@ def get_access(user_id: int) -> Dict[str, Any]:
             "last_menu_message_id": None,
             "use_mini_app": True,
             "persona": "friendly",
+            "lang": "ru",
         }
     return {
         "user_id": user_id,
@@ -170,6 +176,7 @@ def get_access(user_id: int) -> Dict[str, Any]:
         "last_menu_message_id": row[4],
         "use_mini_app": bool(row[5]) if row[5] is not None else True,
         "persona": row[6] if row[6] else "friendly",
+        "lang": row[7] if row[7] else "ru",
     }
 
 
@@ -221,7 +228,7 @@ def get_last_menu(user_id: int) -> Tuple[Optional[int], Optional[int]]:
 
 
 # =========================
-# ✅ НОВЫЕ ФУНКЦИИ ДЛЯ РЕЖИМА И ХАРАКТЕРА
+# ✅ НОВЫЕ ФУНКЦИИ ДЛЯ РЕЖИМА, ХАРАКТЕРА И ЯЗЫКА
 # =========================
 
 def get_use_mini_app(user_id: int) -> bool:
@@ -286,6 +293,36 @@ def set_user_persona(user_id: int, persona: str) -> None:
     con.close()
 
 
+def get_user_lang(user_id: int) -> str:
+    """Получить язык пользователя"""
+    a = get_access(user_id)
+    return a.get("lang", "ru")
+
+
+def set_user_lang(user_id: int, lang: str) -> None:
+    """Установить язык пользователя"""
+    con = db_conn()
+    cur = con.cursor()
+    cur.execute(
+        """
+        UPDATE access
+        SET lang = ?, updated_at = ?
+        WHERE user_id = ?
+        """,
+        (lang, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
+    )
+    if cur.rowcount == 0:
+        cur.execute(
+            """
+            INSERT INTO access (user_id, lang, updated_at)
+            VALUES (?, ?, ?)
+            """,
+            (user_id, lang, datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        )
+    con.commit()
+    con.close()
+
+
 # =========================
 # LOG (как было)
 # =========================
@@ -325,7 +362,7 @@ def extract_last_user_message(raw: str) -> str:
 
 
 # =========================
-# ✅ MEMORY (новое)
+# ✅ MEMORY
 # =========================
 def mem_add(user_id: int, role: str, text: str) -> None:
     con = db_conn()
@@ -475,7 +512,7 @@ def api_chat():
     else:
         return jsonify({"error": "payment_required"}), 402
 
-    lang = data.get("lang") or "ru"
+    lang = data.get("lang") or get_user_lang(tg_user_id_int) or "ru"
     style = data.get("style") or "steps"
     
     # ✅ Используем сохраненный характер пользователя
@@ -557,7 +594,7 @@ def api_stars_add_test():
 
 
 # =========================
-# ✅ NEW ENDPOINT FOR SPENDING STARS (для покупки тем)
+# ✅ SPEND STARS ENDPOINT
 # =========================
 @api.post("/api/stars/spend")
 def api_stars_spend():
@@ -588,7 +625,7 @@ def api_stars_spend():
 
 
 # =========================
-# ✅ NEW ENDPOINT FOR SENDING PHOTOS TO TELEGRAM
+# ✅ SEND PHOTO TO TELEGRAM
 # =========================
 @api.post("/api/send-photo")
 def api_send_photo():
@@ -800,7 +837,7 @@ def api_image():
 
 
 # =========================
-# ✅ НОВЫЕ ЭНДПОИНТЫ ДЛЯ РЕЖИМА И ХАРАКТЕРА
+# ✅ НОВЫЕ ЭНДПОИНТЫ ДЛЯ РЕЖИМА, ХАРАКТЕРА И ЯЗЫКА
 # =========================
 
 @api.get("/api/user/mode/<int:user_id>")
@@ -858,4 +895,35 @@ def api_set_user_persona():
         "success": True,
         "user_id": user_id,
         "persona": persona
+    })
+
+
+@api.get("/api/user/lang/<int:user_id>")
+def api_user_lang(user_id: int):
+    """Получить язык пользователя"""
+    return jsonify({
+        "user_id": user_id,
+        "lang": get_user_lang(user_id)
+    })
+
+
+@api.post("/api/user/lang")
+def api_set_user_lang():
+    """Установить язык пользователя"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    lang = data.get("lang")
+    
+    if not user_id or not lang:
+        return jsonify({"error": "user_id and lang required"}), 400
+    
+    valid_langs = ["ru", "en", "kk", "tr", "uk", "fr"]
+    if lang not in valid_langs:
+        return jsonify({"error": f"lang must be one of {valid_langs}"}), 400
+    
+    set_user_lang(user_id, lang)
+    return jsonify({
+        "success": True,
+        "user_id": user_id,
+        "lang": lang
     })
