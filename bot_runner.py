@@ -2,7 +2,8 @@ import os
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from telegram import Update
 
-from bot_handlers import start, on_button, handle_message
+# ИЗМЕНЕНО: bot_handlers → bot.handlers
+from bot.handlers import start, on_button, handle_message
 from bot_admin import (
     cmd_whoami,
     cmd_free,
@@ -75,7 +76,7 @@ def start_bot():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(on_button))
     
-    # ✅ Новый обработчик для текстовых сообщений (чат в Telegram)
+    # Обработчик для текстовых сообщений
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # admin commands (работают в группе)
