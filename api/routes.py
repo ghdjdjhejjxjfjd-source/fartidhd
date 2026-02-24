@@ -5,9 +5,10 @@ from .config import api, BOT_TOKEN, GROUP_ID, send_log_to_group
 from .db import (
     get_access, get_use_mini_app, set_use_mini_app, 
     get_user_persona, set_user_persona, get_user_lang, set_user_lang,
+    get_user_style, set_user_style,  # ✅ НОВЫЕ ФУНКЦИИ
     get_ai_mode, set_ai_mode,
     increment_messages, increment_images, add_stars_spent,
-    get_user_limits, increment_groq_persona, increment_groq_style, increment_openai_style  # ✅ НОВЫЕ ИМПОРТЫ
+    get_user_limits, increment_groq_persona, increment_groq_style, increment_openai_style
 )
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
 from groq_client import ask_groq
@@ -67,6 +68,7 @@ def api_user_stats(user_id: int):
         "is_free": a.get("is_free", False),
         "is_blocked": a.get("is_blocked", False),
         "persona": a.get("persona", "friendly"),
+        "style": a.get("style", "steps"),  # ✅ ДОБАВЛЕНО
         "lang": a.get("lang", "ru"),
         "use_mini_app": a.get("use_mini_app", True),
         "ai_mode": a.get("ai_mode", "fast")
@@ -179,7 +181,7 @@ def api_chat():
         return jsonify({"error": "payment_required"}), 402
 
     lang = data.get("lang") or get_user_lang(tg_user_id_int) or "ru"
-    style = data.get("style") or "steps"
+    style = data.get("style") or get_user_style(tg_user_id_int) or "steps"  # ✅ БЕРЁМ ИЗ БД
     
     # Используем сохраненный характер пользователя
     persona = data.get("persona")
@@ -376,6 +378,37 @@ def api_set_user_persona():
     })
 
 
+@api.get("/api/user/style/<int:user_id>")
+def api_user_style(user_id: int):
+    """Получить стиль пользователя"""
+    return jsonify({
+        "user_id": user_id,
+        "style": get_user_style(user_id)
+    })
+
+
+@api.post("/api/user/style")
+def api_set_user_style():
+    """Установить стиль пользователя"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    style = data.get("style")
+    
+    if not user_id or not style:
+        return jsonify({"error": "user_id and style required"}), 400
+    
+    valid_styles = ["short", "steps", "detail"]
+    if style not in valid_styles:
+        return jsonify({"error": f"style must be one of {valid_styles}"}), 400
+    
+    set_user_style(user_id, style)
+    return jsonify({
+        "success": True,
+        "user_id": user_id,
+        "style": style
+    })
+
+
 @api.get("/api/user/lang/<int:user_id>")
 def api_user_lang(user_id: int):
     return jsonify({
@@ -454,8 +487,8 @@ def api_style_change():
                 "message": f"Лимит изменений стиля на сегодня исчерпан ({limits['openai_style']}/7)"
             }), 429
     
-    # Здесь можно сохранить стиль в localStorage или БД
-    # Пока просто возвращаем успех
+    # ✅ СОХРАНЯЕМ СТИЛЬ В БД
+    set_user_style(user_id, style)
     
     return jsonify({
         "success": True,
