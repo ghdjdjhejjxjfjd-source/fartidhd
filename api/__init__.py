@@ -18,11 +18,11 @@ from .db import (
 # Импортируем функции из memory.py
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
 
-# Импортируем функции из payments_db.py
+# Импортируем функции из payments_db.py и star_packages.py
 from .payments_db import (
-    get_balance, add_stars, spend_stars, get_packages, get_package,
-    get_top_users, reset_balance
+    get_balance, add_stars, spend_stars, get_top_users, reset_balance
 )
+from .star_packages import get_packages, get_package, STAR_PACKAGES
 
 # Импортируем все маршруты
 from . import routes
@@ -48,6 +48,6 @@ __all__ = [
     'increment_groq_persona', 'increment_groq_style', 'increment_openai_style',
     'mem_get', 'mem_add', 'mem_clear', 'build_memory_prompt',
     'get_balance', 'add_stars', 'spend_stars', 'get_packages', 'get_package',
-    'get_top_users', 'reset_balance',
+    'get_top_users', 'reset_balance', 'STAR_PACKAGES',
     'send_log_to_group'
 ]
