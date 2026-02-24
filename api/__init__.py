@@ -10,17 +10,13 @@ from .db import (
     set_free, set_blocked,
     increment_messages, increment_images, add_stars_spent,
     get_ai_mode, set_ai_mode,
-    get_ai_mode_changes  # ✅ ДОБАВЛЕНО
+    get_ai_mode_changes,
+    get_user_limits,
+    increment_groq_persona, increment_groq_style, increment_openai_style
 )
 
 # Импортируем функции из memory.py
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
-
-# Импортируем функции из limits.py (если есть отдельно)
-from .db import (
-    get_user_limits,
-    increment_groq_persona, increment_groq_style, increment_openai_style
-)
 
 # Импортируем все маршруты
 from . import routes
@@ -41,7 +37,7 @@ __all__ = [
     'set_free', 'set_blocked',
     'increment_messages', 'increment_images', 'add_stars_spent',
     'get_ai_mode', 'set_ai_mode',
-    'get_ai_mode_changes',  # ✅ ДОБАВЛЕНО
+    'get_ai_mode_changes',
     'get_user_limits',
     'increment_groq_persona', 'increment_groq_style', 'increment_openai_style',
     'mem_get', 'mem_add', 'mem_clear', 'build_memory_prompt',
