@@ -43,6 +43,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let sending = false;
   let currentUserId = tg?.initDataUnsafe?.user?.id || 0;
   let isReloading = false;
+  let reloadTimer = null;
 
   const TYPING_ID = "typing-indicator";
 
@@ -314,7 +315,18 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       
       const currentMode = localStorage.getItem("current_ai_mode");
       if (currentMode && data.ai_mode !== currentMode) {
-        // Режим изменился
+        // Режим изменился - отменяем все ожидающие отправки
+        if (sending) {
+          // Если сейчас отправляется сообщение, ждём его завершения
+          setTimeout(() => checkModeChange(), 500);
+          return;
+        }
+        
+        // Очищаем предыдущий таймер если был
+        if (reloadTimer) {
+          clearTimeout(reloadTimer);
+        }
+        
         isReloading = true;
         
         // Сначала очищаем localStorage
@@ -328,17 +340,15 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         
         alert("🔄 Режим изменен. Страница обновится...");
         
-        // Перезагружаем страницу
-        setTimeout(() => {
+        // Перезагружаем страницу через 1.5 секунды
+        reloadTimer = setTimeout(() => {
           window.location.reload();
         }, 1500);
         
       } else if (!currentMode) {
         localStorage.setItem("current_ai_mode", data.ai_mode);
-        // Обновляем блокировку при первом запуске
         await updatePersonaLock();
       } else {
-        // Обновляем блокировку при каждом запуске
         await updatePersonaLock();
       }
     } catch (err) {
@@ -402,7 +412,7 @@ Response:`;
 
   async function send(){
     const t = inputEl.value.trim();
-    if(!t || sending) return;
+    if(!t || sending || isReloading) return;  // ✅ Не отправляем если перезагрузка
 
     sending = true;
     sendBtnEl.disabled = true;
@@ -430,7 +440,10 @@ Response:`;
       
       await updateMenuBalance();
       
-      await checkModeChange();
+      // Проверяем режим после отправки, но не если уже перезагружаемся
+      if (!isReloading) {
+        await checkModeChange();
+      }
       
     } catch(e){
       removeTyping();
