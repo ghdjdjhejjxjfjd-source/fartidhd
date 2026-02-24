@@ -58,9 +58,23 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let tempPersona = null;
   let hasUnsavedChanges = false;
   let currentAiMode = 'fast';
-  let isLoadingLimits = false;  // ✅ флаг загрузки
+  let isLoadingLimits = false;
 
   const TYPING_ID = "typing-indicator";
+
+  // ✅ Функция приветствия
+  function helloText(){
+    const lang = getLang();
+    const hellos = {
+      "ru": "👋 Привет! Напиши что-нибудь — я на связи.",
+      "kk": "👋 Сәлем! Бірдеңе жаз — мен осындамын.",
+      "en": "👋 Hi! Write something — I'm here.",
+      "tr": "👋 Merhaba! Bir şey yaz — buradayım.",
+      "uk": "👋 Привіт! Напиши щось — я на зв'язку.",
+      "fr": "👋 Salut ! Écris quelque chose — je suis là."
+    };
+    return hellos[lang] || hellos["ru"];
+  }
 
   function removeTyping(){
     const el = document.getElementById(TYPING_ID);
@@ -227,28 +241,16 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return localStorage.getItem("ai_style") || "steps";
   }
 
-  function helloText(){
-    const lang = getLang();
-    const hellos = {
-      "ru": "👋 Привет! Напиши что-нибудь — я на связи.",
-      "kk": "👋 Сәлем! Бірдеңе жаз — мен осындамын.",
-      "en": "👋 Hi! Write something — I'm here.",
-      "tr": "👋 Merhaba! Bir şey yaz — buradayım.",
-      "uk": "👋 Привіт! Напиши щось — я на зв'язку.",
-      "fr": "👋 Salut ! Écris quelque chose — je suis là."
-    };
-    return hellos[lang] || hellos["ru"];
-  }
-
+  // ✅ Функция отрисовки истории
   function renderFromHistory(){
     chatEl.innerHTML = "";
-    if (!history.length){
+    if (!history || history.length === 0){
       add("bot", helloText(), true);
-      return;
-    }
-    for (const m of history){
-      if (!m || !m.text) continue;
-      add(m.role === "user" ? "user" : "bot", m.text, false);
+    } else {
+      for (const m of history){
+        if (!m || !m.text) continue;
+        add(m.role === "user" ? "user" : "bot", m.text, false);
+      }
     }
     chatEl.scrollTop = chatEl.scrollHeight;
   }
@@ -286,7 +288,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       if (!res.ok) return;
       
       const data = await res.json();
-      console.log("Limits data:", data);
       
       currentAiMode = data.ai_mode;
       currentLimits = {
@@ -354,8 +355,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (!saveBtn) return;
     
-    // Если идет загрузка - не показываем мигание
     if (isLoadingLimits) {
+      saveBtn.disabled = true;
       return;
     }
     
@@ -393,26 +394,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const originalStyle = getStyle();
     
     if (newStyle === originalStyle && !tempStyle) {
-      return;
-    }
-    
-    tempStyle = newStyle;
-    hasUnsavedChanges = true;
-    
-    // Временно показываем уменьшенный счетчик
-    const styleLimitSpan = document.getElementById('style-limit');
-    if (styleLimitSpan) {
-      let used, max;
-      if (currentAiMode === 'fast') {
-        used = currentLimits.groq_style + (tempStyle !== getStyle() ? 1 : 0);
-        max = currentLimits.groq_style_max;
-      } else {
-        used = currentLimits.openai_style + (tempStyle !== getStyle() ? 1 : 0);
-        max = currentLimits.openai_style_max;
-      }
-      const remaining = max - used;
-      styleLimitSpan.textContent = `📊 Останется после сохранения: ${remaining}/${max}`;
-      styleLimitSpan.style.color = remaining < 0 ? '#ff4444' : '#ffaa00';
+      tempStyle = null;
+      hasUnsavedChanges = false;
+    } else {
+      tempStyle = newStyle;
+      hasUnsavedChanges = true;
     }
     
     updateSaveButton();
@@ -421,29 +407,20 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
   // ✅ Обработчик изменения характера (временное)
   function handlePersonaChange(newPersona) {
-    const originalPersona = getPersona();
-    
-    if (newPersona === originalPersona && !tempPersona) {
-      return;
-    }
-    
     if (currentAiMode !== 'fast') {
       alert('Изменение характера недоступно в этом режиме');
       document.getElementById('personaSel').value = getPersona();
       return;
     }
     
-    tempPersona = newPersona;
-    hasUnsavedChanges = true;
+    const originalPersona = getPersona();
     
-    // Временно показываем уменьшенный счетчик
-    const personaLimitSpan = document.getElementById('persona-limit');
-    if (personaLimitSpan) {
-      const used = currentLimits.groq_persona + (tempPersona !== getPersona() ? 1 : 0);
-      const max = currentLimits.groq_persona_max;
-      const remaining = max - used;
-      personaLimitSpan.textContent = `📊 Останется после сохранения: ${remaining}/${max}`;
-      personaLimitSpan.style.color = remaining < 0 ? '#ff4444' : '#ffaa00';
+    if (newPersona === originalPersona && !tempPersona) {
+      tempPersona = null;
+      hasUnsavedChanges = false;
+    } else {
+      tempPersona = newPersona;
+      hasUnsavedChanges = true;
     }
     
     updateSaveButton();
@@ -483,7 +460,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       hasUnsavedChanges = false;
       
       await fetchLimits();
-      alert('✅ Настройки сохранены');
       closeSettings();
     } else {
       alert('❌ Не удалось сохранить некоторые настройки');
@@ -506,7 +482,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     tempPersona = null;
     hasUnsavedChanges = false;
     
-    updateLimitsDisplay();
     updateSaveButton();
     updateUnsavedIndicator();
     
@@ -837,7 +812,6 @@ Response:`;
       }
     });
     
-    // Загружаем лимиты при старте, но не сразу
     setTimeout(fetchLimits, 2000);
   }
 
