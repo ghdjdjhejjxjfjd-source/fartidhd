@@ -6,7 +6,8 @@ from .db import (
     get_access, get_use_mini_app, set_use_mini_app, 
     get_user_persona, set_user_persona, get_user_lang, set_user_lang,
     get_ai_mode, set_ai_mode,
-    increment_messages, increment_images, add_stars_spent
+    increment_messages, increment_images, add_stars_spent,
+    get_user_limits, increment_groq_persona, increment_groq_style, increment_openai_style  # ✅ НОВЫЕ ИМПОРТЫ
 )
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
 from groq_client import ask_groq
@@ -361,6 +362,12 @@ def api_set_user_persona():
     if persona not in valid_personas:
         return jsonify({"error": f"persona must be one of {valid_personas}"}), 400
     
+    # ✅ Проверяем лимит для Groq
+    ai_mode = get_ai_mode(user_id)
+    if ai_mode == "fast":
+        if not increment_groq_persona(user_id):
+            return jsonify({"error": "limit_exceeded", "message": "Лимит изменений характера на сегодня исчерпан (5/5)"}), 429
+    
     set_user_persona(user_id, persona)
     return jsonify({
         "success": True,
@@ -395,6 +402,65 @@ def api_set_user_lang():
         "success": True,
         "user_id": user_id,
         "lang": lang
+    })
+
+
+# =========================
+# ЭНДПОИНТЫ ДЛЯ ЛИМИТОВ
+# =========================
+
+@api.get("/api/user/limits/<int:user_id>")
+def api_user_limits(user_id: int):
+    """Получить текущие лимиты пользователя"""
+    limits = get_user_limits(user_id)
+    ai_mode = get_ai_mode(user_id)
+    
+    return jsonify({
+        "user_id": user_id,
+        "ai_mode": ai_mode,
+        "limits": limits
+    })
+
+
+@api.post("/api/user/style/change")
+def api_style_change():
+    """Изменить стиль ответа с проверкой лимита"""
+    data = request.get_json() or {}
+    user_id = data.get("user_id")
+    style = data.get("style")
+    
+    if not user_id or not style:
+        return jsonify({"error": "user_id and style required"}), 400
+    
+    valid_styles = ["short", "steps", "detail"]
+    if style not in valid_styles:
+        return jsonify({"error": f"style must be one of {valid_styles}"}), 400
+    
+    # Проверяем лимит в зависимости от режима
+    ai_mode = get_ai_mode(user_id)
+    
+    if ai_mode == "fast":
+        if not increment_groq_style(user_id):
+            limits = get_user_limits(user_id)
+            return jsonify({
+                "error": "limit_exceeded",
+                "message": f"Лимит изменений стиля на сегодня исчерпан ({limits['groq_style']}/5)"
+            }), 429
+    else:
+        if not increment_openai_style(user_id):
+            limits = get_user_limits(user_id)
+            return jsonify({
+                "error": "limit_exceeded",
+                "message": f"Лимит изменений стиля на сегодня исчерпан ({limits['openai_style']}/7)"
+            }), 429
+    
+    # Здесь можно сохранить стиль в localStorage или БД
+    # Пока просто возвращаем успех
+    
+    return jsonify({
+        "success": True,
+        "style": style,
+        "remaining": get_user_limits(user_id)
     })
 
 
