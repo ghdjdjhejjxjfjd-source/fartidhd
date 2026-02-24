@@ -31,7 +31,7 @@ try:
 except Exception:
     GROUP_ID = 0
 
-# Путь к БД
+# Путь к БД (SQLite)
 DB_PATH = os.getenv("ACCESS_DB_PATH") or "access.db"
 
 # Flask приложение
