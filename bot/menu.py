@@ -40,7 +40,16 @@ TAB_TEXT = {
     "mode_settings": "🔄 Режим работы\n\nВыбери как пользоваться ботом:",
     "persona_settings": "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:",
     "lang_settings": "🌐 Язык\n\nВыбери язык интерфейса:",
-    "ai_mode_settings": "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный\n• Умнее и лучше\n• Для сложных задач",
+    "ai_mode_settings": "⚡ Режим ИИ\n\n━━━━━━━━━━━━━━━━━━━━━━\n"
+                        "🚀 БЫСТРЫЙ (0.3 ⭐)\n"
+                        "• Экономичный, быстрые ответы\n"
+                        "• Для простых вопросов\n\n"
+                        "💎 КАЧЕСТВЕННЫЙ (1 ⭐)\n"
+                        "• Умнее и лучше\n"
+                        "• Для сложных задач\n"
+                        "━━━━━━━━━━━━━━━━━━━━━━\n\n"
+                        "📊 Сегодня осталось смен режима: {changes_left}/8\n"
+                        "⏰ Сброс в 00:00 (GMT+6)",
     "confirm_ai_mode_change": "⚠️ ПОДТВЕРЖДЕНИЕ\n\nВы выбрали режим: {new_mode}\n\nТекущий режим: {current_mode}\n\nПри смене режима:\n• История чата будет полностью очищена\n• Все предыдущие сообщения удалятся\n\nПродолжить?",
 }
 
@@ -83,19 +92,13 @@ def mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def ai_mode_settings_kb(user_id: int, changes_left: int = 8) -> InlineKeyboardMarkup:
+def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура выбора режима ИИ (Быстрый / Качественный)"""
     current = get_ai_mode(user_id) or "fast"
     
     keyboard = []
     
-    # Если лимит исчерпан - показываем только сообщение
-    if changes_left <= 0:
-        keyboard.append([InlineKeyboardButton("⛔ Лимит смены режима исчерпан (8/8)", callback_data="ignore")])
-        keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
-        return InlineKeyboardMarkup(keyboard)
-    
-    # Показываем кнопки только если лимит не исчерпан
+    # Показываем кнопки (без звезд на самих кнопках)
     if current == "fast":
         keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый", callback_data="ignore")])
         keyboard.append([InlineKeyboardButton("💎 Качественный", callback_data="confirm_ai_mode:quality")])
@@ -103,8 +106,6 @@ def ai_mode_settings_kb(user_id: int, changes_left: int = 8) -> InlineKeyboardMa
         keyboard.append([InlineKeyboardButton("🚀 Быстрый", callback_data="confirm_ai_mode:fast")])
         keyboard.append([InlineKeyboardButton("✅ 💎 Качественный", callback_data="ignore")])
     
-    # Показываем сколько осталось попыток
-    keyboard.append([InlineKeyboardButton(f"📊 Осталось: {changes_left}/8", callback_data="ignore")])
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     
     return InlineKeyboardMarkup(keyboard)
