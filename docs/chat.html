@@ -26,6 +26,29 @@
   <link rel="stylesheet" href="./css/base.css?v=3">
   <link rel="stylesheet" href="./css/panels.css?v=3">
   <link rel="stylesheet" href="./css/chat.css?v=3">
+  
+  <!-- ✅ Стили для отображения лимитов -->
+  <style>
+    .limit-hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+      margin-bottom: 8px;
+      padding-left: 8px;
+      text-align: left;
+      width: 100%;
+    }
+    .settings-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .settings-row select {
+      width: 100%;
+      margin-top: 4px;
+    }
+  </style>
 </head>
 
 <body>
@@ -56,7 +79,8 @@
     <div class="sheet">
       <h3 id="settingsTitle">⚙️ Настройки</h3>
 
-      <div class="row">
+      <!-- ✅ Стиль ответа с отображением лимита -->
+      <div class="settings-row">
         <div id="styleLabel">Стиль ответа</div>
         <select id="styleSel">
           <option value="short" id="optShort">Коротко</option>
@@ -64,8 +88,10 @@
           <option value="detail" id="optDetail">Подробно</option>
         </select>
       </div>
+      <div id="style-limit" class="limit-hint"></div>
 
-      <div class="row">
+      <!-- ✅ Характер с отображением лимита -->
+      <div class="settings-row">
         <div id="personaLabel">Характер</div>
         <select id="personaSel">
           <option value="friendly" id="optFriendly">Общительный</option>
@@ -74,6 +100,7 @@
           <option value="smart" id="optSmart">Умный</option>
         </select>
       </div>
+      <div id="persona-limit" class="limit-hint"></div>
 
       <div class="row">
         <div id="chatLabel">Чат</div>
