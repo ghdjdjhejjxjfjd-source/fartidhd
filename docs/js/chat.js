@@ -1,5 +1,5 @@
 // docs/js/chat.js
-import { askAI, getStarsBalance, clearAIMemory } from "./api.js";
+import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona } from "./api.js";
 import { tg } from "./telegram.js";
 
 export const STORAGE_KEY = "chat_history_v1";
@@ -44,6 +44,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let currentUserId = tg?.initDataUnsafe?.user?.id || 0;
   let isReloading = false;
   let reloadTimer = null;
+  
+  // Текущие лимиты с сервера
   let currentLimits = {
     groq_persona: 0,
     groq_style: 0,
@@ -52,6 +54,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     groq_style_max: 5,
     openai_style_max: 7
   };
+  
+  // Временные значения (несохраненные изменения)
+  let tempStyle = null;
+  let tempPersona = null;
+  let hasUnsavedChanges = false;
+  let currentAiMode = 'fast';
 
   const TYPING_ID = "typing-indicator";
 
@@ -277,20 +285,27 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       if (!res.ok) return;
       
       const data = await res.json();
-      console.log("Limits data:", data); // Для отладки
+      console.log("Limits data:", data);
       
-      // ✅ ИСПРАВЛЕНО: правильные ключи из ответа сервера
+      currentAiMode = data.ai_mode;
       currentLimits = {
         groq_persona: data.limits.groq_persona || 0,
-        groq_style: data.limits.groq_styles || 0,  // было groq_style, стало groq_styles
-        openai_style: data.limits.openai_styles || 0,  // было openai_style, стало openai_styles
+        groq_style: data.limits.groq_styles || 0,
+        openai_style: data.limits.openai_styles || 0,
         groq_persona_max: data.limits.groq_persona_max || 5,
-        groq_style_max: data.limits.groq_styles_max || 5,  // было groq_style_max, стало groq_styles_max
-        openai_style_max: data.limits.openai_styles_max || 7  // было openai_style_max, стало openai_styles_max
+        groq_style_max: data.limits.groq_styles_max || 5,
+        openai_style_max: data.limits.openai_styles_max || 7
       };
       
-      // Обновляем отображение лимитов
-      updateLimitsDisplay(data.ai_mode);
+      // Сбрасываем временные изменения
+      tempStyle = null;
+      tempPersona = null;
+      hasUnsavedChanges = false;
+      
+      // Обновляем отображение
+      updateLimitsDisplay();
+      updateSaveButton();
+      updateUnsavedIndicator();
       
     } catch (err) {
       console.log("Fetch limits error:", err);
@@ -298,252 +313,258 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   }
 
   // ✅ Функция для обновления отображения лимитов
-  function updateLimitsDisplay(aiMode) {
-    // Обновляем лимиты для характера (только для Groq)
-    const personaRow = document.querySelector('.settings-row:has(#personaSel)');
-    if (personaRow) {
-      let limitSpan = document.getElementById('persona-limit');
-      if (!limitSpan) {
-        limitSpan = document.createElement('div');
-        limitSpan.id = 'persona-limit';
-        limitSpan.style.fontSize = '12px';
-        limitSpan.style.color = '#666';
-        limitSpan.style.marginTop = '4px';
-        personaRow.appendChild(limitSpan);
-      }
-      
-      if (aiMode === 'fast') {
+  function updateLimitsDisplay() {
+    // Обновляем лимиты для характера
+    const personaLimitSpan = document.getElementById('persona-limit');
+    if (personaLimitSpan) {
+      if (currentAiMode === 'fast') {
         const used = currentLimits.groq_persona;
         const max = currentLimits.groq_persona_max;
         const remaining = max - used;
-        limitSpan.textContent = `⏳ Осталось изменений характера: ${remaining}/${max}`;
-        limitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
+        personaLimitSpan.textContent = `📊 Осталось изменений характера: ${remaining}/${max}`;
+        personaLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
       } else {
-        limitSpan.textContent = `⏳ Изменение характера недоступно`;
-        limitSpan.style.color = '#666';
+        personaLimitSpan.textContent = `🔒 Изменение характера недоступно`;
+        personaLimitSpan.style.color = '#666';
       }
     }
     
     // Обновляем лимиты для стиля
-    const styleRow = document.querySelector('.settings-row:has(#styleSel)');
-    if (styleRow) {
-      let styleLimitSpan = document.getElementById('style-limit');
-      if (!styleLimitSpan) {
-        styleLimitSpan = document.createElement('div');
-        styleLimitSpan.id = 'style-limit';
-        styleLimitSpan.style.fontSize = '12px';
-        styleLimitSpan.style.color = '#666';
-        styleLimitSpan.style.marginTop = '4px';
-        styleRow.appendChild(styleLimitSpan);
-      }
-      
-      if (aiMode === 'fast') {
-        const used = currentLimits.groq_style;
-        const max = currentLimits.groq_style_max;
-        const remaining = max - used;
-        styleLimitSpan.textContent = `⏳ Осталось изменений стиля: ${remaining}/${max}`;
-        styleLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
+    const styleLimitSpan = document.getElementById('style-limit');
+    if (styleLimitSpan) {
+      let used, max;
+      if (currentAiMode === 'fast') {
+        used = currentLimits.groq_style;
+        max = currentLimits.groq_style_max;
       } else {
-        const used = currentLimits.openai_style;
-        const max = currentLimits.openai_style_max;
-        const remaining = max - used;
-        styleLimitSpan.textContent = `⏳ Осталось изменений стиля: ${remaining}/${max}`;
-        styleLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
+        used = currentLimits.openai_style;
+        max = currentLimits.openai_style_max;
       }
+      const remaining = max - used;
+      styleLimitSpan.textContent = `📊 Осталось изменений стиля: ${remaining}/${max}`;
+      styleLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
     }
   }
 
-  // ✅ Функция для смены стиля с проверкой лимита
-  async function changeStyle(newStyle) {
-    if (!currentUserId) return false;
+  // ✅ Функция для обновления состояния кнопки сохранения
+  function updateSaveButton() {
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (!saveBtn) return;
     
-    try {
-      const API_BASE = "https://fayrat-production.up.railway.app";
-      const res = await fetch(`${API_BASE}/api/user/style/change`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: currentUserId,
-          style: newStyle
-        })
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        if (data.error === 'limit_exceeded') {
-          alert(data.message);
-          return false;
-        }
-        alert('Ошибка при смене стиля');
-        return false;
+    // Проверяем можно ли сохранить
+    let canSave = hasUnsavedChanges;
+    
+    if (canSave && currentAiMode === 'fast') {
+      // Для Groq проверяем лимиты
+      if (tempPersona && currentLimits.groq_persona >= currentLimits.groq_persona_max) {
+        canSave = false;
+      }
+      if (tempStyle && currentLimits.groq_style >= currentLimits.groq_style_max) {
+        canSave = false;
+      }
+    } else if (canSave && currentAiMode === 'quality') {
+      // Для OpenAI проверяем только стиль
+      if (tempStyle && currentLimits.openai_style >= currentLimits.openai_style_max) {
+        canSave = false;
+      }
+      // Характер для OpenAI всегда заблокирован
+      if (tempPersona) {
+        canSave = false;
+      }
+    }
+    
+    saveBtn.disabled = !canSave;
+  }
+
+  // ✅ Функция для обновления индикатора несохраненных изменений
+  function updateUnsavedIndicator() {
+    const indicator = document.getElementById('unsaved-indicator');
+    if (indicator) {
+      indicator.style.display = hasUnsavedChanges ? 'block' : 'none';
+    }
+  }
+
+  // ✅ Обработчик изменения стиля (временное)
+  function handleStyleChange(newStyle) {
+    const originalStyle = getStyle();
+    
+    if (newStyle === originalStyle) {
+      // Если выбрали текущее значение - ничего не меняем
+      return;
+    }
+    
+    tempStyle = newStyle;
+    hasUnsavedChanges = true;
+    
+    // Временно показываем уменьшенный счетчик
+    const styleLimitSpan = document.getElementById('style-limit');
+    if (styleLimitSpan) {
+      let used, max;
+      if (currentAiMode === 'fast') {
+        used = currentLimits.groq_style + (tempStyle ? 1 : 0);
+        max = currentLimits.groq_style_max;
+      } else {
+        used = currentLimits.openai_style + (tempStyle ? 1 : 0);
+        max = currentLimits.openai_style_max;
+      }
+      const remaining = max - used;
+      styleLimitSpan.textContent = `📊 Останется после сохранения: ${remaining}/${max}`;
+      styleLimitSpan.style.color = remaining < 0 ? '#ff4444' : '#ffaa00';
+    }
+    
+    updateSaveButton();
+    updateUnsavedIndicator();
+  }
+
+  // ✅ Обработчик изменения характера (временное)
+  function handlePersonaChange(newPersona) {
+    const originalPersona = getPersona();
+    
+    if (newPersona === originalPersona) {
+      return;
+    }
+    
+    if (currentAiMode !== 'fast') {
+      // Для OpenAI характер недоступен
+      alert('Изменение характера недоступно в этом режиме');
+      document.getElementById('personaSel').value = getPersona();
+      return;
+    }
+    
+    tempPersona = newPersona;
+    hasUnsavedChanges = true;
+    
+    // Временно показываем уменьшенный счетчик
+    const personaLimitSpan = document.getElementById('persona-limit');
+    if (personaLimitSpan) {
+      const used = currentLimits.groq_persona + (tempPersona ? 1 : 0);
+      const max = currentLimits.groq_persona_max;
+      const remaining = max - used;
+      personaLimitSpan.textContent = `📊 Останется после сохранения: ${remaining}/${max}`;
+      personaLimitSpan.style.color = remaining < 0 ? '#ff4444' : '#ffaa00';
+    }
+    
+    updateSaveButton();
+    updateUnsavedIndicator();
+  }
+
+  // ✅ Функция сохранения изменений
+  async function saveSettings() {
+    if (!hasUnsavedChanges) return;
+    
+    let success = true;
+    
+    // Сохраняем стиль если он был изменен
+    if (tempStyle) {
+      const result = await changeStyle(tempStyle);
+      if (!result) {
+        success = false;
+      }
+    }
+    
+    // Сохраняем характер если он был изменен (только для Groq)
+    if (tempPersona && currentAiMode === 'fast') {
+      const result = await changePersona(tempPersona);
+      if (!result) {
+        success = false;
+      }
+    }
+    
+    if (success) {
+      // Обновляем локальное хранилище
+      if (tempStyle) {
+        localStorage.setItem("ai_style", tempStyle);
+      }
+      if (tempPersona && currentAiMode === 'fast') {
+        localStorage.setItem("ai_persona", tempPersona);
       }
       
-      // Обновляем локальное хранилище
-      localStorage.setItem("ai_style", newStyle);
+      // Сбрасываем временные изменения
+      tempStyle = null;
+      tempPersona = null;
+      hasUnsavedChanges = false;
       
-      // Обновляем лимиты
+      // Обновляем лимиты с сервера
       await fetchLimits();
       
-      return true;
+      // Показываем сообщение об успехе
+      alert('✅ Настройки сохранены');
       
-    } catch (err) {
-      console.log("Change style error:", err);
-      alert('Ошибка при смене стиля');
-      return false;
+      // Закрываем окно настроек
+      closeSettings();
+    } else {
+      alert('❌ Не удалось сохранить некоторые настройки');
     }
   }
 
-  // ✅ Функция для смены характера с проверкой лимита
-  async function changePersona(newPersona) {
-    if (!currentUserId) return false;
+  // ✅ Функция отмены изменений
+  function cancelSettings() {
+    // Возвращаем исходные значения в select'ах
+    const personaSelect = document.getElementById('personaSel');
+    const styleSelect = document.getElementById('styleSel');
     
-    try {
-      const API_BASE = "https://fayrat-production.up.railway.app";
-      const res = await fetch(`${API_BASE}/api/user/persona`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: currentUserId,
-          persona: newPersona
-        })
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        if (data.error === 'limit_exceeded') {
-          alert(data.message);
-          return false;
-        }
-        alert('Ошибка при смене характера');
-        return false;
-      }
-      
-      // Обновляем локальное хранилище
-      localStorage.setItem("ai_persona", newPersona);
-      
-      // Обновляем лимиты
-      await fetchLimits();
-      
-      return true;
-      
-    } catch (err) {
-      console.log("Change persona error:", err);
-      alert('Ошибка при смене характера');
-      return false;
+    if (personaSelect) {
+      personaSelect.value = getPersona();
+    }
+    if (styleSelect) {
+      styleSelect.value = getStyle();
+    }
+    
+    // Сбрасываем временные изменения
+    tempStyle = null;
+    tempPersona = null;
+    hasUnsavedChanges = false;
+    
+    // Обновляем отображение лимитов
+    updateLimitsDisplay();
+    updateSaveButton();
+    updateUnsavedIndicator();
+    
+    // Закрываем окно настроек
+    closeSettings();
+  }
+
+  // ✅ Функция закрытия настроек
+  function closeSettings() {
+    const overlay = document.getElementById('overlay');
+    if (overlay) {
+      overlay.style.display = 'none';
     }
   }
 
-  // ✅ Функция для блокировки/разблокировки выбора характера
-  async function updatePersonaLock() {
-    if (!currentUserId) return;
-    
-    try {
-      const API_BASE = "https://fayrat-production.up.railway.app";
-      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
+  // ✅ Функция открытия настроек
+  function openSettings() {
+    const overlay = document.getElementById('overlay');
+    if (overlay) {
+      // Загружаем свежие лимиты
+      fetchLimits();
       
-      if (!res.ok) return;
-      
-      const data = await res.json();
-      const isOpenAI = data.ai_mode === "quality";
-      
+      // Устанавливаем текущие значения
       const personaSelect = document.getElementById('personaSel');
+      const styleSelect = document.getElementById('styleSel');
       
-      if (!personaSelect) return;
-      
-      // Удаляем старый замок если есть
-      const oldLock = document.getElementById('persona-lock-icon');
-      if (oldLock) oldLock.remove();
-      
-      if (isOpenAI) {
-        // Блокируем для OpenAI
-        personaSelect.disabled = true;
-        personaSelect.style.opacity = '0.6';
-        
-        // Добавляем замок перед select
-        const lockSpan = document.createElement('span');
-        lockSpan.id = 'persona-lock-icon';
-        lockSpan.innerHTML = '🔒';
-        lockSpan.style.marginRight = '8px';
-        lockSpan.style.fontSize = '18px';
-        personaSelect.parentNode.insertBefore(lockSpan, personaSelect);
-      } else {
-        // Разблокируем для Groq
-        personaSelect.disabled = false;
-        personaSelect.style.opacity = '1';
+      if (personaSelect) {
+        personaSelect.value = getPersona();
+      }
+      if (styleSelect) {
+        styleSelect.value = getStyle();
       }
       
-      // Обновляем лимиты
-      await fetchLimits();
+      // Сбрасываем временные изменения
+      tempStyle = null;
+      tempPersona = null;
+      hasUnsavedChanges = false;
       
-    } catch (err) {
-      console.log("Persona lock update error:", err);
-    }
-  }
-
-  async function checkModeChange() {
-    if (!currentUserId || isReloading) return;
-    
-    try {
-      const API_BASE = "https://fayrat-production.up.railway.app";
-      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
-      
-      if (!res.ok) return;
-      
-      const data = await res.json();
-      
-      const currentMode = localStorage.getItem("current_ai_mode");
-      if (currentMode && data.ai_mode !== currentMode) {
-        // Режим изменился - отменяем все ожидающие отправки
-        if (sending) {
-          // Если сейчас отправляется сообщение, ждём его завершения
-          setTimeout(() => checkModeChange(), 500);
-          return;
-        }
-        
-        // Очищаем предыдущий таймер если был
-        if (reloadTimer) {
-          clearTimeout(reloadTimer);
-        }
-        
-        isReloading = true;
-        
-        // Сначала очищаем localStorage
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.setItem("current_ai_mode", data.ai_mode);
-        
-        // Очищаем серверную память
-        try {
-          await clearAIMemory();
-        } catch (e) {}
-        
-        alert("🔄 Режим изменен. Страница обновится...");
-        
-        // Перезагружаем страницу через 1.5 секунды
-        reloadTimer = setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-        
-      } else if (!currentMode) {
-        localStorage.setItem("current_ai_mode", data.ai_mode);
-        await updatePersonaLock();
-      } else {
-        await updatePersonaLock();
-      }
-    } catch (err) {
-      console.log("Mode check error:", err);
+      overlay.style.display = 'flex';
+      inputEl?.blur();
     }
   }
 
   function buildPrompt(userText){
     const lang = getLang();
-    const persona = getPersona();
-    const style = getStyle();
+    // Используем временные значения если есть, иначе сохраненные
+    const persona = tempPersona || getPersona();
+    const style = tempStyle || getStyle();
     
     const maxHistory = 20;
     const recentHistory = history.slice(-maxHistory);
@@ -612,8 +633,8 @@ Response:`;
 
     try{
       const lang = getLang();
-      const persona = getPersona();
-      const style = getStyle();
+      const persona = tempPersona || getPersona();
+      const style = tempStyle || getStyle();
       
       const answer = await askAI(t, lang, persona, style);
 
@@ -652,6 +673,103 @@ Response:`;
     }
   }
 
+  // ✅ Функция для блокировки/разблокировки выбора характера
+  async function updatePersonaLock() {
+    if (!currentUserId) return;
+    
+    try {
+      const API_BASE = "https://fayrat-production.up.railway.app";
+      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
+      
+      if (!res.ok) return;
+      
+      const data = await res.json();
+      const isOpenAI = data.ai_mode === "quality";
+      currentAiMode = data.ai_mode;
+      
+      const personaSelect = document.getElementById('personaSel');
+      
+      if (!personaSelect) return;
+      
+      // Удаляем старый замок если есть
+      const oldLock = document.getElementById('persona-lock-icon');
+      if (oldLock) oldLock.remove();
+      
+      if (isOpenAI) {
+        // Блокируем для OpenAI
+        personaSelect.disabled = true;
+        personaSelect.style.opacity = '0.6';
+        
+        // Добавляем замок перед select
+        const lockSpan = document.createElement('span');
+        lockSpan.id = 'persona-lock-icon';
+        lockSpan.innerHTML = '🔒';
+        lockSpan.style.marginRight = '8px';
+        lockSpan.style.fontSize = '18px';
+        personaSelect.parentNode.insertBefore(lockSpan, personaSelect);
+      } else {
+        // Разблокируем для Groq
+        personaSelect.disabled = false;
+        personaSelect.style.opacity = '1';
+      }
+      
+      // Обновляем лимиты
+      await fetchLimits();
+      
+    } catch (err) {
+      console.log("Persona lock update error:", err);
+    }
+  }
+
+  async function checkModeChange() {
+    if (!currentUserId || isReloading) return;
+    
+    try {
+      const API_BASE = "https://fayrat-production.up.railway.app";
+      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
+      
+      if (!res.ok) return;
+      
+      const data = await res.json();
+      
+      const currentMode = localStorage.getItem("current_ai_mode");
+      if (currentMode && data.ai_mode !== currentMode) {
+        // Режим изменился - отменяем все ожидающие отправки
+        if (sending) {
+          setTimeout(() => checkModeChange(), 500);
+          return;
+        }
+        
+        if (reloadTimer) {
+          clearTimeout(reloadTimer);
+        }
+        
+        isReloading = true;
+        
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.setItem("current_ai_mode", data.ai_mode);
+        
+        try {
+          await clearAIMemory();
+        } catch (e) {}
+        
+        alert("🔄 Режим изменен. Страница обновится...");
+        
+        reloadTimer = setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        
+      } else if (!currentMode) {
+        localStorage.setItem("current_ai_mode", data.ai_mode);
+        await updatePersonaLock();
+      } else {
+        await updatePersonaLock();
+      }
+    } catch (err) {
+      console.log("Mode check error:", err);
+    }
+  }
+
   function bindUI(){
     sendBtnEl.addEventListener("click", send);
     
@@ -670,6 +788,72 @@ Response:`;
       if (document.activeElement === inputEl) inputEl.blur();
     });
     
+    // Кнопка открытия настроек
+    const gearBtn = document.getElementById('gearBtn');
+    if (gearBtn) {
+      gearBtn.addEventListener('click', openSettings);
+    }
+    
+    // Кнопка сохранения
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', saveSettings);
+    }
+    
+    // Кнопка отмены
+    const cancelBtn = document.getElementById('cancelSettingsBtn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', cancelSettings);
+    }
+    
+    // Кнопка закрытия (старая)
+    const closeBtn = document.getElementById('closeSettings');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', cancelSettings);
+    }
+    
+    // Обработчики для select'ов (теперь временные)
+    const personaSelect = document.getElementById('personaSel');
+    if (personaSelect) {
+      personaSelect.addEventListener('change', (e) => {
+        handlePersonaChange(e.target.value);
+      });
+    }
+    
+    const styleSelect = document.getElementById('styleSel');
+    if (styleSelect) {
+      styleSelect.addEventListener('change', (e) => {
+        handleStyleChange(e.target.value);
+      });
+    }
+    
+    // Очистка чата
+    const clearBtn = document.getElementById('clearBtn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', async () => {
+        const success = await clearHistory(false);
+        if (success) {
+          closeSettings();
+        }
+      });
+    }
+    
+    // Закрытие по клику вне окна
+    const overlay = document.getElementById('overlay');
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          if (hasUnsavedChanges) {
+            if (confirm('У вас есть несохраненные изменения. Закрыть без сохранения?')) {
+              cancelSettings();
+            }
+          } else {
+            closeSettings();
+          }
+        }
+      });
+    }
+    
     setTimeout(checkModeChange, 1000);
     setInterval(checkModeChange, 3000);
     
@@ -678,29 +862,6 @@ Response:`;
         checkModeChange();
       }
     });
-    
-    // Добавляем обработчики для select'ов
-    const personaSelect = document.getElementById('personaSel');
-    if (personaSelect) {
-      personaSelect.addEventListener('change', async (e) => {
-        const success = await changePersona(e.target.value);
-        if (!success) {
-          // Возвращаем старое значение если не удалось
-          e.target.value = getPersona();
-        }
-      });
-    }
-    
-    const styleSelect = document.getElementById('styleSel');
-    if (styleSelect) {
-      styleSelect.addEventListener('change', async (e) => {
-        const success = await changeStyle(e.target.value);
-        if (!success) {
-          // Возвращаем старое значение если не удалось
-          e.target.value = getStyle();
-        }
-      });
-    }
     
     // Загружаем лимиты при старте
     setTimeout(fetchLimits, 1500);
