@@ -28,7 +28,9 @@ def db_init():
             total_messages INTEGER DEFAULT 0,
             total_images INTEGER DEFAULT 0,
             total_stars_spent INTEGER DEFAULT 0,
-            ai_mode TEXT DEFAULT 'fast'
+            ai_mode TEXT DEFAULT 'fast',
+            ai_mode_changes INTEGER DEFAULT 0,
+            last_ai_mode_change TEXT
         )
         """
     )
@@ -42,6 +44,8 @@ def db_init():
             groq_persona_changes INTEGER DEFAULT 0,
             groq_style_changes INTEGER DEFAULT 0,
             openai_style_changes INTEGER DEFAULT 0,
+            ai_mode_changes INTEGER DEFAULT 0,
+            last_ai_mode_change TEXT,
             FOREIGN KEY (user_id) REFERENCES access(user_id)
         )
         """
@@ -82,7 +86,9 @@ def _ensure_columns():
         "total_messages INTEGER DEFAULT 0",
         "total_images INTEGER DEFAULT 0",
         "total_stars_spent INTEGER DEFAULT 0",
-        "ai_mode TEXT DEFAULT 'fast'"
+        "ai_mode TEXT DEFAULT 'fast'",
+        "ai_mode_changes INTEGER DEFAULT 0",
+        "last_ai_mode_change TEXT"
     ]
     
     for col in columns_to_add:
@@ -178,7 +184,7 @@ def get_access(user_id: int) -> Dict[str, Any]:
         SELECT is_free, is_blocked, updated_at, last_menu_chat_id, 
                last_menu_message_id, use_mini_app, persona, style, lang,
                registered_at, total_messages, total_images, total_stars_spent,
-               ai_mode
+               ai_mode, ai_mode_changes, last_ai_mode_change
         FROM access WHERE user_id=?
         """,
         (user_id,),
@@ -203,6 +209,8 @@ def get_access(user_id: int) -> Dict[str, Any]:
             "total_images": 0,
             "total_stars_spent": 0,
             "ai_mode": "fast",
+            "ai_mode_changes": 0,
+            "last_ai_mode_change": None,
         }
     
     return {
@@ -221,6 +229,8 @@ def get_access(user_id: int) -> Dict[str, Any]:
         "total_images": row[11] or 0,
         "total_stars_spent": row[12] or 0,
         "ai_mode": row[13] if row[13] else "fast",
+        "ai_mode_changes": row[14] or 0,
+        "last_ai_mode_change": row[15],
     }
 
 
@@ -441,28 +451,39 @@ def get_ai_mode(user_id: int) -> str:
 
 
 def set_ai_mode(user_id: int, mode: str) -> None:
-    """Установить режим ИИ"""
+    """Установить режим ИИ и увеличить счетчик изменений"""
     if mode not in ["fast", "quality"]:
         mode = "fast"
     
     con = db_conn()
     cur = con.cursor()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Получаем текущее значение счетчика
     cur.execute(
-        """
-        UPDATE access
-        SET ai_mode = ?, updated_at = ?
-        WHERE user_id = ?
-        """,
-        (mode, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
+        "SELECT ai_mode_changes FROM access WHERE user_id = ?",
+        (user_id,)
     )
-    if cur.rowcount == 0:
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    row = cur.fetchone()
+    
+    if row:
+        # Увеличиваем счетчик
         cur.execute(
             """
-            INSERT INTO access (user_id, ai_mode, updated_at, registered_at, style)
-            VALUES (?, ?, ?, ?, 'steps')
+            UPDATE access
+            SET ai_mode = ?, ai_mode_changes = ai_mode_changes + 1, last_ai_mode_change = ?, updated_at = ?
+            WHERE user_id = ?
             """,
-            (user_id, mode, now, now)
+            (mode, now, now, user_id)
+        )
+    else:
+        # Создаем новую запись
+        cur.execute(
+            """
+            INSERT INTO access (user_id, ai_mode, ai_mode_changes, last_ai_mode_change, updated_at, registered_at, style)
+            VALUES (?, ?, 1, ?, ?, ?, 'steps')
+            """,
+            (user_id, mode, now, now, now)
         )
         # Создаем запись в таблице лимитов для нового пользователя
         cur.execute(
@@ -472,8 +493,49 @@ def set_ai_mode(user_id: int, mode: str) -> None:
             """,
             (user_id, now[:10])
         )
+    
     con.commit()
     con.close()
+
+
+async def get_ai_mode_changes(user_id: int) -> int:
+    """Получить количество оставшихся смен режима (максимум 8)"""
+    con = db_conn()
+    cur = con.cursor()
+    
+    # Проверяем не прошло ли 24 часа с последнего сброса
+    cur.execute(
+        "SELECT ai_mode_changes, last_ai_mode_change FROM access WHERE user_id = ?",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    con.close()
+    
+    if not row:
+        return 8
+    
+    changes = row[0] or 0
+    last_change = row[1]
+    
+    # Если прошло больше 24 часов - сбрасываем счетчик
+    if last_change:
+        last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
+        now = datetime.now()
+        delta = now - last_date
+        if delta.days >= 1:  # Прошло больше суток
+            # Сбрасываем счетчик в БД
+            con = db_conn()
+            cur = con.cursor()
+            cur.execute(
+                "UPDATE access SET ai_mode_changes = 0 WHERE user_id = ?",
+                (user_id,)
+            )
+            con.commit()
+            con.close()
+            return 8
+    
+    remaining = 8 - changes
+    return max(0, remaining)
 
 
 # =========================
