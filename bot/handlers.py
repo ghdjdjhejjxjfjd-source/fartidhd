@@ -21,9 +21,6 @@ from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_
 
 import requests
 
-# Стек навигации для кнопки "Назад"
-navigation_stack = {}  # user_id -> [previous_tabs]
-
 # =========================
 # ОСНОВНЫЕ ОБРАБОТЧИКИ
 # =========================
@@ -34,10 +31,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = user.id if user else 0
     if not uid:
         return
-    
-    # Очищаем стек навигации при старте
-    if uid in navigation_stack:
-        navigation_stack[uid] = []
     
     await send_fresh_menu(context.bot, uid)
 
@@ -56,10 +49,11 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
-    # Обработка кнопки "Назад" с возвратом в предыдущую вкладку
+    # Обработка кнопки "Назад" - просто на один уровень назад
     if data == "back_to_previous":
-        if uid in navigation_stack and navigation_stack[uid]:
-            previous_tab = navigation_stack[uid].pop()
+        # Проверяем, есть ли предыдущая вкладка в истории
+        previous_tab = context.user_data.get('previous_tab')
+        if previous_tab:
             await edit_to_tab_handler(context, query, uid, previous_tab)
         else:
             await edit_to_menu(context, query, uid)
@@ -69,20 +63,17 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     if data == "back_to_menu":
-        # Очищаем стек при возврате в главное меню
-        if uid in navigation_stack:
-            navigation_stack[uid] = []
+        # Очищаем историю и возвращаемся в главное меню
+        context.user_data['previous_tab'] = None
         await edit_to_menu(context, query, uid)
         return
     
     if data.startswith("tab:"):
         key = data.split("tab:", 1)[1].strip()
-        # Сохраняем текущую вкладку в стек перед открытием новой
+        # Сохраняем текущую вкладку как предыдущую
         current_tab = context.user_data.get('current_tab')
-        if current_tab and current_tab != key:
-            if uid not in navigation_stack:
-                navigation_stack[uid] = []
-            navigation_stack[uid].append(current_tab)
+        if current_tab:
+            context.user_data['previous_tab'] = current_tab
         context.user_data['current_tab'] = key
         await edit_to_tab_handler(context, query, uid, key)
         return
@@ -119,7 +110,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         new_mode = data.split("confirm_ai_mode:", 1)[1].strip()
         current_mode = get_ai_mode(uid) or "fast"
         
-        # Показываем подтверждение
         mode_names = {"fast": "🚀 Быстрый", "quality": "💎 Качественный"}
         text = TAB_TEXT["confirm_ai_mode_change"].format(
             new_mode=mode_names.get(new_mode, new_mode),
@@ -137,7 +127,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("execute_ai_mode:"):
         new_mode = data.split("execute_ai_mode:", 1)[1].strip()
         
-        # Проверяем лимит смены режима (максимум 8 раз)
         changes_left = await get_ai_mode_changes(uid)
         if changes_left <= 0:
             await query.message.edit_text(
@@ -147,11 +136,9 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
         
-        # Очищаем память чата
         mem_clear(uid)
         print(f"🧹 Очищена память для пользователя {uid} при смене режима")
         
-        # Меняем режим
         from api import set_ai_mode
         set_ai_mode(uid, new_mode)
         
@@ -164,7 +151,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=tab_kb(uid)
         )
         
-        # Обновляем меню
         await update_user_menu(context.bot, uid)
         return
     
@@ -190,12 +176,10 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
     """Обработчик открытия вкладок"""
     
-    # Специальная обработка для профиля
     if tab_key == "profile":
         await show_profile(context, query, user_id)
         return
     
-    # Обработка для настроек
     if tab_key == "settings":
         text = "⚙️ Настройки\n\nВыбери раздел:"
         try:
@@ -205,7 +189,6 @@ async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id
             await send_fresh_menu(context.bot, user_id)
         return
     
-    # Обработка для режима ИИ с проверкой лимита
     if tab_key == "ai_mode_settings":
         changes_left = await get_ai_mode_changes(user_id)
         text = TAB_TEXT["ai_mode_settings"].format(changes_left=changes_left)
@@ -216,7 +199,6 @@ async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id
             await send_fresh_menu(context.bot, user_id)
         return
     
-    # Для остальных вкладок используем стандартный обработчик из utils
     await edit_to_tab(context, query, user_id, tab_key)
 
 
@@ -232,7 +214,6 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     ai_mode = get_ai_mode(user_id)
     changes_left = await get_ai_mode_changes(user_id)
     
-    # Словарь для названий характеров
     persona_names = {
         "friendly": "😊 Общительный",
         "fun": "😂 Весёлый",
@@ -240,7 +221,6 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         "strict": "😐 Строгий"
     }
     
-    # Словарь для названий языков
     lang_names = {
         "ru": "🇷🇺 Русский",
         "en": "🇬🇧 English",
@@ -250,13 +230,11 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         "fr": "🇫🇷 Français"
     }
     
-    # Словарь для режимов ИИ с ценами
     ai_mode_names = {
         "fast": "🚀 Быстрый (0.3 ⭐)",
         "quality": "💎 Качественный (1 ⭐)"
     }
     
-    # Форматируем дату регистрации
     registered = "неизвестно"
     if a.get("registered_at"):
         try:
@@ -265,7 +243,6 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         except:
             registered = a["registered_at"][:10]
     
-    # Формируем текст профиля с информацией о лимите смен режима
     text = TAB_TEXT["profile"].format(
         user_id=user_id,
         registered=registered,
@@ -318,7 +295,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["in_image_mode"] = False
 
 
-# Экспортируем все нужные функции
 __all__ = [
     'start',
     'on_button',
