@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from .postgres_db import get_db, return_db
+from .star_packages import get_packages, get_package  # ✅ Импорт из нового файла
 
 def init_payments_table():
     """Создать таблицы для звезд"""
@@ -78,14 +79,21 @@ def add_stars(user_id: int, amount: int, package_id: Optional[str] = None):
         now = datetime.now()
         cur = conn.cursor()
         
-        cur.execute("""
-            INSERT INTO star_balances (user_id, balance, total_purchased, updated_at)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (user_id) DO UPDATE SET
-                balance = star_balances.balance + %s,
-                total_purchased = star_balances.total_purchased + %s,
-                updated_at = %s
-        """, (user_id, amount, amount, now, amount, amount, now))
+        # Проверяем существует ли пользователь
+        cur.execute("SELECT user_id FROM star_balances WHERE user_id = %s", (user_id,))
+        exists = cur.fetchone()
+        
+        if exists:
+            cur.execute("""
+                UPDATE star_balances
+                SET balance = balance + %s, total_purchased = total_purchased + %s, updated_at = %s
+                WHERE user_id = %s
+            """, (amount, amount, now, user_id))
+        else:
+            cur.execute("""
+                INSERT INTO star_balances (user_id, balance, total_purchased, updated_at)
+                VALUES (%s, %s, %s, %s)
+            """, (user_id, amount, amount, now))
         
         cur.execute("""
             INSERT INTO star_transactions (user_id, amount, package_id, created_at)
@@ -94,6 +102,7 @@ def add_stars(user_id: int, amount: int, package_id: Optional[str] = None):
         
         conn.commit()
         cur.close()
+        print(f"✅ Added {amount} stars to user {user_id}")
     except Exception as e:
         print(f"❌ Error adding stars: {e}")
     finally:
@@ -127,25 +136,13 @@ def spend_stars(user_id: int, amount: int) -> bool:
         
         conn.commit()
         cur.close()
+        print(f"✅ Spent {amount} stars from user {user_id}")
         return True
     except Exception as e:
         print(f"❌ Error spending stars: {e}")
         return False
     finally:
         return_db(conn)
-
-def get_packages() -> List[Dict]:
-    """Получить все пакеты (из памяти, не из БД)"""
-    from payments import STAR_PACKAGES
-    return STAR_PACKAGES
-
-def get_package(package_id: str) -> Optional[Dict]:
-    """Получить пакет по ID"""
-    from payments import STAR_PACKAGES
-    for p in STAR_PACKAGES:
-        if p["id"] == package_id:
-            return p
-    return None
 
 def get_top_users(limit: int = 10) -> List[tuple]:
     """Получить топ пользователей по звездам"""
@@ -172,7 +169,7 @@ def get_top_users(limit: int = 10) -> List[tuple]:
         return_db(conn)
 
 def reset_balance(user_id: int):
-    """Сбросить баланс пользователя"""
+    """Сбросить баланс пользователя (только для админов)"""
     conn = get_db()
     if not conn:
         return
@@ -189,6 +186,7 @@ def reset_balance(user_id: int):
         
         conn.commit()
         cur.close()
+        print(f"🔄 Reset balance for user {user_id}")
     except Exception as e:
         print(f"❌ Error resetting balance: {e}")
     finally:
