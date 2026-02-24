@@ -129,7 +129,7 @@ def add_stars(user_id: int, amount: int, package_id: Optional[str] = None):
     conn.close()
 
 def spend_stars(user_id: int, amount: int) -> bool:
-    """Списать звезды (для будущих покупок в Mini App)"""
+    """Списать звезды"""
     current = get_balance(user_id)
     
     if current < amount:
