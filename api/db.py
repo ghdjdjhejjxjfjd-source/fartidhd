@@ -22,6 +22,7 @@ def db_init():
             last_menu_message_id INTEGER,
             use_mini_app INTEGER DEFAULT 1,
             persona TEXT DEFAULT 'friendly',
+            style TEXT DEFAULT 'steps',
             lang TEXT DEFAULT 'ru',
             registered_at TEXT,
             total_messages INTEGER DEFAULT 0,
@@ -75,6 +76,7 @@ def _ensure_columns():
         "last_menu_message_id INTEGER",
         "use_mini_app INTEGER DEFAULT 1",
         "persona TEXT DEFAULT 'friendly'",
+        "style TEXT DEFAULT 'steps'",
         "lang TEXT DEFAULT 'ru'",
         "registered_at TEXT",
         "total_messages INTEGER DEFAULT 0",
@@ -117,8 +119,8 @@ def set_free(user_id: int, value: bool) -> None:
     else:
         cur.execute(
             """
-            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode)
-            VALUES (?, ?, 0, ?, ?, 'fast')
+            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode, style)
+            VALUES (?, ?, 0, ?, ?, 'fast', 'steps')
             """,
             (user_id, 1 if value else 0, now, now)
         )
@@ -128,7 +130,7 @@ def set_free(user_id: int, value: bool) -> None:
             INSERT INTO user_limits (user_id, last_reset_date)
             VALUES (?, ?)
             """,
-            (user_id, now[:10])  # только дата YYYY-MM-DD
+            (user_id, now[:10])
         )
     
     con.commit()
@@ -151,8 +153,8 @@ def set_blocked(user_id: int, value: bool) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode)
-            VALUES (?, 0, ?, ?, ?, 'fast')
+            INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode, style)
+            VALUES (?, 0, ?, ?, ?, 'fast', 'steps')
             """,
             (user_id, 1 if value else 0, now, now)
         )
@@ -174,7 +176,7 @@ def get_access(user_id: int) -> Dict[str, Any]:
     cur.execute(
         """
         SELECT is_free, is_blocked, updated_at, last_menu_chat_id, 
-               last_menu_message_id, use_mini_app, persona, lang,
+               last_menu_message_id, use_mini_app, persona, style, lang,
                registered_at, total_messages, total_images, total_stars_spent,
                ai_mode
         FROM access WHERE user_id=?
@@ -194,6 +196,7 @@ def get_access(user_id: int) -> Dict[str, Any]:
             "last_menu_message_id": None,
             "use_mini_app": True,
             "persona": "friendly",
+            "style": "steps",
             "lang": "ru",
             "registered_at": None,
             "total_messages": 0,
@@ -211,12 +214,13 @@ def get_access(user_id: int) -> Dict[str, Any]:
         "last_menu_message_id": row[4],
         "use_mini_app": bool(row[5]) if row[5] is not None else True,
         "persona": row[6] if row[6] else "friendly",
-        "lang": row[7] if row[7] else "ru",
-        "registered_at": row[8],
-        "total_messages": row[9] or 0,
-        "total_images": row[10] or 0,
-        "total_stars_spent": row[11] or 0,
-        "ai_mode": row[12] if row[12] else "fast",
+        "style": row[7] if row[7] else "steps",
+        "lang": row[8] if row[8] else "ru",
+        "registered_at": row[9],
+        "total_messages": row[10] or 0,
+        "total_images": row[11] or 0,
+        "total_stars_spent": row[12] or 0,
+        "ai_mode": row[13] if row[13] else "fast",
     }
 
 
@@ -238,8 +242,8 @@ def set_last_menu(user_id: int, chat_id: int, message_id: int) -> None:
         cur.execute(
             """
             INSERT INTO access (user_id, is_free, is_blocked, updated_at, 
-                               last_menu_chat_id, last_menu_message_id, registered_at, ai_mode)
-            VALUES (?, 0, 0, ?, ?, ?, ?, 'fast')
+                               last_menu_chat_id, last_menu_message_id, registered_at, ai_mode, style)
+            VALUES (?, 0, 0, ?, ?, ?, ?, 'fast', 'steps')
             """,
             (user_id, now, chat_id, message_id, now)
         )
@@ -299,8 +303,8 @@ def set_use_mini_app(user_id: int, value: bool) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, use_mini_app, updated_at, registered_at, ai_mode)
-            VALUES (?, ?, ?, ?, 'fast')
+            INSERT INTO access (user_id, use_mini_app, updated_at, registered_at, ai_mode, style)
+            VALUES (?, ?, ?, ?, 'fast', 'steps')
             """,
             (user_id, 1 if value else 0, now, now)
         )
@@ -336,10 +340,47 @@ def set_user_persona(user_id: int, persona: str) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, persona, updated_at, registered_at, ai_mode)
-            VALUES (?, ?, ?, ?, 'fast')
+            INSERT INTO access (user_id, persona, updated_at, registered_at, ai_mode, style)
+            VALUES (?, ?, ?, ?, 'fast', 'steps')
             """,
             (user_id, persona, now, now)
+        )
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
+        )
+    con.commit()
+    con.close()
+
+
+def get_user_style(user_id: int) -> str:
+    a = get_access(user_id)
+    return a.get("style", "steps")
+
+
+def set_user_style(user_id: int, style: str) -> None:
+    con = db_conn()
+    cur = con.cursor()
+    cur.execute(
+        """
+        UPDATE access
+        SET style = ?, updated_at = ?
+        WHERE user_id = ?
+        """,
+        (style, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_id),
+    )
+    if cur.rowcount == 0:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cur.execute(
+            """
+            INSERT INTO access (user_id, style, updated_at, registered_at, ai_mode)
+            VALUES (?, ?, ?, ?, 'fast')
+            """,
+            (user_id, style, now, now)
         )
         # Создаем запись в таблице лимитов для нового пользователя
         cur.execute(
@@ -373,8 +414,8 @@ def set_user_lang(user_id: int, lang: str) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, lang, updated_at, registered_at, ai_mode)
-            VALUES (?, ?, ?, ?, 'fast')
+            INSERT INTO access (user_id, lang, updated_at, registered_at, ai_mode, style)
+            VALUES (?, ?, ?, ?, 'fast', 'steps')
             """,
             (user_id, lang, now, now)
         )
@@ -418,8 +459,8 @@ def set_ai_mode(user_id: int, mode: str) -> None:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cur.execute(
             """
-            INSERT INTO access (user_id, ai_mode, updated_at, registered_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO access (user_id, ai_mode, updated_at, registered_at, style)
+            VALUES (?, ?, ?, ?, 'steps')
             """,
             (user_id, mode, now, now)
         )
@@ -628,8 +669,8 @@ def increment_messages(user_id: int):
         """, (now, user_id))
     else:
         cur.execute("""
-            INSERT INTO access (user_id, total_messages, updated_at, registered_at, ai_mode)
-            VALUES (?, 1, ?, ?, 'fast')
+            INSERT INTO access (user_id, total_messages, updated_at, registered_at, ai_mode, style)
+            VALUES (?, 1, ?, ?, 'fast', 'steps')
         """, (user_id, now, now))
         # Создаем запись в таблице лимитов для нового пользователя
         cur.execute(
@@ -663,8 +704,8 @@ def increment_images(user_id: int):
         """, (now, user_id))
     else:
         cur.execute("""
-            INSERT INTO access (user_id, total_images, updated_at, registered_at, ai_mode)
-            VALUES (?, 1, ?, ?, 'fast')
+            INSERT INTO access (user_id, total_images, updated_at, registered_at, ai_mode, style)
+            VALUES (?, 1, ?, ?, 'fast', 'steps')
         """, (user_id, now, now))
         # Создаем запись в таблице лимитов для нового пользователя
         cur.execute(
@@ -698,8 +739,8 @@ def add_stars_spent(user_id: int, amount: int):
         """, (amount, now, user_id))
     else:
         cur.execute("""
-            INSERT INTO access (user_id, total_stars_spent, updated_at, registered_at, ai_mode)
-            VALUES (?, ?, ?, ?, 'fast')
+            INSERT INTO access (user_id, total_stars_spent, updated_at, registered_at, ai_mode, style)
+            VALUES (?, ?, ?, ?, 'fast', 'steps')
         """, (user_id, amount, now, now))
         # Создаем запись в таблице лимитов для нового пользователя
         cur.execute(
