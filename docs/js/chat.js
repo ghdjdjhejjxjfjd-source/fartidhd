@@ -44,6 +44,14 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let currentUserId = tg?.initDataUnsafe?.user?.id || 0;
   let isReloading = false;
   let reloadTimer = null;
+  let currentLimits = {
+    groq_persona: 0,
+    groq_style: 0,
+    openai_style: 0,
+    groq_persona_max: 5,
+    groq_style_max: 5,
+    openai_style_max: 7
+  };
 
   const TYPING_ID = "typing-indicator";
 
@@ -258,6 +266,166 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return true;
   }
 
+  // ✅ Функция для получения лимитов с сервера
+  async function fetchLimits() {
+    if (!currentUserId) return;
+    
+    try {
+      const API_BASE = "https://fayrat-production.up.railway.app";
+      const res = await fetch(`${API_BASE}/api/user/limits/${currentUserId}`);
+      
+      if (!res.ok) return;
+      
+      const data = await res.json();
+      currentLimits = data.limits;
+      
+      // Обновляем отображение лимитов
+      updateLimitsDisplay(data.ai_mode);
+      
+    } catch (err) {
+      console.log("Fetch limits error:", err);
+    }
+  }
+
+  // ✅ Функция для обновления отображения лимитов
+  function updateLimitsDisplay(aiMode) {
+    // Обновляем лимиты для характера (только для Groq)
+    const personaRow = document.querySelector('.settings-row:has(#personaSel)');
+    if (personaRow) {
+      let limitSpan = document.getElementById('persona-limit');
+      if (!limitSpan) {
+        limitSpan = document.createElement('div');
+        limitSpan.id = 'persona-limit';
+        limitSpan.style.fontSize = '12px';
+        limitSpan.style.color = '#666';
+        limitSpan.style.marginTop = '4px';
+        personaRow.appendChild(limitSpan);
+      }
+      
+      if (aiMode === 'fast') {
+        const used = currentLimits.groq_persona;
+        const max = currentLimits.groq_persona_max;
+        limitSpan.textContent = `⏳ Осталось изменений характера: ${max - used}/${max}`;
+        limitSpan.style.color = used >= max ? '#ff4444' : '#666';
+      } else {
+        limitSpan.textContent = `⏳ Изменение характера недоступно`;
+        limitSpan.style.color = '#666';
+      }
+    }
+    
+    // Обновляем лимиты для стиля
+    const styleRow = document.querySelector('.settings-row:has(#styleSel)');
+    if (styleRow) {
+      let styleLimitSpan = document.getElementById('style-limit');
+      if (!styleLimitSpan) {
+        styleLimitSpan = document.createElement('div');
+        styleLimitSpan.id = 'style-limit';
+        styleLimitSpan.style.fontSize = '12px';
+        styleLimitSpan.style.color = '#666';
+        styleLimitSpan.style.marginTop = '4px';
+        styleRow.appendChild(styleLimitSpan);
+      }
+      
+      if (aiMode === 'fast') {
+        const used = currentLimits.groq_style;
+        const max = currentLimits.groq_style_max;
+        styleLimitSpan.textContent = `⏳ Осталось изменений стиля: ${max - used}/${max}`;
+        styleLimitSpan.style.color = used >= max ? '#ff4444' : '#666';
+      } else {
+        const used = currentLimits.openai_style;
+        const max = currentLimits.openai_style_max;
+        styleLimitSpan.textContent = `⏳ Осталось изменений стиля: ${max - used}/${max}`;
+        styleLimitSpan.style.color = used >= max ? '#ff4444' : '#666';
+      }
+    }
+  }
+
+  // ✅ Функция для смены стиля с проверкой лимита
+  async function changeStyle(newStyle) {
+    if (!currentUserId) return false;
+    
+    try {
+      const API_BASE = "https://fayrat-production.up.railway.app";
+      const res = await fetch(`${API_BASE}/api/user/style/change`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: currentUserId,
+          style: newStyle
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        if (data.error === 'limit_exceeded') {
+          alert(data.message);
+          return false;
+        }
+        alert('Ошибка при смене стиля');
+        return false;
+      }
+      
+      // Обновляем локальное хранилище
+      localStorage.setItem("ai_style", newStyle);
+      
+      // Обновляем лимиты
+      await fetchLimits();
+      
+      return true;
+      
+    } catch (err) {
+      console.log("Change style error:", err);
+      alert('Ошибка при смене стиля');
+      return false;
+    }
+  }
+
+  // ✅ Функция для смены характера с проверкой лимита
+  async function changePersona(newPersona) {
+    if (!currentUserId) return false;
+    
+    try {
+      const API_BASE = "https://fayrat-production.up.railway.app";
+      const res = await fetch(`${API_BASE}/api/user/persona`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: currentUserId,
+          persona: newPersona
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        if (data.error === 'limit_exceeded') {
+          alert(data.message);
+          return false;
+        }
+        alert('Ошибка при смене характера');
+        return false;
+      }
+      
+      // Обновляем локальное хранилище
+      localStorage.setItem("ai_persona", newPersona);
+      
+      // Обновляем лимиты
+      await fetchLimits();
+      
+      return true;
+      
+    } catch (err) {
+      console.log("Change persona error:", err);
+      alert('Ошибка при смене характера');
+      return false;
+    }
+  }
+
   // ✅ Функция для блокировки/разблокировки выбора характера
   async function updatePersonaLock() {
     if (!currentUserId) return;
@@ -272,7 +440,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       const isOpenAI = data.ai_mode === "quality";
       
       const personaSelect = document.getElementById('personaSel');
-      const personaLabel = document.querySelector('.settings-row:has(#personaSel) .label');
       
       if (!personaSelect) return;
       
@@ -297,6 +464,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         personaSelect.disabled = false;
         personaSelect.style.opacity = '1';
       }
+      
+      // Обновляем лимиты
+      await fetchLimits();
+      
     } catch (err) {
       console.log("Persona lock update error:", err);
     }
@@ -412,7 +583,7 @@ Response:`;
 
   async function send(){
     const t = inputEl.value.trim();
-    if(!t || sending || isReloading) return;  // ✅ Не отправляем если перезагрузка
+    if(!t || sending || isReloading) return;
 
     sending = true;
     sendBtnEl.disabled = true;
@@ -440,7 +611,6 @@ Response:`;
       
       await updateMenuBalance();
       
-      // Проверяем режим после отправки, но не если уже перезагружаемся
       if (!isReloading) {
         await checkModeChange();
       }
@@ -495,6 +665,32 @@ Response:`;
         checkModeChange();
       }
     });
+    
+    // Добавляем обработчики для select'ов
+    const personaSelect = document.getElementById('personaSel');
+    if (personaSelect) {
+      personaSelect.addEventListener('change', async (e) => {
+        const success = await changePersona(e.target.value);
+        if (!success) {
+          // Возвращаем старое значение если не удалось
+          e.target.value = getPersona();
+        }
+      });
+    }
+    
+    const styleSelect = document.getElementById('styleSel');
+    if (styleSelect) {
+      styleSelect.addEventListener('change', async (e) => {
+        const success = await changeStyle(e.target.value);
+        if (!success) {
+          // Возвращаем старое значение если не удалось
+          e.target.value = getStyle();
+        }
+      });
+    }
+    
+    // Загружаем лимиты при старте
+    setTimeout(fetchLimits, 1500);
   }
 
   async function confirmClear(){
