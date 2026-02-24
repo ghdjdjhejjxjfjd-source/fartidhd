@@ -1,5 +1,5 @@
 // docs/js/chat.js
-import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona } from "./api.js";
+import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits } from "./api.js";
 import { tg } from "./telegram.js";
 
 export const STORAGE_KEY = "chat_history_v1";
@@ -41,7 +41,6 @@ export function forceClearChat(controller) {
 export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   // Загружаем историю при создании
   let history = loadHistory();
-  console.log("Initial history loaded:", history);
   
   let sending = false;
   let currentUserId = tg?.initDataUnsafe?.user?.id || 0;
@@ -63,7 +62,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let currentAiMode = 'fast';
   let isLoadingLimits = false;
   let settingsOpen = false;
-  let initialRenderDone = false;
 
   const TYPING_ID = "typing-indicator";
 
@@ -246,14 +244,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   }
 
   function renderFromHistory(){
-    console.log("Rendering history:", history);
     chatEl.innerHTML = "";
     
     if (!history || history.length === 0){
-      console.log("No history, adding hello message");
       add("bot", helloText(), true);
     } else {
-      console.log("History found, rendering messages");
       for (const m of history){
         if (!m || !m.text) continue;
         add(m.role === "user" ? "user" : "bot", m.text, false);
@@ -289,22 +284,17 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     isLoadingLimits = true;
     
     try {
-      const API_BASE = "https://fayrat-production.up.railway.app";
-      const res = await fetch(`${API_BASE}/api/user/limits/${currentUserId}`);
-      
-      if (!res.ok) return;
-      
-      const data = await res.json();
-      console.log("Fetched limits:", data);
+      const data = await getUserLimits();
+      if (!data) return;
       
       currentAiMode = data.ai_mode;
       currentLimits = {
         groq_persona: data.limits.groq_persona || 0,
-        groq_style: data.limits.groq_styles || 0,
-        openai_style: data.limits.openai_styles || 0,
+        groq_style: data.limits.groq_style || 0,
+        openai_style: data.limits.openai_style || 0,
         groq_persona_max: data.limits.groq_persona_max || 5,
-        groq_style_max: data.limits.groq_styles_max || 5,
-        openai_style_max: data.limits.openai_styles_max || 7
+        groq_style_max: data.limits.groq_style_max || 5,
+        openai_style_max: data.limits.openai_style_max || 7
       };
       
       if (settingsOpen) {
@@ -355,7 +345,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (!saveBtn) return;
     
-    // Проверяем лимиты
+    // Проверяем можно ли сохранить
     let canSave = hasUnsavedChanges;
     
     if (canSave && tempPersona && currentAiMode === 'fast') {
@@ -388,7 +378,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
   function handleStyleChange(newStyle) {
     const originalStyle = getStyle();
-    console.log("Style change:", {newStyle, originalStyle, tempStyle});
     
     if (newStyle === originalStyle && !tempStyle) {
       tempStyle = null;
@@ -397,15 +386,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
     
     hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
-    console.log("Has unsaved changes:", hasUnsavedChanges);
     
     updateSaveButton();
     updateUnsavedIndicator();
   }
 
   function handlePersonaChange(newPersona) {
-    console.log("Persona change:", {newPersona, currentAiMode});
-    
     if (currentAiMode !== 'fast') {
       alert('Изменение характера недоступно в этом режиме');
       document.getElementById('personaSel').value = getPersona();
@@ -421,7 +407,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
     
     hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
-    console.log("Has unsaved changes:", hasUnsavedChanges);
     
     updateSaveButton();
     updateUnsavedIndicator();
@@ -430,24 +415,22 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
-    console.log("Saving settings...");
     let success = true;
+    let errorMessage = '';
     
     if (tempStyle) {
-      console.log("Saving style:", tempStyle);
       const result = await changeStyle(tempStyle);
-      console.log("Style save result:", result);
-      if (!result) {
+      if (!result.success) {
         success = false;
+        errorMessage = result.message || 'Ошибка при смене стиля';
       }
     }
     
-    if (tempPersona && currentAiMode === 'fast') {
-      console.log("Saving persona:", tempPersona);
+    if (tempPersona && currentAiMode === 'fast' && success) {
       const result = await changePersona(tempPersona);
-      console.log("Persona save result:", result);
-      if (!result) {
+      if (!result.success) {
         success = false;
+        errorMessage = result.message || 'Ошибка при смене характера';
       }
     }
     
@@ -463,14 +446,13 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       tempPersona = null;
       hasUnsavedChanges = false;
       
-      // Обновляем лимиты после сохранения
       await fetchLimits();
       
       updateSaveButton();
       updateUnsavedIndicator();
       closeSettings();
     } else {
-      alert('❌ Не удалось сохранить некоторые настройки');
+      alert(`❌ ${errorMessage}`);
     }
   }
 
@@ -507,7 +489,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const overlay = document.getElementById('overlay');
     if (overlay) {
       settingsOpen = true;
-      fetchLimits();
       
       const personaSelect = document.getElementById('personaSel');
       const styleSelect = document.getElementById('styleSel');
@@ -523,8 +504,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       tempPersona = null;
       hasUnsavedChanges = false;
       
-      updateSaveButton();
-      updateUnsavedIndicator();
+      // Загружаем лимиты сразу
+      fetchLimits().then(() => {
+        updateSaveButton();
+        updateUnsavedIndicator();
+      });
       
       overlay.style.display = 'flex';
       inputEl?.blur();
@@ -736,8 +720,6 @@ Response:`;
   }
 
   function bindUI(){
-    console.log("Binding UI...");
-    
     sendBtnEl.addEventListener("click", send);
     
     if (inputEl.tagName === 'TEXTAREA') {
@@ -823,12 +805,8 @@ Response:`;
       }
     });
     
-    // Загружаем лимиты через 2 секунды
-    setTimeout(() => {
-      if (settingsOpen) {
-        fetchLimits();
-      }
-    }, 2000);
+    // Сразу отрисовываем историю
+    renderFromHistory();
   }
 
   async function confirmClear(){
@@ -838,12 +816,6 @@ Response:`;
     }
     return window.confirm(msg);
   }
-
-  // Сразу отрисовываем историю
-  console.log("Controller created, rendering history...");
-  setTimeout(() => {
-    renderFromHistory();
-  }, 100);
 
   return {
     renderFromHistory,
