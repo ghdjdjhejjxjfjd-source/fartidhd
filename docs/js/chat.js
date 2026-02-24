@@ -277,7 +277,17 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       if (!res.ok) return;
       
       const data = await res.json();
-      currentLimits = data.limits;
+      console.log("Limits data:", data); // Для отладки
+      
+      // ✅ ИСПРАВЛЕНО: правильные ключи из ответа сервера
+      currentLimits = {
+        groq_persona: data.limits.groq_persona || 0,
+        groq_style: data.limits.groq_styles || 0,  // было groq_style, стало groq_styles
+        openai_style: data.limits.openai_styles || 0,  // было openai_style, стало openai_styles
+        groq_persona_max: data.limits.groq_persona_max || 5,
+        groq_style_max: data.limits.groq_styles_max || 5,  // было groq_style_max, стало groq_styles_max
+        openai_style_max: data.limits.openai_styles_max || 7  // было openai_style_max, стало openai_styles_max
+      };
       
       // Обновляем отображение лимитов
       updateLimitsDisplay(data.ai_mode);
@@ -305,8 +315,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       if (aiMode === 'fast') {
         const used = currentLimits.groq_persona;
         const max = currentLimits.groq_persona_max;
-        limitSpan.textContent = `⏳ Осталось изменений характера: ${max - used}/${max}`;
-        limitSpan.style.color = used >= max ? '#ff4444' : '#666';
+        const remaining = max - used;
+        limitSpan.textContent = `⏳ Осталось изменений характера: ${remaining}/${max}`;
+        limitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
       } else {
         limitSpan.textContent = `⏳ Изменение характера недоступно`;
         limitSpan.style.color = '#666';
@@ -329,13 +340,15 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       if (aiMode === 'fast') {
         const used = currentLimits.groq_style;
         const max = currentLimits.groq_style_max;
-        styleLimitSpan.textContent = `⏳ Осталось изменений стиля: ${max - used}/${max}`;
-        styleLimitSpan.style.color = used >= max ? '#ff4444' : '#666';
+        const remaining = max - used;
+        styleLimitSpan.textContent = `⏳ Осталось изменений стиля: ${remaining}/${max}`;
+        styleLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
       } else {
         const used = currentLimits.openai_style;
         const max = currentLimits.openai_style_max;
-        styleLimitSpan.textContent = `⏳ Осталось изменений стиля: ${max - used}/${max}`;
-        styleLimitSpan.style.color = used >= max ? '#ff4444' : '#666';
+        const remaining = max - used;
+        styleLimitSpan.textContent = `⏳ Осталось изменений стиля: ${remaining}/${max}`;
+        styleLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
       }
     }
   }
