@@ -6,7 +6,73 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from .postgres_db import get_db, return_db
-from .star_packages import get_packages, get_package  # ✅ Импорт из нового файла
+
+# Пакеты звезд (перенесены сюда)
+STAR_PACKAGES = [
+    {
+        "id": "starter",
+        "name": "Starter",
+        "stars": 100,
+        "price_usd": 1.99,
+        "price_per_star": 0.0199,
+        "discount": 0,
+        "popular": False,
+    },
+    {
+        "id": "basic",
+        "name": "Basic",
+        "stars": 500,
+        "price_usd": 8.99,
+        "price_per_star": 0.0179,
+        "discount": 10,
+        "popular": False,
+    },
+    {
+        "id": "popular",
+        "name": "Popular",
+        "stars": 1000,
+        "price_usd": 16.99,
+        "price_per_star": 0.0169,
+        "discount": 15,
+        "popular": True,
+    },
+    {
+        "id": "pro",
+        "name": "Pro",
+        "stars": 2500,
+        "price_usd": 39.99,
+        "price_per_star": 0.0159,
+        "discount": 20,
+        "popular": False,
+    },
+    {
+        "id": "premium",
+        "name": "Premium",
+        "stars": 5000,
+        "price_usd": 74.99,
+        "price_per_star": 0.0149,
+        "discount": 25,
+        "popular": False,
+    },
+    {
+        "id": "ultimate",
+        "name": "Ultimate",
+        "stars": 10000,
+        "price_usd": 139.99,
+        "price_per_star": 0.0139,
+        "discount": 30,
+        "popular": False,
+    },
+]
+
+def get_packages():
+    return STAR_PACKAGES
+
+def get_package(package_id: str):
+    for p in STAR_PACKAGES:
+        if p["id"] == package_id:
+            return p
+    return None
 
 def init_payments_table():
     """Создать таблицы для звезд"""
@@ -17,7 +83,6 @@ def init_payments_table():
     try:
         cur = conn.cursor()
         
-        # Таблица балансов звезд
         cur.execute("""
             CREATE TABLE IF NOT EXISTS star_balances (
                 user_id BIGINT PRIMARY KEY,
@@ -27,7 +92,6 @@ def init_payments_table():
             )
         """)
         
-        # Таблица транзакций
         cur.execute("""
             CREATE TABLE IF NOT EXISTS star_transactions (
                 id SERIAL PRIMARY KEY,
@@ -48,11 +112,9 @@ def init_payments_table():
     finally:
         return_db(conn)
 
-# Инициализация
 init_payments_table()
 
 def get_balance(user_id: int) -> int:
-    """Получить баланс звезд"""
     conn = get_db()
     if not conn:
         return 0
@@ -70,7 +132,6 @@ def get_balance(user_id: int) -> int:
         return_db(conn)
 
 def add_stars(user_id: int, amount: int, package_id: Optional[str] = None):
-    """Добавить звезды"""
     conn = get_db()
     if not conn:
         return
@@ -79,21 +140,14 @@ def add_stars(user_id: int, amount: int, package_id: Optional[str] = None):
         now = datetime.now()
         cur = conn.cursor()
         
-        # Проверяем существует ли пользователь
-        cur.execute("SELECT user_id FROM star_balances WHERE user_id = %s", (user_id,))
-        exists = cur.fetchone()
-        
-        if exists:
-            cur.execute("""
-                UPDATE star_balances
-                SET balance = balance + %s, total_purchased = total_purchased + %s, updated_at = %s
-                WHERE user_id = %s
-            """, (amount, amount, now, user_id))
-        else:
-            cur.execute("""
-                INSERT INTO star_balances (user_id, balance, total_purchased, updated_at)
-                VALUES (%s, %s, %s, %s)
-            """, (user_id, amount, amount, now))
+        cur.execute("""
+            INSERT INTO star_balances (user_id, balance, total_purchased, updated_at)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (user_id) DO UPDATE SET
+                balance = star_balances.balance + %s,
+                total_purchased = star_balances.total_purchased + %s,
+                updated_at = %s
+        """, (user_id, amount, amount, now, amount, amount, now))
         
         cur.execute("""
             INSERT INTO star_transactions (user_id, amount, package_id, created_at)
@@ -102,16 +156,13 @@ def add_stars(user_id: int, amount: int, package_id: Optional[str] = None):
         
         conn.commit()
         cur.close()
-        print(f"✅ Added {amount} stars to user {user_id}")
     except Exception as e:
         print(f"❌ Error adding stars: {e}")
     finally:
         return_db(conn)
 
 def spend_stars(user_id: int, amount: int) -> bool:
-    """Списать звезды"""
     current = get_balance(user_id)
-    
     if current < amount:
         return False
     
@@ -136,7 +187,6 @@ def spend_stars(user_id: int, amount: int) -> bool:
         
         conn.commit()
         cur.close()
-        print(f"✅ Spent {amount} stars from user {user_id}")
         return True
     except Exception as e:
         print(f"❌ Error spending stars: {e}")
@@ -145,7 +195,6 @@ def spend_stars(user_id: int, amount: int) -> bool:
         return_db(conn)
 
 def get_top_users(limit: int = 10) -> List[tuple]:
-    """Получить топ пользователей по звездам"""
     conn = get_db()
     if not conn:
         return []
@@ -169,7 +218,6 @@ def get_top_users(limit: int = 10) -> List[tuple]:
         return_db(conn)
 
 def reset_balance(user_id: int):
-    """Сбросить баланс пользователя (только для админов)"""
     conn = get_db()
     if not conn:
         return
@@ -186,7 +234,6 @@ def reset_balance(user_id: int):
         
         conn.commit()
         cur.close()
-        print(f"🔄 Reset balance for user {user_id}")
     except Exception as e:
         print(f"❌ Error resetting balance: {e}")
     finally:
