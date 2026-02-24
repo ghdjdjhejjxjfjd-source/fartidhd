@@ -59,10 +59,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let hasUnsavedChanges = false;
   let currentAiMode = 'fast';
   let isLoadingLimits = false;
+  let settingsOpen = false; // ✅ флаг открытых настроек
 
   const TYPING_ID = "typing-indicator";
 
-  // ✅ Функция приветствия
   function helloText(){
     const lang = getLang();
     const hellos = {
@@ -241,7 +241,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return localStorage.getItem("ai_style") || "steps";
   }
 
-  // ✅ Функция отрисовки истории
   function renderFromHistory(){
     chatEl.innerHTML = "";
     if (!history || history.length === 0){
@@ -270,12 +269,13 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     } catch (e) {
       console.error("Failed to clear server memory:", e);
     }
+    
+    // ✅ Полностью очищаем DOM и добавляем приветствие
     chatEl.innerHTML = "";
     add("bot", helloText(), true);
     return true;
   }
 
-  // ✅ Функция для получения лимитов с сервера
   async function fetchLimits() {
     if (!currentUserId || isLoadingLimits) return;
     
@@ -299,15 +299,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         openai_style_max: data.limits.openai_styles_max || 7
       };
       
-      // Сбрасываем временные изменения
-      tempStyle = null;
-      tempPersona = null;
-      hasUnsavedChanges = false;
-      
-      // Обновляем отображение
-      updateLimitsDisplay();
-      updateSaveButton();
-      updateUnsavedIndicator();
+      // ✅ Если настройки открыты, обновляем UI
+      if (settingsOpen) {
+        updateLimitsDisplay();
+        updateSaveButton();
+        updateUnsavedIndicator();
+      }
       
     } catch (err) {
       console.log("Fetch limits error:", err);
@@ -316,9 +313,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  // ✅ Функция для обновления отображения лимитов
   function updateLimitsDisplay() {
-    // Обновляем лимиты для характера
     const personaLimitSpan = document.getElementById('persona-limit');
     if (personaLimitSpan) {
       if (currentAiMode === 'fast') {
@@ -333,7 +328,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
-    // Обновляем лимиты для стиля
     const styleLimitSpan = document.getElementById('style-limit');
     if (styleLimitSpan) {
       let used, max;
@@ -350,38 +344,14 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  // ✅ Функция для обновления состояния кнопки сохранения
   function updateSaveButton() {
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (!saveBtn) return;
     
-    if (isLoadingLimits) {
-      saveBtn.disabled = true;
-      return;
-    }
-    
-    let canSave = hasUnsavedChanges;
-    
-    if (canSave && currentAiMode === 'fast') {
-      if (tempPersona && currentLimits.groq_persona >= currentLimits.groq_persona_max) {
-        canSave = false;
-      }
-      if (tempStyle && currentLimits.groq_style >= currentLimits.groq_style_max) {
-        canSave = false;
-      }
-    } else if (canSave && currentAiMode === 'quality') {
-      if (tempStyle && currentLimits.openai_style >= currentLimits.openai_style_max) {
-        canSave = false;
-      }
-      if (tempPersona) {
-        canSave = false;
-      }
-    }
-    
-    saveBtn.disabled = !canSave;
+    // ✅ Кнопка сохранить активна если есть несохраненные изменения
+    saveBtn.disabled = !hasUnsavedChanges;
   }
 
-  // ✅ Функция для обновления индикатора несохраненных изменений
   function updateUnsavedIndicator() {
     const indicator = document.getElementById('unsaved-indicator');
     if (indicator) {
@@ -389,23 +359,22 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
   }
 
-  // ✅ Обработчик изменения стиля (временное)
   function handleStyleChange(newStyle) {
     const originalStyle = getStyle();
     
-    if (newStyle === originalStyle && !tempStyle) {
+    if (newStyle === originalStyle) {
       tempStyle = null;
-      hasUnsavedChanges = false;
     } else {
       tempStyle = newStyle;
-      hasUnsavedChanges = true;
     }
+    
+    // ✅ Проверяем, есть ли реальные изменения
+    hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
     
     updateSaveButton();
     updateUnsavedIndicator();
   }
 
-  // ✅ Обработчик изменения характера (временное)
   function handlePersonaChange(newPersona) {
     if (currentAiMode !== 'fast') {
       alert('Изменение характера недоступно в этом режиме');
@@ -415,19 +384,19 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     
     const originalPersona = getPersona();
     
-    if (newPersona === originalPersona && !tempPersona) {
+    if (newPersona === originalPersona) {
       tempPersona = null;
-      hasUnsavedChanges = false;
     } else {
       tempPersona = newPersona;
-      hasUnsavedChanges = true;
     }
+    
+    // ✅ Проверяем, есть ли реальные изменения
+    hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
     
     updateSaveButton();
     updateUnsavedIndicator();
   }
 
-  // ✅ Функция сохранения изменений
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
@@ -459,14 +428,14 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       tempPersona = null;
       hasUnsavedChanges = false;
       
-      await fetchLimits();
+      updateSaveButton();
+      updateUnsavedIndicator();
       closeSettings();
     } else {
       alert('❌ Не удалось сохранить некоторые настройки');
     }
   }
 
-  // ✅ Функция отмены изменений
   function cancelSettings() {
     const personaSelect = document.getElementById('personaSel');
     const styleSelect = document.getElementById('styleSel');
@@ -488,18 +457,18 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     closeSettings();
   }
 
-  // ✅ Функция закрытия настроек
   function closeSettings() {
     const overlay = document.getElementById('overlay');
     if (overlay) {
       overlay.style.display = 'none';
+      settingsOpen = false;
     }
   }
 
-  // ✅ Функция открытия настроек
   function openSettings() {
     const overlay = document.getElementById('overlay');
     if (overlay) {
+      settingsOpen = true;
       fetchLimits();
       
       const personaSelect = document.getElementById('personaSel');
@@ -671,7 +640,9 @@ Response:`;
         personaSelect.style.opacity = '1';
       }
       
-      await fetchLimits();
+      if (settingsOpen) {
+        await fetchLimits();
+      }
       
     } catch (err) {
       console.log("Persona lock update error:", err);
@@ -812,7 +783,12 @@ Response:`;
       }
     });
     
-    setTimeout(fetchLimits, 2000);
+    // ✅ Не загружаем лимиты сразу при старте
+    setTimeout(() => {
+      if (settingsOpen) {
+        fetchLimits();
+      }
+    }, 2000);
   }
 
   async function confirmClear(){
