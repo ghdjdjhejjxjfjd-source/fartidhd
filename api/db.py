@@ -31,6 +31,21 @@ def db_init():
         )
         """
     )
+    
+    # ✅ НОВАЯ ТАБЛИЦА ДЛЯ ЛИМИТОВ
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user_limits (
+            user_id INTEGER PRIMARY KEY,
+            last_reset_date TEXT,
+            groq_persona_changes INTEGER DEFAULT 0,
+            groq_style_changes INTEGER DEFAULT 0,
+            openai_style_changes INTEGER DEFAULT 0,
+            FOREIGN KEY (user_id) REFERENCES access(user_id)
+        )
+        """
+    )
+    
     # ✅ память чата
     cur.execute(
         """
@@ -107,6 +122,14 @@ def set_free(user_id: int, value: bool) -> None:
             """,
             (user_id, 1 if value else 0, now, now)
         )
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])  # только дата YYYY-MM-DD
+        )
     
     con.commit()
     con.close()
@@ -132,6 +155,14 @@ def set_blocked(user_id: int, value: bool) -> None:
             VALUES (?, 0, ?, ?, ?, 'fast')
             """,
             (user_id, 1 if value else 0, now, now)
+        )
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
         )
     con.commit()
     con.close()
@@ -212,6 +243,14 @@ def set_last_menu(user_id: int, chat_id: int, message_id: int) -> None:
             """,
             (user_id, now, chat_id, message_id, now)
         )
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
+        )
     
     con.commit()
     con.close()
@@ -265,6 +304,14 @@ def set_use_mini_app(user_id: int, value: bool) -> None:
             """,
             (user_id, 1 if value else 0, now, now)
         )
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
+        )
     con.commit()
     con.close()
 
@@ -294,6 +341,14 @@ def set_user_persona(user_id: int, persona: str) -> None:
             """,
             (user_id, persona, now, now)
         )
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
+        )
     con.commit()
     con.close()
 
@@ -322,6 +377,14 @@ def set_user_lang(user_id: int, lang: str) -> None:
             VALUES (?, ?, ?, ?, 'fast')
             """,
             (user_id, lang, now, now)
+        )
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
         )
     con.commit()
     con.close()
@@ -360,8 +423,186 @@ def set_ai_mode(user_id: int, mode: str) -> None:
             """,
             (user_id, mode, now, now)
         )
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
+        )
     con.commit()
     con.close()
+
+
+# =========================
+# ФУНКЦИИ ДЛЯ ЛИМИТОВ
+# =========================
+def check_and_reset_limits(user_id: int) -> None:
+    """Проверяем не пора ли сбросить лимиты (новый день)"""
+    con = db_conn()
+    cur = con.cursor()
+    
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    cur.execute(
+        "SELECT last_reset_date FROM user_limits WHERE user_id = ?",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    
+    if not row:
+        # Нет записи - создаем
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date, groq_persona_changes, groq_style_changes, openai_style_changes)
+            VALUES (?, ?, 0, 0, 0)
+            """,
+            (user_id, today)
+        )
+    elif row[0] != today:
+        # Новый день - сбрасываем счетчики
+        cur.execute(
+            """
+            UPDATE user_limits
+            SET last_reset_date = ?,
+                groq_persona_changes = 0,
+                groq_style_changes = 0,
+                openai_style_changes = 0
+            WHERE user_id = ?
+            """,
+            (today, user_id)
+        )
+    
+    con.commit()
+    con.close()
+
+
+def get_user_limits(user_id: int) -> Dict[str, Any]:
+    """Получить текущие лимиты пользователя"""
+    check_and_reset_limits(user_id)
+    
+    con = db_conn()
+    cur = con.cursor()
+    
+    cur.execute(
+        """
+        SELECT groq_persona_changes, groq_style_changes, openai_style_changes
+        FROM user_limits WHERE user_id = ?
+        """,
+        (user_id,)
+    )
+    row = cur.fetchone()
+    con.close()
+    
+    if not row:
+        return {
+            "groq_persona": 0,
+            "groq_style": 0,
+            "openai_style": 0,
+            "groq_persona_max": 5,
+            "groq_style_max": 5,
+            "openai_style_max": 7
+        }
+    
+    return {
+        "groq_persona": row[0] or 0,
+        "groq_style": row[1] or 0,
+        "openai_style": row[2] or 0,
+        "groq_persona_max": 5,
+        "groq_style_max": 5,
+        "openai_style_max": 7
+    }
+
+
+def increment_groq_persona(user_id: int) -> bool:
+    """Увеличить счетчик изменений характера для Groq. Возвращает True если лимит не превышен"""
+    con = db_conn()
+    cur = con.cursor()
+    
+    check_and_reset_limits(user_id)
+    
+    cur.execute(
+        "SELECT groq_persona_changes FROM user_limits WHERE user_id = ?",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    
+    if not row or row[0] < 5:
+        cur.execute(
+            """
+            UPDATE user_limits
+            SET groq_persona_changes = groq_persona_changes + 1
+            WHERE user_id = ?
+            """,
+            (user_id,)
+        )
+        con.commit()
+        con.close()
+        return True
+    
+    con.close()
+    return False
+
+
+def increment_groq_style(user_id: int) -> bool:
+    """Увеличить счетчик изменений стиля для Groq. Возвращает True если лимит не превышен"""
+    con = db_conn()
+    cur = con.cursor()
+    
+    check_and_reset_limits(user_id)
+    
+    cur.execute(
+        "SELECT groq_style_changes FROM user_limits WHERE user_id = ?",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    
+    if not row or row[0] < 5:
+        cur.execute(
+            """
+            UPDATE user_limits
+            SET groq_style_changes = groq_style_changes + 1
+            WHERE user_id = ?
+            """,
+            (user_id,)
+        )
+        con.commit()
+        con.close()
+        return True
+    
+    con.close()
+    return False
+
+
+def increment_openai_style(user_id: int) -> bool:
+    """Увеличить счетчик изменений стиля для OpenAI. Возвращает True если лимит не превышен"""
+    con = db_conn()
+    cur = con.cursor()
+    
+    check_and_reset_limits(user_id)
+    
+    cur.execute(
+        "SELECT openai_style_changes FROM user_limits WHERE user_id = ?",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    
+    if not row or row[0] < 7:
+        cur.execute(
+            """
+            UPDATE user_limits
+            SET openai_style_changes = openai_style_changes + 1
+            WHERE user_id = ?
+            """,
+            (user_id,)
+        )
+        con.commit()
+        con.close()
+        return True
+    
+    con.close()
+    return False
 
 
 # =========================
@@ -390,6 +631,14 @@ def increment_messages(user_id: int):
             INSERT INTO access (user_id, total_messages, updated_at, registered_at, ai_mode)
             VALUES (?, 1, ?, ?, 'fast')
         """, (user_id, now, now))
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
+        )
     
     con.commit()
     con.close()
@@ -417,6 +666,14 @@ def increment_images(user_id: int):
             INSERT INTO access (user_id, total_images, updated_at, registered_at, ai_mode)
             VALUES (?, 1, ?, ?, 'fast')
         """, (user_id, now, now))
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
+        )
     
     con.commit()
     con.close()
@@ -444,6 +701,14 @@ def add_stars_spent(user_id: int, amount: int):
             INSERT INTO access (user_id, total_stars_spent, updated_at, registered_at, ai_mode)
             VALUES (?, ?, ?, ?, 'fast')
         """, (user_id, amount, now, now))
+        # Создаем запись в таблице лимитов для нового пользователя
+        cur.execute(
+            """
+            INSERT INTO user_limits (user_id, last_reset_date)
+            VALUES (?, ?)
+            """,
+            (user_id, now[:10])
+        )
     
     con.commit()
     con.close()
