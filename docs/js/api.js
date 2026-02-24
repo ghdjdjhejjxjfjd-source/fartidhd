@@ -4,6 +4,10 @@ const API_BASE = "https://fayrat-production.up.railway.app";
 const API_CHAT = API_BASE + "/api/chat";
 const API_CLEAR_MEMORY = API_BASE + "/api/memory/clear";
 const API_BALANCE = API_BASE + "/api/stars/balance";
+const API_LIMITS = API_BASE + "/api/user/limits";  // ✅ новый эндпоинт
+const API_STYLE_CHANGE = API_BASE + "/api/user/style/change";  // ✅ новый эндпоинт
+const API_PERSONA = API_BASE + "/api/user/persona";  // ✅ для смены характера
+const API_AI_MODE = API_BASE + "/api/user/ai_mode";  // ✅ для получения режима
 
 function getLang(){
   return localStorage.getItem("miniapp_lang_v1") || "ru";
@@ -94,4 +98,108 @@ export async function getStarsBalance() {
     console.error("Error fetching balance:", e);
   }
   return 0;
+}
+
+// =========================
+// НОВЫЕ ФУНКЦИИ ДЛЯ ЛИМИТОВ
+// =========================
+
+export async function getUserLimits() {
+  const user = getTelegramUser();
+  if (!user.tg_user_id) return null;
+  
+  try {
+    const r = await fetch(`${API_LIMITS}/${user.tg_user_id}`);
+    if (r.ok) {
+      const data = await r.json();
+      return data;
+    }
+  } catch (e) {
+    console.error("Error fetching limits:", e);
+  }
+  return null;
+}
+
+export async function changeStyle(newStyle) {
+  const user = getTelegramUser();
+  if (!user.tg_user_id) return { success: false, error: "no_user" };
+  
+  try {
+    const r = await fetch(API_STYLE_CHANGE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: user.tg_user_id,
+        style: newStyle
+      }),
+    });
+    
+    const data = await r.json();
+    
+    if (!r.ok) {
+      if (data.error === "limit_exceeded") {
+        return { success: false, error: "limit_exceeded", message: data.message };
+      }
+      return { success: false, error: "unknown", message: data.error };
+    }
+    
+    // Если успешно, сохраняем в localStorage
+    localStorage.setItem("ai_style", newStyle);
+    
+    return { success: true, data };
+    
+  } catch (e) {
+    console.error("Change style error:", e);
+    return { success: false, error: "network", message: e.message };
+  }
+}
+
+export async function changePersona(newPersona) {
+  const user = getTelegramUser();
+  if (!user.tg_user_id) return { success: false, error: "no_user" };
+  
+  try {
+    const r = await fetch(API_PERSONA, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: user.tg_user_id,
+        persona: newPersona
+      }),
+    });
+    
+    const data = await r.json();
+    
+    if (!r.ok) {
+      if (data.error === "limit_exceeded") {
+        return { success: false, error: "limit_exceeded", message: data.message };
+      }
+      return { success: false, error: "unknown", message: data.error };
+    }
+    
+    // Если успешно, сохраняем в localStorage
+    localStorage.setItem("ai_persona", newPersona);
+    
+    return { success: true, data };
+    
+  } catch (e) {
+    console.error("Change persona error:", e);
+    return { success: false, error: "network", message: e.message };
+  }
+}
+
+export async function getCurrentMode() {
+  const user = getTelegramUser();
+  if (!user.tg_user_id) return null;
+  
+  try {
+    const r = await fetch(`${API_AI_MODE}/${user.tg_user_id}`);
+    if (r.ok) {
+      const data = await r.json();
+      return data.ai_mode;
+    }
+  } catch (e) {
+    console.error("Error fetching mode:", e);
+  }
+  return null;
 }
