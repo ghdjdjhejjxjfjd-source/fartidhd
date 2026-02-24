@@ -370,6 +370,181 @@ async def get_ai_mode_changes(user_id: int) -> int:
 
 
 # =========================
+# ФУНКЦИИ ДЛЯ ЛИМИТОВ
+# =========================
+def check_and_reset_limits(user_id: int) -> None:
+    """Проверяем не пора ли сбросить лимиты (новый день)"""
+    conn = get_db()
+    if not conn:
+        return
+    
+    cur = conn.cursor()
+    today = datetime.now().date()
+    
+    cur.execute(
+        "SELECT last_reset_date FROM user_limits WHERE user_id = %s",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    
+    if not row:
+        cur.execute("""
+            INSERT INTO user_limits (user_id, last_reset_date, groq_persona_changes, groq_style_changes, openai_style_changes)
+            VALUES (%s, %s, 0, 0, 0)
+        """, (user_id, today))
+    elif row[0] != today:
+        cur.execute("""
+            UPDATE user_limits
+            SET last_reset_date = %s,
+                groq_persona_changes = 0,
+                groq_style_changes = 0,
+                openai_style_changes = 0
+            WHERE user_id = %s
+        """, (today, user_id))
+    
+    conn.commit()
+    cur.close()
+    return_db(conn)
+
+
+def get_user_limits(user_id: int) -> Dict[str, Any]:
+    """Получить текущие лимиты пользователя"""
+    check_and_reset_limits(user_id)
+    
+    conn = get_db()
+    if not conn:
+        return {
+            "groq_persona": 0,
+            "groq_style": 0,
+            "openai_style": 0,
+            "groq_persona_max": 5,
+            "groq_style_max": 5,
+            "openai_style_max": 7
+        }
+    
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT groq_persona_changes, groq_style_changes, openai_style_changes
+        FROM user_limits WHERE user_id = %s
+    """, (user_id,))
+    row = cur.fetchone()
+    cur.close()
+    return_db(conn)
+    
+    if not row:
+        return {
+            "groq_persona": 0,
+            "groq_style": 0,
+            "openai_style": 0,
+            "groq_persona_max": 5,
+            "groq_style_max": 5,
+            "openai_style_max": 7
+        }
+    
+    return {
+        "groq_persona": row[0] or 0,
+        "groq_style": row[1] or 0,
+        "openai_style": row[2] or 0,
+        "groq_persona_max": 5,
+        "groq_style_max": 5,
+        "openai_style_max": 7
+    }
+
+
+def increment_groq_persona(user_id: int) -> bool:
+    """Увеличить счетчик изменений характера для Groq. Возвращает True если лимит не превышен"""
+    conn = get_db()
+    if not conn:
+        return False
+    
+    check_and_reset_limits(user_id)
+    
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT groq_persona_changes FROM user_limits WHERE user_id = %s",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    
+    if not row or row[0] < 5:
+        cur.execute("""
+            UPDATE user_limits
+            SET groq_persona_changes = groq_persona_changes + 1
+            WHERE user_id = %s
+        """, (user_id,))
+        conn.commit()
+        cur.close()
+        return_db(conn)
+        return True
+    
+    cur.close()
+    return_db(conn)
+    return False
+
+
+def increment_groq_style(user_id: int) -> bool:
+    """Увеличить счетчик изменений стиля для Groq. Возвращает True если лимит не превышен"""
+    conn = get_db()
+    if not conn:
+        return False
+    
+    check_and_reset_limits(user_id)
+    
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT groq_style_changes FROM user_limits WHERE user_id = %s",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    
+    if not row or row[0] < 5:
+        cur.execute("""
+            UPDATE user_limits
+            SET groq_style_changes = groq_style_changes + 1
+            WHERE user_id = %s
+        """, (user_id,))
+        conn.commit()
+        cur.close()
+        return_db(conn)
+        return True
+    
+    cur.close()
+    return_db(conn)
+    return False
+
+
+def increment_openai_style(user_id: int) -> bool:
+    """Увеличить счетчик изменений стиля для OpenAI. Возвращает True если лимит не превышен"""
+    conn = get_db()
+    if not conn:
+        return False
+    
+    check_and_reset_limits(user_id)
+    
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT openai_style_changes FROM user_limits WHERE user_id = %s",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    
+    if not row or row[0] < 7:
+        cur.execute("""
+            UPDATE user_limits
+            SET openai_style_changes = openai_style_changes + 1
+            WHERE user_id = %s
+        """, (user_id,))
+        conn.commit()
+        cur.close()
+        return_db(conn)
+        return True
+    
+    cur.close()
+    return_db(conn)
+    return False
+
+
+# =========================
 # ФУНКЦИИ ДЛЯ СТАТИСТИКИ
 # =========================
 def increment_messages(user_id: int):
