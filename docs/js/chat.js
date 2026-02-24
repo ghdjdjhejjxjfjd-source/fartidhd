@@ -39,7 +39,10 @@ export function forceClearChat(controller) {
 }
 
 export function createChatController({ chatEl, inputEl, sendBtnEl }) {
+  // Загружаем историю при создании
   let history = loadHistory();
+  console.log("Initial history loaded:", history);
+  
   let sending = false;
   let currentUserId = tg?.initDataUnsafe?.user?.id || 0;
   let isReloading = false;
@@ -59,7 +62,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let hasUnsavedChanges = false;
   let currentAiMode = 'fast';
   let isLoadingLimits = false;
-  let settingsOpen = false; // ✅ флаг открытых настроек
+  let settingsOpen = false;
+  let initialRenderDone = false;
 
   const TYPING_ID = "typing-indicator";
 
@@ -242,10 +246,14 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   }
 
   function renderFromHistory(){
+    console.log("Rendering history:", history);
     chatEl.innerHTML = "";
+    
     if (!history || history.length === 0){
+      console.log("No history, adding hello message");
       add("bot", helloText(), true);
     } else {
+      console.log("History found, rendering messages");
       for (const m of history){
         if (!m || !m.text) continue;
         add(m.role === "user" ? "user" : "bot", m.text, false);
@@ -270,7 +278,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       console.error("Failed to clear server memory:", e);
     }
     
-    // ✅ Полностью очищаем DOM и добавляем приветствие
     chatEl.innerHTML = "";
     add("bot", helloText(), true);
     return true;
@@ -288,6 +295,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       if (!res.ok) return;
       
       const data = await res.json();
+      console.log("Fetched limits:", data);
       
       currentAiMode = data.ai_mode;
       currentLimits = {
@@ -299,7 +307,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         openai_style_max: data.limits.openai_styles_max || 7
       };
       
-      // ✅ Если настройки открыты, обновляем UI
       if (settingsOpen) {
         updateLimitsDisplay();
         updateSaveButton();
@@ -348,8 +355,28 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (!saveBtn) return;
     
-    // ✅ Кнопка сохранить активна если есть несохраненные изменения
-    saveBtn.disabled = !hasUnsavedChanges;
+    // Проверяем лимиты
+    let canSave = hasUnsavedChanges;
+    
+    if (canSave && tempPersona && currentAiMode === 'fast') {
+      if (currentLimits.groq_persona >= currentLimits.groq_persona_max) {
+        canSave = false;
+      }
+    }
+    
+    if (canSave && tempStyle) {
+      if (currentAiMode === 'fast') {
+        if (currentLimits.groq_style >= currentLimits.groq_style_max) {
+          canSave = false;
+        }
+      } else {
+        if (currentLimits.openai_style >= currentLimits.openai_style_max) {
+          canSave = false;
+        }
+      }
+    }
+    
+    saveBtn.disabled = !canSave;
   }
 
   function updateUnsavedIndicator() {
@@ -361,21 +388,24 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
   function handleStyleChange(newStyle) {
     const originalStyle = getStyle();
+    console.log("Style change:", {newStyle, originalStyle, tempStyle});
     
-    if (newStyle === originalStyle) {
+    if (newStyle === originalStyle && !tempStyle) {
       tempStyle = null;
     } else {
       tempStyle = newStyle;
     }
     
-    // ✅ Проверяем, есть ли реальные изменения
     hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
+    console.log("Has unsaved changes:", hasUnsavedChanges);
     
     updateSaveButton();
     updateUnsavedIndicator();
   }
 
   function handlePersonaChange(newPersona) {
+    console.log("Persona change:", {newPersona, currentAiMode});
+    
     if (currentAiMode !== 'fast') {
       alert('Изменение характера недоступно в этом режиме');
       document.getElementById('personaSel').value = getPersona();
@@ -384,14 +414,14 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     
     const originalPersona = getPersona();
     
-    if (newPersona === originalPersona) {
+    if (newPersona === originalPersona && !tempPersona) {
       tempPersona = null;
     } else {
       tempPersona = newPersona;
     }
     
-    // ✅ Проверяем, есть ли реальные изменения
     hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
+    console.log("Has unsaved changes:", hasUnsavedChanges);
     
     updateSaveButton();
     updateUnsavedIndicator();
@@ -400,17 +430,22 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
+    console.log("Saving settings...");
     let success = true;
     
     if (tempStyle) {
+      console.log("Saving style:", tempStyle);
       const result = await changeStyle(tempStyle);
+      console.log("Style save result:", result);
       if (!result) {
         success = false;
       }
     }
     
     if (tempPersona && currentAiMode === 'fast') {
+      console.log("Saving persona:", tempPersona);
       const result = await changePersona(tempPersona);
+      console.log("Persona save result:", result);
       if (!result) {
         success = false;
       }
@@ -427,6 +462,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       tempStyle = null;
       tempPersona = null;
       hasUnsavedChanges = false;
+      
+      // Обновляем лимиты после сохранения
+      await fetchLimits();
       
       updateSaveButton();
       updateUnsavedIndicator();
@@ -698,6 +736,8 @@ Response:`;
   }
 
   function bindUI(){
+    console.log("Binding UI...");
+    
     sendBtnEl.addEventListener("click", send);
     
     if (inputEl.tagName === 'TEXTAREA') {
@@ -783,7 +823,7 @@ Response:`;
       }
     });
     
-    // ✅ Не загружаем лимиты сразу при старте
+    // Загружаем лимиты через 2 секунды
     setTimeout(() => {
       if (settingsOpen) {
         fetchLimits();
@@ -798,6 +838,12 @@ Response:`;
     }
     return window.confirm(msg);
   }
+
+  // Сразу отрисовываем историю
+  console.log("Controller created, rendering history...");
+  setTimeout(() => {
+    renderFromHistory();
+  }, 100);
 
   return {
     renderFromHistory,
