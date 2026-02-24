@@ -257,6 +257,50 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return true;
   }
 
+  // ✅ Функция для блокировки/разблокировки выбора характера
+  async function updatePersonaLock() {
+    if (!currentUserId) return;
+    
+    try {
+      const API_BASE = "https://fayrat-production.up.railway.app";
+      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
+      
+      if (!res.ok) return;
+      
+      const data = await res.json();
+      const isOpenAI = data.ai_mode === "quality";
+      
+      const personaSelect = document.getElementById('personaSel');
+      const personaLabel = document.querySelector('.settings-row:has(#personaSel) .label');
+      
+      if (!personaSelect) return;
+      
+      // Удаляем старый замок если есть
+      const oldLock = document.getElementById('persona-lock-icon');
+      if (oldLock) oldLock.remove();
+      
+      if (isOpenAI) {
+        // Блокируем для OpenAI
+        personaSelect.disabled = true;
+        personaSelect.style.opacity = '0.6';
+        
+        // Добавляем замок перед select
+        const lockSpan = document.createElement('span');
+        lockSpan.id = 'persona-lock-icon';
+        lockSpan.innerHTML = '🔒';
+        lockSpan.style.marginRight = '8px';
+        lockSpan.style.fontSize = '18px';
+        personaSelect.parentNode.insertBefore(lockSpan, personaSelect);
+      } else {
+        // Разблокируем для Groq
+        personaSelect.disabled = false;
+        personaSelect.style.opacity = '1';
+      }
+    } catch (err) {
+      console.log("Persona lock update error:", err);
+    }
+  }
+
   async function checkModeChange() {
     if (!currentUserId || isReloading) return;
     
@@ -291,6 +335,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         
       } else if (!currentMode) {
         localStorage.setItem("current_ai_mode", data.ai_mode);
+        // Обновляем блокировку при первом запуске
+        await updatePersonaLock();
+      } else {
+        // Обновляем блокировку при каждом запуске
+        await updatePersonaLock();
       }
     } catch (err) {
       console.log("Mode check error:", err);
