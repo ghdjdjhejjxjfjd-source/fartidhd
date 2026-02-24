@@ -599,3 +599,41 @@ def add_stars_spent(user_id: int, amount: int):
         )
     con.commit()
     con.close()
+    def get_ai_mode_changes(user_id: int) -> int:
+    """Получить количество оставшихся смен режима (максимум 8)"""
+    conn = db_conn()
+    cur = conn.cursor()
+    
+    # Получаем количество изменений и дату последнего изменения
+    cur.execute(
+        "SELECT ai_mode_changes, last_ai_mode_change FROM access WHERE user_id = ?",
+        (user_id,)
+    )
+    row = cur.fetchone()
+    conn.close()
+    
+    if not row:
+        return 8
+    
+    changes = row[0] or 0
+    last_change = row[1]
+    
+    # Если прошло больше 24 часов - сбрасываем
+    if last_change:
+        last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
+        now = datetime.now()
+        delta = now - last_date
+        if delta.days >= 1:
+            # Сбрасываем счетчик в БД
+            con = db_conn()
+            cur = con.cursor()
+            cur.execute(
+                "UPDATE access SET ai_mode_changes = 0 WHERE user_id = ?",
+                (user_id,)
+            )
+            con.commit()
+            con.close()
+            return 8
+    
+    remaining = 8 - changes
+    return max(0, remaining)
