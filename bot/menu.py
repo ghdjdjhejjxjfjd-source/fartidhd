@@ -1,5 +1,4 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-
 from api import get_use_mini_app, get_user_persona, get_user_lang, get_ai_mode
 from payments import get_balance
 from .config import MINIAPP_URL, is_valid_https_url
@@ -41,8 +40,7 @@ TAB_TEXT = {
     "mode_settings": "🔄 Режим работы\n\nВыбери как пользоваться ботом:",
     "persona_settings": "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:",
     "lang_settings": "🌐 Язык\n\nВыбери язык интерфейса:",
-    "ai_mode_settings": "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый (0.3 ⭐)\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный (1 ⭐)\n• Умнее и лучше\n• Для сложных задач",
-    # ✅ НОВЫЙ ТЕКСТ ДЛЯ ПОДТВЕРЖДЕНИЯ
+    "ai_mode_settings": "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный\n• Умнее и лучше\n• Для сложных задач",
     "confirm_ai_mode_change": "⚠️ ПОДТВЕРЖДЕНИЕ\n\nВы выбрали режим: {new_mode}\n\nТекущий режим: {current_mode}\n\nПри смене режима:\n• История чата будет полностью очищена\n• Все предыдущие сообщения удалятся\n\nПродолжить?",
 }
 
@@ -51,8 +49,8 @@ TAB_TEXT = {
 # ВСПОМОГАТЕЛЬНЫЕ КЛАВИАТУРЫ
 # =========================
 def tab_kb(user_id: int) -> InlineKeyboardMarkup:
-    """Клавиатура с кнопкой назад"""
-    return InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]])
+    """Клавиатура с кнопкой назад (возврат в предыдущую вкладку)"""
+    return InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")]])
 
 
 def settings_kb(user_id: int) -> InlineKeyboardMarkup:
@@ -64,7 +62,7 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
         [InlineKeyboardButton("🔄 Режим работы", callback_data="tab:mode_settings")],
         [InlineKeyboardButton("🌐 Язык", callback_data="tab:lang_settings")],
         [InlineKeyboardButton("⚡ Режим ИИ", callback_data="tab:ai_mode_settings")],
-        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]
+        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -81,33 +79,42 @@ def mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
         keyboard.append([InlineKeyboardButton("📱 Mini App", callback_data="switch_to_miniapp")])
         keyboard.append([InlineKeyboardButton("✅ Встроенный", callback_data="ignore")])
     
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     return InlineKeyboardMarkup(keyboard)
 
 
-def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
+def ai_mode_settings_kb(user_id: int, changes_left: int = 8) -> InlineKeyboardMarkup:
     """Клавиатура выбора режима ИИ (Быстрый / Качественный)"""
     current = get_ai_mode(user_id) or "fast"
     
     keyboard = []
     
-    if current == "fast":
-        keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый (0.3 ⭐)", callback_data="ignore")])
-        keyboard.append([InlineKeyboardButton("💎 Качественный (1 ⭐)", callback_data="confirm_ai_mode:quality")])
-    else:
-        keyboard.append([InlineKeyboardButton("🚀 Быстрый (0.3 ⭐)", callback_data="confirm_ai_mode:fast")])
-        keyboard.append([InlineKeyboardButton("✅ 💎 Качественный (1 ⭐)", callback_data="ignore")])
+    # Если лимит исчерпан - показываем только сообщение
+    if changes_left <= 0:
+        keyboard.append([InlineKeyboardButton("⛔ Лимит смены режима исчерпан (8/8)", callback_data="ignore")])
+        keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
+        return InlineKeyboardMarkup(keyboard)
     
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
+    # Показываем кнопки только если лимит не исчерпан
+    if current == "fast":
+        keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый", callback_data="ignore")])
+        keyboard.append([InlineKeyboardButton("💎 Качественный", callback_data="confirm_ai_mode:quality")])
+    else:
+        keyboard.append([InlineKeyboardButton("🚀 Быстрый", callback_data="confirm_ai_mode:fast")])
+        keyboard.append([InlineKeyboardButton("✅ 💎 Качественный", callback_data="ignore")])
+    
+    # Показываем сколько осталось попыток
+    keyboard.append([InlineKeyboardButton(f"📊 Осталось: {changes_left}/8", callback_data="ignore")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
+    
     return InlineKeyboardMarkup(keyboard)
 
 
-# ✅ НОВАЯ КЛАВИАТУРА ДЛЯ ПОДТВЕРЖДЕНИЯ
 def confirm_ai_mode_kb(user_id: int, new_mode: str) -> InlineKeyboardMarkup:
     """Клавиатура подтверждения смены режима"""
     keyboard = [
         [InlineKeyboardButton("✅ Да, сменить", callback_data=f"execute_ai_mode:{new_mode}")],
-        [InlineKeyboardButton("❌ Нет, отмена", callback_data="tab:ai_mode_settings")]
+        [InlineKeyboardButton("❌ Нет, отмена", callback_data="back_to_previous")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -128,7 +135,7 @@ def persona_settings_kb(user_id: int) -> InlineKeyboardMarkup:
         mark = " ✅" if p_id == current else ""
         keyboard.append([InlineKeyboardButton(f"{p_name}{mark}", callback_data=f"set_persona:{p_id}")])
     
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -154,7 +161,7 @@ def lang_settings_kb(user_id: int) -> InlineKeyboardMarkup:
             keyboard.append(row)
             row = []
     
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -173,7 +180,7 @@ def stars_kb(user_id: int) -> InlineKeyboardMarkup:
         btn_text = f"{stars} ⭐ – {price}{discount}{popular}"
         keyboard.append([InlineKeyboardButton(btn_text, callback_data=f"buy_stars:{p['id']}")])
     
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     return InlineKeyboardMarkup(keyboard)
 
 
