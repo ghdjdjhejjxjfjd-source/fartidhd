@@ -1,33 +1,24 @@
 from flask import jsonify, request
-from payments import get_balance, add_stars, spend_stars, get_packages
+from payments import get_balance, add_stars, spend_stars, get_packages  # ← из корневого payments.py
 
 from .config import api
 
-# =========================
-# STARS ENDPOINTS
-# =========================
-
 @api.get("/api/stars/balance/<int:user_id>")
 def api_stars_balance(user_id: int):
-    """Получить баланс звезд"""
     return jsonify({
         "user_id": user_id,
         "balance": get_balance(user_id),
     })
 
-
 @api.get("/api/stars/packages")
 def api_stars_packages():
-    """Получить список пакетов"""
     return jsonify({
         "packages": get_packages(),
         "currency": "USD",
     })
 
-
 @api.post("/api/stars/add_test")
 def api_stars_add_test():
-    """Тестовое добавление звезд (для админов)"""
     data = request.get_json() or {}
     user_id = data.get("user_id")
     amount = data.get("amount", 100)
@@ -44,10 +35,8 @@ def api_stars_add_test():
         "new_balance": get_balance(user_id),
     })
 
-
 @api.post("/api/stars/spend")
 def api_stars_spend():
-    """Списать звезды за покупку темы"""
     data = request.get_json() or {}
     tg_user_id = data.get("tg_user_id")
     amount = data.get("amount", 0)
