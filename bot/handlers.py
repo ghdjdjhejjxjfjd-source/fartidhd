@@ -4,7 +4,7 @@ from telegram.ext import ContextTypes
 from api import (
     get_access, get_last_menu, set_last_menu, clear_last_menu,
     get_use_mini_app, get_user_persona, get_user_lang, get_ai_mode,
-    mem_clear
+    mem_clear, get_ai_mode_changes  # ✅ НОВАЯ ФУНКЦИЯ
 )
 from payments import get_balance, get_package
 
@@ -21,8 +21,8 @@ from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_
 
 import requests
 
-# Хранилище для отслеживания открытых меню
-_active_menus = {}
+# Стек навигации для кнопки "Назад"
+navigation_stack = {}  # user_id -> [previous_tabs]
 
 # =========================
 # ОСНОВНЫЕ ОБРАБОТЧИКИ
@@ -35,13 +35,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
-    # Проверяем, не открыто ли уже меню
-    if uid in _active_menus and _active_menus[uid]:
-        # Удаляем старое меню
-        await delete_prev_menu(context.bot, uid)
+    # Очищаем стек навигации при старте
+    if uid in navigation_stack:
+        navigation_stack[uid] = []
     
     await send_fresh_menu(context.bot, uid)
-    _active_menus[uid] = True
 
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -58,18 +56,34 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
-    # Обновляем статус активного меню
-    _active_menus[uid] = True
+    # Обработка кнопки "Назад" с возвратом в предыдущую вкладку
+    if data == "back_to_previous":
+        if uid in navigation_stack and navigation_stack[uid]:
+            previous_tab = navigation_stack[uid].pop()
+            await edit_to_tab_handler(context, query, uid, previous_tab)
+        else:
+            await edit_to_menu(context, query, uid)
+        return
     
     if data == "ignore":
         return
     
     if data == "back_to_menu":
+        # Очищаем стек при возврате в главное меню
+        if uid in navigation_stack:
+            navigation_stack[uid] = []
         await edit_to_menu(context, query, uid)
         return
     
     if data.startswith("tab:"):
         key = data.split("tab:", 1)[1].strip()
+        # Сохраняем текущую вкладку в стек перед открытием новой
+        current_tab = context.user_data.get('current_tab')
+        if current_tab and current_tab != key:
+            if uid not in navigation_stack:
+                navigation_stack[uid] = []
+            navigation_stack[uid].append(current_tab)
+        context.user_data['current_tab'] = key
         await edit_to_tab_handler(context, query, uid, key)
         return
     
@@ -123,6 +137,16 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("execute_ai_mode:"):
         new_mode = data.split("execute_ai_mode:", 1)[1].strip()
         
+        # Проверяем лимит смены режима (максимум 8 раз)
+        changes_left = await get_ai_mode_changes(uid)
+        if changes_left <= 0:
+            await query.message.edit_text(
+                "⛔ Лимит смены режима исчерпан (8/8).\n"
+                "Попробуйте завтра.",
+                reply_markup=tab_kb(uid)
+            )
+            return
+        
         # Очищаем память чата
         mem_clear(uid)
         print(f"🧹 Очищена память для пользователя {uid} при смене режима")
@@ -135,6 +159,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.edit_text(
             f"✅ Режим изменен на {mode_names.get(new_mode, new_mode)}\n\n"
             f"🧹 История чата очищена.\n"
+            f"Осталось смен режима: {changes_left - 1}/8\n\n"
             f"При следующем открытии Mini App начнёте с чистого листа.",
             reply_markup=tab_kb(uid)
         )
@@ -180,11 +205,12 @@ async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id
             await send_fresh_menu(context.bot, user_id)
         return
     
-    # Обработка для режима ИИ
+    # Обработка для режима ИИ с проверкой лимита
     if tab_key == "ai_mode_settings":
-        text = "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый (0.3 ⭐)\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный (1 ⭐)\n• Умнее и лучше\n• Для сложных задач"
+        changes_left = await get_ai_mode_changes(user_id)
+        text = "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный\n• Умнее и лучше\n• Для сложных задач"
         try:
-            await query.message.edit_text(text, reply_markup=ai_mode_settings_kb(user_id))
+            await query.message.edit_text(text, reply_markup=ai_mode_settings_kb(user_id, changes_left))
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
@@ -204,6 +230,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     lang = get_user_lang(user_id)
     use_mini_app = get_use_mini_app(user_id)
     ai_mode = get_ai_mode(user_id)
+    changes_left = await get_ai_mode_changes(user_id)
     
     # Словарь для названий характеров
     persona_names = {
@@ -225,8 +252,8 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     
     # Словарь для режимов ИИ
     ai_mode_names = {
-        "fast": "🚀 Быстрый (0.3 ⭐)",
-        "quality": "💎 Качественный (1 ⭐)"
+        "fast": "🚀 Быстрый",
+        "quality": "💎 Качественный"
     }
     
     # Форматируем дату регистрации
@@ -249,7 +276,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         persona=persona_names.get(persona, persona),
         lang=lang_names.get(lang, lang),
         mode="📱 Mini App" if use_mini_app else "💬 Встроенный",
-        ai_mode=ai_mode_names.get(ai_mode, ai_mode),
+        ai_mode=f"{ai_mode_names.get(ai_mode, ai_mode)} (осталось смен: {changes_left}/8)",
         free="✅ Да" if a.get("is_free") else "❌ Нет",
         blocked="✅ Нет" if not a.get("is_blocked") else "❌ Да"
     )
