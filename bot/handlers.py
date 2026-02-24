@@ -4,7 +4,7 @@ from telegram.ext import ContextTypes
 from api import (
     get_access, get_last_menu, set_last_menu, clear_last_menu,
     get_use_mini_app, get_user_persona, get_user_lang, get_ai_mode,
-    mem_clear, get_ai_mode_changes  # ✅ НОВАЯ ФУНКЦИЯ
+    get_ai_mode_changes, mem_clear
 )
 from payments import get_balance, get_package
 
@@ -141,8 +141,8 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         changes_left = await get_ai_mode_changes(uid)
         if changes_left <= 0:
             await query.message.edit_text(
-                "⛔ Лимит смены режима исчерпан (8/8).\n"
-                "Попробуйте завтра.",
+                "⛔ Лимит смены режима на сегодня исчерпан (8/8).\n"
+                "Попробуйте завтра после 00:00.",
                 reply_markup=tab_kb(uid)
             )
             return
@@ -159,7 +159,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.edit_text(
             f"✅ Режим изменен на {mode_names.get(new_mode, new_mode)}\n\n"
             f"🧹 История чата очищена.\n"
-            f"Осталось смен режима: {changes_left - 1}/8\n\n"
+            f"📊 Сегодня осталось смен режима: {changes_left - 1}/8\n\n"
             f"При следующем открытии Mini App начнёте с чистого листа.",
             reply_markup=tab_kb(uid)
         )
@@ -208,9 +208,9 @@ async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id
     # Обработка для режима ИИ с проверкой лимита
     if tab_key == "ai_mode_settings":
         changes_left = await get_ai_mode_changes(user_id)
-        text = "⚡ Режим ИИ\n\nВыбери режим работы ИИ:\n\n🚀 Быстрый\n• Экономичный, быстрые ответы\n• Для простых вопросов\n\n💎 Качественный\n• Умнее и лучше\n• Для сложных задач"
+        text = TAB_TEXT["ai_mode_settings"].format(changes_left=changes_left)
         try:
-            await query.message.edit_text(text, reply_markup=ai_mode_settings_kb(user_id, changes_left))
+            await query.message.edit_text(text, reply_markup=ai_mode_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
@@ -250,10 +250,10 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         "fr": "🇫🇷 Français"
     }
     
-    # Словарь для режимов ИИ
+    # Словарь для режимов ИИ с ценами
     ai_mode_names = {
-        "fast": "🚀 Быстрый",
-        "quality": "💎 Качественный"
+        "fast": "🚀 Быстрый (0.3 ⭐)",
+        "quality": "💎 Качественный (1 ⭐)"
     }
     
     # Форматируем дату регистрации
@@ -265,7 +265,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         except:
             registered = a["registered_at"][:10]
     
-    # Формируем текст профиля
+    # Формируем текст профиля с информацией о лимите смен режима
     text = TAB_TEXT["profile"].format(
         user_id=user_id,
         registered=registered,
