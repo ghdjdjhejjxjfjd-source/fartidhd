@@ -58,7 +58,7 @@ TAB_TEXT = {
 # ВСПОМОГАТЕЛЬНЫЕ КЛАВИАТУРЫ
 # =========================
 def tab_kb(user_id: int) -> InlineKeyboardMarkup:
-    """Клавиатура с кнопкой назад (возврат в предыдущую вкладку)"""
+    """Клавиатура с кнопкой назад (одно действие)"""
     return InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")]])
 
 
@@ -98,7 +98,7 @@ def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     
     keyboard = []
     
-    # Показываем кнопки (без звезд на самих кнопках)
+    # Кнопки выбора режима
     if current == "fast":
         keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый", callback_data="ignore")])
         keyboard.append([InlineKeyboardButton("💎 Качественный", callback_data="confirm_ai_mode:quality")])
@@ -106,6 +106,7 @@ def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
         keyboard.append([InlineKeyboardButton("🚀 Быстрый", callback_data="confirm_ai_mode:fast")])
         keyboard.append([InlineKeyboardButton("✅ 💎 Качественный", callback_data="ignore")])
     
+    # Кнопка назад (одно действие)
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     
     return InlineKeyboardMarkup(keyboard)
