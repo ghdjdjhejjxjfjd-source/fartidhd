@@ -21,6 +21,8 @@ from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_
 
 import requests
 
+# Хранилище для отслеживания открытых меню
+_active_menus = {}
 
 # =========================
 # ОСНОВНЫЕ ОБРАБОТЧИКИ
@@ -33,7 +35,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
+    # Проверяем, не открыто ли уже меню
+    if uid in _active_menus and _active_menus[uid]:
+        # Удаляем старое меню
+        await delete_prev_menu(context.bot, uid)
+    
     await send_fresh_menu(context.bot, uid)
+    _active_menus[uid] = True
 
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -49,6 +57,9 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = user.id if user else 0
     if not uid:
         return
+    
+    # Обновляем статус активного меню
+    _active_menus[uid] = True
     
     if data == "ignore":
         return
