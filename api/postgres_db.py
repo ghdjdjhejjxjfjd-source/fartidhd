@@ -6,8 +6,18 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from typing import Any, Dict, Tuple, Optional, List
 
-# Получаем URL базы данных из переменных окружения
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Получаем параметры подключения из переменных окружения
+DB_HOST = os.getenv("PGHOST")
+DB_PORT = os.getenv("PGPORT", "5432")
+DB_NAME = os.getenv("PGDATABASE")
+DB_USER = os.getenv("PGUSER")
+DB_PASS = os.getenv("PGPASSWORD")
+
+# Собираем URL вручную
+if DB_HOST and DB_NAME and DB_USER and DB_PASS:
+    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+else:
+    DATABASE_URL = os.getenv("DATABASE_URL")  # на всякий случай
 
 # Создаем пул соединений (для производительности)
 connection_pool = None
@@ -20,6 +30,7 @@ if DATABASE_URL:
             DATABASE_URL
         )
         print("✅ PostgreSQL connection pool created")
+        print(f"📊 Host: {DB_HOST}, Database: {DB_NAME}")
     except Exception as e:
         print(f"❌ Failed to create connection pool: {e}")
 else:
