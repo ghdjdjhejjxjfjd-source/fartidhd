@@ -1,9 +1,9 @@
-# payments.py
+# payments.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import sqlite3
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
-# Пакеты звезд (USD)
 STAR_PACKAGES = [
     {
         "id": "starter",
@@ -62,9 +62,10 @@ STAR_PACKAGES = [
 ]
 
 DB_PATH = "stars.db"
+CACHE_TTL = 60
+balance_cache = {}
 
 def init_db():
-    """Инициализация базы данных звезд"""
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     
@@ -89,24 +90,34 @@ def init_db():
         )
     """)
     
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_transactions_user ON star_transactions(user_id)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_transactions_date ON star_transactions(created_at)")
+    
     conn.commit()
     conn.close()
     print("✅ Star database initialized")
 
-# Инициализация
 init_db()
 
 def get_balance(user_id: int) -> int:
-    """Получить баланс звезд"""
+    now = time.time()
+    
+    if user_id in balance_cache:
+        balance, timestamp = balance_cache[user_id]
+        if now - timestamp < CACHE_TTL:
+            return balance
+    
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute("SELECT balance FROM star_balances WHERE user_id = ?", (user_id,))
     row = cur.fetchone()
     conn.close()
-    return row[0] if row else 0
+    
+    balance = row[0] if row else 0
+    balance_cache[user_id] = (balance, now)
+    return balance
 
 def add_stars(user_id: int, amount: int, package_id: Optional[str] = None):
-    """Добавить звезды"""
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -127,9 +138,11 @@ def add_stars(user_id: int, amount: int, package_id: Optional[str] = None):
     
     conn.commit()
     conn.close()
+    
+    if user_id in balance_cache:
+        del balance_cache[user_id]
 
 def spend_stars(user_id: int, amount: int) -> bool:
-    """Списать звезды"""
     current = get_balance(user_id)
     
     if current < amount:
@@ -152,21 +165,40 @@ def spend_stars(user_id: int, amount: int) -> bool:
     
     conn.commit()
     conn.close()
+    
+    if user_id in balance_cache:
+        del balance_cache[user_id]
+    
     return True
 
+def cleanup_old_transactions(days=30):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    
+    cur.execute("""
+        DELETE FROM star_transactions 
+        WHERE created_at < ? AND status = 'completed'
+    """, (cutoff,))
+    
+    deleted = cur.rowcount
+    conn.commit()
+    conn.close()
+    
+    print(f"🧹 Удалено старых транзакций: {deleted}")
+    return deleted
+
 def get_packages() -> List[Dict]:
-    """Получить все пакеты"""
     return STAR_PACKAGES
 
 def get_package(package_id: str) -> Optional[Dict]:
-    """Получить пакет по ID"""
     for p in STAR_PACKAGES:
         if p["id"] == package_id:
             return p
     return None
 
 def get_top_users(limit: int = 10) -> List[tuple]:
-    """Получить топ пользователей по звездам"""
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute("""
@@ -181,7 +213,6 @@ def get_top_users(limit: int = 10) -> List[tuple]:
     return rows
 
 def reset_balance(user_id: int):
-    """Сбросить баланс пользователя"""
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -194,3 +225,6 @@ def reset_balance(user_id: int):
     
     conn.commit()
     conn.close()
+    
+    if user_id in balance_cache:
+        del balance_cache[user_id]
