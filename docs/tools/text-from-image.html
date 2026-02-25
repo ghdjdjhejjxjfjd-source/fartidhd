@@ -21,7 +21,7 @@
     })();
   </script>
 
-  <!-- БЕСПЛАТНАЯ БИБЛИОТЕКА TESSERACT -->
+  <!-- TESSERACT ДЛЯ РАСПОЗНАВАНИЯ -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 
   <style>
@@ -132,12 +132,14 @@
       padding: 20px;
       margin: 20px 0;
       border: 1px solid rgba(255,255,255,0.1);
-      max-height: 300px;
+      max-height: 400px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-word;
-      font-size: 16px;
-      line-height: 1.5;
+      font-family: monospace;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #fff;
     }
 
     .btn {
@@ -212,15 +214,11 @@
       color: var(--accent);
     }
 
-    .lang-select {
-      width: 100%;
-      padding: 16px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: white;
-      font-size: 16px;
-      margin-bottom: 16px;
+    .lang-hint {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 5px;
+      text-align: center;
     }
   </style>
 </head>
@@ -244,19 +242,12 @@
         <img class="preview-image" id="preview" src="">
       </div>
 
-      <select class="lang-select" id="langSelect">
-        <option value="rus">Русский</option>
-        <option value="eng">English</option>
-        <option value="kaz">Қазақша</option>
-        <option value="tur">Türkçe</option>
-        <option value="ukr">Українська</option>
-        <option value="fra">Français</option>
-      </select>
-
       <div class="btn-group">
         <button class="btn btn-primary" id="scanBtn">🔍 Распознать текст</button>
         <button class="btn btn-secondary" id="copyBtn" style="display: none;">📋 Копировать</button>
       </div>
+
+      <div class="lang-hint">Распознает любой язык автоматически</div>
 
       <div class="text-box" id="result"></div>
 
@@ -279,7 +270,8 @@
         copy: "📋 Копировать",
         new: "📸 Новое фото",
         loading: "Распознавание...",
-        result: "Здесь будет распознанный текст"
+        result: "Здесь будет распознанный текст",
+        hint: "Распознает любой язык автоматически"
       },
       en: {
         title: "Text from Image",
@@ -288,7 +280,8 @@
         copy: "📋 Copy",
         new: "📸 New Photo",
         loading: "Processing...",
-        result: "Recognized text will appear here"
+        result: "Recognized text will appear here",
+        hint: "Auto-detects any language"
       }
     };
 
@@ -309,6 +302,7 @@
     document.getElementById('copyBtn').textContent = t.copy;
     document.getElementById('newBtn').textContent = t.new;
     document.getElementById('loadingText').textContent = t.loading;
+    document.querySelector('.lang-hint').textContent = t.hint;
     document.getElementById('result').textContent = t.result;
 
     const uploadArea = document.getElementById('uploadArea');
@@ -321,7 +315,6 @@
     const result = document.getElementById('result');
     const loading = document.getElementById('loading');
     const progress = document.getElementById('progress');
-    const langSelect = document.getElementById('langSelect');
 
     let currentFile = null;
 
@@ -360,11 +353,13 @@
           }
         });
 
-        await worker.loadLanguage(langSelect.value);
-        await worker.initialize(langSelect.value);
+        // Автоопределение языка
+        await worker.loadLanguage('rus+eng');
+        await worker.initialize('rus+eng');
         
         const { data: { text } } = await worker.recognize(currentFile);
         
+        // ПОКАЗЫВАЕМ ТЕКСТ КАК ЕСТЬ
         result.textContent = text || 'Текст не найден';
         copyBtn.style.display = 'block';
         
