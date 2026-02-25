@@ -1,5 +1,4 @@
-# api/image.py (ЗАМЕНИТЬ ПОЛНОСТЬЮ)
-
+# api/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 from flask import request, jsonify
 from datetime import datetime
 import time
@@ -9,20 +8,17 @@ from .config import api, STABILITY_AVAILABLE, send_log_to_group
 from .db import get_access
 from payments import spend_stars
 
-# Rate limiting для изображений
 IMAGE_RATE_LIMIT = {}
-RATE_LIMIT_WINDOW = 300  # 5 минут
-RATE_LIMIT_MAX = 5       # максимум 5 картинок за 5 минут
+RATE_LIMIT_WINDOW = 300
+RATE_LIMIT_MAX = 5
 
 def validate_prompt(prompt: str) -> tuple[bool, str]:
-    """Проверка промпта на безопасность"""
     if not prompt or not prompt.strip():
         return False, "empty_prompt"
     
     if len(prompt) > 1000:
         return False, "prompt_too_long"
     
-    # Блокируем опасные запросы
     blocked_patterns = [
         r'nude', r'naked', r'sex', r'porn', r'violence', r'gore',
         r'blood', r'kill', r'death', r'corpse', r'horror'
@@ -35,28 +31,27 @@ def validate_prompt(prompt: str) -> tuple[bool, str]:
     
     return True, "ok"
 
+def validate_user_id(user_id):
+    try:
+        uid = int(user_id)
+        return 1 <= uid <= 9007199254740991
+    except:
+        return False
+
 @api.post("/api/image")
 def api_image():
-    """Генерация изображения через Stability AI"""
-    
-    # Проверка доступности
     if not STABILITY_AVAILABLE:
         return jsonify({"error": "image_generation_not_available"}), 503
     
-    # Получаем данные
     tg_user_id = request.form.get("tg_user_id") or 0
     prompt = (request.form.get("prompt") or "").strip()
     mode = (request.form.get("mode") or "txt2img").strip().lower()
     
-    # Валидация user_id
-    try:
-        tg_user_id_int = int(tg_user_id)
-        if tg_user_id_int <= 0:
-            return jsonify({"error": "invalid_user_id"}), 400
-    except:
+    if not validate_user_id(tg_user_id):
         return jsonify({"error": "invalid_user_id"}), 400
     
-    # Rate limiting
+    tg_user_id_int = int(tg_user_id)
+    
     now = time.time()
     if tg_user_id_int in IMAGE_RATE_LIMIT:
         count, first = IMAGE_RATE_LIMIT[tg_user_id_int]
@@ -73,12 +68,10 @@ def api_image():
     else:
         IMAGE_RATE_LIMIT[tg_user_id_int] = (1, now)
     
-    # Проверка доступа
     a = get_access(tg_user_id_int)
     if a["is_blocked"]:
         return jsonify({"error": "blocked"}), 403
     
-    # Валидация промпта
     is_valid, error_code = validate_prompt(prompt)
     if not is_valid:
         if error_code == "empty_prompt":
@@ -88,8 +81,7 @@ def api_image():
         elif error_code == "blocked_content":
             return jsonify({"error": "blocked_content", "message": "Запрос содержит запрещенные слова"}), 400
     
-    # Проверка баланса
-    cost = 2  # базовая стоимость
+    cost = 2
     if mode in ["remove_bg", "upscale"]:
         cost = 2
     elif mode == "inpaint":
@@ -101,27 +93,23 @@ def api_image():
         if balance < cost:
             return jsonify({"error": "insufficient_stars"}), 402
     
-    # Получаем файл если есть
     image_file = request.files.get("image")
     image_data = None
     if image_file:
-        # Проверка размера файла (макс 5MB)
         image_file.seek(0, 2)
         size = image_file.tell()
         image_file.seek(0)
         
-        if size > 5 * 1024 * 1024:  # 5MB
+        if size > 5 * 1024 * 1024:
             return jsonify({"error": "file_too_large", "message": "Файл слишком большой (макс 5MB)"}), 400
         image_data = image_file.read()
     
-    # Проверка режима
     if mode in ["img2img", "remove_bg", "inpaint", "upscale"] and not image_data:
         return jsonify({"error": "image_required_for_this_mode"}), 400
     
-    # Получаем параметры с валидацией
     try:
         steps = int(request.form.get("steps") or 30)
-        steps = min(max(steps, 10), 50)  # ограничиваем
+        steps = min(max(steps, 10), 50)
     except:
         steps = 30
     
@@ -150,7 +138,6 @@ def api_image():
     try:
         from stability_client import generate_image, generate_image_from_image
         
-        # Генерация в зависимости от режима
         if mode == "txt2img":
             image_base64 = generate_image(
                 prompt=prompt,
@@ -174,11 +161,9 @@ def api_image():
         if not image_base64:
             return jsonify({"error": "generation_failed"}), 500
         
-        # ✅ Только после успешной генерации списываем звезды
         if not a["is_free"]:
             spend_stars(tg_user_id_int, cost)
         
-        # Логируем
         tg_username = request.form.get("tg_username") or "—"
         tg_first_name = request.form.get("tg_first_name") or "—"
         
@@ -201,7 +186,6 @@ def api_image():
         error_msg = str(e)
         send_log_to_group(f"❌ Ошибка генерации: {tg_user_id_int} - {error_msg[:100]}")
         
-        # Понятные ошибки для пользователя
         if "API key" in error_msg:
             return jsonify({"error": "service_error", "message": "Ошибка сервиса генерации"}), 500
         elif "credit" in error_msg.lower() or "balance" in error_msg.lower():
