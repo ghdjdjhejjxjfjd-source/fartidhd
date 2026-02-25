@@ -4,7 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Текст с фото</title>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ТЕМА -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
@@ -17,143 +20,385 @@
       document.documentElement.setAttribute("data-theme", getTheme());
     })();
   </script>
-  <script>
-    (function(){
-      const tg = window.Telegram?.WebApp;
-      if (tg) {
-        tg.ready();
-        tg.expand();
-        tg.disableVerticalSwipes();
-      }
-    })();
-  </script>
+
+  <!-- БЕСПЛАТНАЯ БИБЛИОТЕКА TESSERACT -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0b0f18; color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
-    .tool-header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 20;
-      display: flex; align-items: center; gap: 10px;
-      padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(8,16,30,.55); backdrop-filter: blur(32px);
-      border-bottom: 1px solid rgba(255,255,255,.08);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .tool-back {
-      color: #fff; text-decoration: none; font-size: 20px;
-      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,.1); border-radius: 18px;
+
+    body {
+      background: #0b0f18;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
     }
-    .tool-title { font-weight: 700; font-size: 18px; flex: 1; text-align: center; color: #fff; }
-    .tool-spacer { width: 36px; }
-    .tool-container { padding: 80px 16px 20px; min-height: 100vh; }
+
+    :root[data-theme="blue"] { --accent: #3aa0ff; }
+    :root[data-theme="black"] { --accent: #6aa7ff; }
+    :root[data-theme="purple"] { --accent: #b98cff; }
+    :root[data-theme="green"] { --accent: #2fd6a3; }
+    :root[data-theme="gray"] { --accent: #7fb2ff; }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .back-btn {
+      color: white;
+      text-decoration: none;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .container {
+      padding: 80px 16px 20px;
+      min-height: 100vh;
+    }
+
     .upload-area {
-      background: rgba(255,255,255,.05); border: 2px dashed rgba(255,255,255,.2);
-      border-radius: 24px; padding: 40px 20px; text-align: center; cursor: pointer;
-      margin: 20px 0; transition: all 0.2s;
+      background: rgba(255,255,255,0.05);
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 24px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      margin: 20px 0;
+      transition: all 0.3s;
     }
-    .upload-area:hover { background: rgba(255,255,255,.08); border-color: #3aa0ff; }
-    .upload-icon { font-size: 48px; margin-bottom: 12px; }
-    .upload-text { font-size: 16px; color: rgba(255,255,255,.7); }
-    .result-area {
-      background: rgba(255,255,255,.05); border-radius: 16px; padding: 20px;
-      margin-top: 20px; display: none;
+
+    .upload-area:hover {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.08);
     }
-    .result-text {
-      background: rgba(0,0,0,.3); border-radius: 12px; padding: 16px;
-      font-size: 16px; line-height: 1.5; margin-bottom: 16px;
-      white-space: pre-wrap; word-break: break-word;
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
     }
-    .process-btn, .copy-btn {
-      width: 100%; padding: 16px; border-radius: 16px; border: none;
-      font-size: 16px; font-weight: 700; margin: 8px 0; cursor: pointer;
+
+    .upload-text {
+      font-size: 16px;
+      color: rgba(255,255,255,0.7);
     }
-    .process-btn {
-      background: linear-gradient(180deg, #3aa0ff 0%, #0a84ff 100%);
+
+    .result-container {
+      display: none;
+    }
+
+    .image-box {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .preview-image {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+    }
+
+    .text-box {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid rgba(255,255,255,0.1);
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 10px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
       color: white;
     }
-    .copy-btn {
-      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
-      color: white; display: none;
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-group .btn {
+      flex: 1;
+    }
+
     .loading {
-      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,.7); backdrop-filter: blur(10px);
-      flex-direction: column; align-items: center; justify-content: center; z-index: 100;
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
     }
+
     .spinner {
-      width: 50px; height: 50px; border: 3px solid rgba(255,255,255,.3);
-      border-top-color: #3aa0ff; border-radius: 50%;
-      animation: spin 1s linear infinite; margin-bottom: 16px;
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    :root[data-theme="purple"] .process-btn { background: linear-gradient(180deg, #b98cff 0%, #7a5cff 100%); }
-    :root[data-theme="green"] .process-btn { background: linear-gradient(180deg, #2fd6a3 0%, #11a87b 100%); }
-    :root[data-theme="black"] .process-btn { background: linear-gradient(180deg, #6aa7ff 0%, #2f7bff 100%); }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .progress {
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    .lang-select {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
   </style>
 </head>
 <body>
-  <div class="tool-header">
-    <a href="../index.html" class="tool-back">←</a>
-    <div class="tool-title" id="toolTitle">Текст с фото</div>
-    <div class="tool-spacer"></div>
+
+  <div class="header">
+    <a href="../index.html" class="back-btn">←</a>
+    <div class="title" id="title">Текст с фото</div>
+    <div class="spacer"></div>
   </div>
-  <div class="tool-container">
+
+  <div class="container">
     <div class="upload-area" id="uploadArea">
       <div class="upload-icon">📸</div>
       <div class="upload-text" id="uploadText">Нажми чтобы выбрать фото с текстом</div>
       <input type="file" id="fileInput" accept="image/*" hidden>
     </div>
-    <button class="process-btn" id="processBtn" style="display: none;">🔍 Распознать текст</button>
-    <div class="result-area" id="resultArea">
-      <div class="result-text" id="resultText"></div>
-      <button class="copy-btn" id="copyBtn">📋 Копировать</button>
+
+    <div class="result-container" id="resultContainer">
+      <div class="image-box">
+        <img class="preview-image" id="preview" src="">
+      </div>
+
+      <select class="lang-select" id="langSelect">
+        <option value="rus">Русский</option>
+        <option value="eng">English</option>
+        <option value="kaz">Қазақша</option>
+        <option value="tur">Türkçe</option>
+        <option value="ukr">Українська</option>
+        <option value="fra">Français</option>
+      </select>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="scanBtn">🔍 Распознать текст</button>
+        <button class="btn btn-secondary" id="copyBtn" style="display: none;">📋 Копировать</button>
+      </div>
+
+      <div class="text-box" id="result"></div>
+
+      <button class="btn btn-secondary" id="newBtn">📸 Новое фото</button>
     </div>
   </div>
+
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <div class="loading-text">Распознавание...</div>
+    <div id="loadingText">Распознавание...</div>
+    <div class="progress" id="progress">0%</div>
   </div>
+
   <script>
-    const I18N = {
-      ru: { title: "Текст с фото", upload: "Нажми чтобы выбрать фото с текстом", process: "🔍 Распознать текст", loading: "Распознавание...", copy: "📋 Копировать" },
-      kk: { title: "Фотонан мәтін", upload: "Мәтіні бар фото таңдау", process: "🔍 Мәтінді тану", loading: "Танылуда...", copy: "📋 Көшіру" },
-      en: { title: "Text from Image", upload: "Select photo with text", process: "🔍 Extract Text", loading: "Processing...", copy: "📋 Copy" },
-      tr: { title: "Fotodan yazı", upload: "Metinli fotoğraf seç", process: "🔍 Metni çıkar", loading: "İşleniyor...", copy: "📋 Kopyala" }
+    const translations = {
+      ru: {
+        title: "Текст с фото",
+        upload: "Нажми чтобы выбрать фото с текстом",
+        scan: "🔍 Распознать текст",
+        copy: "📋 Копировать",
+        new: "📸 Новое фото",
+        loading: "Распознавание...",
+        result: "Здесь будет распознанный текст"
+      },
+      en: {
+        title: "Text from Image",
+        upload: "Select photo with text",
+        scan: "🔍 Extract Text",
+        copy: "📋 Copy",
+        new: "📸 New Photo",
+        loading: "Processing...",
+        result: "Recognized text will appear here"
+      }
     };
-    const lang = (new URL(window.location.href)).searchParams.get("lang") || localStorage.getItem("miniapp_lang_v1") || "ru";
-    const t = I18N[lang] || I18N.ru;
-    document.getElementById('toolTitle').textContent = t.title;
+
+    function getLang() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const lang = urlParams.get('lang');
+      if (lang) return lang;
+      try { return localStorage.getItem('miniapp_lang_v1') || 'ru'; } 
+      catch(e) { return 'ru'; }
+    }
+
+    const lang = getLang();
+    const t = translations[lang] || translations.ru;
+
+    document.getElementById('title').textContent = t.title;
     document.getElementById('uploadText').textContent = t.upload;
-    document.getElementById('processBtn').textContent = t.process;
-    document.querySelector('.loading-text').textContent = t.loading;
+    document.getElementById('scanBtn').textContent = t.scan;
     document.getElementById('copyBtn').textContent = t.copy;
-    
+    document.getElementById('newBtn').textContent = t.new;
+    document.getElementById('loadingText').textContent = t.loading;
+    document.getElementById('result').textContent = t.result;
+
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
-    const processBtn = document.getElementById('processBtn');
-    const loading = document.getElementById('loading');
-    const resultArea = document.getElementById('resultArea');
-    const resultText = document.getElementById('resultText');
+    const resultContainer = document.getElementById('resultContainer');
+    const preview = document.getElementById('preview');
+    const scanBtn = document.getElementById('scanBtn');
     const copyBtn = document.getElementById('copyBtn');
-    
+    const newBtn = document.getElementById('newBtn');
+    const result = document.getElementById('result');
+    const loading = document.getElementById('loading');
+    const progress = document.getElementById('progress');
+    const langSelect = document.getElementById('langSelect');
+
+    let currentFile = null;
+
     uploadArea.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => { if (e.target.files[0]) processBtn.style.display = 'block'; });
-    
-    processBtn.addEventListener('click', async () => {
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        const file = e.target.files[0];
+        currentFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          preview.src = e.target.result;
+          uploadArea.style.display = 'none';
+          resultContainer.style.display = 'block';
+          result.textContent = t.result;
+          copyBtn.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    scanBtn.addEventListener('click', async () => {
+      if (!currentFile) return;
+
       loading.style.display = 'flex';
-      processBtn.disabled = true;
-      setTimeout(() => {
-        loading.style.display = 'none';
-        processBtn.disabled = false;
-        resultArea.style.display = 'block';
-        resultText.textContent = 'Это пример распознанного текста. Функция будет добавлена позже.';
+      scanBtn.disabled = true;
+      progress.textContent = '0%';
+
+      try {
+        const worker = await Tesseract.createWorker({
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              progress.textContent = Math.round(m.progress * 100) + '%';
+            }
+          }
+        });
+
+        await worker.loadLanguage(langSelect.value);
+        await worker.initialize(langSelect.value);
+        
+        const { data: { text } } = await worker.recognize(currentFile);
+        
+        result.textContent = text || 'Текст не найден';
         copyBtn.style.display = 'block';
+        
+        await worker.terminate();
+
+      } catch (error) {
+        console.error(error);
+        result.textContent = 'Ошибка распознавания';
+      } finally {
+        loading.style.display = 'none';
+        scanBtn.disabled = false;
+      }
+    });
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(result.textContent);
+      copyBtn.textContent = '✓ Скопировано';
+      setTimeout(() => {
+        copyBtn.textContent = t.copy;
       }, 2000);
     });
-    
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(resultText.textContent);
-      alert('Скопировано!');
+
+    newBtn.addEventListener('click', () => {
+      uploadArea.style.display = 'block';
+      resultContainer.style.display = 'none';
+      fileInput.value = '';
+      currentFile = null;
     });
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
   </script>
 </body>
 </html>
