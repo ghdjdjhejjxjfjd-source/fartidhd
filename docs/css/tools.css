@@ -1,0 +1,162 @@
+/* docs/css/tools.css */
+
+/* Контейнер для инструментов */
+.tools-container {
+  width: 100%;
+  margin: 8px 0;
+}
+
+/* Кнопка инструментов */
+.tools-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tools-btn.active {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: var(--accent1);
+  box-shadow: 0 0 15px rgba(58, 160, 255, 0.3);
+}
+
+/* Выпадающий список */
+.tools-dropdown {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0;
+  border-radius: 16px;
+}
+
+.tools-dropdown.open {
+  max-height: 500px;
+  opacity: 1;
+  margin: 12px 0 8px 0;
+}
+
+/* Элементы инструментов */
+.tool-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  margin: 6px 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.tool-item:hover::before {
+  transform: translateX(100%);
+}
+
+.tool-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--accent1);
+  transform: translateX(6px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.tool-item:active {
+  transform: scale(0.98);
+}
+
+.tool-icon {
+  font-size: 26px;
+  min-width: 48px;
+  text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.tool-text {
+  flex: 1;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.3px;
+}
+
+.tool-arrow {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.tool-item:hover .tool-arrow {
+  color: var(--accent1);
+  transform: translateX(3px);
+}
+
+/* Счетчик инструментов */
+.tools-count {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Анимация для шеврона */
+.chev.rotate {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+/* Темы - цвета для иконок */
+:root[data-theme="blue"] .tool-item:hover {
+  border-color: #3aa0ff;
+}
+:root[data-theme="blue"] .tool-arrow:hover {
+  color: #3aa0ff;
+}
+
+:root[data-theme="black"] .tool-item:hover {
+  border-color: #6aa7ff;
+}
+:root[data-theme="black"] .tool-arrow:hover {
+  color: #6aa7ff;
+}
+
+:root[data-theme="purple"] .tool-item:hover {
+  border-color: #b98cff;
+}
+:root[data-theme="purple"] .tool-arrow:hover {
+  color: #b98cff;
+}
+
+:root[data-theme="green"] .tool-item:hover {
+  border-color: #2fd6a3;
+}
+:root[data-theme="green"] .tool-arrow:hover {
+  color: #2fd6a3;
+}
+
+:root[data-theme="gray"] .tool-item:hover {
+  border-color: #7fb2ff;
+}
+:root[data-theme="gray"] .tool-arrow:hover {
+  color: #7fb2ff;
+}
