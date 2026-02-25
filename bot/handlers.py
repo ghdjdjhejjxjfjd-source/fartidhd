@@ -21,12 +21,6 @@ from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_
 
 import requests
 
-# =========================
-# НАВИГАЦИЯ - ИСПРАВЛЕНО
-# =========================
-# Храним предыдущую вкладку для каждого пользователя
-navigation_prev = {}
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     send_log_http(build_start_log(update))
     
@@ -34,10 +28,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = user.id if user else 0
     if not uid:
         return
-    
-    # Очищаем навигацию при старте
-    if uid in navigation_prev:
-        del navigation_prev[uid]
     
     await send_fresh_menu(context.bot, uid)
 
@@ -56,22 +46,8 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
-    # ===== ОБРАБОТКА КНОПКИ НАЗАД =====
-    if data == "back_to_previous":
-        if uid in navigation_prev:
-            # Возвращаемся в предыдущую вкладку
-            prev_tab = navigation_prev[uid]
-            del navigation_prev[uid]  # Очищаем после использования
-            await open_tab(context, query, uid, prev_tab, from_back=True)
-        else:
-            # Если нет предыдущей - в главное меню
-            await edit_to_menu(context, query, uid)
-        return
-    
-    if data == "back_to_menu":
-        # Очищаем навигацию и идём в главное меню
-        if uid in navigation_prev:
-            del navigation_prev[uid]
+    # ===== КНОПКА НАЗАД ВСЕГДА ВЕДЁТ В ГЛАВНОЕ МЕНЮ =====
+    if data == "back_to_previous" or data == "back_to_menu":
         await edit_to_menu(context, query, uid)
         return
     
@@ -81,7 +57,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== ОБРАБОТКА ОТКРЫТИЯ ВКЛАДОК =====
     if data.startswith("tab:"):
         key = data.split("tab:", 1)[1].strip()
-        await open_tab(context, query, uid, key, from_back=False)
+        await open_tab(context, query, uid, key)
         return
     
     if data.startswith("buy_stars:"):
@@ -91,10 +67,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if package:
             stars = package["stars"]
             price = package["price_usd"]
-            
-            # Сохраняем текущую вкладку перед переходом
-            current_tab = context.user_data.get('current_tab', 'settings')
-            navigation_prev[uid] = current_tab
             
             await query.message.edit_text(
                 f"✅ Вы выбрали пакет {package['name']}\n"
@@ -110,14 +82,14 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         lang = data.split("set_lang:", 1)[1].strip()
         await handle_set_lang(update, context, query, uid, lang)
         # После смены языка возвращаемся в настройки
-        await open_tab(context, query, uid, "settings", from_back=False)
+        await open_tab(context, query, uid, "settings")
         return
     
     if data.startswith("set_persona:"):
         persona = data.split("set_persona:", 1)[1].strip()
         await handle_set_persona(update, context, query, uid, persona)
         # После смены характера возвращаемся в настройки
-        await open_tab(context, query, uid, "settings", from_back=False)
+        await open_tab(context, query, uid, "settings")
         return
     
     # ОБРАБОТКА ПОДТВЕРЖДЕНИЯ СМЕНЫ РЕЖИМА
@@ -130,9 +102,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             new_mode=mode_names.get(new_mode, new_mode),
             current_mode=mode_names.get(current_mode, current_mode)
         )
-        
-        # Сохраняем текущую вкладку
-        navigation_prev[uid] = context.user_data.get('current_tab', 'ai_mode_settings')
         
         try:
             await query.message.edit_text(text, reply_markup=confirm_ai_mode_kb(uid, new_mode))
@@ -175,13 +144,13 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "switch_to_miniapp":
         await handle_switch_mode(update, context, query, uid, "miniapp")
         # После смены режима возвращаемся в настройки
-        await open_tab(context, query, uid, "settings", from_back=False)
+        await open_tab(context, query, uid, "settings")
         return
     
     if data == "switch_to_inline":
         await handle_switch_mode(update, context, query, uid, "inline")
         # После смены режима возвращаемся в настройки
-        await open_tab(context, query, uid, "settings", from_back=False)
+        await open_tab(context, query, uid, "settings")
         return
     
     if data == "inline_chat":
@@ -195,20 +164,11 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await edit_to_menu(context, query, uid)
 
 
-async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str, from_back: bool = False):
-    """Открыть вкладку с правильной навигацией"""
+async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
+    """Открыть вкладку"""
     
-    # Если это НЕ нажатие "Назад" и мы не в главном меню
-    if not from_back:
-        current_tab = context.user_data.get('current_tab')
-        
-        # Если мы уже были в какой-то вкладке и открываем новую
-        if current_tab and current_tab != tab_key:
-            # Сохраняем предыдущую вкладку для кнопки "Назад"
-            navigation_prev[user_id] = current_tab
-        
-        # Запоминаем текущую вкладку
-        context.user_data['current_tab'] = tab_key
+    # Запоминаем текущую вкладку (нужно для некоторых действий)
+    context.user_data['current_tab'] = tab_key
     
     # Открываем нужную вкладку
     if tab_key == "profile":
@@ -259,6 +219,34 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
     elif tab_key == "balance":
         balance = get_balance(user_id)
         text = f"⭐ Ваш баланс: {balance} звезд"
+        try:
+            await query.message.edit_text(text, reply_markup=tab_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "help":
+        text = "❓ Помощь\n\nНажми «Открыть Mini App» или используй встроенный чат."
+        try:
+            await query.message.edit_text(text, reply_markup=tab_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "status":
+        text = "📌 Статус\n\nРаздел в разработке."
+        try:
+            await query.message.edit_text(text, reply_markup=tab_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "ref":
+        text = "🎁 Рефералы\n\nРаздел в разработке."
+        try:
+            await query.message.edit_text(text, reply_markup=tab_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "support":
+        text = "💬 Поддержка\n\nРаздел в разработке."
         try:
             await query.message.edit_text(text, reply_markup=tab_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
