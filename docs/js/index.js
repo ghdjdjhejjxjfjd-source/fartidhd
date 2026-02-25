@@ -23,7 +23,6 @@ if (tg) {
 // ===== storage keys =====
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
-const STORAGE_STYLE = "miniapp_style_v1";
 const STORAGE_TOOLS = "tools_menu_open";
 
 // ===== DOM элементы =====
@@ -76,17 +75,14 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Язык интерфейса", 
     sheetLang: "Язык",
-    sheetTheme: "Оформление",
-    theme: "Тема",
-    style: "Стиль",
-    styleNormal: "Обычный",
+    sheetTheme: "Цвет",
+    theme: "Цвет",
     colors: {
       blue: "Синий",
       black: "Черный",
       purple: "Фиолетовый",
       green: "Зеленый",
-      gray: "Серый",
-      normal: "Обычный"
+      gray: "Серый"
     }
   },
   kk: { 
@@ -103,17 +99,14 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Тіл", 
     sheetLang: "Тіл",
-    sheetTheme: "Безендіру",
-    theme: "Тақырып",
-    style: "Стиль",
-    styleNormal: "Қарапайым",
+    sheetTheme: "Түс",
+    theme: "Түс",
     colors: {
       blue: "Көк",
       black: "Қара",
       purple: "Күлгін",
       green: "Жасыл",
-      gray: "Сұр",
-      normal: "Қарапайым"
+      gray: "Сұр"
     }
   },
   en: { 
@@ -130,17 +123,14 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Language", 
     sheetLang: "Language",
-    sheetTheme: "Style",
-    theme: "Theme",
-    style: "Style",
-    styleNormal: "Normal",
+    sheetTheme: "Color",
+    theme: "Color",
     colors: {
       blue: "Blue",
       black: "Black",
       purple: "Purple",
       green: "Green",
-      gray: "Gray",
-      normal: "Normal"
+      gray: "Gray"
     }
   },
   tr: { 
@@ -157,17 +147,14 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Dil", 
     sheetLang: "Dil",
-    sheetTheme: "Tema",
-    theme: "Tema",
-    style: "Stil",
-    styleNormal: "Normal",
+    sheetTheme: "Renk",
+    theme: "Renk",
     colors: {
       blue: "Mavi",
       black: "Siyah",
       purple: "Mor",
       green: "Yeşil",
-      gray: "Gri",
-      normal: "Normal"
+      gray: "Gri"
     }
   },
   uk: { 
@@ -184,17 +171,14 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Мова", 
     sheetLang: "Мова",
-    sheetTheme: "Оформлення",
-    theme: "Тема",
-    style: "Стиль",
-    styleNormal: "Звичайний",
+    sheetTheme: "Колір",
+    theme: "Колір",
     colors: {
       blue: "Синій",
       black: "Чорний",
       purple: "Фіолетовий",
       green: "Зелений",
-      gray: "Сірий",
-      normal: "Звичайний"
+      gray: "Сірий"
     }
   },
   fr: { 
@@ -211,17 +195,14 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Langue", 
     sheetLang: "Langue",
-    sheetTheme: "Style",
-    theme: "Thème",
-    style: "Style",
-    styleNormal: "Normal",
+    sheetTheme: "Couleur",
+    theme: "Couleur",
     colors: {
       blue: "Bleu",
       black: "Noir",
       purple: "Violet",
       green: "Vert",
-      gray: "Gris",
-      normal: "Normal"
+      gray: "Gris"
     }
   },
 };
@@ -237,12 +218,11 @@ const LANGS = [
 ];
 
 const THEMES = [
-  { code: "blue", type: "theme", label: { ru: "Синий", kk: "Көк", en: "Blue", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
-  { code: "black", type: "theme", label: { ru: "Черный", kk: "Қара", en: "Black", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
-  { code: "purple", type: "theme", label: { ru: "Фиолетовый", kk: "Күлгін", en: "Purple", tr: "Mor", uk: "Фіолетовий", fr: "Violet" } },
-  { code: "green", type: "theme", label: { ru: "Зеленый", kk: "Жасыл", en: "Green", tr: "Yeşil", uk: "Зелений", fr: "Vert" } },
-  { code: "gray", type: "theme", label: { ru: "Серый", kk: "Сұр", en: "Gray", tr: "Gri", uk: "Сірий", fr: "Gris" } },
-  { code: "normal", type: "style", label: { ru: "Обычный", kk: "Қарапайым", en: "Normal", tr: "Normal", uk: "Звичайний", fr: "Normal" } },
+  { code: "blue", label: { ru: "Синий", kk: "Көк", en: "Blue", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
+  { code: "black", label: { ru: "Черный", kk: "Қара", en: "Black", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
+  { code: "purple", label: { ru: "Фиолетовый", kk: "Күлгін", en: "Purple", tr: "Mor", uk: "Фіолетовий", fr: "Violet" } },
+  { code: "green", label: { ru: "Зеленый", kk: "Жасыл", en: "Green", tr: "Yeşil", uk: "Зелений", fr: "Vert" } },
+  { code: "gray", label: { ru: "Серый", kk: "Сұр", en: "Gray", tr: "Gri", uk: "Сірий", fr: "Gris" } },
 ];
 
 // ===== helpers =====
@@ -260,29 +240,12 @@ function getSavedTheme(){
   catch(e){ return "blue"; }
 }
 
-function getSavedStyle(){
-  try{ return localStorage.getItem(STORAGE_STYLE) || ""; }
-  catch(e){ return ""; }
-}
-
 function saveTheme(theme){
   try{ localStorage.setItem(STORAGE_THEME, theme); }catch(e){}
 }
 
-function saveStyle(style){
-  try{ localStorage.setItem(STORAGE_STYLE, style); }catch(e){}
-}
-
 function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
-}
-
-function applyStyle(style){
-  if (style) {
-    document.documentElement.setAttribute("data-style", style);
-  } else {
-    document.documentElement.removeAttribute("data-style");
-  }
 }
 
 // ===== Уведомления =====
@@ -303,19 +266,19 @@ function showNotification(message) {
 }
 
 // ===== Обновление ссылок =====
-function updateLinks(lang, theme, style){
+function updateLinks(lang, theme){
   if (chatBtn) {
-    chatBtn.href = `./chat.html?v=2&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&style=${encodeURIComponent(style)}`;
+    chatBtn.href = `./chat.html?v=2&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
   }
   if (imgBtn) {
-    imgBtn.href = `./image.html?v=1&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&style=${encodeURIComponent(style)}`;
+    imgBtn.href = `./image.html?v=1&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
   }
   
   const toolLinks = document.querySelectorAll('.tool-item');
   toolLinks.forEach(link => {
     const href = link.getAttribute('href');
     if (href && !href.includes('?')) {
-      link.href = `${href}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&style=${encodeURIComponent(style)}`;
+      link.href = `${href}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
     }
   });
 }
@@ -345,14 +308,8 @@ function updateUILanguage(lang){
   }
   
   const currentTheme = getSavedTheme();
-  const currentStyle = getSavedStyle();
-  
   if (themeBtnText) {
-    if (currentStyle === "normal") {
-      themeBtnText.textContent = `${t.style}: ${t.styleNormal}`;
-    } else {
-      themeBtnText.textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
-    }
+    themeBtnText.textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
   }
   
   paintSelectedLang(lang);
@@ -371,13 +328,9 @@ function updateThemeList(lang){
   const items = themeList.querySelectorAll('.themeItem');
   items.forEach(item => {
     const code = item.getAttribute('data-theme');
-    const type = item.getAttribute('data-type');
-    const theme = THEMES.find(t => t.code === code);
-    if (theme) {
-      const labelSpan = item.querySelector('.theme-label');
-      if (labelSpan) {
-        labelSpan.textContent = theme.label[lang] || theme.label.ru;
-      }
+    const labelSpan = item.querySelector('.theme-label');
+    if (labelSpan) {
+      labelSpan.textContent = getThemeLabel(code, lang);
     }
   });
 }
@@ -391,65 +344,48 @@ function paintSelectedLang(lang){
   });
 }
 
-// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ГАЛОЧЕК =====
-function paintSelectedTheme(theme, style){
+function paintSelectedTheme(theme){
   if (!themeList) return;
-  
   const items = themeList.querySelectorAll(".themeItem");
   items.forEach(btn => {
     const code = btn.getAttribute("data-theme");
-    const type = btn.getAttribute("data-type");
-    
-    if (type === "style") {
-      // Для "Обычный" - галочка если выбран style
-      btn.classList.toggle("selected", code === style);
-    } else {
-      // Для цветных тем - галочка если выбрана тема И style пустой
-      btn.classList.toggle("selected", code === theme && !style);
-    }
+    btn.classList.toggle("selected", code === theme);
   });
 }
 
-// ===== ИСПРАВЛЕННАЯ УСТАНОВКА ТЕМЫ/СТИЛЯ =====
-function setTheme(themeCode){
-  console.log("setTheme:", themeCode);
+// ===== Установка языка =====
+function setLang(lang){
+  console.log("setLang:", lang);
   
-  const theme = THEMES.find(t => t.code === themeCode);
+  saveLang(lang);
+  updateUILanguage(lang);
   
-  if (theme.type === "style") {
-    // Если выбрали "Обычный"
-    applyStyle(themeCode);
-    saveStyle(themeCode);
-    // Сбрасываем цветную тему на дефолтную
-    applyTheme("blue");
-    saveTheme("blue");
-  } else {
-    // Если выбрали цветную тему
-    applyTheme(themeCode);
-    saveTheme(themeCode);
-    // Убираем обычный стиль
-    applyStyle("");
-    saveStyle("");
-  }
+  const currentTheme = getSavedTheme();
+  updateLinks(lang, currentTheme);
   
-  // Обновляем галочки
-  paintSelectedTheme(getSavedTheme(), getSavedStyle());
+  closeLang();
+  showNotification(`🌐 ${I18N[lang]?.sheetLang || "Language"}: ${LANGS.find(l => l.code === lang)?.label || lang}`);
+}
+
+// ===== Установка темы =====
+function setTheme(theme){
+  console.log("setTheme:", theme);
+  
+  applyTheme(theme);
+  saveTheme(theme);
+  paintSelectedTheme(theme);
   
   const currentLang = getSavedLang();
   const t = I18N[currentLang] || I18N.ru;
   
   if (themeBtnText) {
-    if (themeCode === "normal") {
-      themeBtnText.textContent = `${t.style}: ${t.styleNormal}`;
-    } else {
-      themeBtnText.textContent = `${t.theme}: ${getThemeLabel(themeCode, currentLang)}`;
-    }
+    themeBtnText.textContent = `${t.theme}: ${getThemeLabel(theme, currentLang)}`;
   }
   
-  updateLinks(currentLang, getSavedTheme(), getSavedStyle());
+  updateLinks(currentLang, theme);
   
   closeTheme();
-  showNotification(`🎨 ${t.sheetTheme}: ${theme.label[currentLang] || theme.label.ru}`);
+  showNotification(`🎨 ${t.sheetTheme}: ${getThemeLabel(theme, currentLang)}`);
 }
 
 // ===== Логика выпадающего меню инструментов =====
@@ -554,7 +490,6 @@ function buildThemeList(){
     btn.type = "button";
     btn.className = "themeItem";
     btn.setAttribute("data-theme", theme.code);
-    btn.setAttribute("data-type", theme.type);
     
     const currentLang = getSavedLang();
     const labelText = theme.label[currentLang] || theme.label.ru;
@@ -565,21 +500,6 @@ function buildThemeList(){
   });
 }
 
-// ===== Установка языка =====
-function setLang(lang){
-  console.log("setLang:", lang);
-  
-  saveLang(lang);
-  updateUILanguage(lang);
-  
-  const currentTheme = getSavedTheme();
-  const currentStyle = getSavedStyle();
-  updateLinks(lang, currentTheme, currentStyle);
-  
-  closeLang();
-  showNotification(`🌐 ${I18N[lang]?.sheetLang || "Language"}: ${LANGS.find(l => l.code === lang)?.label || lang}`);
-}
-
 // ===== Инициализация =====
 function init(){
   buildLangList();
@@ -587,15 +507,13 @@ function init(){
   
   const savedLang = getSavedLang();
   const savedTheme = getSavedTheme();
-  const savedStyle = getSavedStyle();
   
   applyTheme(savedTheme);
-  applyStyle(savedStyle);
   
   updateUILanguage(savedLang);
-  paintSelectedTheme(savedTheme, savedStyle);
+  paintSelectedTheme(savedTheme);
   
-  updateLinks(savedLang, savedTheme, savedStyle);
+  updateLinks(savedLang, savedTheme);
   
   initToolsMenu();
   
