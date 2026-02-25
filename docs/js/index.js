@@ -23,6 +23,7 @@ if (tg) {
 // ===== storage keys =====
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
+const STORAGE_STYLE = "miniapp_style_v1";
 const STORAGE_TOOLS = "tools_menu_open";
 
 // ===== DOM элементы =====
@@ -52,7 +53,6 @@ const toolsDropdown = document.getElementById("toolsDropdown");
 const toolsChev = document.getElementById("toolsChev");
 const toolsBtnText = document.getElementById("toolsBtnText");
 
-// Элементы текста инструментов
 const toolRemoveBgText = document.getElementById("toolRemoveBgText");
 const toolTextFromImageText = document.getElementById("toolTextFromImageText");
 const toolSelfieFiltersText = document.getElementById("toolSelfieFiltersText");
@@ -60,7 +60,7 @@ const toolMusicText = document.getElementById("toolMusicText");
 const toolMemeText = document.getElementById("toolMemeText");
 const toolQrText = document.getElementById("toolQrText");
 
-// ===== i18n словарь с инструментами =====
+// ===== i18n словарь =====
 const I18N = {
   ru: { 
     chat: "Чат с ИИ", 
@@ -76,14 +76,17 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Язык интерфейса", 
     sheetLang: "Язык",
-    sheetTheme: "Цвет",
-    theme: "Цвет",
+    sheetTheme: "Оформление",
+    theme: "Тема",
+    style: "Стиль",
+    styleNormal: "Обычный",
     colors: {
       blue: "Синий",
       black: "Черный",
       purple: "Фиолетовый",
       green: "Зеленый",
-      gray: "Серый"
+      gray: "Серый",
+      normal: "Обычный"
     }
   },
   kk: { 
@@ -100,14 +103,17 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Тіл", 
     sheetLang: "Тіл",
-    sheetTheme: "Түс",
-    theme: "Түс",
+    sheetTheme: "Безендіру",
+    theme: "Тақырып",
+    style: "Стиль",
+    styleNormal: "Қарапайым",
     colors: {
       blue: "Көк",
       black: "Қара",
       purple: "Күлгін",
       green: "Жасыл",
-      gray: "Сұр"
+      gray: "Сұр",
+      normal: "Қарапайым"
     }
   },
   en: { 
@@ -124,14 +130,17 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Language", 
     sheetLang: "Language",
-    sheetTheme: "Color",
-    theme: "Color",
+    sheetTheme: "Style",
+    theme: "Theme",
+    style: "Style",
+    styleNormal: "Normal",
     colors: {
       blue: "Blue",
       black: "Black",
       purple: "Purple",
       green: "Green",
-      gray: "Gray"
+      gray: "Gray",
+      normal: "Normal"
     }
   },
   tr: { 
@@ -148,14 +157,17 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Dil", 
     sheetLang: "Dil",
-    sheetTheme: "Renk",
-    theme: "Renk",
+    sheetTheme: "Tema",
+    theme: "Tema",
+    style: "Stil",
+    styleNormal: "Normal",
     colors: {
       blue: "Mavi",
       black: "Siyah",
       purple: "Mor",
       green: "Yeşil",
-      gray: "Gri"
+      gray: "Gri",
+      normal: "Normal"
     }
   },
   uk: { 
@@ -172,14 +184,17 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Мова", 
     sheetLang: "Мова",
-    sheetTheme: "Колір",
-    theme: "Колір",
+    sheetTheme: "Оформлення",
+    theme: "Тема",
+    style: "Стиль",
+    styleNormal: "Звичайний",
     colors: {
       blue: "Синій",
       black: "Чорний",
       purple: "Фіолетовий",
       green: "Зелений",
-      gray: "Сірий"
+      gray: "Сірий",
+      normal: "Звичайний"
     }
   },
   fr: { 
@@ -196,14 +211,17 @@ const I18N = {
     ver: "miniapp v3", 
     lang: "Langue", 
     sheetLang: "Langue",
-    sheetTheme: "Couleur",
-    theme: "Couleur",
+    sheetTheme: "Style",
+    theme: "Thème",
+    style: "Style",
+    styleNormal: "Normal",
     colors: {
       blue: "Bleu",
       black: "Noir",
       purple: "Violet",
       green: "Vert",
-      gray: "Gris"
+      gray: "Gris",
+      normal: "Normal"
     }
   },
 };
@@ -219,11 +237,12 @@ const LANGS = [
 ];
 
 const THEMES = [
-  { code: "blue", label: { ru: "Синий", kk: "Көк", en: "Blue", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
-  { code: "black", label: { ru: "Черный", kk: "Қара", en: "Black", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
-  { code: "purple", label: { ru: "Фиолетовый", kk: "Күлгін", en: "Purple", tr: "Mor", uk: "Фіолетовий", fr: "Violet" } },
-  { code: "green", label: { ru: "Зеленый", kk: "Жасыл", en: "Green", tr: "Yeşil", uk: "Зелений", fr: "Vert" } },
-  { code: "gray", label: { ru: "Серый", kk: "Сұр", en: "Gray", tr: "Gri", uk: "Сірий", fr: "Gris" } },
+  { code: "blue", type: "theme", label: { ru: "Синий", kk: "Көк", en: "Blue", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
+  { code: "black", type: "theme", label: { ru: "Черный", kk: "Қара", en: "Black", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
+  { code: "purple", type: "theme", label: { ru: "Фиолетовый", kk: "Күлгін", en: "Purple", tr: "Mor", uk: "Фіолетовий", fr: "Violet" } },
+  { code: "green", type: "theme", label: { ru: "Зеленый", kk: "Жасыл", en: "Green", tr: "Yeşil", uk: "Зелений", fr: "Vert" } },
+  { code: "gray", type: "theme", label: { ru: "Серый", kk: "Сұр", en: "Gray", tr: "Gri", uk: "Сірий", fr: "Gris" } },
+  { code: "normal", type: "style", label: { ru: "Обычный", kk: "Қарапайым", en: "Normal", tr: "Normal", uk: "Звичайний", fr: "Normal" } },
 ];
 
 // ===== helpers =====
@@ -241,12 +260,25 @@ function getSavedTheme(){
   catch(e){ return "blue"; }
 }
 
+function getSavedStyle(){
+  try{ return localStorage.getItem(STORAGE_STYLE) || "normal"; }
+  catch(e){ return "normal"; }
+}
+
 function saveTheme(theme){
   try{ localStorage.setItem(STORAGE_THEME, theme); }catch(e){}
 }
 
+function saveStyle(style){
+  try{ localStorage.setItem(STORAGE_STYLE, style); }catch(e){}
+}
+
 function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
+}
+
+function applyStyle(style){
+  document.documentElement.setAttribute("data-style", style || "normal");
 }
 
 // ===== Уведомления =====
@@ -267,20 +299,19 @@ function showNotification(message) {
 }
 
 // ===== Обновление ссылок =====
-function updateLinks(lang, theme){
+function updateLinks(lang, theme, style){
   if (chatBtn) {
-    chatBtn.href = `./chat.html?v=2&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+    chatBtn.href = `./chat.html?v=2&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&style=${encodeURIComponent(style)}`;
   }
   if (imgBtn) {
-    imgBtn.href = `./image.html?v=1&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+    imgBtn.href = `./image.html?v=1&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&style=${encodeURIComponent(style)}`;
   }
   
-  // Обновляем ссылки инструментов
   const toolLinks = document.querySelectorAll('.tool-item');
   toolLinks.forEach(link => {
     const href = link.getAttribute('href');
     if (href && !href.includes('?')) {
-      link.href = `${href}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+      link.href = `${href}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&style=${encodeURIComponent(style)}`;
     }
   });
 }
@@ -289,7 +320,6 @@ function updateLinks(lang, theme){
 function updateUILanguage(lang){
   const t = I18N[lang] || I18N.ru;
   
-  // Обновляем тексты
   if (chatBtn) chatBtn.textContent = t.chat;
   if (imgBtn) imgBtn.textContent = t.img;
   if (toolsBtnText) toolsBtnText.innerHTML = t.tools;
@@ -305,22 +335,23 @@ function updateUILanguage(lang){
   if (langSheetTitle) langSheetTitle.textContent = t.sheetLang;
   if (themeSheetTitle) themeSheetTitle.textContent = t.sheetTheme;
   
-  // Обновляем текст на кнопке языка
   const foundLang = LANGS.find(x => x.code === lang);
   if (langBtnText) {
     langBtnText.textContent = foundLang ? foundLang.label : "Русский (RU)";
   }
   
-  // Обновляем текст на кнопке темы
   const currentTheme = getSavedTheme();
+  const currentStyle = getSavedStyle();
+  
   if (themeBtnText) {
-    themeBtnText.textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
+    if (currentStyle === "normal") {
+      themeBtnText.textContent = `${t.style}: ${t.styleNormal}`;
+    } else {
+      themeBtnText.textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
+    }
   }
   
-  // Обновляем выделение в списке языков
   paintSelectedLang(lang);
-  
-  // Обновляем список тем
   updateThemeList(lang);
 }
 
@@ -336,9 +367,13 @@ function updateThemeList(lang){
   const items = themeList.querySelectorAll('.themeItem');
   items.forEach(item => {
     const code = item.getAttribute('data-theme');
-    const labelSpan = item.querySelector('.theme-label');
-    if (labelSpan) {
-      labelSpan.textContent = getThemeLabel(code, lang);
+    const type = item.getAttribute('data-type');
+    const theme = THEMES.find(t => t.code === code);
+    if (theme) {
+      const labelSpan = item.querySelector('.theme-label');
+      if (labelSpan) {
+        labelSpan.textContent = theme.label[lang] || theme.label.ru;
+      }
     }
   });
 }
@@ -352,12 +387,17 @@ function paintSelectedLang(lang){
   });
 }
 
-function paintSelectedTheme(theme){
+function paintSelectedTheme(theme, style){
   if (!themeList) return;
   const items = themeList.querySelectorAll(".themeItem");
   items.forEach(btn => {
     const code = btn.getAttribute("data-theme");
-    btn.classList.toggle("selected", code === theme);
+    const type = btn.getAttribute("data-type");
+    if (type === "style") {
+      btn.classList.toggle("selected", code === style);
+    } else {
+      btn.classList.toggle("selected", code === theme);
+    }
   });
 }
 
@@ -369,44 +409,56 @@ function setLang(lang){
   updateUILanguage(lang);
   
   const currentTheme = getSavedTheme();
-  updateLinks(lang, currentTheme);
+  const currentStyle = getSavedStyle();
+  updateLinks(lang, currentTheme, currentStyle);
   
   closeLang();
   showNotification(`🌐 ${I18N[lang]?.sheetLang || "Language"}: ${LANGS.find(l => l.code === lang)?.label || lang}`);
 }
 
-// ===== Установка темы =====
-function setTheme(theme){
-  console.log("setTheme:", theme);
+// ===== Установка темы/стиля =====
+function setTheme(themeCode){
+  console.log("setTheme:", themeCode);
   
-  applyTheme(theme);
-  saveTheme(theme);
-  paintSelectedTheme(theme);
+  const theme = THEMES.find(t => t.code === themeCode);
+  
+  if (theme.type === "style") {
+    applyStyle(themeCode);
+    saveStyle(themeCode);
+  } else {
+    applyTheme(themeCode);
+    saveTheme(themeCode);
+    applyStyle(""); // убираем стиль если выбрана цветная тема
+  }
+  
+  paintSelectedTheme(getSavedTheme(), getSavedStyle());
   
   const currentLang = getSavedLang();
   const t = I18N[currentLang] || I18N.ru;
   
   if (themeBtnText) {
-    themeBtnText.textContent = `${t.theme}: ${getThemeLabel(theme, currentLang)}`;
+    if (themeCode === "normal") {
+      themeBtnText.textContent = `${t.style}: ${t.styleNormal}`;
+    } else {
+      themeBtnText.textContent = `${t.theme}: ${getThemeLabel(themeCode, currentLang)}`;
+    }
   }
   
-  updateLinks(currentLang, theme);
+  updateLinks(currentLang, getSavedTheme(), getSavedStyle());
   
   closeTheme();
-  showNotification(`🎨 ${t.sheetTheme}: ${getThemeLabel(theme, currentLang)}`);
+  showNotification(`🎨 ${t.sheetTheme}: ${theme.label[currentLang] || theme.label.ru}`);
 }
 
 // ===== Логика выпадающего меню инструментов =====
 function initToolsMenu() {
   if (!toolsBtn || !toolsDropdown || !toolsChev) return;
   
-  // Проверяем сохраненное состояние
   let isOpen = false;
   try {
     isOpen = localStorage.getItem(STORAGE_TOOLS) === 'true';
   } catch(e) {}
   
-  // Функция открытия/закрытия
   function toggleTools(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -425,23 +477,19 @@ function initToolsMenu() {
       toolsChev.textContent = '▼';
     }
     
-    // Сохраняем состояние
     try {
       localStorage.setItem(STORAGE_TOOLS, isOpen);
     } catch(e) {}
   }
   
-  // Добавляем обработчик
   toolsBtn.addEventListener('click', toggleTools);
   
-  // Закрываем при клике вне меню
   document.addEventListener('click', (e) => {
     if (isOpen && !toolsBtn.contains(e.target) && !toolsDropdown.contains(e.target)) {
       toggleTools(e);
     }
   });
   
-  // Устанавливаем начальное состояние
   if (isOpen) {
     toolsDropdown.classList.add('open');
     toolsBtn.classList.add('active');
@@ -504,8 +552,8 @@ function buildThemeList(){
     btn.type = "button";
     btn.className = "themeItem";
     btn.setAttribute("data-theme", theme.code);
+    btn.setAttribute("data-type", theme.type);
     
-    // Устанавливаем начальный язык (русский) при создании
     const currentLang = getSavedLang();
     const labelText = theme.label[currentLang] || theme.label.ru;
     btn.innerHTML = `<span class="theme-label">${labelText}</span><span class="check">✓</span>`;
@@ -517,28 +565,23 @@ function buildThemeList(){
 
 // ===== Инициализация =====
 function init(){
-  // Сборка списков
   buildLangList();
   buildThemeList();
   
-  // Загрузка сохраненных значений
   const savedLang = getSavedLang();
   const savedTheme = getSavedTheme();
+  const savedStyle = getSavedStyle();
   
-  // Применение темы
   applyTheme(savedTheme);
+  applyStyle(savedStyle);
   
-  // Обновление UI
   updateUILanguage(savedLang);
-  paintSelectedTheme(savedTheme);
+  paintSelectedTheme(savedTheme, savedStyle);
   
-  // Обновление ссылок
-  updateLinks(savedLang, savedTheme);
+  updateLinks(savedLang, savedTheme, savedStyle);
   
-  // Инициализация меню инструментов
   initToolsMenu();
   
-  // Обработчики для языка
   if (langBtn) langBtn.addEventListener("click", openLang);
   if (langClose) langClose.addEventListener("click", closeLang);
   if (langOverlay) {
@@ -547,7 +590,6 @@ function init(){
     });
   }
   
-  // Обработчики для темы
   if (themeBtn) themeBtn.addEventListener("click", openTheme);
   if (themeClose) themeClose.addEventListener("click", closeTheme);
   if (themeOverlay) {
@@ -556,7 +598,6 @@ function init(){
     });
   }
   
-  // Закрытие по Escape
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       closeLang();
@@ -565,5 +606,4 @@ function init(){
   });
 }
 
-// Запуск
 init();
