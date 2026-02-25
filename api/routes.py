@@ -1,4 +1,4 @@
-# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
+# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С ПОЛНЫМИ ЛОГАМИ
 from flask import request, jsonify
 from datetime import datetime
 import re
@@ -143,7 +143,7 @@ def api_add_spent():
     return jsonify({"success": True})
 
 # =========================
-# CHAT ENDPOINT
+# CHAT ENDPOINT - С ПОЛНЫМИ ЛОГАМИ
 # =========================
 def extract_last_user_message(raw: str) -> str:
     s = (raw or "").strip()
@@ -175,6 +175,10 @@ def api_chat():
     
     text = extract_last_user_message(raw_text)
     tg_user_id_int = int(tg_user_id)
+    
+    # Получаем данные пользователя для логов
+    tg_username = data.get("tg_username") or "—"
+    tg_first_name = data.get("tg_first_name") or "—"
     
     # Проверка доступа
     a = get_access(tg_user_id_int)
@@ -215,22 +219,49 @@ def api_chat():
         increment_messages(tg_user_id_int)
         mem_add(tg_user_id_int, "assistant", reply)
         
-        send_log_to_group(
-            f"💬 Чат: {tg_user_id_int} -> {text[:50]}...\n"
-            f"🤖 Режим: {ai_mode}, Стоимость: {COST_PER_MESSAGE} ⭐"
+        # Получаем новый баланс после списания
+        new_balance = get_balance(tg_user_id_int)
+        
+        # 🟢 ПОЛНЫЙ ЛОГ как раньше + баланс
+        time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_text = (
+            f"🕒 {time_str}\n"
+            f"👤 {tg_first_name} (@{tg_username})\n"
+            f"🆔 {tg_user_id_int}\n"
+            f"💰 Баланс: {new_balance} ⭐\n"
+            f"💬 Запрос: {text[:100]}\n\n"
+            f"🤖 Ответ: {reply[:200]}\n"
+            f"⚡ Режим: {ai_mode}, стоимость: {COST_PER_MESSAGE} ⭐\n"
+            f"🎭 Характер: {persona}, 📝 Стиль: {style}"
         )
         
-        return jsonify({"reply": reply})
+        send_log_to_group(log_text)
+        
+        return jsonify({
+            "reply": reply,
+            "balance": new_balance,
+            "cost": COST_PER_MESSAGE
+        })
         
     except Exception as e:
         # При ошибке удаляем сообщение из памяти
         mem_clear_last(tg_user_id_int)
         
-        error_msg = f"❌ Ошибка в {ai_mode} режиме: {str(e)}"
-        print(error_msg)
-        send_log_to_group(f"❌ Ошибка у {tg_user_id_int}: {e}")
+        error_msg = str(e)
+        print(f"❌ Ошибка у {tg_user_id_int}: {error_msg}")
         
-        if "Failed to fetch" in str(e) or "timeout" in str(e).lower():
+        # Лог ошибки
+        time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        send_log_to_group(
+            f"❌ ОШИБКА\n"
+            f"🕒 {time_str}\n"
+            f"👤 {tg_first_name} (@{tg_username})\n"
+            f"🆔 {tg_user_id_int}\n"
+            f"💬 Запрос: {text[:100]}\n"
+            f"💥 Ошибка: {error_msg[:200]}"
+        )
+        
+        if "Failed to fetch" in error_msg or "timeout" in error_msg.lower():
             return jsonify({
                 "error": "network_error",
                 "message": "📡 Проблема с интернетом. Проверьте подключение."
