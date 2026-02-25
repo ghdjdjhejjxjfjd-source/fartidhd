@@ -4,7 +4,7 @@ import time
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from telegram import Update
 
-from bot.handlers import start, on_button, handle_message
+from bot.handlers import start, on_button, handle_message, cancel  # ✅ Добавлен cancel
 from bot_admin import (
     cmd_whoami,
     cmd_free,
@@ -23,6 +23,7 @@ BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
 async def post_init(app: Application):
     await app.bot.set_my_commands([
         ("start", "🚀 Запустить бота"),
+        ("cancel", "❌ Отменить действие"),  # ✅ Добавлена команда
     ])
     
     group_id_raw = (os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or "0").strip()
@@ -70,6 +71,7 @@ def start_bot():
     app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("cancel", cancel))  # ✅ Добавлен обработчик
     app.add_handler(CallbackQueryHandler(on_button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
@@ -87,7 +89,7 @@ def start_bot():
     app.add_error_handler(error_handler)
 
     print("🤖 Telegram bot started")
-    print("✅ В личке: только /start")
+    print("✅ В личке: /start, /cancel")
     print("✅ В админ-группе: все команды")
 
     while True:
