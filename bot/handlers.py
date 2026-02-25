@@ -21,6 +21,12 @@ from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_
 
 import requests
 
+# =========================
+# НАВИГАЦИЯ - ДВУХУРОВНЕВАЯ
+# =========================
+# Храним предыдущую вкладку ТОЛЬКО для вложенных меню
+navigation_stack = {}
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     send_log_http(build_start_log(update))
     
@@ -28,6 +34,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = user.id if user else 0
     if not uid:
         return
+    
+    # Очищаем навигацию при старте
+    if uid in navigation_stack:
+        del navigation_stack[uid]
     
     await send_fresh_menu(context.bot, uid)
 
@@ -46,8 +56,22 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
-    # ===== КНОПКА НАЗАД ВСЕГДА ВЕДЁТ В ГЛАВНОЕ МЕНЮ =====
-    if data == "back_to_previous" or data == "back_to_menu":
+    # ===== КНОПКА НАЗАД =====
+    if data == "back_to_previous":
+        if uid in navigation_stack:
+            # Возвращаемся на предыдущий уровень
+            prev_tab = navigation_stack[uid]
+            del navigation_stack[uid]
+            await open_tab(context, query, uid, prev_tab)
+        else:
+            # Если нет предыдущего уровня - в главное меню
+            await edit_to_menu(context, query, uid)
+        return
+    
+    if data == "back_to_menu":
+        # Принудительно в главное меню
+        if uid in navigation_stack:
+            del navigation_stack[uid]
         await edit_to_menu(context, query, uid)
         return
     
@@ -57,6 +81,24 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== ОБРАБОТКА ОТКРЫТИЯ ВКЛАДОК =====
     if data.startswith("tab:"):
         key = data.split("tab:", 1)[1].strip()
+        
+        # Сохраняем текущую вкладку в стек ТОЛЬКО если мы открываем вложенное меню
+        current_tab = context.user_data.get('current_tab')
+        
+        # Список вкладок, которые являются "родительскими" (первый уровень)
+        parent_tabs = ['settings', 'profile', 'help', 'status', 'ref', 'support', 'buy_stars', 'balance']
+        
+        # Список вкладок, которые являются "дочерними" (второй уровень)
+        child_tabs = ['ai_mode_settings', 'mode_settings', 'persona_settings', 'lang_settings']
+        
+        # Если мы в родительской вкладке и открываем дочернюю
+        if current_tab in parent_tabs and key in child_tabs:
+            # Сохраняем родительскую вкладку в стек
+            navigation_stack[uid] = current_tab
+        
+        # Запоминаем текущую вкладку
+        context.user_data['current_tab'] = key
+        
         await open_tab(context, query, uid, key)
         return
     
@@ -143,13 +185,11 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if data == "switch_to_miniapp":
         await handle_switch_mode(update, context, query, uid, "miniapp")
-        # После смены режима возвращаемся в настройки
         await open_tab(context, query, uid, "settings")
         return
     
     if data == "switch_to_inline":
         await handle_switch_mode(update, context, query, uid, "inline")
-        # После смены режима возвращаемся в настройки
         await open_tab(context, query, uid, "settings")
         return
     
@@ -166,9 +206,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
     """Открыть вкладку"""
-    
-    # Запоминаем текущую вкладку (нужно для некоторых действий)
-    context.user_data['current_tab'] = tab_key
     
     # Открываем нужную вкладку
     if tab_key == "profile":
