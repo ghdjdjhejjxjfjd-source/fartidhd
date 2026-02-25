@@ -1,5 +1,4 @@
-# bot_admin.py (добавить в начало и исправить функции)
-
+# bot_admin.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import os
 import re
 import time
@@ -24,13 +23,11 @@ try:
 except Exception:
     ADMIN_GROUP_ID = 0
 
-# Простая защита от брутфорса
 admin_command_usage = {}
-COMMAND_LIMIT = 10  # максимум команд в минуту
-COMMAND_WINDOW = 60  # 60 секунд
+COMMAND_LIMIT = 10
+COMMAND_WINDOW = 60
 
 def admin_only(func):
-    """Декоратор для проверки прав админа и rate limiting"""
     @wraps(func)
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = update.effective_user
@@ -39,7 +36,6 @@ def admin_only(func):
         if not user or not chat:
             return
         
-        # Проверка прав
         if ADMIN_USER_ID and user.id != ADMIN_USER_ID:
             await update.effective_message.reply_text("⛔ У вас нет прав администратора.")
             return
@@ -48,7 +44,6 @@ def admin_only(func):
             await update.effective_message.reply_text("⛔ Эта команда работает только в админ-группе.")
             return
         
-        # Rate limiting для команд
         now = time.time()
         key = f"{user.id}:{func.__name__}"
         
@@ -64,7 +59,6 @@ def admin_only(func):
         else:
             admin_command_usage[key] = (1, now)
         
-        # Логируем админ-команды
         command = update.message.text if update.message else "callback"
         print(f"👑 Админ {user.id} выполнил: {command}")
         
@@ -72,16 +66,13 @@ def admin_only(func):
     return wrapper
 
 def parse_user_id(arg: str) -> int:
-    """Безопасный парсинг user_id"""
     if not arg:
         return 0
     
-    # Удаляем все кроме цифр и минуса
     s = re.sub(r"[^\d\-]", "", arg.strip())
     
     try:
         user_id = int(s)
-        # Проверка что это реальный Telegram ID
         if 1 <= user_id <= 9007199254740991:
             return user_id
         return 0
@@ -89,12 +80,10 @@ def parse_user_id(arg: str) -> int:
         return 0
 
 def log_admin_action(action: str, admin_id: int, target_id: int, result: str):
-    """Логирование действий админа"""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_entry = f"[{timestamp}] 👑 Админ {admin_id} -> {action} пользователя {target_id}: {result}"
     print(log_entry)
     
-    # Можно также писать в специальный лог-файл
     try:
         with open("admin_actions.log", "a", encoding="utf-8") as f:
             f.write(log_entry + "\n")
@@ -113,7 +102,6 @@ async def cmd_whoami(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def _push_menu(context: ContextTypes.DEFAULT_TYPE, uid: int):
-    """Обновить меню пользователя"""
     try:
         a = get_access(uid)
         if a.get("is_blocked"):
@@ -325,4 +313,87 @@ async def cmd_addstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text(f"❌ Ошибка: {e}")
         log_admin_action(f"ДОБАВЛЕНО {amount}⭐", update.effective_user.id, uid, f"ошибка: {e}")
 
-# ... остальные команды аналогично ...
+@admin_only
+async def cmd_balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.effective_message.reply_text(
+            "❌ Использование: /balance <user_id>\n"
+            "Пример: /balance 123456789"
+        )
+        return
+    
+    uid = parse_user_id(context.args[0])
+    if not uid:
+        await update.effective_message.reply_text("❌ Неверный user_id")
+        return
+    
+    balance = get_balance(uid)
+    a = get_access(uid)
+    free_status = "✅ FREE" if a.get("is_free") else "💰 PAID"
+    blocked_status = "⛔ BLOCKED" if a.get("is_blocked") else "✅ ACTIVE"
+    
+    await update.effective_message.reply_text(
+        f"📊 Информация о пользователе {uid}\n\n"
+        f"💰 Баланс: {balance} ⭐\n"
+        f"💳 Статус: {free_status}\n"
+        f"🔒 Блокировка: {blocked_status}"
+    )
+
+@admin_only
+async def cmd_starstrans(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        from payments import get_top_users
+        
+        limit = 10
+        if context.args:
+            limit = parse_user_id(context.args[0])
+            if limit <= 0 or limit > 50:
+                limit = 10
+        
+        top_users = get_top_users(limit)
+        
+        if not top_users:
+            await update.effective_message.reply_text("📊 Нет данных о звездах")
+            return
+        
+        text = "🏆 Топ пользователей по звездам:\n\n"
+        for i, (user_id, balance, total) in enumerate(top_users, 1):
+            text += f"{i}. ID: {user_id}\n   💰 {balance} ⭐ (всего куплено: {total})\n\n"
+        
+        if len(text) > 4000:
+            parts = [text[i:i+4000] for i in range(0, len(text), 4000)]
+            for part in parts:
+                await update.effective_message.reply_text(part)
+        else:
+            await update.effective_message.reply_text(text)
+            
+    except Exception as e:
+        await update.effective_message.reply_text(f"❌ Ошибка: {e}")
+
+@admin_only
+async def cmd_resetstars(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.effective_message.reply_text("❌ Использование: /resetstars <user_id>")
+        return
+    
+    uid = parse_user_id(context.args[0])
+    if not uid:
+        await update.effective_message.reply_text("❌ Неверный user_id")
+        return
+    
+    try:
+        old_balance = get_balance(uid)
+        reset_balance(uid)
+        
+        log_admin_action("СБРОС БАЛАНСА", update.effective_user.id, uid, f"было {old_balance}⭐")
+        
+        await update.effective_message.reply_text(
+            f"✅ Баланс пользователя {uid} сброшен\n"
+            f"Было: {old_balance} ⭐\n"
+            f"Стало: 0 ⭐"
+        )
+        
+        await update_user_menu(context.bot, uid)
+        
+    except Exception as e:
+        await update.effective_message.reply_text(f"❌ Ошибка: {e}")
