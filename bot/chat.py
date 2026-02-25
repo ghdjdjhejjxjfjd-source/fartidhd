@@ -1,14 +1,12 @@
+# bot/chat.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from api import get_access, get_user_persona, get_user_lang, increment_messages, add_stars_spent
-from payments import get_balance, spend_stars
-from groq_client import ask_groq
+from payments import get_balance
 from .config import send_log_http
 
-
 async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Начало чата в Telegram"""
     query = update.callback_query
     await query.answer()
     
@@ -35,32 +33,44 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Для отмены напиши /cancel"
     )
     
-    # Запоминаем что пользователь в режиме чата
     context.user_data["in_chat_mode"] = True
 
-
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
-    """Обработка сообщения для чата"""
     a = get_access(uid)
     lang = get_user_lang(uid)
     persona = get_user_persona(uid)
     
+    if a.get("is_blocked"):
+        await update.message.reply_text("⛔ Доступ заблокирован.")
+        return
+    
+    balance = get_balance(uid)
+    if not a.get("is_free") and balance < 1:
+        await update.message.reply_text(
+            "❌ Недостаточно звезд.\n"
+            "Купи звезды в меню: ⭐ Купить звезды"
+        )
+        return
+    
     await update.message.reply_text("🤔 Думаю...")
     
     try:
-        reply = ask_groq(text, lang=lang, persona=persona)
-        await update.message.reply_text(reply)
+        from api import api_chat_request
         
-        # ✅ Обновляем статистику
-        increment_messages(uid)
+        reply = await api_chat_request(uid, text, lang, persona)
         
-        # Списываем звезду если не FREE
-        if not a.get("is_free"):
-            spend_stars(uid, 1)
-            add_stars_spent(uid, 1)  # Добавляем в потраченные звезды
+        if reply:
+            await update.message.reply_text(reply)
+            increment_messages(uid)
+            send_log_http(f"💬 Чат в боте: {uid} -> {text[:50]}...")
+        else:
+            await update.message.reply_text("❌ Ошибка получения ответа")
             
-        # Логируем
-        send_log_http(f"💬 Чат: {uid} -> {text[:50]}...")
-        
     except Exception as e:
-        await update.message.reply_text(f"❌ Ошибка: {e}")
+        error_msg = str(e)
+        if "insufficient_stars" in error_msg:
+            await update.message.reply_text("❌ Недостаточно звезд. Купите в меню.")
+        elif "network" in error_msg.lower():
+            await update.message.reply_text("📡 Проблема с интернетом. Попробуйте позже.")
+        else:
+            await update.message.reply_text(f"❌ Ошибка: {error_msg[:100]}")
