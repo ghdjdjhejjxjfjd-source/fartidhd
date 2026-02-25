@@ -24,36 +24,17 @@
     })();
   </script>
 
-  <!-- ТЕМА И СТИЛЬ -->
+  <!-- ТЕМА: применяем сразу -->
   <script>
     (function(){
-      const THEME_KEY = "miniapp_theme_v1";
-      const STYLE_KEY = "miniapp_style_v1";
-      
+      const KEY = "miniapp_theme_v1";
       function getTheme(){
         const url = new URL(window.location.href);
         const qp = url.searchParams.get("theme");
         if (qp) return qp;
-        try{ return localStorage.getItem(THEME_KEY) || "blue"; }catch(e){ return "blue"; }
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
       }
-      
-      function getStyle() {
-        const url = new URL(window.location.href);
-        const qp = url.searchParams.get("style");
-        if (qp) return qp;
-        try{ return localStorage.getItem(STYLE_KEY) || "normal"; }catch(e){ return "normal"; }
-      }
-      
-      const theme = getTheme();
-      const style = getStyle();
-      
-      document.documentElement.setAttribute("data-theme", theme);
-      document.documentElement.setAttribute("data-style", style);
-      
-      try{ 
-        localStorage.setItem(THEME_KEY, theme);
-        localStorage.setItem(STYLE_KEY, style);
-      }catch(e){}
+      document.documentElement.setAttribute("data-theme", getTheme());
     })();
   </script>
 
@@ -76,7 +57,11 @@
   </script>
 
   <style>
-    :root { --vh: 100vh; }
+    /* ПОЛНОЭКРАННЫЕ СТИЛИ */
+    :root {
+      --vh: 100vh;
+    }
+    
     html, body {
       height: var(--vh);
       height: -webkit-fill-available;
@@ -85,6 +70,7 @@
       overflow: hidden;
       background: transparent;
     }
+    
     .wrap {
       height: var(--vh);
       height: -webkit-fill-available;
@@ -95,6 +81,7 @@
       position: relative;
       z-index: 10;
     }
+    
     .card {
       width: min(520px, 100%);
       max-height: 90vh;
@@ -104,12 +91,12 @@
   </style>
 
   <link rel="stylesheet" href="./css/base.css?v=3">
-  <link rel="stylesheet" href="./css/index.css?v=7">
-  <link rel="stylesheet" href="./css/tools.css?v=2">
+  <link rel="stylesheet" href="./css/index.css?v=6">
+  <link rel="stylesheet" href="./css/tools.css?v=1">
 </head>
 
 <body>
-  <!-- КНОПКА ТЕМЫ/СТИЛЯ -->
+  <!-- КНОПКА ТЕМЫ -->
   <button class="themePill" id="themeBtn" type="button">
     <span id="themeBtnText">Цвет: Синий</span> <span class="chev">▾</span>
   </button>
@@ -125,6 +112,7 @@
   <div class="cube small f2" style="left:75%; top:55%"></div>
   <div class="cube tiny f3" style="left:85%; top:15%"></div>
   <div class="cube f4" style="left:92%; top:75%"></div>
+  
   <div class="cube f5" style="left:8%; top:70%"></div>
   <div class="cube small f6" style="left:18%; top:85%"></div>
   <div class="cube tiny f1" style="left:28%; top:50%"></div>
@@ -141,7 +129,7 @@
       <a class="btn" id="chatBtn" href="./chat.html">💬 Чат с ИИ</a>
       <a class="btn" id="imgBtn" href="./image.html">🎨 Генерация картинки</a>
       
-      <!-- КНОПКА ИНСТРУМЕНТОВ -->
+      <!-- КНОПКА ИНСТРУМЕНТОВ С ВЫПАДАЮЩИМ СПИСКОМ -->
       <div class="tools-container">
         <button class="btn tools-btn" id="toolsBtn" type="button">
           <span id="toolsBtnText">🔧 Инструменты</span> <span class="chev" id="toolsChev">▼</span>
@@ -153,26 +141,31 @@
             <span class="tool-text" id="toolRemoveBgText">Удаление фона</span>
             <span class="tool-arrow">▶</span>
           </a>
+          
           <a class="tool-item" href="./tools/text-from-image.html" id="toolTextFromImage">
             <span class="tool-icon">🎨</span>
             <span class="tool-text" id="toolTextFromImageText">Текст с фото</span>
             <span class="tool-arrow">▶</span>
           </a>
+          
           <a class="tool-item" href="./tools/selfie-filters.html" id="toolSelfieFilters">
             <span class="tool-icon">🤳</span>
             <span class="tool-text" id="toolSelfieFiltersText">Селфи фильтры</span>
             <span class="tool-arrow">▶</span>
           </a>
+          
           <a class="tool-item" href="./tools/music.html" id="toolMusic">
             <span class="tool-icon">🎵</span>
             <span class="tool-text" id="toolMusicText">Создание музыки</span>
             <span class="tool-arrow">▶</span>
           </a>
+          
           <a class="tool-item" href="./tools/meme.html" id="toolMeme">
             <span class="tool-icon">📝</span>
             <span class="tool-text" id="toolMemeText">Создание мемов</span>
             <span class="tool-arrow">▶</span>
           </a>
+          
           <a class="tool-item" href="./tools/qr.html" id="toolQr">
             <span class="tool-icon">📱</span>
             <span class="tool-text" id="toolQrText">QR коды</span>
@@ -204,11 +197,11 @@
     </div>
   </div>
 
-  <!-- Оверлей темы/стиля -->
+  <!-- Оверлей темы -->
   <div class="themeOverlay" id="themeOverlay">
     <div class="themeSheet">
       <div class="themeSheetHeader">
-        <div class="themeSheetTitle" id="themeSheetTitle">Оформление</div>
+        <div class="themeSheetTitle" id="themeSheetTitle">Цвет</div>
         <button class="themeClose" id="themeClose" type="button">✕</button>
       </div>
       <div class="themeList" id="themeList"></div>
