@@ -7,6 +7,32 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ (ИСПРАВЛЕНО) -->
+  <script>
+    (function(){
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.disableVerticalSwipes();
+        
+        const setHeight = () => {
+          const vh = tg.viewportHeight || window.innerHeight;
+          document.documentElement.style.setProperty('--vh', vh + 'px');
+        };
+        
+        setHeight();
+        tg.onEvent('viewportChanged', setHeight);
+      } else {
+        const setHeight = () => {
+          document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+        };
+        setHeight();
+        window.addEventListener('resize', setHeight);
+      }
+    })();
+  </script>
+
   <!-- ✅ ТЕМА: применяем сразу (без мигания) -->
   <script>
     (function(){
