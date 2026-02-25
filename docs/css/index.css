@@ -2,17 +2,12 @@
 
 :root {
   --vh: 100vh;
-  
-  /* ✅ немного уменьшил яркость */
   --bgDark: 0.65;
-  
   --bgTop: #0b2d55;
   --bgMid: #081f3f;
   --bgBot: #06162b;
-  
   --accent1: #3aa0ff;
   --accent2: #0a84ff;
-  
   --text: #fff;
 }
 
@@ -46,6 +41,62 @@
   --accent2:#4b8dff;
 }
 
+/* ===== НОВЫЙ СТИЛЬ "NORMAL" ===== */
+:root[data-style="normal"] {
+  --bgTop: #1a1a1a;
+  --bgMid: #141414;
+  --bgBot: #0f0f0f;
+  --accent1: #3797f0;
+  --accent2: #2870b0;
+  --btn-gradient: linear-gradient(145deg, #2b2b2b, #1f1f1f);
+  --btn-hover-gradient: linear-gradient(145deg, #323232, #262626);
+  --accent-soft: #3797f0;
+  --accent-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+:root[data-style="normal"] .btn {
+  background: var(--btn-gradient);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+:root[data-style="normal"] .btn:hover {
+  background: var(--btn-hover-gradient);
+  border-color: rgba(255,255,255,0.15);
+}
+
+:root[data-style="normal"] .themePill {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+:root[data-style="normal"] .btn:active {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transform: scale(0.98);
+}
+
+:root[data-style="normal"] .card {
+  background: rgba(30,30,30,0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+:root[data-style="normal"] .langPill {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+:root[data-style="normal"] .langPill:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+:root[data-style="normal"] .tools-btn.active {
+  background: var(--btn-hover-gradient);
+  border-color: rgba(255,255,255,0.2);
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -72,7 +123,6 @@ body {
   overflow: hidden;
 }
 
-/* ✅ только градиент, без узоров и кругов */
 body::after {
   content: "";
   position: fixed;
@@ -85,17 +135,11 @@ body::after {
   filter: brightness(var(--bgDark));
 }
 
-/* ❌ УБРАЛ: body::before с узорами */
-
-/* контент поверх */
 body > * {
   position: relative;
   z-index: 2;
 }
 
-/* ========================= */
-/* ✅ МНОГО КУБИКОВ */
-/* ========================= */
 .cube {
   position: absolute;
   width: 120px;
@@ -124,17 +168,6 @@ body > * {
   opacity: .65;
 }
 
-/* ✅ ЕЩЁ БОЛЬШЕ КУБИКОВ (добавил новые позиции) */
-.cube.extra1 { left: 15%; top: 45%; }
-.cube.extra2 { left: 85%; top: 75%; }
-.cube.extra3 { left: 45%; top: 15%; }
-.cube.extra4 { left: 72%; top: 40%; }
-.cube.extra5 { left: 25%; top: 80%; }
-.cube.extra6 { left: 92%; top: 20%; }
-.cube.extra7 { left: 8%; top: 55%; }
-.cube.extra8 { left: 38%; top: 88%; }
-
-/* анимации */
 .f1 { animation: drift1 10s ease-in-out infinite; }
 .f2 { animation: drift2 12s ease-in-out infinite; }
 .f3 { animation: drift3 11s ease-in-out infinite; }
@@ -149,11 +182,6 @@ body > * {
 @keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,-18px)} }
 @keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,16px)} }
 
-/* ❌ УБРАЛ: .orb (круги) полностью */
-
-/* ========================= */
-/* ОСНОВНОЙ КОНТЕЙНЕР */
-/* ========================= */
 .wrap {
   position: relative;
   height: 100%;
@@ -164,9 +192,6 @@ body > * {
   z-index: 10;
 }
 
-/* ========================= */
-/* КАРТОЧКА МЕНЮ */
-/* ========================= */
 .card {
   width: min(520px, 100%);
   padding: 22px;
@@ -179,9 +204,6 @@ body > * {
               0 22px 60px rgba(0,0,0,.30);
 }
 
-/* ========================= */
-/* КНОПКИ */
-/* ========================= */
 .btn {
   display: block;
   width: 100%;
@@ -202,7 +224,6 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* ✅ свечение ТОЛЬКО при нажатии, убрал с hover */
 .btn:active {
   transform: scale(.995);
   box-shadow: 
@@ -211,15 +232,11 @@ body > * {
     0 0 25px var(--accent1);
 }
 
-/* ✅ обычное состояние без свечения */
 .btn:hover {
   border-color: rgba(255, 255, 255, .35);
   background: rgba(255, 255, 255, .18);
 }
 
-/* ========================= */
-/* НИЖНЯЯ ПАНЕЛЬ */
-/* ========================= */
 .sub {
   margin-top: 24px;
   text-align: center;
@@ -314,9 +331,6 @@ body > * {
   box-shadow: 0 8px 20px rgba(0,0,0,.25), 0 0 25px var(--accent1);
 }
 
-/* ========================= */
-/* BOTTOM SHEETS */
-/* ========================= */
 .langOverlay, .themeOverlay {
   position: fixed;
   inset: 0;
