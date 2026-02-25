@@ -303,6 +303,42 @@
 
     let currentFile = null;
 
+    // Функция для улучшения изображения перед распознаванием
+    function enhanceImage(img) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      // Рисуем изображение
+      ctx.drawImage(img, 0, 0);
+      
+      // Получаем данные пикселей
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      // Увеличиваем контраст и делаем черно-белым
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        // Конвертируем в черно-белое
+        const gray = 0.3 * r + 0.6 * g + 0.1 * b;
+        
+        // Увеличиваем контраст
+        const contrast = gray > 128 ? 255 : 0;
+        
+        data[i] = contrast;
+        data[i + 1] = contrast;
+        data[i + 2] = contrast;
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+      return canvas;
+    }
+
     uploadArea.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', (e) => {
@@ -330,6 +366,25 @@
       progress.textContent = '0%';
 
       try {
+        // Создаем изображение для улучшения
+        const img = new Image();
+        img.src = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.readAsDataURL(currentFile);
+        });
+
+        await new Promise(resolve => { img.onload = resolve; });
+
+        // Улучшаем изображение
+        const enhancedCanvas = enhanceImage(img);
+        
+        // Конвертируем canvas в blob
+        const enhancedBlob = await new Promise(resolve => {
+          enhancedCanvas.toBlob(resolve, 'image/png');
+        });
+
+        // Распознаем улучшенное изображение
         const worker = await Tesseract.createWorker({
           logger: m => {
             if (m.status === 'recognizing text') {
@@ -341,7 +396,8 @@
         await worker.loadLanguage('rus+eng');
         await worker.initialize('rus+eng');
         
-        const { data: { text } } = await worker.recognize(currentFile);
+        // Используем улучшенное изображение
+        const { data: { text } } = await worker.recognize(enhancedBlob);
         
         result.textContent = text || 'Текст не найден';
         copyBtn.style.display = 'block';
