@@ -7,6 +7,27 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
+  <script>
+    (function(){
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand(); // РАСКРЫВАЕМ НА ВЕСЬ ЭКРАН
+        tg.disableVerticalSwipes(); // ЗАПРЕЩАЕМ СВАЙПЫ
+        
+        // Устанавливаем цвета
+        tg.setHeaderColor('#000000');
+        tg.setBackgroundColor('#000000');
+        
+        // Следим за изменением размера
+        tg.onEvent('viewportChanged', function() {
+          document.documentElement.style.setProperty('--vh', tg.viewportHeight + 'px');
+        });
+      }
+    })();
+  </script>
+
   <!-- ТЕМА: применяем сразу -->
   <script>
     (function(){
@@ -39,6 +60,41 @@
     })();
   </script>
 
+  <style>
+    /* ПОЛНОЭКРАННЫЕ СТИЛИ */
+    :root {
+      --vh: 100vh;
+    }
+    
+    html, body {
+      height: var(--vh);
+      height: -webkit-fill-available;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+    
+    .wrap {
+      height: var(--vh);
+      height: -webkit-fill-available;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .card {
+      width: min(520px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  </style>
+
+  <link rel="stylesheet" href="./css/base.css?v=3">
   <link rel="stylesheet" href="./css/index.css?v=6">
   <link rel="stylesheet" href="./css/tools.css?v=1">
 </head>
@@ -134,7 +190,7 @@
     </div>
   </div>
 
-  <!-- Оверлеи для языков и тем (как в твоем коде) -->
+  <!-- Оверлеи для языков и тем -->
   <div class="langOverlay" id="langOverlay">
     <div class="langSheet">
       <div class="langSheetHeader">
@@ -156,6 +212,5 @@
   </div>
 
   <script type="module" src="./js/index.js?v=5"></script>
-  <script type="module" src="./js/tools-menu.js?v=1"></script>
 </body>
 </html>
