@@ -17,15 +17,14 @@ from .menu import (
 from .settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from .chat import inline_chat_start
 from .image import inline_image_start
-from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, edit_to_tab, send_block_notice
+from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, send_block_notice
 
 import requests
 
 # =========================
-# НАВИГАЦИЯ - ИСПРАВЛЕНО
+# НАВИГАЦИЯ - ПРОСТАЯ И ПОНЯТНАЯ
 # =========================
-# Теперь храним ТОЛЬКО предыдущую вкладку для кнопки "Назад"
-# Формат: {user_id: предыдущая_вкладка}
+# Храним предыдущую вкладку для каждого пользователя
 navigation_prev = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -59,19 +58,18 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ===== ОБРАБОТКА КНОПКИ НАЗАД =====
     if data == "back_to_previous":
-        # Если есть предыдущая вкладка - идём туда
         if uid in navigation_prev:
+            # Возвращаемся в предыдущую вкладку
             prev_tab = navigation_prev[uid]
-            # Очищаем предыдущую вкладку (чтобы при следующем нажатии шло в главное меню)
-            del navigation_prev[uid]
-            await edit_to_tab_handler(context, query, uid, prev_tab)
+            del navigation_prev[uid]  # Очищаем после использования
+            await open_tab(context, query, uid, prev_tab, from_back=True)
         else:
-            # Если нет предыдущей вкладки - идём в главное меню
+            # Если нет предыдущей - в главное меню
             await edit_to_menu(context, query, uid)
         return
     
     if data == "back_to_menu":
-        # Очищаем навигацию при возврате в главное меню
+        # Очищаем навигацию и идём в главное меню
         if uid in navigation_prev:
             del navigation_prev[uid]
         await edit_to_menu(context, query, uid)
@@ -83,21 +81,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== ОБРАБОТКА ОТКРЫТИЯ ВКЛАДОК =====
     if data.startswith("tab:"):
         key = data.split("tab:", 1)[1].strip()
-        
-        # Сохраняем ТЕКУЩУЮ вкладку как предыдущую ТОЛЬКО если:
-        # 1. Мы не в главном меню сейчас
-        # 2. Это не первое открытие вкладки
-        current_tab = context.user_data.get('current_tab')
-        
-        if current_tab and current_tab != key:
-            # Если мы уже в какой-то вкладке и открываем новую
-            navigation_prev[uid] = current_tab
-        elif not current_tab:
-            # Если мы в главном меню и открываем вкладку - НЕ сохраняем главное меню в стек
-            pass
-        
-        context.user_data['current_tab'] = key
-        await edit_to_tab_handler(context, query, uid, key)
+        await open_tab(context, query, uid, key, from_back=False)
         return
     
     if data.startswith("buy_stars:"):
@@ -107,14 +91,17 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if package:
             stars = package["stars"]
             price = package["price_usd"]
+            
+            # Сохраняем текущую вкладку перед переходом
+            current_tab = context.user_data.get('current_tab', 'settings')
+            navigation_prev[uid] = current_tab
+            
             await query.message.edit_text(
                 f"✅ Вы выбрали пакет {package['name']}\n"
                 f"⭐ {stars} звезд за ${price}\n\n"
                 f"Оплата через Telegram Stars будет доступна позже.",
                 reply_markup=tab_kb(uid)
             )
-            # Сохраняем предыдущую вкладку
-            navigation_prev[uid] = context.user_data.get('current_tab', 'settings')
         else:
             await query.message.edit_text("❌ Пакет не найден", reply_markup=tab_kb(uid))
         return
@@ -122,11 +109,15 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("set_lang:"):
         lang = data.split("set_lang:", 1)[1].strip()
         await handle_set_lang(update, context, query, uid, lang)
+        # После смены языка возвращаемся в настройки
+        await open_tab(context, query, uid, "settings", from_back=False)
         return
     
     if data.startswith("set_persona:"):
         persona = data.split("set_persona:", 1)[1].strip()
         await handle_set_persona(update, context, query, uid, persona)
+        # После смены характера возвращаемся в настройки
+        await open_tab(context, query, uid, "settings", from_back=False)
         return
     
     # ОБРАБОТКА ПОДТВЕРЖДЕНИЯ СМЕНЫ РЕЖИМА
@@ -140,11 +131,12 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             current_mode=mode_names.get(current_mode, current_mode)
         )
         
+        # Сохраняем текущую вкладку
+        navigation_prev[uid] = context.user_data.get('current_tab', 'ai_mode_settings')
+        
         try:
             await query.message.edit_text(text, reply_markup=confirm_ai_mode_kb(uid, new_mode))
             set_last_menu(uid, uid, query.message.message_id)
-            # Сохраняем предыдущую вкладку
-            navigation_prev[uid] = context.user_data.get('current_tab', 'ai_mode_settings')
         except Exception:
             await send_fresh_menu(context.bot, uid)
         return
@@ -177,18 +169,19 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=tab_kb(uid)
         )
         
-        # Сохраняем предыдущую вкладку
-        navigation_prev[uid] = context.user_data.get('current_tab', 'ai_mode_settings')
-        
         await update_user_menu(context.bot, uid)
         return
     
     if data == "switch_to_miniapp":
         await handle_switch_mode(update, context, query, uid, "miniapp")
+        # После смены режима возвращаемся в настройки
+        await open_tab(context, query, uid, "settings", from_back=False)
         return
     
     if data == "switch_to_inline":
         await handle_switch_mode(update, context, query, uid, "inline")
+        # После смены режима возвращаемся в настройки
+        await open_tab(context, query, uid, "settings", from_back=False)
         return
     
     if data == "inline_chat":
@@ -202,23 +195,32 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await edit_to_menu(context, query, uid)
 
 
-async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
-    """Обработчик открытия вкладок"""
+async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str, from_back: bool = False):
+    """Открыть вкладку с правильной навигацией"""
     
+    # Если это НЕ нажатие "Назад" и мы не в главном меню
+    if not from_back:
+        current_tab = context.user_data.get('current_tab')
+        
+        # Если мы уже были в какой-то вкладке и открываем новую
+        if current_tab and current_tab != tab_key:
+            # Сохраняем предыдущую вкладку для кнопки "Назад"
+            navigation_prev[user_id] = current_tab
+        
+        # Запоминаем текущую вкладку
+        context.user_data['current_tab'] = tab_key
+    
+    # Открываем нужную вкладку
     if tab_key == "profile":
         await show_profile(context, query, user_id)
-        return
-    
-    if tab_key == "settings":
+    elif tab_key == "settings":
         text = "⚙️ Настройки\n\nВыбери раздел:"
         try:
             await query.message.edit_text(text, reply_markup=settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
-        return
-    
-    if tab_key == "ai_mode_settings":
+    elif tab_key == "ai_mode_settings":
         changes_left = await get_ai_mode_changes(user_id)
         text = TAB_TEXT["ai_mode_settings"].format(changes_left=changes_left)
         try:
@@ -226,9 +228,49 @@ async def edit_to_tab_handler(context: ContextTypes.DEFAULT_TYPE, query, user_id
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
-        return
-    
-    await edit_to_tab(context, query, user_id, tab_key)
+    elif tab_key == "buy_stars":
+        text = TAB_TEXT.get(tab_key, "⭐ Пакеты звезд\n\nВыберите пакет для пополнения:")
+        try:
+            await query.message.edit_text(text, reply_markup=stars_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "mode_settings":
+        text = TAB_TEXT.get(tab_key, "🔄 Режим работы\n\nВыбери как пользоваться ботом:")
+        try:
+            await query.message.edit_text(text, reply_markup=mode_settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "persona_settings":
+        text = TAB_TEXT.get(tab_key, "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:")
+        try:
+            await query.message.edit_text(text, reply_markup=persona_settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "lang_settings":
+        text = TAB_TEXT.get(tab_key, "🌐 Язык\n\nВыбери язык интерфейса:")
+        try:
+            await query.message.edit_text(text, reply_markup=lang_settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "balance":
+        balance = get_balance(user_id)
+        text = f"⭐ Ваш баланс: {balance} звезд"
+        try:
+            await query.message.edit_text(text, reply_markup=tab_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    else:
+        text = TAB_TEXT.get(tab_key, "Раздел в разработке.")
+        try:
+            await query.message.edit_text(text, reply_markup=tab_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
 
 
 async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
