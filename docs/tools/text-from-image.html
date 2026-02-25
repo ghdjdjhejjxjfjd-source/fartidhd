@@ -21,7 +21,7 @@
     })();
   </script>
 
-  <!-- TESSERACT ДЛЯ РАСПОЗНАВАНИЯ -->
+  <!-- TESSERACT -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 
   <style>
@@ -136,10 +136,10 @@
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-word;
-      font-family: monospace;
-      font-size: 15px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
       line-height: 1.6;
-      color: #fff;
+      color: white;
     }
 
     .btn {
@@ -213,13 +213,6 @@
       font-size: 14px;
       color: var(--accent);
     }
-
-    .lang-hint {
-      font-size: 12px;
-      color: rgba(255,255,255,0.5);
-      margin-top: 5px;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -233,7 +226,7 @@
   <div class="container">
     <div class="upload-area" id="uploadArea">
       <div class="upload-icon">📸</div>
-      <div class="upload-text" id="uploadText">Нажми чтобы выбрать фото с текстом</div>
+      <div class="upload-text" id="uploadText">Выбери фото с текстом</div>
       <input type="file" id="fileInput" accept="image/*" hidden>
     </div>
 
@@ -243,11 +236,9 @@
       </div>
 
       <div class="btn-group">
-        <button class="btn btn-primary" id="scanBtn">🔍 Распознать текст</button>
+        <button class="btn btn-primary" id="scanBtn">🔍 Распознать</button>
         <button class="btn btn-secondary" id="copyBtn" style="display: none;">📋 Копировать</button>
       </div>
-
-      <div class="lang-hint">Распознает любой язык автоматически</div>
 
       <div class="text-box" id="result"></div>
 
@@ -257,7 +248,7 @@
 
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <div id="loadingText">Распознавание...</div>
+    <div id="loadingText">Распознаю текст...</div>
     <div class="progress" id="progress">0%</div>
   </div>
 
@@ -265,23 +256,19 @@
     const translations = {
       ru: {
         title: "Текст с фото",
-        upload: "Нажми чтобы выбрать фото с текстом",
-        scan: "🔍 Распознать текст",
+        upload: "Выбери фото с текстом",
+        scan: "🔍 Распознать",
         copy: "📋 Копировать",
         new: "📸 Новое фото",
-        loading: "Распознавание...",
-        result: "Здесь будет распознанный текст",
-        hint: "Распознает любой язык автоматически"
+        loading: "Распознаю текст..."
       },
       en: {
         title: "Text from Image",
         upload: "Select photo with text",
-        scan: "🔍 Extract Text",
+        scan: "🔍 Scan",
         copy: "📋 Copy",
         new: "📸 New Photo",
-        loading: "Processing...",
-        result: "Recognized text will appear here",
-        hint: "Auto-detects any language"
+        loading: "Scanning..."
       }
     };
 
@@ -302,8 +289,6 @@
     document.getElementById('copyBtn').textContent = t.copy;
     document.getElementById('newBtn').textContent = t.new;
     document.getElementById('loadingText').textContent = t.loading;
-    document.querySelector('.lang-hint').textContent = t.hint;
-    document.getElementById('result').textContent = t.result;
 
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
@@ -330,7 +315,7 @@
           preview.src = e.target.result;
           uploadArea.style.display = 'none';
           resultContainer.style.display = 'block';
-          result.textContent = t.result;
+          result.textContent = '';
           copyBtn.style.display = 'none';
         };
         reader.readAsDataURL(file);
@@ -353,13 +338,11 @@
           }
         });
 
-        // Автоопределение языка
         await worker.loadLanguage('rus+eng');
         await worker.initialize('rus+eng');
         
         const { data: { text } } = await worker.recognize(currentFile);
         
-        // ПОКАЗЫВАЕМ ТЕКСТ КАК ЕСТЬ
         result.textContent = text || 'Текст не найден';
         copyBtn.style.display = 'block';
         
@@ -367,7 +350,7 @@
 
       } catch (error) {
         console.error(error);
-        result.textContent = 'Ошибка распознавания';
+        result.textContent = 'Ошибка';
       } finally {
         loading.style.display = 'none';
         scanBtn.disabled = false;
@@ -376,7 +359,7 @@
 
     copyBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(result.textContent);
-      copyBtn.textContent = '✓ Скопировано';
+      copyBtn.textContent = '✓ Готово';
       setTimeout(() => {
         copyBtn.textContent = t.copy;
       }, 2000);
