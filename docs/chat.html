@@ -7,7 +7,7 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- ✅ ТЕМА: применяем сразу (без мигания) -->
+  <!-- ТЕМА -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
@@ -17,9 +17,7 @@
         if (qp) return qp;
         try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
       }
-      const theme = getTheme();
-      document.documentElement.setAttribute("data-theme", theme);
-      try{ localStorage.setItem(KEY, theme); }catch(e){}
+      document.documentElement.setAttribute("data-theme", getTheme());
     })();
   </script>
 
@@ -27,8 +25,34 @@
   <link rel="stylesheet" href="./css/panels.css?v=3">
   <link rel="stylesheet" href="./css/chat.css?v=3">
   
-  <!-- ✅ Стили для отображения лимитов и кнопки сохранить -->
   <style>
+    /* Стили для кнопки назад */
+    .back-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      color: white;
+      font-size: 20px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: var(--accent1);
+    }
+
+    .back-btn:active {
+      transform: scale(0.95);
+    }
+
     .limit-hint {
       font-size: 12px;
       color: #666;
@@ -103,7 +127,7 @@
 <body>
 
   <div class="top">
-    <a href="./index.html">←</a>
+    <button class="back-btn" id="backBtn">←</button>
     <div class="title" id="titleText">AI Chat</div>
     <div class="spacer"></div>
     <button class="gear" id="gearBtn" aria-label="Настройки">⚙️</button>
@@ -127,7 +151,6 @@
     <div class="sheet">
       <h3 id="settingsTitle">⚙️ Настройки</h3>
 
-      <!-- ✅ Стиль ответа с отображением лимита -->
       <div class="settings-row">
         <div id="styleLabel">Стиль ответа</div>
         <select id="styleSel">
@@ -138,7 +161,6 @@
       </div>
       <div id="style-limit" class="limit-hint"></div>
 
-      <!-- ✅ Характер с отображением лимита -->
       <div class="settings-row">
         <div id="personaLabel">Характер</div>
         <select id="personaSel">
@@ -150,26 +172,45 @@
       </div>
       <div id="persona-limit" class="limit-hint"></div>
 
-      <!-- ✅ Кнопка очистки чата -->
       <div class="row">
         <div id="chatLabel">Чат</div>
         <button class="pill" id="clearBtn">🧹 Очистить</button>
       </div>
 
-      <!-- ✅ НОВЫЕ КНОПКИ: Сохранить и Отмена -->
       <div class="button-row">
         <button class="primary" id="saveSettingsBtn" disabled>💾 Сохранить</button>
         <button id="cancelSettingsBtn">✖ Отмена</button>
       </div>
 
-      <!-- ✅ Индикатор несохраненных изменений -->
       <div id="unsaved-indicator" style="display: none; text-align: center; margin-top: 8px; font-size: 12px; color: #ffaa00;">
         ⚡ Есть несохраненные изменения
       </div>
     </div>
   </div>
 
-  <script type="module" src="./js/chat-page.js"></script>
+  <script type="module">
+    import { initTelegramViewport, closeMiniApp } from "./js/telegram.js";
+    import { createChatController } from "./js/chat.js";
+    import { initSettingsUI } from "./js/settings.js";
+
+    const chatEl = document.getElementById("chat");
+    const inputEl = document.getElementById("text");
+    const sendBtnEl = document.getElementById("sendBtn");
+    const backBtn = document.getElementById("backBtn");
+
+    const controller = createChatController({ chatEl, inputEl, sendBtnEl });
+
+    initTelegramViewport(chatEl);
+    
+    // Обработчик кнопки "Назад"
+    if (backBtn) {
+      backBtn.addEventListener('click', closeMiniApp);
+    }
+    
+    controller.bindUI();
+    initSettingsUI({ controller });
+    controller.renderFromHistory();
+  </script>
 
   <script>
     const STORAGE_LANG = "miniapp_lang_v1";
@@ -320,7 +361,6 @@
     document.getElementById("chatLabel").textContent = t.chat;
     document.getElementById("clearBtn").textContent = t.clear;
     
-    // Обновляем текст новых кнопок
     const saveBtn = document.getElementById("saveSettingsBtn");
     const cancelBtn = document.getElementById("cancelSettingsBtn");
     if (saveBtn) saveBtn.textContent = t.save;
