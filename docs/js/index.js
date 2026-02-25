@@ -261,8 +261,8 @@ function getSavedTheme(){
 }
 
 function getSavedStyle(){
-  try{ return localStorage.getItem(STORAGE_STYLE) || "normal"; }
-  catch(e){ return "normal"; }
+  try{ return localStorage.getItem(STORAGE_STYLE) || ""; }
+  catch(e){ return ""; }
 }
 
 function saveTheme(theme){
@@ -278,7 +278,11 @@ function applyTheme(theme){
 }
 
 function applyStyle(style){
-  document.documentElement.setAttribute("data-style", style || "normal");
+  if (style) {
+    document.documentElement.setAttribute("data-style", style);
+  } else {
+    document.documentElement.removeAttribute("data-style");
+  }
 }
 
 // ===== Уведомления =====
@@ -387,50 +391,48 @@ function paintSelectedLang(lang){
   });
 }
 
+// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ГАЛОЧЕК =====
 function paintSelectedTheme(theme, style){
   if (!themeList) return;
+  
   const items = themeList.querySelectorAll(".themeItem");
   items.forEach(btn => {
     const code = btn.getAttribute("data-theme");
     const type = btn.getAttribute("data-type");
+    
     if (type === "style") {
+      // Для "Обычный" - галочка если выбран style
       btn.classList.toggle("selected", code === style);
     } else {
-      btn.classList.toggle("selected", code === theme);
+      // Для цветных тем - галочка если выбрана тема И style пустой
+      btn.classList.toggle("selected", code === theme && !style);
     }
   });
 }
 
-// ===== Установка языка =====
-function setLang(lang){
-  console.log("setLang:", lang);
-  
-  saveLang(lang);
-  updateUILanguage(lang);
-  
-  const currentTheme = getSavedTheme();
-  const currentStyle = getSavedStyle();
-  updateLinks(lang, currentTheme, currentStyle);
-  
-  closeLang();
-  showNotification(`🌐 ${I18N[lang]?.sheetLang || "Language"}: ${LANGS.find(l => l.code === lang)?.label || lang}`);
-}
-
-// ===== Установка темы/стиля =====
+// ===== ИСПРАВЛЕННАЯ УСТАНОВКА ТЕМЫ/СТИЛЯ =====
 function setTheme(themeCode){
   console.log("setTheme:", themeCode);
   
   const theme = THEMES.find(t => t.code === themeCode);
   
   if (theme.type === "style") {
+    // Если выбрали "Обычный"
     applyStyle(themeCode);
     saveStyle(themeCode);
+    // Сбрасываем цветную тему на дефолтную
+    applyTheme("blue");
+    saveTheme("blue");
   } else {
+    // Если выбрали цветную тему
     applyTheme(themeCode);
     saveTheme(themeCode);
-    applyStyle(""); // убираем стиль если выбрана цветная тема
+    // Убираем обычный стиль
+    applyStyle("");
+    saveStyle("");
   }
   
+  // Обновляем галочки
   paintSelectedTheme(getSavedTheme(), getSavedStyle());
   
   const currentLang = getSavedLang();
@@ -561,6 +563,21 @@ function buildThemeList(){
     btn.addEventListener("click", () => setTheme(theme.code));
     themeList.appendChild(btn);
   });
+}
+
+// ===== Установка языка =====
+function setLang(lang){
+  console.log("setLang:", lang);
+  
+  saveLang(lang);
+  updateUILanguage(lang);
+  
+  const currentTheme = getSavedTheme();
+  const currentStyle = getSavedStyle();
+  updateLinks(lang, currentTheme, currentStyle);
+  
+  closeLang();
+  showNotification(`🌐 ${I18N[lang]?.sheetLang || "Language"}: ${LANGS.find(l => l.code === lang)?.label || lang}`);
 }
 
 // ===== Инициализация =====
