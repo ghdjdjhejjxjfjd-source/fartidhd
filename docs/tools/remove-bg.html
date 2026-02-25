@@ -6,10 +6,23 @@
   <title>Удаление фона</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  
-  <!-- TensorFlow.js и модель для удаления фона -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.1.1/dist/body-pix.min.js"></script>
+
+  <!-- ТЕМА -->
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+      }
+      document.documentElement.setAttribute("data-theme", getTheme());
+    })();
+  </script>
+
+  <!-- БЕСПЛАТНЫЙ LOCAL AI (НИКАКИХ КЛЮЧЕЙ НЕ НУЖНО) -->
+  <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.0/dist/background-removal.umd.js"></script>
 
   <style>
     * {
@@ -64,6 +77,10 @@
       font-size: 18px;
     }
 
+    .spacer {
+      width: 40px;
+    }
+
     .container {
       padding: 80px 16px 20px;
       min-height: 100vh;
@@ -113,8 +130,8 @@
       margin-bottom: 8px;
     }
 
-    canvas {
-      width: 100%;
+    .result-image {
+      max-width: 100%;
       max-height: 300px;
       border-radius: 8px;
       background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
@@ -177,9 +194,9 @@
       to { transform: rotate(360deg); }
     }
 
-    .model-loading {
-      text-align: center;
-      margin: 20px 0;
+    .progress {
+      margin-top: 20px;
+      font-size: 14px;
       color: var(--accent);
     }
   </style>
@@ -199,20 +216,18 @@
       <input type="file" id="fileInput" accept="image/*" hidden>
     </div>
 
-    <div class="model-loading" id="modelLoading">⏳ Загрузка нейросети...</div>
-
     <div class="result-container" id="resultContainer">
       <div class="image-box">
         <div class="image-label" id="originalLabel">Оригинал</div>
-        <canvas id="originalCanvas"></canvas>
+        <img class="result-image" id="originalImg" src="">
       </div>
       
       <div class="image-box">
         <div class="image-label" id="resultLabel">Результат</div>
-        <canvas id="resultCanvas"></canvas>
+        <img class="result-image" id="resultImg" src="">
       </div>
 
-      <button class="btn btn-primary" id="processBtn" disabled>✨ Удалить фон</button>
+      <button class="btn btn-primary" id="processBtn">✨ Удалить фон</button>
       <button class="btn btn-secondary" id="downloadBtn" style="display: none;">💾 Скачать</button>
       <button class="btn btn-secondary" id="newBtn">📸 Новое фото</button>
     </div>
@@ -220,7 +235,8 @@
 
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <div id="loadingText">Обработка...</div>
+    <div id="loadingText">Загрузка нейросети...</div>
+    <div class="progress" id="progress">Это 40 МБ, подожди 10-20 секунд</div>
   </div>
 
   <script>
@@ -234,8 +250,8 @@
         process: "✨ Удалить фон",
         download: "💾 Скачать",
         new: "📸 Новое фото",
-        loading: "Обработка...",
-        modelLoading: "⏳ Загрузка нейросети..."
+        loading: "Загрузка нейросети...",
+        progress: "Это 40 МБ, подожди 10-20 секунд"
       },
       en: {
         title: "Remove Background",
@@ -245,8 +261,8 @@
         process: "✨ Remove Background",
         download: "💾 Download",
         new: "📸 New Photo",
-        loading: "Processing...",
-        modelLoading: "⏳ Loading AI model..."
+        loading: "Loading AI model...",
+        progress: "40 MB, please wait 10-20 seconds"
       }
     };
 
@@ -269,44 +285,21 @@
     document.getElementById('downloadBtn').textContent = t.download;
     document.getElementById('newBtn').textContent = t.new;
     document.getElementById('loadingText').textContent = t.loading;
-    document.getElementById('modelLoading').textContent = t.modelLoading;
+    document.getElementById('progress').textContent = t.progress;
 
     // Элементы
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const resultContainer = document.getElementById('resultContainer');
-    const originalCanvas = document.getElementById('originalCanvas');
-    const resultCanvas = document.getElementById('resultCanvas');
+    const originalImg = document.getElementById('originalImg');
+    const resultImg = document.getElementById('resultImg');
     const processBtn = document.getElementById('processBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const newBtn = document.getElementById('newBtn');
     const loading = document.getElementById('loading');
-    const modelLoading = document.getElementById('modelLoading');
 
-    let net = null;
-    let currentImage = null;
-
-    // Загрузка модели BodyPix
-    async function loadModel() {
-      try {
-        modelLoading.style.display = 'block';
-        net = await bodyPix.load({
-          architecture: 'MobileNetV1',
-          outputStride: 16,
-          multiplier: 0.75,
-          quantBytes: 2
-        });
-        console.log('Модель загружена');
-        modelLoading.style.display = 'none';
-        processBtn.disabled = false;
-      } catch (error) {
-        console.error('Ошибка загрузки модели:', error);
-        modelLoading.innerHTML = '❌ Ошибка загрузки. Обновите страницу.';
-      }
-    }
-
-    // Загружаем модель при старте
-    loadModel();
+    let currentFile = null;
+    let resultBlob = null;
 
     // Загрузка фото
     uploadArea.addEventListener('click', () => fileInput.click());
@@ -314,80 +307,39 @@
     fileInput.addEventListener('change', (e) => {
       if (e.target.files[0]) {
         const file = e.target.files[0];
-        const reader = new FileReader();
+        currentFile = file;
         
+        const reader = new FileReader();
         reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            currentImage = img;
-            
-            // Рисуем на canvas
-            originalCanvas.width = img.width;
-            originalCanvas.height = img.height;
-            const ctx = originalCanvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            
-            uploadArea.style.display = 'none';
-            resultContainer.style.display = 'block';
-            downloadBtn.style.display = 'none';
-            
-            // Очищаем результат
-            resultCanvas.width = img.width;
-            resultCanvas.height = img.height;
-            const resultCtx = resultCanvas.getContext('2d');
-            resultCtx.clearRect(0, 0, img.width, img.height);
-          };
-          img.src = e.target.result;
+          originalImg.src = e.target.result;
+          uploadArea.style.display = 'none';
+          resultContainer.style.display = 'block';
+          downloadBtn.style.display = 'none';
+          resultImg.src = '';
         };
         reader.readAsDataURL(file);
       }
     });
 
-    // УДАЛЕНИЕ ФОНА (РАБОТАЕТ!)
+    // УДАЛЕНИЕ ФОНА - БЕСПЛАТНЫЙ LOCAL AI
     processBtn.addEventListener('click', async () => {
-      if (!net || !currentImage) {
-        alert('Модель еще не загружена');
-        return;
-      }
+      if (!currentFile) return;
 
       loading.style.display = 'flex';
       processBtn.disabled = true;
 
       try {
-        // Сегментируем человека на фото
-        const segmentation = await net.segmentPerson(currentImage, {
-          flipHorizontal: false,
-          internalResolution: 'medium',
-          segmentationThreshold: 0.7
+        // Это и есть Local AI - БЕЗ КЛЮЧЕЙ, БЕСПЛАТНО
+        resultBlob = await imglyRemoveBackground(currentFile, {
+          model: 'small', // 40 МБ - оптимально
+          output: {
+            format: 'png',
+            quality: 0.8
+          }
         });
 
-        // Создаем маску
-        const mask = bodyPix.toMask(segmentation, { r: 255, g: 255, b: 255, a: 255 }, { r: 0, g: 0, b: 0, a: 0 });
-
-        // Применяем маску к оригинальному изображению
-        bodyPix.drawMask(
-          resultCanvas,
-          currentImage,
-          mask,
-          1, // opacity
-          0, // mask opacity
-          false // не переворачивать
-        );
-
-        // Делаем фон прозрачным
-        const ctx = resultCanvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, resultCanvas.width, resultCanvas.height);
-        
-        for (let i = 0; i < imageData.data.length; i += 4) {
-          if (imageData.data[i] === 0 && 
-              imageData.data[i + 1] === 0 && 
-              imageData.data[i + 2] === 0) {
-            imageData.data[i + 3] = 0; // прозрачность
-          }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-        
+        const url = URL.createObjectURL(resultBlob);
+        resultImg.src = url;
         downloadBtn.style.display = 'block';
 
       } catch (error) {
@@ -401,12 +353,12 @@
 
     // Скачивание
     downloadBtn.addEventListener('click', () => {
-      resultCanvas.toBlob((blob) => {
-        const link = document.createElement('a');
-        link.download = 'no-bg.png';
-        link.href = URL.createObjectURL(blob);
-        link.click();
-      }, 'image/png');
+      if (!resultBlob) return;
+      
+      const link = document.createElement('a');
+      link.download = 'no-bg.png';
+      link.href = URL.createObjectURL(resultBlob);
+      link.click();
     });
 
     // Новое фото
@@ -414,7 +366,8 @@
       uploadArea.style.display = 'block';
       resultContainer.style.display = 'none';
       fileInput.value = '';
-      currentImage = null;
+      currentFile = null;
+      resultBlob = null;
     });
 
     // Telegram
