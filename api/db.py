@@ -1,4 +1,4 @@
-# api/db.py - ИСПРАВЛЕННАЯ ПОЛНАЯ ВЕРСИЯ
+# api/db.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (убрана async)
 import sqlite3
 import time
 import threading
@@ -30,12 +30,6 @@ def db_connection():
         finally:
             if conn:
                 conn.close()
-
-# ВРЕМЕННАЯ ФУНКЦИЯ ДЛЯ СОВМЕСТИМОСТИ
-def db_conn():
-    """Старая функция для обратной совместимости"""
-    warnings.warn("db_conn устарела, используй db_connection()", DeprecationWarning)
-    return sqlite3.connect(DB_PATH, check_same_thread=False)
 
 def db_init():
     with db_connection() as conn:
@@ -435,7 +429,7 @@ def set_user_lang(user_id: int, lang: str) -> None:
             )
 
 # =========================
-# НОВЫЕ ФУНКЦИИ ДЛЯ РЕЖИМА ИИ
+# ФУНКЦИИ ДЛЯ РЕЖИМА ИИ (СИНХРОННЫЕ)
 # =========================
 def get_ai_mode(user_id: int) -> str:
     a = get_access(user_id)
@@ -480,7 +474,8 @@ def set_ai_mode(user_id: int, mode: str) -> None:
                 (user_id, now[:10])
             )
 
-async def get_ai_mode_changes(user_id: int) -> int:
+def get_ai_mode_changes(user_id: int) -> int:
+    """Синхронная версия (без async)"""
     with db_connection() as conn:
         cur = conn.cursor()
         
@@ -497,17 +492,20 @@ async def get_ai_mode_changes(user_id: int) -> int:
     last_change = row[1]
     
     if last_change:
-        last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
-        now = datetime.now()
-        delta = now - last_date
-        if delta.days >= 1:
-            with db_connection() as conn:
-                cur = conn.cursor()
-                cur.execute(
-                    "UPDATE access SET ai_mode_changes = 0 WHERE user_id = ?",
-                    (user_id,)
-                )
-            return 8
+        try:
+            last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
+            now = datetime.now()
+            delta = now - last_date
+            if delta.days >= 1:
+                with db_connection() as conn:
+                    cur = conn.cursor()
+                    cur.execute(
+                        "UPDATE access SET ai_mode_changes = 0 WHERE user_id = ?",
+                        (user_id,)
+                    )
+                return 8
+        except:
+            pass
     
     remaining = 8 - changes
     return max(0, remaining)
