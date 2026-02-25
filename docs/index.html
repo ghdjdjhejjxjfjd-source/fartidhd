@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
@@ -39,16 +39,17 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="./css/index.css?v=5">
+  <link rel="stylesheet" href="./css/index.css?v=6">
+  <link rel="stylesheet" href="./css/tools.css?v=1">
 </head>
 
 <body>
-  <!-- ✅ КНОПКА ТЕМЫ с оберткой для текста -->
+  <!-- КНОПКА ТЕМЫ -->
   <button class="themePill" id="themeBtn" type="button">
     <span id="themeBtnText">Цвет: Синий</span> <span class="chev">▾</span>
   </button>
 
-  <!-- ✅ МНОГО КУБИКОВ (20 штук) -->
+  <!-- КУБИКИ (20 штук) -->
   <div class="cube f1" style="left:5%; top:8%"></div>
   <div class="cube small f2" style="left:15%; top:25%"></div>
   <div class="cube tiny f3" style="left:25%; top:12%"></div>
@@ -71,19 +72,61 @@
   <div class="cube tiny f1" style="left:88%; top:35%"></div>
   <div class="cube f2" style="left:95%; top:60%"></div>
 
-  <!-- ❌ УБРАЛ: .orb (круги) -->
-
   <div class="wrap">
     <div class="card">
-      <a class="btn" id="chatBtn" href="./chat.html?v=2">Чат с ИИ</a>
-      <a class="btn" id="imgBtn" href="./image.html?v=1">Генерация картинки</a>
+      <a class="btn" id="chatBtn" href="./chat.html">💬 Чат с ИИ</a>
+      <a class="btn" id="imgBtn" href="./image.html">🎨 Генерация картинки</a>
+      
+      <!-- КНОПКА ИНСТРУМЕНТОВ С ВЫПАДАЮЩИМ СПИСКОМ -->
+      <div class="tools-container">
+        <button class="btn tools-btn" id="toolsBtn" type="button">
+          <span id="toolsBtnText">🔧 Инструменты</span> <span class="chev" id="toolsChev">▼</span>
+        </button>
+        
+        <div class="tools-dropdown" id="toolsDropdown">
+          <a class="tool-item" href="./tools/remove-bg.html" id="toolRemoveBg">
+            <span class="tool-icon">📸</span>
+            <span class="tool-text" id="toolRemoveBgText">Удаление фона</span>
+            <span class="tool-arrow">▶</span>
+          </a>
+          
+          <a class="tool-item" href="./tools/text-from-image.html" id="toolTextFromImage">
+            <span class="tool-icon">🎨</span>
+            <span class="tool-text" id="toolTextFromImageText">Текст с фото</span>
+            <span class="tool-arrow">▶</span>
+          </a>
+          
+          <a class="tool-item" href="./tools/selfie-filters.html" id="toolSelfieFilters">
+            <span class="tool-icon">🤳</span>
+            <span class="tool-text" id="toolSelfieFiltersText">Селфи фильтры</span>
+            <span class="tool-arrow">▶</span>
+          </a>
+          
+          <a class="tool-item" href="./tools/music.html" id="toolMusic">
+            <span class="tool-icon">🎵</span>
+            <span class="tool-text" id="toolMusicText">Создание музыки</span>
+            <span class="tool-arrow">▶</span>
+          </a>
+          
+          <a class="tool-item" href="./tools/meme.html" id="toolMeme">
+            <span class="tool-icon">📝</span>
+            <span class="tool-text" id="toolMemeText">Создание мемов</span>
+            <span class="tool-arrow">▶</span>
+          </a>
+          
+          <a class="tool-item" href="./tools/qr.html" id="toolQr">
+            <span class="tool-icon">📱</span>
+            <span class="tool-text" id="toolQrText">QR коды</span>
+            <span class="tool-arrow">▶</span>
+          </a>
+        </div>
+      </div>
 
       <div class="sub" id="subText">Быстрые ответы • Память • Заметки</div>
-      <div class="ver" id="verText">miniapp v2</div>
+      <div class="ver" id="verText">miniapp v3</div>
 
       <div class="langBlock">
         <div class="langTitle" id="langTitle">Язык интерфейса</div>
-        <!-- ✅ КНОПКА ЯЗЫКА с оберткой для текста -->
         <button class="langPill" id="langBtn" type="button">
           <span id="langBtnText">Русский (RU)</span> <span class="chev">▾</span>
         </button>
@@ -91,6 +134,7 @@
     </div>
   </div>
 
+  <!-- Оверлеи для языков и тем (как в твоем коде) -->
   <div class="langOverlay" id="langOverlay">
     <div class="langSheet">
       <div class="langSheetHeader">
@@ -111,6 +155,7 @@
     </div>
   </div>
 
-  <script type="module" src="./js/index.js?v=4"></script>
+  <script type="module" src="./js/index.js?v=5"></script>
+  <script type="module" src="./js/tools-menu.js?v=1"></script>
 </body>
 </html>
