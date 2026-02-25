@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>AI Chat</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ✅ ТЕМА: применяем сразу (без мигания) -->
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+      }
+      const theme = getTheme();
+      document.documentElement.setAttribute("data-theme", theme);
+      try{ localStorage.setItem(KEY, theme); }catch(e){}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="./css/base.css?v=3">
+  <link rel="stylesheet" href="./css/panels.css?v=3">
+  <link rel="stylesheet" href="./css/chat.css?v=3">
+  
+  <!-- ✅ Стили для отображения лимитов и кнопки сохранить -->
+  <style>
+    .limit-hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+      margin-bottom: 8px;
+      padding-left: 8px;
+      text-align: left;
+      width: 100%;
+    }
+    .limit-hint.warning {
+      color: #ff4444;
+    }
+    .settings-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+    .settings-row select {
+      width: 100%;
+      margin-top: 4px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: inherit;
+    }
+    .settings-row select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      justify-content: space-between;
+    }
+    .button-row button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .button-row button.primary {
+      background: var(--accent1);
+      border-color: var(--accent2);
+    }
+    .button-row button.primary:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .button-row button:hover:not(:disabled) {
+      background: rgba(255,255,255,0.2);
+    }
+    .button-row button.primary:hover:not(:disabled) {
+      background: var(--accent2);
+    }
+    .unsaved-badge {
+      font-size: 11px;
+      color: #ffaa00;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="top">
+    <a href="./index.html">←</a>
+    <div class="title" id="titleText">AI Chat</div>
+    <div class="spacer"></div>
+    <button class="gear" id="gearBtn" aria-label="Настройки">⚙️</button>
+  </div>
+
+  <div class="chat" id="chat"></div>
+
+  <div class="input">
+    <textarea id="text"
+      placeholder="Напиши сообщение…"
+      autocomplete="on"
+      autocapitalize="sentences"
+      autocorrect="on"
+      spellcheck="true"
+      rows="1"
+    ></textarea>
+    <button id="sendBtn">▶</button>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="sheet">
+      <h3 id="settingsTitle">⚙️ Настройки</h3>
+
+      <!-- ✅ Стиль ответа с отображением лимита -->
+      <div class="settings-row">
+        <div id="styleLabel">Стиль ответа</div>
+        <select id="styleSel">
+          <option value="short" id="optShort">Коротко</option>
+          <option value="steps" id="optSteps">По шагам</option>
+          <option value="detail" id="optDetail">Подробно</option>
+        </select>
+      </div>
+      <div id="style-limit" class="limit-hint"></div>
+
+      <!-- ✅ Характер с отображением лимита -->
+      <div class="settings-row">
+        <div id="personaLabel">Характер</div>
+        <select id="personaSel">
+          <option value="friendly" id="optFriendly">Общительный</option>
+          <option value="fun" id="optFun">Весёлый</option>
+          <option value="strict" id="optStrict">Строгий</option>
+          <option value="smart" id="optSmart">Умный</option>
+        </select>
+      </div>
+      <div id="persona-limit" class="limit-hint"></div>
+
+      <!-- ✅ Кнопка очистки чата -->
+      <div class="row">
+        <div id="chatLabel">Чат</div>
+        <button class="pill" id="clearBtn">🧹 Очистить</button>
+      </div>
+
+      <!-- ✅ НОВЫЕ КНОПКИ: Сохранить и Отмена -->
+      <div class="button-row">
+        <button class="primary" id="saveSettingsBtn" disabled>💾 Сохранить</button>
+        <button id="cancelSettingsBtn">✖ Отмена</button>
+      </div>
+
+      <!-- ✅ Индикатор несохраненных изменений -->
+      <div id="unsaved-indicator" style="display: none; text-align: center; margin-top: 8px; font-size: 12px; color: #ffaa00;">
+        ⚡ Есть несохраненные изменения
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/chat-page.js"></script>
+
+  <script>
+    const STORAGE_LANG = "miniapp_lang_v1";
+
+    function getLang(){
+      const url = new URL(window.location.href);
+      const qp = url.searchParams.get("lang");
+      if (qp) return qp;
+      try{ return localStorage.getItem(STORAGE_LANG) || "ru"; }catch(e){ return "ru"; }
+    }
+
+    const I18N = {
+      ru: {
+        title:"AI Chat",
+        placeholder:"Напиши сообщение…",
+        settings:"⚙️ Настройки",
+        style:"Стиль ответа",
+        short:"Коротко",
+        steps:"По шагам",
+        detail:"Подробно",
+        persona:"Характер",
+        friendly:"Общительный",
+        fun:"Весёлый",
+        strict:"Строгий",
+        smart:"Умный",
+        chat:"Чат",
+        clear:"🧹 Очистить",
+        close:"Закрыть",
+        save:"💾 Сохранить",
+        cancel:"✖ Отмена",
+      },
+      kk: {
+        title:"AI чат",
+        placeholder:"Хабарлама жаз…",
+        settings:"⚙️ Баптаулар",
+        style:"Жауап стилі",
+        short:"Қысқа",
+        steps:"Қадаммен",
+        detail:"Толық",
+        persona:"Мінез",
+        friendly:"Достық",
+        fun:"Көңілді",
+        strict:"Қатаң",
+        smart:"Ақылды",
+        chat:"Чат",
+        clear:"🧹 Тазалау",
+        close:"Жабу",
+        save:"💾 Сақтау",
+        cancel:"✖ Болдырмау",
+      },
+      en: {
+        title:"AI Chat",
+        placeholder:"Type a message…",
+        settings:"⚙️ Settings",
+        style:"Answer style",
+        short:"Short",
+        steps:"Step-by-step",
+        detail:"Detailed",
+        persona:"Tone",
+        friendly:"Friendly",
+        fun:"Fun",
+        strict:"Strict",
+        smart:"Smart",
+        chat:"Chat",
+        clear:"🧹 Clear",
+        close:"Close",
+        save:"💾 Save",
+        cancel:"✖ Cancel",
+      },
+      tr: {
+        title:"Yapay Zekâ Sohbet",
+        placeholder:"Mesaj yaz…",
+        settings:"⚙️ Ayarlar",
+        style:"Yanıt stili",
+        short:"Kısa",
+        steps:"Adım adım",
+        detail:"Detaylı",
+        persona:"Üslup",
+        friendly:"Samimi",
+        fun:"Eğlenceli",
+        strict:"Katı",
+        smart:"Zeki",
+        chat:"Sohbet",
+        clear:"🧹 Temizle",
+        close:"Kapat",
+        save:"💾 Kaydet",
+        cancel:"✖ İptal",
+      },
+      uk: {
+        title:"AI чат",
+        placeholder:"Напишіть повідомлення…",
+        settings:"⚙️ Налаштування",
+        style:"Стиль відповіді",
+        short:"Коротко",
+        steps:"Кроками",
+        detail:"Детально",
+        persona:"Тон",
+        friendly:"Дружній",
+        fun:"Веселий",
+        strict:"Суворий",
+        smart:"Розумний",
+        chat:"Чат",
+        clear:"🧹 Очистити",
+        close:"Закрити",
+        save:"💾 Зберегти",
+        cancel:"✖ Скасувати",
+      },
+      fr: {
+        title:"Chat IA",
+        placeholder:"Écrire un message…",
+        settings:"⚙️ Réglages",
+        style:"Style",
+        short:"Court",
+        steps:"Par étapes",
+        detail:"Détaillé",
+        persona:"Ton",
+        friendly:"Amical",
+        fun:"Drôle",
+        strict:"Strict",
+        smart:"Malin",
+        chat:"Chat",
+        clear:"🧹 Effacer",
+        close:"Fermer",
+        save:"💾 Enregistrer",
+        cancel:"✖ Annuler",
+      },
+    };
+
+    const lang = getLang();
+    const t = I18N[lang] || I18N.ru;
+
+    document.getElementById("titleText").textContent = t.title;
+    const input = document.getElementById("text");
+    if (input) input.placeholder = t.placeholder;
+
+    document.getElementById("settingsTitle").textContent = t.settings;
+    document.getElementById("styleLabel").textContent = t.style;
+    document.getElementById("optShort").textContent = t.short;
+    document.getElementById("optSteps").textContent = t.steps;
+    document.getElementById("optDetail").textContent = t.detail;
+
+    document.getElementById("personaLabel").textContent = t.persona;
+    document.getElementById("optFriendly").textContent = t.friendly;
+    document.getElementById("optFun").textContent = t.fun;
+    document.getElementById("optStrict").textContent = t.strict;
+    document.getElementById("optSmart").textContent = t.smart;
+
+    document.getElementById("chatLabel").textContent = t.chat;
+    document.getElementById("clearBtn").textContent = t.clear;
+    
+    // Обновляем текст новых кнопок
+    const saveBtn = document.getElementById("saveSettingsBtn");
+    const cancelBtn = document.getElementById("cancelSettingsBtn");
+    if (saveBtn) saveBtn.textContent = t.save;
+    if (cancelBtn) cancelBtn.textContent = t.cancel;
+
+    try{ localStorage.setItem(STORAGE_LANG, lang); }catch(e){}
+  </script>
+</body>
+</html>
