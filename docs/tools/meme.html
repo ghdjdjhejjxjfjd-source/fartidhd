@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Создание мемов</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ТЕМА -->
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+      }
+      document.documentElement.setAttribute("data-theme", getTheme());
+    })();
+  </script>
+
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
+  <script>
+    (function(){
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.disableVerticalSwipes();
+      }
+    })();
+  </script>
+
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
+    body { 
+      background: #0b0f18; 
+      color: white; 
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+      min-height: 100vh; 
+    }
+    
+    /* Шапка */
+    .tool-header {
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      z-index: 20;
+      display: flex; 
+      align-items: center; 
+      gap: 10px;
+      padding: 12px 16px; 
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(8,16,30,.55); 
+      backdrop-filter: blur(32px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    
+    .tool-back {
+      color: #fff; 
+      text-decoration: none; 
+      font-size: 20px;
+      width: 36px; 
+      height: 36px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      background: rgba(255,255,255,.1); 
+      border-radius: 18px;
+    }
+    
+    .tool-title { 
+      font-weight: 700; 
+      font-size: 18px; 
+      flex: 1; 
+      text-align: center; 
+      color: #fff; 
+    }
+    
+    .tool-spacer { 
+      width: 36px; 
+    }
+    
+    /* Контейнер */
+    .tool-container { 
+      padding: 80px 16px 20px; 
+      min-height: 100vh; 
+    }
+    
+    /* Область загрузки */
+    .upload-area {
+      background: rgba(255,255,255,.05); 
+      border: 2px dashed rgba(255,255,255,.2);
+      border-radius: 24px; 
+      padding: 40px 20px; 
+      text-align: center; 
+      cursor: pointer;
+      margin: 20px 0; 
+      transition: all 0.2s;
+    }
+    
+    .upload-area:hover { 
+      background: rgba(255,255,255,.08); 
+      border-color: #3aa0ff; 
+    }
+    
+    .upload-area.dragover {
+      background: rgba(255,255,255,.12);
+      border-color: var(--accent2);
+      transform: scale(1.02);
+    }
+    
+    .upload-icon { 
+      font-size: 48px; 
+      margin-bottom: 12px; 
+    }
+    
+    .upload-text { 
+      font-size: 16px; 
+      color: rgba(255,255,255,.7); 
+    }
+    
+    /* Редактор мемов */
+    .meme-editor { 
+      display: none; 
+      margin-top: 20px; 
+    }
+    
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(0,0,0,.3);
+      margin-bottom: 20px;
+    }
+    
+    .meme-canvas { 
+      width: 100%; 
+      height: auto;
+      display: block;
+    }
+    
+    /* Панель инструментов */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .tool-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.1);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .tool-btn:hover {
+      background: rgba(255,255,255,.15);
+      border-color: #3aa0ff;
+    }
+    
+    .tool-btn.active {
+      background: rgba(58,160,255,.2);
+      border-color: #3aa0ff;
+    }
+    
+    /* Поля ввода */
+    .input-group {
+      margin-bottom: 16px;
+    }
+    
+    .input-label {
+      font-size: 14px;
+      color: rgba(255,255,255,.6);
+      margin-bottom: 6px;
+      display: block;
+    }
+    
+    .text-input {
+      width: 100%; 
+      padding: 14px; 
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.2); 
+      background: rgba(255,255,255,.1);
+      color: white; 
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    
+    .text-input:focus {
+      outline: none;
+      border-color: #3aa0ff;
+      background: rgba(255,255,255,.15);
+    }
+    
+    /* Кнопки */
+    .generate-btn {
+      width: 100%; 
+      padding: 16px; 
+      border-radius: 16px; 
+      border: none;
+      font-size: 16px; 
+      font-weight: 700; 
+      margin: 8px 0; 
+      cursor: pointer;
+      background: linear-gradient(180deg, #3aa0ff 0%, #0a84ff 100%);
+      color: white;
+      transition: all 0.2s;
+    }
+    
+    .generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(58,160,255,.3);
+    }
+    
+    .generate-btn:active {
+      transform: translateY(0);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .action-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.1);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      background: rgba(255,255,255,.15);
+    }
+    
+    /* Цвета для разных тем */
+    :root[data-theme="purple"] .generate-btn { 
+      background: linear-gradient(180deg, #b98cff 0%, #7a5cff 100%); 
+    }
+    :root[data-theme="green"] .generate-btn { 
+      background: linear-gradient(180deg, #2fd6a3 0%, #11a87b 100%); 
+    }
+    :root[data-theme="black"] .generate-btn { 
+      background: linear-gradient(180deg, #6aa7ff 0%, #2f7bff 100%); 
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ШАПКА -->
+  <div class="tool-header">
+    <a href="../index.html" class="tool-back">←</a>
+    <div class="tool-title" id="toolTitle">Создание мемов</div>
+    <div class="tool-spacer"></div>
+  </div>
+
+  <!-- ОСНОВНОЙ КОНТЕЙНЕР -->
+  <div class="tool-container">
+    <!-- Область загрузки -->
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📸</div>
+      <div class="upload-text" id="uploadText">Нажми чтобы выбрать фото для мема</div>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+    </div>
+
+    <!-- Редактор мемов -->
+    <div class="meme-editor" id="memeEditor">
+      <!-- Холст для мема -->
+      <div class="canvas-container">
+        <canvas class="meme-canvas" id="memeCanvas" width="500" height="500"></canvas>
+      </div>
+
+      <!-- Панель инструментов -->
+      <div class="toolbar">
+        <button class="tool-btn" id="addTopText">➕ Верх</button>
+        <button class="tool-btn" id="addBottomText">➕ Низ</button>
+        <button class="tool-btn" id="increaseFont">🔤 +</button>
+        <button class="tool-btn" id="decreaseFont">🔤 -</button>
+      </div>
+
+      <!-- Поля ввода -->
+      <div class="input-group">
+        <label class="input-label" id="topTextLabel">Верхний текст</label>
+        <input type="text" class="text-input" id="topText" placeholder="Введите верхний текст">
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" id="bottomTextLabel">Нижний текст</label>
+        <input type="text" class="text-input" id="bottomText" placeholder="Введите нижний текст">
+      </div>
+
+      <!-- Кнопки действий -->
+      <button class="generate-btn" id="generateBtn">🎭 Обновить мем</button>
+      
+      <div class="action-buttons">
+        <button class="action-btn" id="saveBtn">💾 Сохранить</button>
+        <button class="action-btn" id="shareBtn">📤 Поделиться</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== ПЕРЕВОД =====
+    const I18N = {
+      ru: { 
+        title: "Создание мемов", 
+        upload: "Нажми чтобы выбрать фото для мема",
+        topLabel: "Верхний текст",
+        bottomLabel: "Нижний текст",
+        topPlaceholder: "Введите верхний текст",
+        bottomPlaceholder: "Введите нижний текст",
+        generate: "🎭 Обновить мем",
+        save: "💾 Сохранить",
+        share: "📤 Поделиться",
+        addTop: "➕ Верх",
+        addBottom: "➕ Низ",
+        fontIncrease: "🔤 +",
+        fontDecrease: "🔤 -"
+      },
+      en: { 
+        title: "Create Meme", 
+        upload: "Select photo for meme",
+        topLabel: "Top text",
+        bottomLabel: "Bottom text",
+        topPlaceholder: "Enter top text",
+        bottomPlaceholder: "Enter bottom text",
+        generate: "🎭 Update meme",
+        save: "💾 Save",
+        share: "📤 Share",
+        addTop: "➕ Top",
+        addBottom: "➕ Bottom",
+        fontIncrease: "🔤 +",
+        fontDecrease: "🔤 -"
+      }
+    };
+
+    // Получаем язык
+    function getLang() {
+      const url = new URL(window.location.href);
+      const qp = url.searchParams.get("lang");
+      if (qp) return qp;
+      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } catch(e) { return "ru"; }
+    }
+
+    // Применяем перевод
+    const lang = getLang();
+    const t = I18N[lang] || I18N.ru;
+    
+    document.getElementById('toolTitle').textContent = t.title;
+    document.getElementById('uploadText').textContent = t.upload;
+    document.getElementById('topTextLabel').textContent = t.topLabel;
+    document.getElementById('bottomTextLabel').textContent = t.bottomLabel;
+    document.getElementById('topText').placeholder = t.topPlaceholder;
+    document.getElementById('bottomText').placeholder = t.bottomPlaceholder;
+    document.getElementById('generateBtn').textContent = t.generate;
+    document.getElementById('saveBtn').textContent = t.save;
+    document.getElementById('shareBtn').textContent = t.share;
+    document.getElementById('addTopText').textContent = t.addTop;
+    document.getElementById('addBottomText').textContent = t.addBottom;
+    document.getElementById('increaseFont').textContent = t.fontIncrease;
+    document.getElementById('decreaseFont').textContent = t.fontDecrease;
+
+    // ===== ЛОГИКА МЕМОВ =====
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const memeEditor = document.getElementById('memeEditor');
+    const canvas = document.getElementById('memeCanvas');
+    const ctx = canvas.getContext('2d');
+    const topTextInput = document.getElementById('topText');
+    const bottomTextInput = document.getElementById('bottomText');
+    const generateBtn = document.getElementById('generateBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const addTopBtn = document.getElementById('addTopText');
+    const addBottomBtn = document.getElementById('addBottomText');
+    const increaseFontBtn = document.getElementById('increaseFont');
+    const decreaseFontBtn = document.getElementById('decreaseFont');
+
+    let currentImage = null;
+    let fontSize = 40;
+
+    // Загрузка фото
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    // Drag & Drop
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          currentImage = img;
+          
+          // Подгоняем размер canvas под изображение
+          canvas.width = img.width;
+          canvas.height = img.height;
+          
+          // Показываем редактор
+          uploadArea.style.display = 'none';
+          memeEditor.style.display = 'block';
+          
+          // Рисуем мем
+          drawMeme();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Рисование мема
+    function drawMeme() {
+      if (!currentImage) return;
+
+      // Очищаем canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Рисуем изображение
+      ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+
+      // Настройки текста
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = canvas.width / 150;
+      ctx.font = `bold ${fontSize}px Impact, Arial, sans-serif`;
+      ctx.textAlign = 'center';
+
+      // Верхний текст
+      if (topTextInput.value) {
+        ctx.shadowColor = 'black';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        
+        ctx.strokeText(topTextInput.value, canvas.width / 2, fontSize + 10);
+        ctx.fillText(topTextInput.value, canvas.width / 2, fontSize + 10);
+      }
+
+      // Нижний текст
+      if (bottomTextInput.value) {
+        ctx.strokeText(bottomTextInput.value, canvas.width / 2, canvas.height - 20);
+        ctx.fillText(bottomTextInput.value, canvas.width / 2, canvas.height - 20);
+      }
+
+      // Сбрасываем тени
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+
+    // Быстрое добавление текста
+    addTopBtn.addEventListener('click', () => {
+      topTextInput.value = 'ВВЕРХ';
+      drawMeme();
+    });
+
+    addBottomBtn.addEventListener('click', () => {
+      bottomTextInput.value = 'ВНИЗ';
+      drawMeme();
+    });
+
+    // Изменение размера шрифта
+    increaseFontBtn.addEventListener('click', () => {
+      fontSize += 5;
+      drawMeme();
+    });
+
+    decreaseFontBtn.addEventListener('click', () => {
+      if (fontSize > 20) {
+        fontSize -= 5;
+        drawMeme();
+      }
+    });
+
+    // Обновление мема
+    generateBtn.addEventListener('click', drawMeme);
+
+    // Обновление при вводе текста
+    topTextInput.addEventListener('input', drawMeme);
+    bottomTextInput.addEventListener('input', drawMeme);
+
+    // Сохранение мема
+    saveBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'meme.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    // Поделиться
+    shareBtn.addEventListener('click', () => {
+      canvas.toBlob((blob) => {
+        const file = new File([blob], 'meme.png', { type: 'image/png' });
+        
+        if (window.Telegram?.WebApp) {
+          // Отправка в Telegram
+          window.Telegram.WebApp.sendData(JSON.stringify({
+            type: 'photo',
+            file: file
+          }));
+        } else {
+          // Копируем в буфер
+          navigator.clipboard.write([
+            new ClipboardItem({
+              'image/png': blob
+            })
+          ]).then(() => {
+            alert('Мем скопирован!');
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
