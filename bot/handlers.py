@@ -22,7 +22,7 @@ from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_
 import requests
 
 # =========================
-# НАВИГАЦИЯ - ПРОСТАЯ И ПОНЯТНАЯ
+# НАВИГАЦИЯ - ИСПРАВЛЕНО
 # =========================
 # Храним предыдущую вкладку для каждого пользователя
 navigation_prev = {}
