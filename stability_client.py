@@ -1,19 +1,53 @@
-# stability_client.py
+# stability_client.py (ПОЛНОСТЬЮ ЗАМЕНИТЬ)
+
 import os
 import base64
+import time
 from typing import Optional
 import requests
 
 # --- ENV ---
 STABILITY_API_KEY = (os.getenv("STABILITY_API_KEY") or "").strip()
 
-# --- Stability Client ---
 print(f"🔧 STABILITY_API_KEY loaded: {'Yes' if STABILITY_API_KEY else 'No'}")
 
+# Константы
+MAX_RETRIES = 2
+RETRY_DELAY = 1  # секунда
+TIMEOUT = 60
+
+# Модели по приоритету (первая - основная, остальные - fallback)
+MODELS = [
+    {
+        "name": "sd3.5-large",
+        "url": "https://api.stability.ai/v2beta/stable-image/generate/sd3",
+        "type": "new",
+        "params": {
+            "model": "sd3.5-large",
+            "aspect_ratio": "1:1",
+            "output_format": "png"
+        }
+    },
+    {
+        "name": "sd3-large",
+        "url": "https://api.stability.ai/v2beta/stable-image/generate/sd3",
+        "type": "new",
+        "params": {
+            "model": "sd3-large",
+            "aspect_ratio": "1:1", 
+            "output_format": "png"
+        }
+    },
+    {
+        "name": "sd-xl",
+        "url": "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+        "type": "old",
+        "params": {}
+    }
+]
+
 def translate_text(text: str) -> str:
-    """
-    Перевод текста на английский через Google Translate
-    """
+    """Перевод текста на английский через Google Translate"""
     if not text or not text.strip():
         return text
     
@@ -50,7 +84,7 @@ def generate_image(
     samples: int = 1,
 ) -> str:
     """
-    Генерация изображения через Stability AI SD3.5 Large
+    Генерация изображения через Stability AI с автоматическим fallback
     """
     if not STABILITY_API_KEY:
         raise RuntimeError("STABILITY_API_KEY is not set")
@@ -63,41 +97,116 @@ def generate_image(
     print(f"📝 Original: {prompt}")
     print(f"📝 Translated: {translated}")
     
-    # SD3.5 Large
-    url = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
+    # Стандартный negative prompt
+    default_negative = "blurry, low quality, distorted, ugly, bad anatomy, watermark, text, logo, signature, worst quality, low resolution, grainy, deformed, disfigured, bad proportions, extra limbs, extra fingers, mutated, disgusting"
+    final_negative = negative_prompt or default_negative
+    
+    # Пробуем каждую модель по очереди
+    last_error = None
+    
+    for model_index, model in enumerate(MODELS):
+        try:
+            print(f"🔄 Trying model {model_index + 1}/{len(MODELS)}: {model['name']}")
+            
+            if model["type"] == "new":
+                # Новый API (SD3)
+                image_base64 = _generate_new_api(
+                    model=model,
+                    prompt=translated,
+                    negative_prompt=final_negative,
+                    steps=steps,
+                    cfg_scale=cfg_scale
+                )
+            else:
+                # Старый API (SDXL) - fallback
+                image_base64 = _generate_old_api(
+                    prompt=translated,
+                    negative_prompt=final_negative,
+                    steps=steps,
+                    cfg_scale=cfg_scale,
+                    width=width,
+                    height=height
+                )
+            
+            print(f"✅ Success with model: {model['name']}")
+            return image_base64
+            
+        except Exception as e:
+            last_error = e
+            print(f"⚠️ Model {model['name']} failed: {e}")
+            
+            # Если это не последняя модель - пробуем следующую
+            if model_index < len(MODELS) - 1:
+                print(f"🔄 Falling back to next model...")
+                time.sleep(RETRY_DELAY)
+                continue
+    
+    # Если все модели не сработали
+    error_msg = f"All models failed. Last error: {last_error}"
+    print(f"❌ {error_msg}")
+    
+    # Понятное сообщение для пользователя
+    if "timeout" in str(last_error).lower():
+        raise RuntimeError("Сервер генерации не отвечает. Попробуйте позже.")
+    elif "api key" in str(last_error).lower():
+        raise RuntimeError("Ошибка API ключа. Свяжитесь с админом.")
+    elif "credit" in str(last_error).lower() or "balance" in str(last_error).lower():
+        raise RuntimeError("Закончились кредиты на генерацию. Свяжитесь с админом.")
+    else:
+        raise RuntimeError("Не удалось сгенерировать изображение. Попробуйте другой промпт.")
+
+def _generate_new_api(model, prompt, negative_prompt, steps=30, cfg_scale=7.0):
+    """Генерация через новый API (SD3)"""
+    url = model["url"]
     
     headers = {
         "Authorization": f"Bearer {STABILITY_API_KEY}",
-        "Accept": "image/*"  # Ждем изображение напрямую
+        "Accept": "image/*"
     }
     
-    # Стандартный negative prompt
-    default_negative = "blurry, low quality, distorted, ugly, bad anatomy, watermark, text, logo, signature, worst quality, low resolution, grainy, deformed, disfigured, bad proportions, extra limbs, extra fingers, mutated, disgusting"
-    
-    # Формируем данные (только то что принимает API)
     data = {
-        "prompt": translated,
-        "model": "sd3.5-large",  # Правильное имя модели
-        "aspect_ratio": "1:1",
-        "output_format": "png",
-        "negative_prompt": negative_prompt or default_negative,
+        "prompt": prompt,
+        **model["params"],
+        "negative_prompt": negative_prompt,
+        "cfg_scale": str(cfg_scale),
+        "steps": str(steps)
     }
     
-    try:
-        print(f"🔄 Sending to Stability AI (sd3.5-large)...")
-        
-        # Важно: используем data=, не files= и не json=
-        response = requests.post(
-            url, 
-            headers=headers,
-            data=data,  # Простой form data
-            timeout=60
-        )
-        
-        print(f"📊 Response status: {response.status_code}")
-        
-        if response.status_code != 200:
-            # Пробуем получить детали ошибки
+    # Пробуем с retry
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            response = requests.post(
+                url, 
+                headers=headers,
+                data=data,
+                timeout=TIMEOUT
+            )
+            
+            if response.status_code == 200:
+                image_data = response.content
+                image_base64 = base64.b64encode(image_data).decode('utf-8')
+                return f"data:image/png;base64,{image_base64}"
+            
+            # Если ошибка 400 - может неподдерживаемые параметры
+            if response.status_code == 400:
+                # Пробуем без лишних параметров
+                minimal_data = {
+                    "prompt": prompt,
+                    **model["params"],
+                }
+                response = requests.post(
+                    url, 
+                    headers=headers,
+                    data=minimal_data,
+                    timeout=TIMEOUT
+                )
+                
+                if response.status_code == 200:
+                    image_data = response.content
+                    image_base64 = base64.b64encode(image_data).decode('utf-8')
+                    return f"data:image/png;base64,{image_base64}"
+            
+            # Если не 200 и не 400 - ошибка
             error_detail = "Unknown error"
             try:
                 error_json = response.json()
@@ -105,31 +214,24 @@ def generate_image(
             except:
                 error_detail = response.text[:200]
             
-            raise RuntimeError(f"Stability API error {response.status_code}: {error_detail}")
+            raise RuntimeError(f"HTTP {response.status_code}: {error_detail}")
+            
+        except requests.exceptions.Timeout:
+            if attempt < MAX_RETRIES:
+                print(f"⏱️ Timeout, retry {attempt + 1}/{MAX_RETRIES}")
+                time.sleep(RETRY_DELAY * (attempt + 1))
+                continue
+            raise RuntimeError("Request timeout")
         
-        # Ответ должен быть изображением
-        image_data = response.content
-        image_base64 = base64.b64encode(image_data).decode('utf-8')
-        
-        print(f"✅ Image generated successfully ({len(image_data)} bytes)")
-        return f"data:image/png;base64,{image_base64}"
-        
-    except requests.exceptions.Timeout:
-        raise RuntimeError("Request timeout - try again")
-    except Exception as e:
-        print(f"❌ Generation error: {str(e)}")
-        raise RuntimeError(f"Image generation failed: {str(e)}")
+        except requests.exceptions.ConnectionError:
+            if attempt < MAX_RETRIES:
+                print(f"🔌 Connection error, retry {attempt + 1}/{MAX_RETRIES}")
+                time.sleep(RETRY_DELAY * (attempt + 1))
+                continue
+            raise RuntimeError("Connection error")
 
-
-def generate_image_fallback(
-    prompt: str,
-    negative_prompt: Optional[str] = None,
-) -> str:
-    """
-    Запасной вариант со старой моделью если SD3.5 не работает
-    """
-    print("⚠️ Using fallback model (SDXL)")
-    
+def _generate_old_api(prompt, negative_prompt, steps=30, cfg_scale=7.0, width=1024, height=1024):
+    """Генерация через старый API (SDXL) - fallback"""
     url = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
     
     headers = {
@@ -144,89 +246,46 @@ def generate_image_fallback(
                 "weight": 1.0
             },
             {
-                "text": negative_prompt or "blurry, low quality, distorted, ugly",
+                "text": negative_prompt,
                 "weight": -1.0
             }
         ],
-        "cfg_scale": 7,
-        "height": 1024,
-        "width": 1024,
+        "cfg_scale": cfg_scale,
+        "height": height,
+        "width": width,
         "samples": 1,
-        "steps": 30,
+        "steps": steps,
     }
     
-    response = requests.post(url, headers=headers, json=payload, timeout=60)
-    
-    if response.status_code != 200:
-        raise RuntimeError(f"Fallback API error {response.status_code}")
-    
-    data = response.json()
-    image_base64 = data["artifacts"][0]["base64"]
-    return f"data:image/png;base64,{image_base64}"
-
-
-def generate_image_from_image(
-    prompt: str,
-    init_image: bytes,
-    strength: float = 0.7,
-    steps: int = 30,
-    cfg_scale: float = 7.0,
-) -> str:
-    """
-    Генерация на основе изображения (используем старую модель)
-    """
-    if not STABILITY_API_KEY:
-        raise RuntimeError("STABILITY_API_KEY is not set")
-    
-    if not prompt:
-        raise ValueError("Prompt is empty")
-    
-    if not init_image:
-        raise ValueError("Init image is required")
-    
-    # Переводим на английский
-    translated = translate_text(prompt)
-    
-    # Используем старый API для img2img
-    url = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image"
-    
-    headers = {
-        "Authorization": f"Bearer {STABILITY_API_KEY}",
-        "Accept": "application/json"
-    }
-    
-    files = {
-        "init_image": ("image.png", init_image, "image/png")
-    }
-    
-    data = {
-        "text_prompts[0][text]": translated,
-        "text_prompts[0][weight]": "1.0",
-        "cfg_scale": str(cfg_scale),
-        "steps": str(steps),
-        "style_preset": "photographic"
-    }
-    
-    try:
-        response = requests.post(url, headers=headers, files=files, data=data, timeout=90)
-        
-        if response.status_code != 200:
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                data = response.json()
+                image_base64 = data["artifacts"][0]["base64"]
+                return f"data:image/png;base64,{image_base64}"
+            
             error_detail = "Unknown error"
             try:
                 error_json = response.json()
                 error_detail = error_json.get('message', str(error_json))
             except:
                 error_detail = response.text[:200]
-            raise RuntimeError(f"Stability API error {response.status_code}: {error_detail}")
-        
-        data = response.json()
-        image_base64 = data["artifacts"][0]["base64"]
-        return f"data:image/png;base64,{image_base64}"
-        
-    except Exception as e:
-        raise RuntimeError(f"Image-to-image generation failed: {str(e)}")
+            
+            raise RuntimeError(f"HTTP {response.status_code}: {error_detail}")
+            
+        except requests.exceptions.Timeout:
+            if attempt < MAX_RETRIES:
+                time.sleep(RETRY_DELAY * (attempt + 1))
+                continue
+            raise RuntimeError("Request timeout")
+            
+        except requests.exceptions.ConnectionError:
+            if attempt < MAX_RETRIES:
+                time.sleep(RETRY_DELAY * (attempt + 1))
+                continue
+            raise RuntimeError("Connection error")
 
-
-def is_stability_available() -> bool:
-    """Проверяет, доступен ли Stability AI."""
-    return bool(STABILITY_API_KEY)
+# Остальные функции (generate_image_fallback, generate_image_from_image, is_stability_available) 
+# можно оставить как есть, но тоже добавить retry логику
