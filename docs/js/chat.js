@@ -1,8 +1,12 @@
-// docs/js/chat.js
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits } from "./api.js";
 import { tg } from "./telegram.js";
 
 export const STORAGE_KEY = "chat_history_v1";
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000;
+const MAX_HISTORY = 100;
+const MAX_STORAGE_SIZE = 4 * 1024 * 1024;
 
 function getLangFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -28,8 +32,22 @@ export function loadHistory(){
 
 export function saveHistory(list){
   try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  }catch(e){}
+    if (list.length > MAX_HISTORY) {
+      list = list.slice(-MAX_HISTORY);
+    }
+    
+    const json = JSON.stringify(list);
+    if (json.length > MAX_STORAGE_SIZE) {
+      list = list.slice(-50);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    } else {
+      localStorage.setItem(STORAGE_KEY, json);
+    }
+  } catch(e){
+    if (e.name === 'QuotaExceededError') {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }
 }
 
 export function forceClearChat(controller) {
@@ -38,8 +56,15 @@ export function forceClearChat(controller) {
   }
 }
 
+async function waitForInternet(retries = MAX_RETRIES) {
+  for (let i = 0; i < retries; i++) {
+    if (navigator.onLine) return true;
+    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+  }
+  return false;
+}
+
 export function createChatController({ chatEl, inputEl, sendBtnEl }) {
-  // Загружаем историю при создании
   let history = loadHistory();
   
   let sending = false;
@@ -217,7 +242,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
     if (persist) {
       history.push({ role: type === "user" ? "user" : "assistant", text: String(text || "") });
-      if (history.length > 200) history = history.slice(-200);
       saveHistory(history);
     }
   }
@@ -345,7 +369,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (!saveBtn) return;
     
-    // Проверяем можно ли сохранить
     let canSave = hasUnsavedChanges;
     
     if (canSave && tempPersona && currentAiMode === 'fast') {
@@ -504,7 +527,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       tempPersona = null;
       hasUnsavedChanges = false;
       
-      // Загружаем лимиты сразу
       fetchLimits().then(() => {
         updateSaveButton();
         updateUnsavedIndicator();
@@ -573,6 +595,11 @@ Response:`;
     const t = inputEl.value.trim();
     if(!t || sending || isReloading) return;
 
+    if (!navigator.onLine) {
+      add("bot", "📡 Нет интернет-соединения. Проверьте подключение.", true);
+      return;
+    }
+
     sending = true;
     sendBtnEl.disabled = true;
 
@@ -585,37 +612,57 @@ Response:`;
     
     addTyping();
 
-    try{
-      const lang = getLang();
-      const persona = tempPersona || getPersona();
-      const style = tempStyle || getStyle();
-      
-      const answer = await askAI(t, lang, persona, style);
+    let lastError = null;
+    let success = false;
 
-      removeTyping();
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const hasInternet = await waitForInternet(1);
+        if (!hasInternet) {
+          throw new Error("no_internet");
+        }
 
-      const out = (answer || "").trim();
-      add("bot", out || "…", true);
-      
-      await updateMenuBalance();
-      
-      if (!isReloading) {
-        await checkModeChange();
+        const answer = await askAI(t);
+        
+        removeTyping();
+        add("bot", answer || "…", true);
+        await updateMenuBalance();
+        success = true;
+        break;
+        
+      } catch(e) {
+        lastError = e;
+        console.log(`Attempt ${attempt} failed:`, e);
+        
+        if (!navigator.onLine || e.message === "no_internet") {
+          removeTyping();
+          add("bot", "📡 Интернет пропал. Проверьте подключение.", true);
+          sending = false;
+          sendBtnEl.disabled = false;
+          return;
+        }
+        
+        if (attempt < MAX_RETRIES) {
+          addTyping();
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
+        }
       }
-      
-    } catch(e){
-      removeTyping();
-      
-      if (e.message.includes("Недостаточно звезд")) {
-        add("bot", "❌ " + e.message + "\n\nКупите звезды в меню: нажмите ⭐ в главном меню.", true);
-      } else {
-        add("bot", "❌ Ошибка: " + (e?.message || e), true);
-        console.error("Chat error:", e);
-      }
-    } finally{
-      sending = false;
-      sendBtnEl.disabled = false;
     }
+
+    removeTyping();
+    
+    if (!success) {
+      if (lastError?.message?.includes("insufficient_stars")) {
+        add("bot", "❌ Недостаточно звезд. Купите в меню.", true);
+      } else if (lastError?.message?.includes("network")) {
+        add("bot", "📡 Проблема с сетью. Проверьте интернет.", true);
+      } else {
+        add("bot", "❌ Ошибка сервера. Попробуйте позже.", true);
+      }
+    }
+
+    sending = false;
+    sendBtnEl.disabled = false;
   }
 
   async function updateMenuBalance() {
@@ -796,6 +843,14 @@ Response:`;
       });
     }
     
+    window.addEventListener('online', () => {
+      add("bot", "📡 Интернет соединение восстановлено!", true);
+    });
+    
+    window.addEventListener('offline', () => {
+      add("bot", "📡 Интернет пропал. Ответы временно недоступны.", true);
+    });
+    
     setTimeout(checkModeChange, 1000);
     setInterval(checkModeChange, 3000);
     
@@ -805,7 +860,6 @@ Response:`;
       }
     });
     
-    // Сразу отрисовываем историю
     renderFromHistory();
   }
 
