@@ -1,7 +1,8 @@
-# api/db.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
+# api/db.py - ИСПРАВЛЕННАЯ ПОЛНАЯ ВЕРСИЯ
 import sqlite3
 import time
 import threading
+import warnings
 from datetime import datetime
 from typing import Any, Dict, Tuple, Optional
 from contextlib import contextmanager
@@ -29,6 +30,12 @@ def db_connection():
         finally:
             if conn:
                 conn.close()
+
+# ВРЕМЕННАЯ ФУНКЦИЯ ДЛЯ СОВМЕСТИМОСТИ
+def db_conn():
+    """Старая функция для обратной совместимости"""
+    warnings.warn("db_conn устарела, используй db_connection()", DeprecationWarning)
+    return sqlite3.connect(DB_PATH, check_same_thread=False)
 
 def db_init():
     with db_connection() as conn:
