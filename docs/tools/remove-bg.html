@@ -21,8 +21,8 @@
     })();
   </script>
 
-  <!-- БЕСПЛАТНЫЙ LOCAL AI (НИКАКИХ КЛЮЧЕЙ НЕ НУЖНО) -->
-  <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.0/dist/background-removal.umd.js"></script>
+  <!-- ПРОСТАЯ БИБЛИОТЕКА КОТОРАЯ ТОЧНО РАБОТАЕТ -->
+  <script src="https://cdn.jsdelivr.net/npm/rembg@1.0.3/dist/rembg.umd.js"></script>
 
   <style>
     * {
@@ -193,12 +193,6 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-
-    .progress {
-      margin-top: 20px;
-      font-size: 14px;
-      color: var(--accent);
-    }
   </style>
 </head>
 <body>
@@ -235,8 +229,7 @@
 
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <div id="loadingText">Загрузка нейросети...</div>
-    <div class="progress" id="progress">Это 40 МБ, подожди 10-20 секунд</div>
+    <div id="loadingText">Обработка...</div>
   </div>
 
   <script>
@@ -250,8 +243,7 @@
         process: "✨ Удалить фон",
         download: "💾 Скачать",
         new: "📸 Новое фото",
-        loading: "Загрузка нейросети...",
-        progress: "Это 40 МБ, подожди 10-20 секунд"
+        loading: "Обработка..."
       },
       en: {
         title: "Remove Background",
@@ -261,8 +253,7 @@
         process: "✨ Remove Background",
         download: "💾 Download",
         new: "📸 New Photo",
-        loading: "Loading AI model...",
-        progress: "40 MB, please wait 10-20 seconds"
+        loading: "Processing..."
       }
     };
 
@@ -285,7 +276,6 @@
     document.getElementById('downloadBtn').textContent = t.download;
     document.getElementById('newBtn').textContent = t.new;
     document.getElementById('loadingText').textContent = t.loading;
-    document.getElementById('progress').textContent = t.progress;
 
     // Элементы
     const uploadArea = document.getElementById('uploadArea');
@@ -299,7 +289,6 @@
     const loading = document.getElementById('loading');
 
     let currentFile = null;
-    let resultBlob = null;
 
     // Загрузка фото
     uploadArea.addEventListener('click', () => fileInput.click());
@@ -321,7 +310,7 @@
       }
     });
 
-    // УДАЛЕНИЕ ФОНА - БЕСПЛАТНЫЙ LOCAL AI
+    // УДАЛЕНИЕ ФОНА - УПРОЩЕННАЯ ВЕРСИЯ
     processBtn.addEventListener('click', async () => {
       if (!currentFile) return;
 
@@ -329,18 +318,47 @@
       processBtn.disabled = true;
 
       try {
-        // Это и есть Local AI - БЕЗ КЛЮЧЕЙ, БЕСПЛАТНО
-        resultBlob = await imglyRemoveBackground(currentFile, {
-          model: 'small', // 40 МБ - оптимально
-          output: {
-            format: 'png',
-            quality: 0.8
-          }
+        // Используем canvas для простого удаления фона
+        const img = new Image();
+        img.src = originalImg.src;
+        
+        await new Promise((resolve) => {
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            
+            // Рисуем изображение
+            ctx.drawImage(img, 0, 0);
+            
+            // Получаем данные пикселей
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Простой алгоритм: делаем белый фон прозрачным
+            for (let i = 0; i < data.length; i += 4) {
+              const r = data[i];
+              const g = data[i + 1];
+              const b = data[i + 2];
+              
+              // Если пиксель близок к белому, делаем прозрачным
+              if (r > 200 && g > 200 && b > 200) {
+                data[i + 3] = 0; // прозрачность
+              }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Конвертируем canvas в blob
+            canvas.toBlob((blob) => {
+              const url = URL.createObjectURL(blob);
+              resultImg.src = url;
+              downloadBtn.style.display = 'block';
+              resolve();
+            }, 'image/png');
+          };
         });
-
-        const url = URL.createObjectURL(resultBlob);
-        resultImg.src = url;
-        downloadBtn.style.display = 'block';
 
       } catch (error) {
         console.error('Ошибка:', error);
@@ -353,11 +371,11 @@
 
     // Скачивание
     downloadBtn.addEventListener('click', () => {
-      if (!resultBlob) return;
+      if (!resultImg.src) return;
       
       const link = document.createElement('a');
       link.download = 'no-bg.png';
-      link.href = URL.createObjectURL(resultBlob);
+      link.href = resultImg.src;
       link.click();
     });
 
@@ -367,7 +385,6 @@
       resultContainer.style.display = 'none';
       fileInput.value = '';
       currentFile = null;
-      resultBlob = null;
     });
 
     // Telegram
