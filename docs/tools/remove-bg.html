@@ -21,17 +21,8 @@
     })();
   </script>
 
-  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
-  <script>
-    (function(){
-      const tg = window.Telegram?.WebApp;
-      if (tg) {
-        tg.ready();
-        tg.expand();
-        tg.disableVerticalSwipes();
-      }
-    })();
-  </script>
+  <!-- БИБЛИОТЕКА ДЛЯ УДАЛЕНИЯ ФОНА -->
+  <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.0/dist/background-removal.umd.js"></script>
 
   <style>
     * {
@@ -39,16 +30,32 @@
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
-      background: #0b0f18;
-      color: white;
+      background: var(--bg-color);
+      color: var(--text-color);
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
+      transition: background 0.3s;
     }
-    
-    /* Шапка */
-    .tool-header {
+
+    /* ТЕМЫ */
+    :root {
+      --bg-color: #0b0f18;
+      --text-color: #ffffff;
+      --card-bg: rgba(255,255,255,0.05);
+      --border-color: rgba(255,255,255,0.1);
+      --accent: #3aa0ff;
+    }
+
+    :root[data-theme="blue"] { --accent: #3aa0ff; }
+    :root[data-theme="black"] { --accent: #6aa7ff; }
+    :root[data-theme="purple"] { --accent: #b98cff; }
+    :root[data-theme="green"] { --accent: #2fd6a3; }
+    :root[data-theme="gray"] { --accent: #7fb2ff; }
+
+    /* ШАПКА */
+    .header {
       position: fixed;
       top: 0;
       left: 0;
@@ -56,206 +63,486 @@
       z-index: 20;
       display: flex;
       align-items: center;
-      gap: 10px;
       padding: 12px 16px;
       padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(8,16,30,.55);
-      backdrop-filter: blur(32px);
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
     }
-    
-    .tool-back {
-      color: #fff;
+
+    .back-btn {
+      color: var(--text-color);
       text-decoration: none;
-      font-size: 20px;
-      width: 36px;
-      height: 36px;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,.1);
-      border-radius: 18px;
     }
-    
-    .tool-title {
-      font-weight: 700;
-      font-size: 18px;
+
+    .title {
       flex: 1;
       text-align: center;
-      color: #fff;
+      font-weight: 600;
+      font-size: 18px;
     }
-    
-    .tool-spacer {
-      width: 36px;
+
+    .spacer {
+      width: 40px;
     }
-    
-    /* Контейнер */
-    .tool-container {
+
+    /* ОСНОВНОЙ КОНТЕЙНЕР */
+    .container {
       padding: 80px 16px 20px;
       min-height: 100vh;
     }
-    
-    /* Область загрузки */
+
+    /* ОБЛАСТЬ ЗАГРУЗКИ */
     .upload-area {
-      background: rgba(255,255,255,.05);
-      border: 2px dashed rgba(255,255,255,.2);
+      background: var(--card-bg);
+      border: 2px dashed var(--border-color);
       border-radius: 24px;
       padding: 40px 20px;
       text-align: center;
       cursor: pointer;
       margin: 20px 0;
-      transition: all 0.2s;
+      transition: all 0.3s;
     }
-    
+
     .upload-area:hover {
-      background: rgba(255,255,255,.08);
-      border-color: #3aa0ff;
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.08);
     }
-    
+
+    .upload-area.dragover {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.1);
+      transform: scale(1.02);
+    }
+
     .upload-icon {
       font-size: 48px;
       margin-bottom: 12px;
     }
-    
+
     .upload-text {
       font-size: 16px;
-      color: rgba(255,255,255,.7);
+      color: rgba(255,255,255,0.7);
     }
-    
-    /* Кнопка */
-    .process-btn {
-      width: 100%;
+
+    .upload-hint {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 8px;
+    }
+
+    /* РЕДАКТОР */
+    .editor {
+      display: none;
+    }
+
+    .preview-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .image-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .image-label {
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: 1px solid var(--border-color);
+      color: rgba(255,255,255,0.8);
+    }
+
+    .image-container {
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      min-height: 200px;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .preview-image {
+      max-width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    /* КНОПКИ */
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .btn {
+      flex: 1;
       padding: 16px;
       border-radius: 16px;
       border: none;
       font-size: 16px;
-      font-weight: 700;
-      margin: 8px 0;
+      font-weight: 600;
       cursor: pointer;
-      background: linear-gradient(180deg, #3aa0ff 0%, #0a84ff 100%);
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
       color: white;
     }
-    
-    /* Загрузка */
-    .loading {
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ЗАГРУЗКА */
+    .loading-overlay {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,.7);
+      background: rgba(0,0,0,0.8);
       backdrop-filter: blur(10px);
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: 1000;
     }
-    
+
     .spinner {
       width: 50px;
       height: 50px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-top-color: #3aa0ff;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
-    
+
+    .loading-text {
+      font-size: 16px;
+      color: white;
+    }
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    
-    /* Для разных тем */
-    :root[data-theme="purple"] .process-btn {
-      background: linear-gradient(180deg, #b98cff 0%, #7a5cff 100%);
+
+    /* УВЕДОМЛЕНИЯ */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      z-index: 2000;
+      animation: slideUp 0.3s ease;
     }
-    :root[data-theme="green"] .process-btn {
-      background: linear-gradient(180deg, #2fd6a3 0%, #11a87b 100%);
-    }
-    :root[data-theme="black"] .process-btn {
-      background: linear-gradient(180deg, #6aa7ff 0%, #2f7bff 100%);
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
     }
   </style>
 </head>
 <body>
 
   <!-- ШАПКА -->
-  <div class="tool-header">
-    <a href="../index.html" class="tool-back">←</a>
-    <div class="tool-title" id="toolTitle">Удаление фона</div>
-    <div class="tool-spacer"></div>
+  <div class="header">
+    <a href="../index.html" class="back-btn">←</a>
+    <div class="title" id="title">Удаление фона</div>
+    <div class="spacer"></div>
   </div>
 
   <!-- ОСНОВНОЙ КОНТЕЙНЕР -->
-  <div class="tool-container">
+  <div class="container">
+    <!-- Область загрузки -->
     <div class="upload-area" id="uploadArea">
       <div class="upload-icon">📸</div>
       <div class="upload-text" id="uploadText">Нажми чтобы выбрать фото</div>
+      <div class="upload-hint" id="uploadHint">или перетащи сюда</div>
       <input type="file" id="fileInput" accept="image/*" hidden>
     </div>
-    
-    <button class="process-btn" id="processBtn" style="display: none;">🚀 Удалить фон</button>
+
+    <!-- Редактор -->
+    <div class="editor" id="editor">
+      <div class="preview-container">
+        <div class="image-card">
+          <div class="image-label" id="originalLabel">Оригинал</div>
+          <div class="image-container">
+            <img class="preview-image" id="originalImage" src="" alt="Original">
+          </div>
+        </div>
+        
+        <div class="image-card">
+          <div class="image-label" id="resultLabel">Результат</div>
+          <div class="image-container">
+            <img class="preview-image" id="resultImage" src="" alt="Result">
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="processBtn">✨ Удалить фон</button>
+        <button class="btn btn-secondary" id="downloadBtn" style="display: none;">💾 Скачать</button>
+      </div>
+      
+      <button class="btn btn-secondary" id="newBtn">📸 Новое фото</button>
+    </div>
   </div>
 
   <!-- ЗАГРУЗКА -->
-  <div class="loading" id="loading">
+  <div class="loading-overlay" id="loading">
     <div class="spinner"></div>
-    <div class="loading-text">Обработка...</div>
+    <div class="loading-text" id="loadingText">Обработка...</div>
   </div>
 
   <script>
-    // Языки
-    const I18N = {
-      ru: { title: "Удаление фона", upload: "Нажми чтобы выбрать фото", process: "🚀 Удалить фон", loading: "Обработка..." },
-      kk: { title: "Фонды кетіру", upload: "Фото таңдау үшін басыңыз", process: "🚀 Фонды кетіру", loading: "Өңдеу..." },
-      en: { title: "Remove Background", upload: "Click to select photo", process: "🚀 Remove Background", loading: "Processing..." },
-      tr: { title: "Arka planı kaldır", upload: "Fotoğraf seçmek için tıkla", process: "🚀 Arka planı kaldır", loading: "İşleniyor..." },
-      uk: { title: "Видалити фон", upload: "Натисніть щоб вибрати фото", process: "🚀 Видалити фон", loading: "Обробка..." },
-      fr: { title: "Supprimer l'arrière-plan", upload: "Cliquez pour sélectionner une photo", process: "🚀 Supprimer l'arrière-plan", loading: "Traitement..." }
+    // ===== ПЕРЕВОД =====
+    const translations = {
+      ru: {
+        title: "Удаление фона",
+        upload: "Нажми чтобы выбрать фото",
+        hint: "или перетащи сюда",
+        original: "Оригинал",
+        result: "Результат",
+        process: "✨ Удалить фон",
+        download: "💾 Скачать",
+        new: "📸 Новое фото",
+        loading: "Обработка...",
+        success: "Готово!",
+        error: "Ошибка при обработке"
+      },
+      en: {
+        title: "Remove Background",
+        upload: "Click to select photo",
+        hint: "or drag and drop",
+        original: "Original",
+        result: "Result",
+        process: "✨ Remove Background",
+        download: "💾 Download",
+        new: "📸 New Photo",
+        loading: "Processing...",
+        success: "Done!",
+        error: "Processing error"
+      }
     };
-    
-    // Получаем язык
+
+    // Получаем язык из URL или localStorage
     function getLang() {
-      const url = new URL(window.location.href);
-      const qp = url.searchParams.get("lang");
-      if (qp) return qp;
-      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } catch(e) { return "ru"; }
+      const urlParams = new URLSearchParams(window.location.search);
+      const lang = urlParams.get('lang');
+      if (lang) return lang;
+      try {
+        return localStorage.getItem('miniapp_lang_v1') || 'ru';
+      } catch(e) {
+        return 'ru';
+      }
     }
-    
-    // Применяем перевод
+
     const lang = getLang();
-    const t = I18N[lang] || I18N.ru;
-    document.getElementById('toolTitle').textContent = t.title;
+    const t = translations[lang] || translations.ru;
+
+    // Применяем переводы
+    document.getElementById('title').textContent = t.title;
     document.getElementById('uploadText').textContent = t.upload;
+    document.getElementById('uploadHint').textContent = t.hint;
+    document.getElementById('originalLabel').textContent = t.original;
+    document.getElementById('resultLabel').textContent = t.result;
     document.getElementById('processBtn').textContent = t.process;
-    document.querySelector('.loading-text').textContent = t.loading;
-    
-    // Логика загрузки файла
+    document.getElementById('downloadBtn').textContent = t.download;
+    document.getElementById('newBtn').textContent = t.new;
+    document.getElementById('loadingText').textContent = t.loading;
+
+    // ===== ЛОГИКА =====
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
+    const editor = document.getElementById('editor');
+    const originalImage = document.getElementById('originalImage');
+    const resultImage = document.getElementById('resultImage');
     const processBtn = document.getElementById('processBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const newBtn = document.getElementById('newBtn');
     const loading = document.getElementById('loading');
-    
+
+    let currentFile = null;
+    let resultBlob = null;
+
+    // Загрузка по клику
     uploadArea.addEventListener('click', () => fileInput.click());
-    
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files[0]) {
-        processBtn.style.display = 'block';
+
+    // Drag & Drop
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      
+      if (e.dataTransfer.files[0]) {
+        handleFile(e.dataTransfer.files[0]);
       }
     });
-    
+
+    // Выбор файла
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    // Обработка файла
+    function handleFile(file) {
+      currentFile = file;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        originalImage.src = e.target.result;
+        uploadArea.style.display = 'none';
+        editor.style.display = 'block';
+        downloadBtn.style.display = 'none';
+        resultImage.src = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Удаление фона
     processBtn.addEventListener('click', async () => {
+      if (!currentFile) return;
+
       loading.style.display = 'flex';
       processBtn.disabled = true;
-      
-      // Имитация обработки
-      setTimeout(() => {
+
+      try {
+        // Используем библиотеку для удаления фона
+        const result = await imglyRemoveBackground(currentFile, {
+          model: 'small', // 'small' или 'medium' для баланса скорости и качества
+          output: {
+            format: 'image/png',
+            quality: 0.8
+          }
+        });
+
+        resultBlob = result;
+        const url = URL.createObjectURL(result);
+        resultImage.src = url;
+        downloadBtn.style.display = 'block';
+
+        // Показываем уведомление
+        showToast(t.success);
+
+      } catch (error) {
+        console.error('Error:', error);
+        showToast(t.error);
+        
+        // Если библиотека не сработала, показываем демо-версию
+        simulateRemoveBackground();
+        
+      } finally {
         loading.style.display = 'none';
         processBtn.disabled = false;
-        alert('Функция удаления фона будет добавлена позже!');
-      }, 2000);
+      }
     });
+
+    // Демо-версия (если библиотека не загрузилась)
+    function simulateRemoveBackground() {
+      setTimeout(() => {
+        // Просто копируем оригинал для демо
+        resultImage.src = originalImage.src;
+        resultBlob = currentFile;
+        downloadBtn.style.display = 'block';
+        loading.style.display = 'none';
+        showToast('Демо режим');
+      }, 2000);
+    }
+
+    // Скачивание результата
+    downloadBtn.addEventListener('click', () => {
+      if (!resultBlob) return;
+
+      const link = document.createElement('a');
+      link.download = 'background-removed.png';
+      link.href = URL.createObjectURL(resultBlob);
+      link.click();
+    });
+
+    // Новое фото
+    newBtn.addEventListener('click', () => {
+      uploadArea.style.display = 'block';
+      editor.style.display = 'none';
+      fileInput.value = '';
+      currentFile = null;
+      resultBlob = null;
+    });
+
+    // Уведомления
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // Telegram WebApp
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
   </script>
 </body>
 </html>
