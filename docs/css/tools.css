@@ -8,9 +8,9 @@
 
 /* Кнопка инструментов */
 .tools-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
   width: 100%;
   margin-bottom: 0 !important;
   cursor: pointer;
@@ -18,8 +18,8 @@
 }
 
 .tools-btn.active {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: var(--accent1);
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: var(--accent1) !important;
   box-shadow: 0 0 15px rgba(58, 160, 255, 0.3);
 }
 
@@ -159,4 +159,29 @@
 }
 :root[data-theme="gray"] .tool-arrow:hover {
   color: #7fb2ff;
+}
+
+/* ===== СТИЛЬ NORMAL ДЛЯ ИНСТРУМЕНТОВ ===== */
+:root[data-style="normal"] .tool-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+:root[data-style="normal"] .tool-item:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateX(5px);
+}
+
+:root[data-style="normal"] .tool-arrow {
+  color: rgba(255,255,255,0.3);
+}
+
+:root[data-style="normal"] .tool-item:hover .tool-arrow {
+  color: rgba(255,255,255,0.8);
+}
+
+:root[data-style="normal"] .tools-btn.active {
+  background: var(--btn-hover-gradient);
+  border-color: rgba(255,255,255,0.2);
 }
