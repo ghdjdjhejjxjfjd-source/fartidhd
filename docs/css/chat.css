@@ -62,7 +62,7 @@
   }
 }
 
-/* bot: стеклянный */
+/* bot: стеклянный (БЕЗ ИЗМЕНЕНИЙ) */
 .bot .msg{
   align-self:flex-start;
   background: rgba(255,255,255,.16);
@@ -72,18 +72,21 @@
   border-top-left-radius: 4px;
 }
 
-/* user: цвет из темы, очень слабый */
+/* ✅ ИСПРАВЛЕНО: user - мягкий, приятный для глаз */
 .user .msg{
   align-self:flex-end;
-  background: var(--user-bg);
-  border: 1px solid var(--user-border);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  background: #1E3A5F;  /* Тёмно-синий, приглушённый */
+  background: linear-gradient(145deg, #1E3A5F 0%, #16324F 100%); /* Лёгкий градиент */
+  border: 1px solid rgba(255, 255, 255, 0.15);  /* Тонкая светлая обводка */
+  backdrop-filter: none;  /* Убрал размытие */
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);  /* Мягкая тень */
   text-align: left;
   border-bottom-right-radius: 4px;
   width: fit-content;
   display: inline-block;
+  color: #ffffff;  /* Белый текст для контраста */
+  font-weight: 500;
 }
 
 /* ============================= */
@@ -319,7 +322,7 @@
 }
 
 /* ================================================= */
-/* ✅ ТЕМЫ */
+/* ✅ ТЕМЫ - оставил как есть, они не используются в новых стилях */
 /* ================================================= */
 :root[data-theme="blue"] {
   --accent1: #3aa0ff;
