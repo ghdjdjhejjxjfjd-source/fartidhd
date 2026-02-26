@@ -268,19 +268,11 @@ function showNotification(message) {
 // ===== Обновление ссылок =====
 function updateLinks(lang, theme){
   if (chatBtn) {
-    chatBtn.href = `./chat.html?v=2&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+    chatBtn.setAttribute('onclick', `openPage('chat.html')`);
   }
   if (imgBtn) {
-    imgBtn.href = `./image.html?v=1&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+    imgBtn.setAttribute('onclick', `openPage('image.html')`);
   }
-  
-  const toolLinks = document.querySelectorAll('.tool-item');
-  toolLinks.forEach(link => {
-    const href = link.getAttribute('href');
-    if (href && !href.includes('?')) {
-      link.href = `${href}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
-    }
-  });
 }
 
 // ===== Обновление UI =====
@@ -388,54 +380,6 @@ function setTheme(theme){
   showNotification(`🎨 ${t.sheetTheme}: ${getThemeLabel(theme, currentLang)}`);
 }
 
-// ===== Логика выпадающего меню инструментов =====
-function initToolsMenu() {
-  if (!toolsBtn || !toolsDropdown || !toolsChev) return;
-  
-  let isOpen = false;
-  try {
-    isOpen = localStorage.getItem(STORAGE_TOOLS) === 'true';
-  } catch(e) {}
-  
-  function toggleTools(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    isOpen = !isOpen;
-    
-    if (isOpen) {
-      toolsDropdown.classList.add('open');
-      toolsBtn.classList.add('active');
-      toolsChev.classList.add('rotate');
-      toolsChev.textContent = '▲';
-    } else {
-      toolsDropdown.classList.remove('open');
-      toolsBtn.classList.remove('active');
-      toolsChev.classList.remove('rotate');
-      toolsChev.textContent = '▼';
-    }
-    
-    try {
-      localStorage.setItem(STORAGE_TOOLS, isOpen);
-    } catch(e) {}
-  }
-  
-  toolsBtn.addEventListener('click', toggleTools);
-  
-  document.addEventListener('click', (e) => {
-    if (isOpen && !toolsBtn.contains(e.target) && !toolsDropdown.contains(e.target)) {
-      toggleTools(e);
-    }
-  });
-  
-  if (isOpen) {
-    toolsDropdown.classList.add('open');
-    toolsBtn.classList.add('active');
-    toolsChev.classList.remove('rotate');
-    toolsChev.textContent = '▲';
-  }
-}
-
 // ===== Overlay controls =====
 function openLang(){
   if (!langOverlay || !langBtn) return;
@@ -515,8 +459,6 @@ function init(){
   
   updateLinks(savedLang, savedTheme);
   
-  initToolsMenu();
-  
   if (langBtn) langBtn.addEventListener("click", openLang);
   if (langClose) langClose.addEventListener("click", closeLang);
   if (langOverlay) {
@@ -542,3 +484,20 @@ function init(){
 }
 
 init();
+
+// Экспортируем функции для глобального доступа
+window.openPage = function(page) {
+  const lang = getSavedLang();
+  const theme = getSavedTheme();
+  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+  const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  window.location.href = fullUrl;
+};
+
+window.openTool = function(toolPage) {
+  const lang = getSavedLang();
+  const theme = getSavedTheme();
+  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+  const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  window.location.href = fullUrl;
+};
