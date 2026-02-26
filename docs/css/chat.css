@@ -75,7 +75,7 @@
 /* ✅ ИСПРАВЛЕНО: user - мягкий, приятный для глаз */
 .user .msg{
     align-self: flex-end;
-    background: rgba(30, 58, 95, 0.85); /* Полупрозрачный тёмно-синий */
+    background: rgba(30, 58, 95, 0.5); /* Полупрозрачный тёмно-синий */
     border: 1px solid rgba(255, 255, 255, 0.15);
     backdrop-filter: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
