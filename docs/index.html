@@ -147,7 +147,7 @@
 
   <div class="wrap">
     <div class="card">
-      <!-- ОБЫЧНЫЕ КНОПКИ (без ссылок) -->
+      <!-- ОБЫЧНЫЕ КНОПКИ (с правильными классами) -->
       <button class="btn" id="chatBtn" onclick="openPage('chat.html')">💬 Чат с ИИ</button>
       <button class="btn" id="imgBtn" onclick="openPage('image.html')">🎨 Генерация картинки</button>
       
@@ -158,33 +158,33 @@
         </button>
         
         <div class="tools-dropdown" id="toolsDropdown">
-          <!-- ИНСТРУМЕНТЫ (без ссылок) -->
-          <div class="tool-item" onclick="openTool('remove-bg.html')" id="toolRemoveBg">
+          <!-- ИНСТРУМЕНТЫ (с правильными классами) -->
+          <div class="tool-item" onclick="openTool('remove-bg.html')">
             <span class="tool-icon">📸</span>
             <span class="tool-text" id="toolRemoveBgText">Удаление фона</span>
             <span class="tool-arrow">▶</span>
           </div>
-          <div class="tool-item" onclick="openTool('text-from-image.html')" id="toolTextFromImage">
+          <div class="tool-item" onclick="openTool('text-from-image.html')">
             <span class="tool-icon">🎨</span>
             <span class="tool-text" id="toolTextFromImageText">Текст с фото</span>
             <span class="tool-arrow">▶</span>
           </div>
-          <div class="tool-item" onclick="openTool('selfie-filters.html')" id="toolSelfieFilters">
+          <div class="tool-item" onclick="openTool('selfie-filters.html')">
             <span class="tool-icon">🤳</span>
             <span class="tool-text" id="toolSelfieFiltersText">Селфи фильтры</span>
             <span class="tool-arrow">▶</span>
           </div>
-          <div class="tool-item" onclick="openTool('music.html')" id="toolMusic">
+          <div class="tool-item" onclick="openTool('music.html')">
             <span class="tool-icon">🎵</span>
             <span class="tool-text" id="toolMusicText">Создание музыки</span>
             <span class="tool-arrow">▶</span>
           </div>
-          <div class="tool-item" onclick="openTool('meme.html')" id="toolMeme">
+          <div class="tool-item" onclick="openTool('meme.html')">
             <span class="tool-icon">📝</span>
             <span class="tool-text" id="toolMemeText">Создание мемов</span>
             <span class="tool-arrow">▶</span>
           </div>
-          <div class="tool-item" onclick="openTool('qr.html')" id="toolQr">
+          <div class="tool-item" onclick="openTool('qr.html')">
             <span class="tool-icon">📱</span>
             <span class="tool-text" id="toolQrText">QR коды</span>
             <span class="tool-arrow">▶</span>
@@ -239,7 +239,7 @@
       
       if (tg) {
         // Открываем внутри Telegram WebApp
-        tg.openTelegramLink(fullUrl);
+        window.location.href = fullUrl;
       } else {
         // Если не в Telegram - обычный переход
         window.location.href = fullUrl;
@@ -258,7 +258,7 @@
       
       if (tg) {
         // Открываем внутри Telegram WebApp
-        tg.openTelegramLink(fullUrl);
+        window.location.href = fullUrl;
       } else {
         // Если не в Telegram - обычный переход
         window.location.href = fullUrl;
