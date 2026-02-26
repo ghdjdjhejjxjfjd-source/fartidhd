@@ -147,7 +147,7 @@
 
   <div class="wrap">
     <div class="card">
-      <!-- ОБЫЧНЫЕ КНОПКИ -->
+      <!-- ОБЫЧНЫЕ КНОПКИ (с правильными классами) -->
       <button class="btn" id="chatBtn" onclick="openPage('chat.html')">💬 Чат с ИИ</button>
       <button class="btn" id="imgBtn" onclick="openPage('image.html')">🎨 Генерация картинки</button>
       
@@ -158,6 +158,7 @@
         </button>
         
         <div class="tools-dropdown" id="toolsDropdown">
+          <!-- ИНСТРУМЕНТЫ (с правильными классами) -->
           <div class="tool-item" onclick="openTool('remove-bg.html')">
             <span class="tool-icon">📸</span>
             <span class="tool-text" id="toolRemoveBgText">Удаление фона</span>
@@ -226,16 +227,23 @@
   </div>
 
   <script>
-    // Функция открытия страниц
+    // Функция открытия страниц внутри Telegram
     function openPage(page) {
       const tg = window.Telegram?.WebApp;
       const lang = getSavedLang();
       const theme = getSavedTheme();
       
+      // Формируем полный URL
       const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
       const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
       
-      window.location.href = fullUrl;
+      if (tg) {
+        // Открываем внутри Telegram WebApp
+        window.location.href = fullUrl;
+      } else {
+        // Если не в Telegram - обычный переход
+        window.location.href = fullUrl;
+      }
     }
 
     // Функция открытия инструментов
@@ -244,10 +252,17 @@
       const lang = getSavedLang();
       const theme = getSavedTheme();
       
+      // Формируем путь к инструменту
       const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
       const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
       
-      window.location.href = fullUrl;
+      if (tg) {
+        // Открываем внутри Telegram WebApp
+        window.location.href = fullUrl;
+      } else {
+        // Если не в Telegram - обычный переход
+        window.location.href = fullUrl;
+      }
     }
 
     // Получение сохраненного языка
@@ -314,7 +329,7 @@
     })();
   </script>
 
-  <!-- Подключаем index.js для списков языка и темы -->
+  <!-- Подключаем существующий index.js (он будет работать параллельно) -->
   <script type="module" src="./js/index.js?v=6"></script>
 </body>
 </html>
