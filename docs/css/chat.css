@@ -1,0 +1,370 @@
+.chat{
+  flex:1 1 auto;
+  padding:16px;
+  padding-top: calc(60px + env(safe-area-inset-top));
+  overflow-y:auto;
+  -webkit-overflow-scrolling: touch;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-height:0;
+  touch-action: manipulation;
+}
+
+/* ============================= */
+/* ✅ СООБЩЕНИЯ */
+/* ============================= */
+.msg-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.msg-wrapper.bot {
+  align-items: flex-start;
+}
+
+.msg-wrapper.user {
+  align-items: flex-end;
+}
+
+.msg{
+  max-width:78%;
+  padding:8px 14px;
+  border-radius:17px;
+  line-height:1.4;
+  font-size: 18px;
+  font-weight: 500;
+  white-space: pre-wrap;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  box-shadow: 0 10px 26px rgba(0,0,0,.18);
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+  animation: msgIn 0.38s ease-out forwards;
+  will-change: transform, opacity;
+  width: fit-content;
+  max-width: 78%;
+  margin: 0;
+  display: inline-block;
+}
+
+.msg.bot{ animation-duration: 0.42s; }
+.msg.user{ animation-duration: 0.36s; }
+
+@keyframes msgIn{
+  to{
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* bot: стеклянный */
+.bot .msg{
+  align-self:flex-start;
+  background: rgba(255,255,255,.16);
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top-left-radius: 4px;
+}
+
+/* user: цвет из темы, очень слабый */
+.user .msg{
+  align-self:flex-end;
+  background: var(--user-bg);
+  border: 1px solid var(--user-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  text-align: left;
+  border-bottom-right-radius: 4px;
+  width: fit-content;
+  display: inline-block;
+}
+
+/* ============================= */
+/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ */
+/* ============================= */
+.message-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 0px;
+  margin-left: 8px;
+  opacity: 1;
+  height: 20px;
+  pointer-events: auto;
+  overflow: visible;
+  align-items: center;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.action-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--text);
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover svg {
+  fill: var(--accent1);
+}
+
+.action-btn.copied svg {
+  fill: #2ed573;
+}
+
+.action-btn.copied {
+  background: transparent;
+  border: none;
+}
+
+/* ============================= */
+/* ✅ НИЖНЯЯ ПАНЕЛЬ - ПОЛНОСТЬЮ ПРОЗРАЧНАЯ */
+/* ============================= */
+.input{
+  flex:0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 8px 12px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  background: rgba(0,0,0,0.44);
+  background: transparent;  /* ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ */
+  backdrop-filter: none;    /* УБРАЛ РАЗМЫТИЕ */
+  -webkit-backdrop-filter: none;
+  border-top: none;         /* УБРАЛ ГРАНИЦУ */
+  min-height: 60px;
+}
+
+.input textarea {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.22);
+  outline: none;
+  font-size: 15px;
+  color: #0b1220;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 10px 24px rgba(0,0,0,.16);
+  caret-color: var(--accent2);
+  resize: none;
+  max-height: 120px;
+  min-height: 24px;
+  line-height: 1.4;
+  font-family: inherit;
+  overflow-y: auto;
+}
+
+.input textarea:focus{
+  background: rgba(255,255,255,.95);
+}
+
+.input button{
+  padding:0 16px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  font-size:16px;
+  font-weight:800;
+  background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+  color:#fff;
+  box-shadow: 0 12px 26px rgba(0,0,0,.18);
+  height: 44px;
+  align-self: flex-end;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.input button:active {
+  transform: scale(0.95);
+}
+
+.input button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ============================= */
+/* ✅ ВЕРХНЯЯ ПАНЕЛЬ - УБРАНА, ТОЛЬКО СТЕКЛЯННЫЙ ЗАГОЛОВОК */
+/* ============================= */
+.top{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 20;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 8px 14px;
+  padding-top: calc(8px + env(safe-area-inset-top));
+  background: transparent;  /* ПРОЗРАЧНЫЙ ФОН */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: none;
+  flex:0 0 auto;
+}
+
+.top a{
+  color:rgba(255,255,255,.9);
+  text-decoration:none;
+  font-size:16px;
+  background: rgba(255,255,255,.1);  /* СТЕКЛЯННЫЙ ФОН */
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+}
+
+.title{ 
+  font-weight:600; 
+  font-size:17px;
+  color: #ffffff;
+  background: rgba(255,255,255,.1);  /* СТЕКЛЯННЫЙ ФОН */
+  padding: 6px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+  margin-left: 4px;
+}
+
+.spacer{ flex:1; }
+
+.gear{
+  width:36px;
+  height:36px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.1);
+  color:#fff;
+  font-size:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: none;
+}
+
+/* ============================= */
+/* ✅ typing bubble */
+/* ============================= */
+.msg.bot.typing{
+  align-self: flex-start;
+  margin: 0;
+  padding: 8px 12px;
+  max-width: 70px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 18px;
+  border-top-left-radius: 4px;
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  animation: none;
+}
+
+.typing-dots{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.typing .dot{
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.85);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.25) inset;
+  opacity: .45;
+  animation: typingPulse 1.1s infinite ease-in-out;
+}
+
+.typing .dot:nth-child(2){ animation-delay: .15s; }
+.typing .dot:nth-child(3){ animation-delay: .30s; }
+
+@keyframes typingPulse{
+  0%, 100% { opacity: .40; transform: translateY(0) scale(1); }
+  50% { opacity: .95; transform: translateY(-2px) scale(1.15); }
+}
+
+/* ================================================= */
+/* ✅ ТЕМЫ */
+/* ================================================= */
+:root[data-theme="blue"] {
+  --accent1: #3aa0ff;
+  --accent2: #0a84ff;
+  --user-bg: rgba(58, 160, 255, 0.15);
+  --user-border: rgba(58, 160, 255, 0.25);
+}
+
+:root[data-theme="black"] {
+  --accent1: #6aa7ff;
+  --accent2: #2f7bff;
+  --user-bg: rgba(106, 167, 255, 0.15);
+  --user-border: rgba(106, 167, 255, 0.25);
+  --text: #ffffff;
+}
+
+:root[data-theme="black"] #sendBtn{
+  background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+  border: 1px solid rgba(255,255,255,.2);
+  box-shadow: 0 6px 18px rgba(0,0,0,.45);
+}
+
+:root[data-theme="black"] #sendBtn,
+:root[data-theme="black"] #sendBtn svg{
+  color: #ffffff;
+  fill: #ffffff;
+}
+
+:root[data-theme="purple"] {
+  --accent1: #b98cff;
+  --accent2: #7a5cff;
+  --user-bg: rgba(185, 140, 255, 0.15);
+  --user-border: rgba(185, 140, 255, 0.25);
+}
+
+:root[data-theme="green"] {
+  --accent1: #2fd6a3;
+  --accent2: #11a87b;
+  --user-bg: rgba(47, 214, 163, 0.15);
+  --user-border: rgba(47, 214, 163, 0.25);
+}
+
+:root[data-theme="gray"] {
+  --accent1: #7fb2ff;
+  --accent2: #4b8dff;
+  --user-bg: rgba(127, 178, 255, 0.15);
+  --user-border: rgba(127, 178, 255, 0.25);
+}
