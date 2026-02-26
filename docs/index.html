@@ -7,17 +7,15 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ (ИСПРАВЛЕНО) -->
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
   <script>
     (function(){
       const tg = window.Telegram?.WebApp;
       if (tg) {
-        // Обязательно ДО всего остального
         tg.ready();
         tg.expand();
-        tg.disableVerticalSwipes(); // Запрещаем свайпы
+        tg.disableVerticalSwipes();
         
-        // Устанавливаем правильную высоту
         const setHeight = () => {
           const vh = tg.viewportHeight || window.innerHeight;
           document.documentElement.style.setProperty('--vh', vh + 'px');
@@ -26,7 +24,6 @@
         setHeight();
         tg.onEvent('viewportChanged', setHeight);
       } else {
-        // Фолбэк для браузера
         const setHeight = () => {
           document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
         };
@@ -109,7 +106,6 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* УБИРАЕМ ВСЕ safe-area-inset-top */
     .header, .top, .tool-header {
       padding-top: 12px !important;
     }
@@ -151,8 +147,9 @@
 
   <div class="wrap">
     <div class="card">
-      <a class="btn" id="chatBtn" href="./chat.html">💬 Чат с ИИ</a>
-      <a class="btn" id="imgBtn" href="./image.html">🎨 Генерация картинки</a>
+      <!-- ОБЫЧНЫЕ КНОПКИ (без ссылок) -->
+      <button class="btn" id="chatBtn" onclick="openPage('chat.html')">💬 Чат с ИИ</button>
+      <button class="btn" id="imgBtn" onclick="openPage('image.html')">🎨 Генерация картинки</button>
       
       <!-- КНОПКА ИНСТРУМЕНТОВ -->
       <div class="tools-container">
@@ -161,36 +158,37 @@
         </button>
         
         <div class="tools-dropdown" id="toolsDropdown">
-          <a class="tool-item" href="./tools/remove-bg.html" id="toolRemoveBg">
+          <!-- ИНСТРУМЕНТЫ (без ссылок) -->
+          <div class="tool-item" onclick="openTool('remove-bg.html')" id="toolRemoveBg">
             <span class="tool-icon">📸</span>
             <span class="tool-text" id="toolRemoveBgText">Удаление фона</span>
             <span class="tool-arrow">▶</span>
-          </a>
-          <a class="tool-item" href="./tools/text-from-image.html" id="toolTextFromImage">
+          </div>
+          <div class="tool-item" onclick="openTool('text-from-image.html')" id="toolTextFromImage">
             <span class="tool-icon">🎨</span>
             <span class="tool-text" id="toolTextFromImageText">Текст с фото</span>
             <span class="tool-arrow">▶</span>
-          </a>
-          <a class="tool-item" href="./tools/selfie-filters.html" id="toolSelfieFilters">
+          </div>
+          <div class="tool-item" onclick="openTool('selfie-filters.html')" id="toolSelfieFilters">
             <span class="tool-icon">🤳</span>
             <span class="tool-text" id="toolSelfieFiltersText">Селфи фильтры</span>
             <span class="tool-arrow">▶</span>
-          </a>
-          <a class="tool-item" href="./tools/music.html" id="toolMusic">
+          </div>
+          <div class="tool-item" onclick="openTool('music.html')" id="toolMusic">
             <span class="tool-icon">🎵</span>
             <span class="tool-text" id="toolMusicText">Создание музыки</span>
             <span class="tool-arrow">▶</span>
-          </a>
-          <a class="tool-item" href="./tools/meme.html" id="toolMeme">
+          </div>
+          <div class="tool-item" onclick="openTool('meme.html')" id="toolMeme">
             <span class="tool-icon">📝</span>
             <span class="tool-text" id="toolMemeText">Создание мемов</span>
             <span class="tool-arrow">▶</span>
-          </a>
-          <a class="tool-item" href="./tools/qr.html" id="toolQr">
+          </div>
+          <div class="tool-item" onclick="openTool('qr.html')" id="toolQr">
             <span class="tool-icon">📱</span>
             <span class="tool-text" id="toolQrText">QR коды</span>
             <span class="tool-arrow">▶</span>
-          </a>
+          </div>
         </div>
       </div>
 
@@ -228,6 +226,110 @@
     </div>
   </div>
 
+  <script>
+    // Функция открытия страниц внутри Telegram
+    function openPage(page) {
+      const tg = window.Telegram?.WebApp;
+      const lang = getSavedLang();
+      const theme = getSavedTheme();
+      
+      // Формируем полный URL
+      const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+      const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+      
+      if (tg) {
+        // Открываем внутри Telegram WebApp
+        tg.openTelegramLink(fullUrl);
+      } else {
+        // Если не в Telegram - обычный переход
+        window.location.href = fullUrl;
+      }
+    }
+
+    // Функция открытия инструментов
+    function openTool(toolPage) {
+      const tg = window.Telegram?.WebApp;
+      const lang = getSavedLang();
+      const theme = getSavedTheme();
+      
+      // Формируем путь к инструменту
+      const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+      const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+      
+      if (tg) {
+        // Открываем внутри Telegram WebApp
+        tg.openTelegramLink(fullUrl);
+      } else {
+        // Если не в Telegram - обычный переход
+        window.location.href = fullUrl;
+      }
+    }
+
+    // Получение сохраненного языка
+    function getSavedLang() {
+      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } 
+      catch(e) { return "ru"; }
+    }
+
+    // Получение сохраненной темы
+    function getSavedTheme() {
+      try { return localStorage.getItem("miniapp_theme_v1") || "blue"; } 
+      catch(e) { return "blue"; }
+    }
+
+    // Инициализация выпадающего меню
+    (function() {
+      const toolsBtn = document.getElementById('toolsBtn');
+      const toolsDropdown = document.getElementById('toolsDropdown');
+      const toolsChev = document.getElementById('toolsChev');
+      
+      if (!toolsBtn || !toolsDropdown) return;
+      
+      let isOpen = false;
+      try {
+        isOpen = localStorage.getItem('tools_menu_open') === 'true';
+      } catch(e) {}
+      
+      function toggleTools(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        isOpen = !isOpen;
+        
+        if (isOpen) {
+          toolsDropdown.classList.add('open');
+          toolsBtn.classList.add('active');
+          toolsChev.classList.add('rotate');
+          toolsChev.textContent = '▲';
+        } else {
+          toolsDropdown.classList.remove('open');
+          toolsBtn.classList.remove('active');
+          toolsChev.classList.remove('rotate');
+          toolsChev.textContent = '▼';
+        }
+        
+        try {
+          localStorage.setItem('tools_menu_open', isOpen);
+        } catch(e) {}
+      }
+      
+      toolsBtn.addEventListener('click', toggleTools);
+      
+      document.addEventListener('click', (e) => {
+        if (isOpen && !toolsBtn.contains(e.target) && !toolsDropdown.contains(e.target)) {
+          toggleTools(e);
+        }
+      });
+      
+      if (isOpen) {
+        toolsDropdown.classList.add('open');
+        toolsBtn.classList.add('active');
+        toolsChev.textContent = '▲';
+      }
+    })();
+  </script>
+
+  <!-- Подключаем существующий index.js (он будет работать параллельно) -->
   <script type="module" src="./js/index.js?v=6"></script>
 </body>
 </html>
