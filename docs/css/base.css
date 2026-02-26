@@ -7,10 +7,10 @@
      1 = как было, меньше = темнее (например 0.92 / 0.88 / 0.84) */
   --bgDark: 0.70;
 
-  /* Сделал синие оттенки более голубыми */
-  --bgTop:#4a9eff;  /* Было #0b2d55 - стал ярче/голубее */
-  --bgMid:#2a7fff;  /* Было #081f3f - стал ярче/голубее */
-  --bgBot:#0a5eff;  /* Было #06162b - стал ярче/голубее */
+  /* СДЕЛАЛ ФОН НЕМНОГО ГОЛУБЕЕ (только это) */
+  --bgTop:#3a6db5;    /* Было #0b2d55 - стал светлее/голубее */
+  --bgMid:#234a8c;    /* Было #081f3f - стал светлее/голубее */
+  --bgBot:#0e2a5c;    /* Было #06162b - стал светлее/голубее */
 
   --accent1:#3aa0ff;
   --accent2:#0a84ff;
@@ -94,21 +94,8 @@ body::after{
   filter: brightness(var(--bgDark));
 }
 
-/* ✅ РИСУНОК/ПАТТЕРН — ТОЛЬКО ДЛЯ ЧАТА С ИИ */
-body::before{
-  content:"";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-
-  opacity: .22;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%23ff6b6b' stroke-opacity='0.6' stroke-width='2'%3E%3Cpath d='M36 34c10-10 28-10 38 0 10 10 10 28 0 38-10 10-28 10-38 0-10-10-10-28 0-38z' stroke='%23ff8a8a'/%3E%3Cpath d='M160 40c0 10-8 18-18 18s-18-8-18-18 8-18 18-18 18 8 18 18z' stroke='%234a9eff'/%3E%3Cpath d='M62 140c0-12 10-22 22-22s22 10 22 22-10 22-22 22-22-10-22-22z' stroke='%236bff6b'/%3E%3Cpath d='M150 150l18 18M168 150l-18 18' stroke='%23ffd966'/%3E%3Cpath d='M120 108h28M134 94v28' stroke='%23c86bff'/%3E%3Cpath d='M24 190h28M38 176v28' stroke='%23ff9e6b'/%3E%3Cpath d='M186 94c6 0 10 4 10 10s-4 10-10 10-10-4-10-10 4-10 4-10z' stroke='%236bc5ff'/%3E%3Cpath d='M94 64c0 6-4 10-10 10s-10-4-10-10 4-10 10-10 10 4 10 10z' stroke='%23ff6b9e'/%3E%3C/g%3E%3C/svg%3E");
-
-  background-size: 260px 260px;
-  background-repeat: repeat;
-  mix-blend-mode: screen;
-}
+/* ✅ РИСУНОК/ПАТТЕРН — УБРАЛ УЗОРЫ ИЗ МЕНЮ (оставил только в чате) */
+/* Полностью удалил body::before - узоров больше нет */
 
 /* контент поверх */
 body > *{
