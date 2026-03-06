@@ -1,12 +1,9 @@
 :root{
   --vh: 100vh;
 
-  /* немного ярче общая база */
-  --bgDark: 1;
-
   --bgTop:#27384b;
---bgMid:#1d2b3a;
---bgBot:#16212d;
+  --bgMid:#1d2b3a;
+  --bgBot:#16212d;
 
   --accent1:#5aaeff;
   --accent2:#3496ff;
@@ -16,30 +13,30 @@
 
 /* темы */
 :root[data-theme="black"]{
-  --bgTop:#131922;
-  --bgMid:#0e141b;
-  --bgBot:#0a0f15;
+  --bgTop:#1b2430;
+  --bgMid:#141b24;
+  --bgBot:#0e141c;
   --accent1:#8bb8ff;
   --accent2:#5a98ff;
 }
 :root[data-theme="purple"]{
-  --bgTop:#21172d;
-  --bgMid:#181021;
-  --bgBot:#120b19;
+  --bgTop:#2a2038;
+  --bgMid:#20162b;
+  --bgBot:#17101f;
   --accent1:#c19bff;
   --accent2:#9b73ff;
 }
 :root[data-theme="green"]{
-  --bgTop:#13231e;
-  --bgMid:#0f1a16;
-  --bgBot:#0b120f;
+  --bgTop:#1d3129;
+  --bgMid:#152720;
+  --bgBot:#101d17;
   --accent1:#47d5a6;
   --accent2:#28b98b;
 }
 :root[data-theme="gray"]{
-  --bgTop:#1b222b;
-  --bgMid:#141a21;
-  --bgBot:#0f141a;
+  --bgTop:#2a3440;
+  --bgMid:#1e2731;
+  --bgBot:#161e26;
   --accent1:#97bcff;
   --accent2:#669dff;
 }
@@ -55,6 +52,7 @@ html,body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
 }
 
+/* защита от вспышек */
 html{
   background: var(--bgBot);
 }
@@ -72,13 +70,14 @@ body{
   -webkit-text-size-adjust: 100%;
 }
 
-/* спокойный, но чуть более яркий фон */
+/* основной фон */
 body::after{
   content:"";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
+
   background:
     linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 48%, var(--bgBot) 100%);
   background-repeat: no-repeat;
@@ -86,11 +85,12 @@ body::after{
   filter: none;
 }
 
-/* узор оставляем выключенным */
+/* без лишнего шума */
 body::before{
   display:none;
 }
 
+/* контент поверх */
 body > *{
   position: relative;
   z-index: 2;
