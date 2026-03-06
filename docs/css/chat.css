@@ -1,18 +1,18 @@
 .chat{
   flex:1 1 auto;
   padding:16px;
-  padding-top: calc(60px + env(safe-area-inset-top));
+  padding-top: calc(64px + env(safe-area-inset-top));
   overflow-y:auto;
   -webkit-overflow-scrolling: touch;
   display:flex;
   flex-direction:column;
-  gap:4px;
+  gap:10px;
   min-height:0;
   touch-action: manipulation;
 }
 
 /* ============================= */
-/* ✅ СООБЩЕНИЯ */
+/* СООБЩЕНИЯ */
 /* ============================= */
 .msg-wrapper {
   display: flex;
@@ -31,70 +31,70 @@
 }
 
 .msg{
-  max-width:78%;
-  padding:8px 14px;
-  border-radius:17px;
-  line-height:1.4;
-  font-size: 18px;
-  font-weight: 500;
+  max-width:84%;
+  padding:10px 14px;
+  border-radius:18px;
+  line-height:1.5;
+  font-size:16px;
+  font-weight:400;
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  box-shadow: 0 10px 26px rgba(0,0,0,.18);
+  box-shadow: none;
   opacity: 0;
-  transform: translateY(6px) scale(0.98);
-  animation: msgIn 0.38s ease-out forwards;
+  transform: translateY(4px);
+  animation: msgIn 0.24s ease-out forwards;
   will-change: transform, opacity;
   width: fit-content;
-  max-width: 78%;
   margin: 0;
   display: inline-block;
 }
 
-.msg.bot{ animation-duration: 0.42s; }
-.msg.user{ animation-duration: 0.36s; }
+.msg.bot{ animation-duration: 0.26s; }
+.msg.user{ animation-duration: 0.22s; }
 
 @keyframes msgIn{
   to{
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
-/* bot: стеклянный */
+/* bot bubble */
 .bot .msg{
   align-self:flex-start;
-  background: rgba(255,255,255,.16);
-  border: 1px solid rgba(255,255,255,.18);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top-left-radius: 4px;
+  background:#171c24;
+  border:1px solid rgba(255,255,255,.06);
+  color:#f3f6fb;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  border-top-left-radius:8px;
 }
 
-/* user: цвет из темы, очень слабый */
+/* user bubble */
 .user .msg{
   align-self:flex-end;
   background: var(--user-bg);
-  border: 1px solid var(--user-border);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 6px rgba(0,0,0,.25);
-  text-align: left;
-  border-bottom-right-radius: 4px;
+  border:1px solid var(--user-border);
+  color:#f3f6fb;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  text-align:left;
+  border-bottom-right-radius:8px;
   width: fit-content;
   display: inline-block;
 }
 
 /* ============================= */
-/* ✅ КНОПКИ ПОД СООБЩЕНИЯМИ ИИ */
+/* КНОПКИ ПОД СООБЩЕНИЯМИ ИИ */
 /* ============================= */
 .message-actions {
   display: flex;
-  gap: 4px;
-  margin-top: 0px;
-  margin-left: 8px;
-  opacity: 1;
+  gap: 6px;
+  margin-top: 4px;
+  margin-left: 6px;
+  opacity: .8;
   height: 20px;
   pointer-events: auto;
   overflow: visible;
@@ -112,13 +112,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  opacity: 0.7;
+  transition: all 0.18s ease;
+  opacity: 0.72;
 }
 
 .action-btn:hover {
   opacity: 1;
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 .action-btn:active {
@@ -128,8 +128,8 @@
 .action-btn svg {
   width: 16px;
   height: 16px;
-  fill: var(--text);
-  transition: all 0.2s ease;
+  fill: rgba(243,246,251,.86);
+  transition: all 0.18s ease;
 }
 
 .action-btn:hover svg {
@@ -137,7 +137,7 @@
 }
 
 .action-btn.copied svg {
-  fill: #2ed573;
+  fill: #41d98c;
 }
 
 .action-btn.copied {
@@ -146,7 +146,7 @@
 }
 
 /* ============================= */
-/* ✅ НИЖНЯЯ ПАНЕЛЬ - ПОЛНОСТЬЮ ПРОЗРАЧНАЯ */
+/* НИЖНЯЯ ПАНЕЛЬ */
 /* ============================= */
 .input{
   flex:0 0 auto;
@@ -155,54 +155,63 @@
   gap: 10px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: rgba(0,0,0,0.44);
-  background: transparent;  /* ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ */
-  backdrop-filter: none;    /* УБРАЛ РАЗМЫТИЕ */
-  -webkit-backdrop-filter: none;
-  border-top: none;         /* УБРАЛ ГРАНИЦУ */
+  background: rgba(10,14,19,.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid rgba(255,255,255,.05);
   min-height: 60px;
 }
 
 .input textarea {
   flex: 1;
-  padding: 10px 16px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,.22);
+  padding: 11px 15px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.08);
   outline: none;
   font-size: 15px;
-  color: #0b1220;
-  background: rgba(255,255,255,.92);
-  box-shadow: 0 10px 24px rgba(0,0,0,.16);
+  font-weight: 400;
+  color: #f3f6fb;
+  background: #171c24;
+  box-shadow: none;
   caret-color: var(--accent2);
   resize: none;
   max-height: 120px;
   min-height: 24px;
-  line-height: 1.4;
+  line-height: 1.45;
   font-family: inherit;
   overflow-y: auto;
 }
 
+.input textarea::placeholder{
+  color: rgba(243,246,251,.46);
+}
+
 .input textarea:focus{
-  background: rgba(255,255,255,.95);
+  background: #1b212a;
+  border-color: rgba(77,163,255,.34);
 }
 
 .input button{
   padding:0 16px;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.08);
   font-size:16px;
   font-weight:800;
   background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
   color:#fff;
-  box-shadow: 0 12px 26px rgba(0,0,0,.18);
-  height: 44px;
+  box-shadow: none;
+  height: 42px;
   align-self: flex-end;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
+}
+
+.input button:hover{
+  filter: brightness(1.03);
 }
 
 .input button:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 .input button:disabled {
@@ -211,7 +220,7 @@
 }
 
 /* ============================= */
-/* ✅ ВЕРХНЯЯ ПАНЕЛЬ - УБРАНА, ТОЛЬКО СТЕКЛЯННЫЙ ЗАГОЛОВОК */
+/* ВЕРХНЯЯ ПАНЕЛЬ */
 /* ============================= */
 .top{
   position: fixed;
@@ -222,71 +231,67 @@
   gap:10px;
   padding: 8px 14px;
   padding-top: calc(8px + env(safe-area-inset-top));
-  background: transparent;  /* ПРОЗРАЧНЫЙ ФОН */
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-bottom: none;
+  background: rgba(10,14,19,.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,.05);
   flex:0 0 auto;
 }
 
 .top a{
-  color:rgba(255,255,255,.9);
+  color:#f3f6fb;
   text-decoration:none;
-  font-size:16px;
-  background: rgba(255,255,255,.1);  /* СТЕКЛЯННЫЙ ФОН */
+  font-size:15px;
+  background: rgba(255,255,255,.04);
   padding: 6px 12px;
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
 }
 
-.title{ 
-  font-weight:600; 
-  font-size:17px;
-  color: #ffffff;
-  background: rgba(255,255,255,.1);  /* СТЕКЛЯННЫЙ ФОН */
-  padding: 6px 16px;
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,.15);
-  margin-left: 4px;
+.title{
+  font-weight:600;
+  font-size:16px;
+  color: #f3f6fb;
+  background: rgba(255,255,255,.04);
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  margin-left: 2px;
 }
 
 .spacer{ flex:1; }
 
 .gear{
-  width:36px;
-  height:36px;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.2);
-  background: rgba(255,255,255,.1);
+  width:34px;
+  height:34px;
+  border-radius:17px;
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
   color:#fff;
-  font-size:18px;
+  font-size:17px;
   display:flex;
   align-items:center;
   justify-content:center;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: none;
 }
 
 /* ============================= */
-/* ✅ typing bubble */
+/* typing bubble */
 /* ============================= */
 .msg.bot.typing{
   align-self: flex-start;
   margin: 0;
-  padding: 8px 12px;
+  padding: 10px 12px;
   max-width: 70px;
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.18);
+  background: #171c24;
+  border: 1px solid rgba(255,255,255,.06);
   border-radius: 18px;
-  border-top-left-radius: 4px;
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  box-shadow: 0 8px 18px rgba(0,0,0,.18);
+  border-top-left-radius: 8px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -304,9 +309,8 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255,255,255,.85);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.25) inset;
-  opacity: .45;
+  background: rgba(243,246,251,.88);
+  opacity: .42;
   animation: typingPulse 1.1s infinite ease-in-out;
 }
 
@@ -314,32 +318,32 @@
 .typing .dot:nth-child(3){ animation-delay: .30s; }
 
 @keyframes typingPulse{
-  0%, 100% { opacity: .40; transform: translateY(0) scale(1); }
-  50% { opacity: .95; transform: translateY(-2px) scale(1.15); }
+  0%, 100% { opacity: .38; transform: translateY(0) scale(1); }
+  50% { opacity: .95; transform: translateY(-2px) scale(1.08); }
 }
 
 /* ================================================= */
-/* ✅ ТЕМЫ */
+/* ТЕМЫ */
 /* ================================================= */
 :root[data-theme="blue"] {
-  --accent1: #3aa0ff;
-  --accent2: #0a84ff;
-  --user-bg: rgba(58, 160, 255, 0.15);
-  --user-border: rgba(58, 160, 255, 0.25);
+  --accent1: #4da3ff;
+  --accent2: #2d8cff;
+  --user-bg: rgba(77, 163, 255, 0.16);
+  --user-border: rgba(77, 163, 255, 0.22);
 }
 
 :root[data-theme="black"] {
-  --accent1: #6aa7ff;
-  --accent2: #2f7bff;
-  --user-bg: rgba(106, 167, 255, 0.15);
-  --user-border: rgba(106, 167, 255, 0.25);
-  --text: #ffffff;
+  --accent1: #7dafff;
+  --accent2: #4f8fff;
+  --user-bg: rgba(125, 175, 255, 0.14);
+  --user-border: rgba(125, 175, 255, 0.20);
+  --text: #f3f6fb;
 }
 
 :root[data-theme="black"] #sendBtn{
   background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
-  border: 1px solid rgba(255,255,255,.2);
-  box-shadow: 0 6px 18px rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: none;
 }
 
 :root[data-theme="black"] #sendBtn,
@@ -349,22 +353,22 @@
 }
 
 :root[data-theme="purple"] {
-  --accent1: #b98cff;
-  --accent2: #7a5cff;
-  --user-bg: rgba(185, 140, 255, 0.15);
-  --user-border: rgba(185, 140, 255, 0.25);
+  --accent1: #b18cff;
+  --accent2: #8a63ff;
+  --user-bg: rgba(177, 140, 255, 0.15);
+  --user-border: rgba(177, 140, 255, 0.22);
 }
 
 :root[data-theme="green"] {
-  --accent1: #2fd6a3;
-  --accent2: #11a87b;
-  --user-bg: rgba(47, 214, 163, 0.15);
-  --user-border: rgba(47, 214, 163, 0.25);
+  --accent1: #39c99c;
+  --accent2: #22aa82;
+  --user-bg: rgba(57, 201, 156, 0.14);
+  --user-border: rgba(57, 201, 156, 0.20);
 }
 
 :root[data-theme="gray"] {
-  --accent1: #7fb2ff;
-  --accent2: #4b8dff;
-  --user-bg: rgba(127, 178, 255, 0.15);
-  --user-border: rgba(127, 178, 255, 0.25);
+  --accent1: #8ab4ff;
+  --accent2: #5a94ff;
+  --user-bg: rgba(138, 180, 255, 0.14);
+  --user-border: rgba(138, 180, 255, 0.20);
 }
