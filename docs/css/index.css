@@ -9,11 +9,6 @@
   --accent2: #3496ff;
 
   --text: #f7fbff;
-  
-  /* Новые переменные для обводки */
-  --btn-border-light: rgba(90, 174, 255, 0.3);
-  --btn-border-dark: rgba(0, 0, 0, 0.15);
-  --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Черная тема */
@@ -23,10 +18,9 @@
   --bgBot:#0e141c;
   --accent1:#8bb8ff;
   --accent2:#5a98ff;
-  --btn-border-light: rgba(139, 184, 255, 0.3);
 }
 
-/* Светлая тема - полупрозрачные кнопки с синей обводкой */
+/* Светлая тема - только выбор языка/цвета как было, + серая обводка кнопок */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
@@ -35,11 +29,8 @@
   --accent2:#1a6cff;
   --text:#1a2634;
   
-  /* Полупрозрачные кнопки и панели с размытием */
-  --btn-bg: rgba(255, 255, 255, 0.4);
-  --btn-border: rgba(58, 140, 255, 0.3);
-  --panel-bg: rgba(255, 255, 255, 0.25);
-  --blur-amount: blur(12px);
+  /* Сёрая обводка как в WhatsApp */
+  --btn-border: rgba(0, 0, 0, 0.12);
 }
 
 * {
@@ -87,7 +78,7 @@ body > * {
 }
 
 /* ========================= */
-/* КУБИКИ */
+/* КУБИКИ - НЕ ТРОГАЕМ */
 /* ========================= */
 .cube {
   position: absolute;
@@ -96,18 +87,14 @@ body > * {
   border-radius: 18px;
 
   background: color-mix(in srgb, var(--accent1) 18%, white 10%);
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid color-mix(in srgb, var(--accent1) 42%, white 20%);
   backdrop-filter: blur(8px) saturate(120%);
   -webkit-backdrop-filter: blur(8px) saturate(120%);
-  box-shadow: var(--btn-shadow);
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.08),
+    0 0 18px color-mix(in srgb, var(--accent1) 22%, transparent);
   pointer-events: none;
   opacity: .72;
-}
-
-:root[data-theme="light"] .cube {
-  background: color-mix(in srgb, var(--accent1) 15%, rgba(255,255,255,0.9));
-  border-color: var(--btn-border);
-  box-shadow: none;
 }
 
 .cube.small {
@@ -160,22 +147,14 @@ body > * {
   padding: 22px;
   border-radius: 24px;
   background: rgba(255, 255, 255, .10);
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, .12);
   backdrop-filter: blur(12px) saturate(118%);
   -webkit-backdrop-filter: blur(12px) saturate(118%);
-  box-shadow: var(--btn-shadow);
-}
-
-:root[data-theme="light"] .card {
-  background: var(--panel-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border: 1.5px solid var(--btn-border);
-  box-shadow: none;
+  box-shadow: 0 18px 42px rgba(0,0,0,.28);
 }
 
 /* ========================= */
-/* КНОПКИ - ОСНОВНЫЕ */
+/* КНОПКИ */
 /* ========================= */
 .btn {
   display: block;
@@ -193,156 +172,51 @@ body > * {
       color-mix(in srgb, var(--accent1) 18%, white 8%) 0%,
       rgba(255,255,255,.08) 100%
     );
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: var(--btn-shadow);
+  box-shadow:
+    0 10px 22px rgba(0,0,0,.14),
+    0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
   margin-bottom: 14px;
   transition: all 0.2s ease;
-  position: relative;
 }
 
+/* Светлая тема - серая обводка кнопок */
 :root[data-theme="light"] .btn {
-  background: var(--btn-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
   border: 1.5px solid var(--btn-border);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
-  box-shadow: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .btn:active {
   transform: scale(.995);
+  box-shadow:
+    0 12px 24px rgba(0,0,0,.18),
+    0 0 18px color-mix(in srgb, var(--accent1) 20%, transparent);
 }
 
 .btn:hover {
-  border-color: var(--accent1);
+  border-color: color-mix(in srgb, var(--accent1) 35%, rgba(255,255,255,.18));
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--accent1) 25%, white 12%) 0%,
-      rgba(255,255,255,.12) 100%
+      color-mix(in srgb, var(--accent1) 22%, white 10%) 0%,
+      rgba(255,255,255,.10) 100%
     );
 }
 
+/* Светлая тема - hover для кнопок */
 :root[data-theme="light"] .btn:hover {
-  background: rgba(255, 255, 255, 0.5);
   border-color: var(--accent1);
 }
 
-/* ========================= */
-/* КНОПКА ИНСТРУМЕНТОВ */
-/* ========================= */
-.tools-btn {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin-bottom: 0 !important;
-}
-
-.tools-btn.active {
-  border-color: var(--accent1) !important;
-  background: rgba(255,255,255,0.15) !important;
-}
-
-:root[data-theme="light"] .tools-btn.active {
-  background: rgba(255, 255, 255, 0.5) !important;
-}
-
-/* Выпадающий список */
-.tools-dropdown {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin: 0;
-  border-radius: 16px;
-}
-
-.tools-dropdown.open {
-  max-height: 500px;
-  opacity: 1;
-  margin: 12px 0 8px 0;
-}
-
-/* Элементы инструментов */
-.tool-item {
-  display: flex;
-  align-items: center;
-  padding: 14px 18px;
-  margin: 6px 0;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1.5px solid var(--btn-border-light);
-  border-radius: 16px;
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  text-decoration: none;
-  color: var(--text);
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--btn-shadow);
-}
-
-:root[data-theme="light"] .tool-item {
-  background: var(--btn-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border: 1.5px solid var(--btn-border);
-  box-shadow: none;
-}
-
-.tool-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: var(--accent1);
-  transform: translateX(6px);
-}
-
-:root[data-theme="light"] .tool-item:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.tool-icon {
-  font-size: 26px;
-  min-width: 48px;
-  text-align: center;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-}
-
-.tool-text {
-  flex: 1;
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.3px;
-}
-
-.tool-arrow {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 14px;
-  transition: transform 0.2s ease;
-}
-
-:root[data-theme="light"] .tool-arrow {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.tool-item:hover .tool-arrow {
-  color: var(--accent1);
-  transform: translateX(3px);
-}
-
-/* ========================= */
-/* ТЕКСТЫ */
-/* ========================= */
 .sub {
   margin-top: 22px;
   text-align: center;
   color: rgba(247, 251, 255, .68);
   font-size: 14px;
-}
-
-:root[data-theme="light"] .sub {
-  color: rgba(0, 0, 0, 0.6);
 }
 
 .ver {
@@ -352,17 +226,10 @@ body > * {
   opacity: .50;
 }
 
-/* ========================= */
-/* БЛОК ЯЗЫКА */
-/* ========================= */
 .langBlock {
   margin-top: 22px;
-  border-top: 1.5px solid var(--btn-border-light);
+  border-top: 1px solid rgba(255, 255, 255, .10);
   padding-top: 16px;
-}
-
-:root[data-theme="light"] .langBlock {
-  border-top-color: var(--btn-border);
 }
 
 .langTitle {
@@ -372,21 +239,17 @@ body > * {
   text-align: center;
 }
 
-:root[data-theme="light"] .langTitle {
-  color: rgba(0, 0, 0, 0.6);
-}
-
 .langPill {
   width: 100%;
   border-radius: 16px;
   padding: 14px 14px;
   background: rgba(255, 255, 255, .10);
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, .12);
   color: var(--text);
   outline: none;
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: var(--btn-shadow);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
   font-size: 15px;
   font-weight: 700;
   display: flex;
@@ -397,22 +260,17 @@ body > * {
   transition: all 0.2s ease;
 }
 
+/* Светлая тема - серая обводка для кнопки языка */
 :root[data-theme="light"] .langPill {
-  background: var(--btn-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
   border: 1.5px solid var(--btn-border);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
-  box-shadow: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .langPill:hover {
-  background: rgba(255, 255, 255, .15);
-  border-color: var(--accent1);
-}
-
-:root[data-theme="light"] .langPill:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, .13);
+  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
 }
 
 .langPill:active {
@@ -423,9 +281,6 @@ body > * {
   opacity: .8;
 }
 
-/* ========================= */
-/* КНОПКА ТЕМЫ */
-/* ========================= */
 .themePill {
   position: fixed;
   top: calc(10px + env(safe-area-inset-top));
@@ -439,7 +294,7 @@ body > * {
       color-mix(in srgb, var(--accent1) 16%, white 8%) 0%,
       rgba(255,255,255,.08) 100%
     );
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
   color: var(--text);
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
@@ -448,27 +303,29 @@ body > * {
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: var(--btn-shadow);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.12),
+    0 0 12px color-mix(in srgb, var(--accent1) 14%, transparent);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
+/* Светлая тема - серая обводка для кнопки темы */
 :root[data-theme="light"] .themePill {
-  background: var(--btn-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
   border: 1.5px solid var(--btn-border);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
-  box-shadow: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .themePill:hover {
-  border-color: var(--accent1);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-:root[data-theme="light"] .themePill:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 20%, white 10%) 0%,
+      rgba(255,255,255,.11) 100%
+    );
+  border-color: color-mix(in srgb, var(--accent1) 30%, rgba(255,255,255,.18));
 }
 
 .themePill:active {
@@ -476,7 +333,7 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS */
+/* BOTTOM SHEETS - ВОЗВРАЩАЕМ КАК БЫЛО */
 /* ========================= */
 .langOverlay, .themeOverlay {
   position: fixed;
@@ -497,7 +354,7 @@ body > * {
   bottom: calc(12px + env(safe-area-inset-bottom));
   border-radius: 18px;
   background: rgba(24, 31, 40, .97);
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, .10);
   backdrop-filter: blur(16px) saturate(118%);
   -webkit-backdrop-filter: blur(16px) saturate(118%);
   box-shadow: 0 20px 44px rgba(0,0,0,.32);
@@ -507,13 +364,11 @@ body > * {
   transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
 }
 
+/* Светлая тема - возвращаем как было для bottom sheets */
 :root[data-theme="light"] .langSheet,
 :root[data-theme="light"] .themeSheet {
-  background: var(--panel-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border: 1.5px solid var(--btn-border);
-  box-shadow: none;
+  background: rgba(24, 31, 40, .97);
+  border: 1px solid rgba(255, 255, 255, .10);
 }
 
 .langOverlay.show .langSheet,
@@ -527,12 +382,7 @@ body > * {
   align-items: center;
   justify-content: space-between;
   padding: 14px;
-  border-bottom: 1.5px solid var(--btn-border-light);
-}
-
-:root[data-theme="light"] .langSheetHeader,
-:root[data-theme="light"] .themeSheetHeader {
-  border-bottom-color: var(--btn-border);
+  border-bottom: 1px solid rgba(255, 255, 255, .09);
 }
 
 .langSheetTitle, .themeSheetTitle {
@@ -544,7 +394,7 @@ body > * {
   border: 0;
   background: rgba(255, 255, 255, .08);
   color: var(--text);
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, .10);
   border-radius: 12px;
   padding: 8px 10px;
   font-weight: 800;
@@ -552,23 +402,9 @@ body > * {
   transition: all 0.2s ease;
 }
 
-:root[data-theme="light"] .langClose,
-:root[data-theme="light"] .themeClose {
-  background: var(--btn-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border: 1.5px solid var(--btn-border);
-  color: var(--text);
-}
-
 .langClose:hover, .themeClose:hover {
-  background: rgba(255, 255, 255, .15);
-  border-color: var(--accent1);
-}
-
-:root[data-theme="light"] .langClose:hover,
-:root[data-theme="light"] .themeClose:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, .11);
+  border-color: rgba(255, 255, 255, .16);
 }
 
 .langList, .themeList {
@@ -582,7 +418,7 @@ body > * {
   text-align: left;
   padding: 14px;
   border: 0;
-  border-bottom: 1.5px solid var(--btn-border-light);
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
   background: transparent;
   color: var(--text);
   font-size: 15px;
@@ -594,19 +430,9 @@ body > * {
   transition: all 0.2s ease;
 }
 
-:root[data-theme="light"] .langItem,
-:root[data-theme="light"] .themeItem {
-  border-bottom-color: var(--btn-border);
-}
-
 .langItem:hover, .themeItem:hover {
-  background: rgba(255, 255, 255, .1);
-  border-bottom-color: var(--accent1);
-}
-
-:root[data-theme="light"] .langItem:hover,
-:root[data-theme="light"] .themeItem:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, .06);
+  border-bottom: 1px solid rgba(255, 255, 255, .10);
 }
 
 .langItem .check, .themeItem .check {
@@ -628,27 +454,18 @@ body > * {
   left: 50%;
   transform: translateX(-50%);
   background: rgba(24, 31, 40, .97);
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, .10);
   border-radius: 24px;
   padding: 12px 20px;
   color: var(--text);
   font-weight: 600;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: var(--btn-shadow);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.26);
   z-index: 100000;
   animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   pointer-events: none;
   white-space: nowrap;
-}
-
-:root[data-theme="light"] .toast-notification {
-  background: var(--panel-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border: 1.5px solid var(--btn-border);
-  color: var(--text);
-  box-shadow: none;
 }
 
 @keyframes slideDown {
