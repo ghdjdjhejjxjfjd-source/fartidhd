@@ -35,15 +35,13 @@
   padding:12px 16px;
   border-radius:18px;
   line-height:1.55;
-
   font-size:17px;
   font-weight:600;
-
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  box-shadow: none;
+  box-shadow: var(--btn-shadow);
   opacity: 0;
   transform: translateY(4px);
   animation: msgIn 0.24s ease-out forwards;
@@ -63,11 +61,11 @@
   }
 }
 
-/* bot bubble — немного светлее */
+/* bot bubble */
 .bot .msg{
   align-self:flex-start;
   background: rgba(66, 78, 92, 0.94);
-  border:1px solid rgba(255,255,255,.18);
+  border:1.5px solid var(--btn-border-light);
   color:#f7fbff;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
@@ -78,7 +76,7 @@
 .user .msg{
   align-self:flex-end;
   background: var(--user-bg);
-  border:1px solid var(--user-border);
+  border:1.5px solid var(--user-border);
   color:#f7fbff;
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
@@ -142,11 +140,6 @@
   fill: #41d98c;
 }
 
-.action-btn.copied {
-  background: transparent;
-  border: none;
-}
-
 /* ============================= */
 /* НИЖНЯЯ ПАНЕЛЬ */
 /* ============================= */
@@ -160,7 +153,7 @@
   background: rgba(18,24,32,.90);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(255,255,255,.08);
+  border-top: 1.5px solid var(--btn-border-light);
   min-height: 60px;
 }
 
@@ -168,13 +161,13 @@
   flex: 1;
   padding: 11px 15px;
   border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1.5px solid var(--btn-border-light);
   outline: none;
   font-size: 15px;
   font-weight: 400;
   color: #f7fbff;
   background: #25303c;
-  box-shadow: none;
+  box-shadow: var(--btn-shadow);
   caret-color: var(--accent2);
   resize: none;
   max-height: 120px;
@@ -190,18 +183,18 @@
 
 .input textarea:focus{
   background: #2a3644;
-  border-color: rgba(90,174,255,.40);
+  border-color: var(--accent1);
 }
 
 .input button{
   padding:0 16px;
   border-radius:16px;
-  border:1px solid rgba(255,255,255,.10);
+  border:1.5px solid var(--btn-border-light);
   font-size:16px;
   font-weight:800;
   background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
   color:#fff;
-  box-shadow: none;
+  box-shadow: var(--btn-shadow);
   height: 42px;
   align-self: flex-end;
   cursor: pointer;
@@ -210,6 +203,7 @@
 
 .input button:hover{
   filter: brightness(1.05);
+  border-color: var(--accent1);
 }
 
 .input button:active {
@@ -240,64 +234,50 @@
   flex:0 0 auto;
 }
 
-/* кнопка назад — добавлен blur */
 .top a{
   color:#f7fbff;
   text-decoration:none;
   font-size:15px;
-
   background: rgba(255,255,255,.12);
-
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-
   padding: 6px 12px;
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.16);
+  border: 1.5px solid var(--btn-border-light);
 }
 
-/* заголовок */
 .title{
   font-weight:600;
   font-size:16px;
   color: #f7fbff;
-
   background: rgba(255,255,255,.12);
-
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-
   padding: 6px 14px;
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.16);
+  border: 1.5px solid var(--btn-border-light);
   margin-left: 2px;
 }
 
 .spacer{ flex:1; }
 
-/* кнопка настроек */
 .gear{
   width:34px;
   height:34px;
   border-radius:17px;
-
-  border:1px solid rgba(255,255,255,.16);
-
+  border:1.5px solid var(--btn-border-light);
   background: rgba(255,255,255,.12);
-
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-
   color:#fff;
   font-size:17px;
-
   display:flex;
   align-items:center;
   justify-content:center;
 }
 
 /* ============================= */
-/* typing bubble */
+/* TYPING BUBBLE */
 /* ============================= */
 .msg.bot.typing{
   align-self: flex-start;
@@ -305,12 +285,12 @@
   padding: 10px 12px;
   max-width: 70px;
   background: rgba(66, 78, 92, 0.94);
-  border: 1px solid rgba(255,255,255,.18);
+  border: 1.5px solid var(--btn-border-light);
   border-radius: 18px;
   border-top-left-radius: 8px;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
-  box-shadow: none;
+  box-shadow: var(--btn-shadow);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -341,36 +321,65 @@
   50% { opacity: .98; transform: translateY(-2px) scale(1.08); }
 }
 
-/* ================================================= */
-/* СВЕТЛАЯ ТЕМА */
-/* ================================================= */
+/* ============================= */
+/* ТЕМЫ */
+/* ============================= */
+:root[data-theme="blue"] {
+  --accent1: #5aaeff;
+  --accent2: #3496ff;
+  --user-bg: rgba(90, 174, 255, 0.28);
+  --user-border: rgba(90, 174, 255, 0.34);
+  --btn-border-light: rgba(90, 174, 255, 0.3);
+}
+
+:root[data-theme="black"] {
+  --accent1: #8bb8ff;
+  --accent2: #5a98ff;
+  --user-bg: rgba(139, 184, 255, 0.25);
+  --user-border: rgba(139, 184, 255, 0.30);
+  --btn-border-light: rgba(139, 184, 255, 0.3);
+}
+
 :root[data-theme="light"] {
   --accent1: #3a8cff;
   --accent2: #1a6cff;
   --user-bg: rgba(58, 140, 255, 0.12);
   --user-border: rgba(58, 140, 255, 0.20);
   --text: #1a2634;
+  
+  /* Полупрозрачные кнопки и панели с размытием */
+  --btn-bg: rgba(255, 255, 255, 0.4);
+  --btn-border: rgba(58, 140, 255, 0.3);
+  --panel-bg: rgba(255, 255, 255, 0.25);
+  --blur-amount: blur(12px);
 }
 
+/* Светлая тема - стили для чата */
 :root[data-theme="light"] .bot .msg {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #1a2634;
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border-color: var(--btn-border);
+  color: var(--text);
 }
 
 :root[data-theme="light"] .user .msg {
-  color: #1a2634;
+  color: var(--text);
+  background: var(--user-bg);
+  border-color: var(--user-border);
 }
 
 :root[data-theme="light"] .input {
-  background: rgba(255, 255, 255, 0.9);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border-top-color: var(--btn-border);
 }
 
 :root[data-theme="light"] .input textarea {
-  background: white;
-  color: #1a2634;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text);
+  border-color: var(--btn-border);
 }
 
 :root[data-theme="light"] .input textarea::placeholder {
@@ -379,18 +388,21 @@
 
 :root[data-theme="light"] .input button {
   color: white;
+  border-color: var(--btn-border);
 }
 
 :root[data-theme="light"] .top a,
 :root[data-theme="light"] .title,
 :root[data-theme="light"] .gear {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #1a2634;
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border-color: var(--btn-border);
+  color: var(--text);
 }
 
 :root[data-theme="light"] .action-btn svg {
-  fill: rgba(0, 0, 0, 0.6);
+  fill: rgba(0, 0, 0, 0.5);
 }
 
 :root[data-theme="light"] .action-btn:hover svg {
@@ -398,28 +410,12 @@
 }
 
 :root[data-theme="light"] .msg.bot.typing {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border-color: var(--btn-border);
 }
 
 :root[data-theme="light"] .typing .dot {
-  background: #1a2634;
-}
-
-/* ================================================= */
-/* ТЕМЫ (только синий и черный) */
-/* ================================================= */
-:root[data-theme="blue"] {
-  --accent1: #5aaeff;
-  --accent2: #3496ff;
-  --user-bg: rgba(90, 174, 255, 0.28);
-  --user-border: rgba(90, 174, 255, 0.34);
-}
-
-:root[data-theme="black"] {
-  --accent1: #8bb8ff;
-  --accent2: #5a98ff;
-  --user-bg: rgba(139, 184, 255, 0.25);
-  --user-border: rgba(139, 184, 255, 0.30);
-  --text: #f7fbff;
+  background: var(--text);
 }
