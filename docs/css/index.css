@@ -30,7 +30,7 @@
   --sheet-text: #f7fbff;
 }
 
-/* Синяя тема - панели как в меню */
+/* Синяя тема */
 :root[data-theme="blue"]{
   --bgTop:#27384b;
   --bgMid:#1d2b3a;
@@ -39,12 +39,12 @@
   --accent2:#3496ff;
   --text:#f7fbff;
   --subtext: rgba(247, 251, 255, 0.68);
-  --sheet-bg: rgba(39, 56, 75, 0.95); /* Темно-синий как фон меню */
+  --sheet-bg: rgba(39, 56, 75, 0.95);
   --sheet-border: rgba(90, 174, 255, 0.3);
   --sheet-text: #f7fbff;
 }
 
-/* Светлая тема - панели светлые с блюром */
+/* Светлая тема */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
@@ -52,15 +52,17 @@
   --accent1:#3a8cff;
   --accent2:#1a6cff;
   --text:#1a2634;
-  --subtext: rgba(0, 0, 0, 0.55); /* Темно-серый для видимости */
+  --subtext: rgba(0, 0, 0, 0.55);
   
   /* Светлые панели с блюром */
   --sheet-bg: rgba(255, 255, 255, 0.85);
   --sheet-border: rgba(0, 0, 0, 0.1);
   --sheet-text: #1a2634;
   
-  /* Серая обводка как в WhatsApp */
-  --btn-border: rgba(0, 0, 0, 0.12);
+  /* Серая обводка для кнопок */
+  --btn-border: rgba(0, 0, 0, 0.15);
+  --btn-bg: rgba(255, 255, 255, 0.4);
+  --btn-blur: blur(12px);
 }
 
 * {
@@ -183,14 +185,8 @@ body > * {
   box-shadow: 0 18px 42px rgba(0,0,0,.28);
 }
 
-/* Светлая тема - карточка */
-:root[data-theme="light"] .card {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
 /* ========================= */
-/* КНОПКИ */
+/* КНОПКИ - СВЕТЛАЯ ТЕМА С БЛЮРОМ И СЕРОЙ ОБВОДКОЙ */
 /* ========================= */
 .btn {
   display: block;
@@ -218,10 +214,12 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - серая обводка кнопок */
+/* Светлая тема - кнопки с блюром и серой обводкой */
 :root[data-theme="light"] .btn {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
   border: 1.5px solid var(--btn-border);
-  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -246,6 +244,121 @@ body > * {
 /* Светлая тема - hover для кнопок */
 :root[data-theme="light"] .btn:hover {
   border-color: var(--accent1);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================= */
+/* КНОПКА ИНСТРУМЕНТОВ */
+/* ========================= */
+.tools-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 0 !important;
+}
+
+.tools-btn.active {
+  border-color: var(--accent1) !important;
+  background: rgba(255,255,255,0.15) !important;
+}
+
+/* Светлая тема - кнопка инструментов */
+:root[data-theme="light"] .tools-btn {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: 1.5px solid var(--btn-border);
+}
+
+:root[data-theme="light"] .tools-btn.active {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: var(--accent1) !important;
+}
+
+/* Выпадающий список */
+.tools-dropdown {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0;
+  border-radius: 16px;
+}
+
+.tools-dropdown.open {
+  max-height: 500px;
+  opacity: 1;
+  margin: 12px 0 8px 0;
+}
+
+/* Элементы инструментов */
+.tool-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  margin: 6px 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 16px;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(0,0,0,.14);
+}
+
+/* Светлая тема - элементы инструментов с блюром и серой обводкой */
+:root[data-theme="light"] .tool-item {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: 1.5px solid var(--btn-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tool-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--accent1);
+  transform: translateX(6px);
+}
+
+/* Светлая тема - hover для элементов инструментов */
+:root[data-theme="light"] .tool-item:hover {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: var(--accent1);
+}
+
+.tool-icon {
+  font-size: 26px;
+  min-width: 48px;
+  text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.tool-text {
+  flex: 1;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.3px;
+}
+
+.tool-arrow {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+/* Светлая тема - стрелка */
+:root[data-theme="light"] .tool-arrow {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.tool-item:hover .tool-arrow {
+  color: var(--accent1);
+  transform: translateX(3px);
 }
 
 /* ========================= */
@@ -308,10 +421,12 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - серая обводка для кнопки языка */
+/* Светлая тема - кнопка языка с блюром и серой обводкой */
 :root[data-theme="light"] .langPill {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
   border: 1.5px solid var(--btn-border);
-  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -361,10 +476,12 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - серая обводка для кнопки темы */
+/* Светлая тема - кнопка темы с блюром и серой обводкой */
 :root[data-theme="light"] .themePill {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
   border: 1.5px solid var(--btn-border);
-  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -384,7 +501,7 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS - В ЦВЕТ ТЕМЫ */
+/* BOTTOM SHEETS - С ПОЛНОЙ ОБВОДКОЙ */
 /* ========================= */
 .langOverlay, .themeOverlay {
   position: fixed;
@@ -405,7 +522,7 @@ body > * {
   bottom: calc(12px + env(safe-area-inset-bottom));
   border-radius: 18px;
   background: var(--sheet-bg);
-  border: 1px solid var(--sheet-border);
+  border: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px для полной обводки */
   backdrop-filter: blur(16px) saturate(118%);
   -webkit-backdrop-filter: blur(16px) saturate(118%);
   box-shadow: 0 20px 44px rgba(0,0,0,.32);
@@ -426,7 +543,7 @@ body > * {
   align-items: center;
   justify-content: space-between;
   padding: 14px;
-  border-bottom: 1px solid var(--sheet-border);
+  border-bottom: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px */
 }
 
 .langSheetTitle, .themeSheetTitle {
@@ -438,7 +555,7 @@ body > * {
   border: 0;
   background: rgba(255, 255, 255, .08);
   color: var(--sheet-text);
-  border: 1px solid var(--sheet-border);
+  border: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px */
   border-radius: 12px;
   padding: 8px 10px;
   font-weight: 800;
@@ -462,7 +579,7 @@ body > * {
   text-align: left;
   padding: 14px;
   border: 0;
-  border-bottom: 1px solid var(--sheet-border);
+  border-bottom: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px */
   background: transparent;
   color: var(--sheet-text);
   font-size: 15px;
@@ -474,9 +591,13 @@ body > * {
   transition: all 0.2s ease;
 }
 
+/* Последний элемент без нижней границы */
+.langItem:last-child, .themeItem:last-child {
+  border-bottom: none;
+}
+
 .langItem:hover, .themeItem:hover {
   background: rgba(255, 255, 255, .06);
-  border-bottom-color: var(--accent1);
 }
 
 .langItem .check, .themeItem .check {
@@ -493,7 +614,7 @@ body > * {
 }
 
 /* ========================= */
-/* TOAST УВЕДОМЛЕНИЯ - В ЦВЕТ ТЕМЫ */
+/* TOAST УВЕДОМЛЕНИЯ */
 /* ========================= */
 .toast-notification {
   position: fixed;
@@ -501,7 +622,7 @@ body > * {
   left: 50%;
   transform: translateX(-50%);
   background: var(--sheet-bg);
-  border: 1px solid var(--sheet-border);
+  border: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px */
   border-radius: 24px;
   padding: 12px 20px;
   color: var(--sheet-text);
