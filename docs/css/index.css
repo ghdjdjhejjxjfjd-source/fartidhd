@@ -11,7 +11,7 @@
   --text: #f7fbff;
   
   /* Новые переменные для обводки */
-  --btn-border-light: rgba(255, 255, 255, 0.25);
+  --btn-border-light: rgba(90, 174, 255, 0.3);
   --btn-border-dark: rgba(0, 0, 0, 0.15);
   --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -26,7 +26,7 @@
   --btn-border-light: rgba(139, 184, 255, 0.3);
 }
 
-/* Светлая тема */
+/* Светлая тема - полупрозрачные кнопки с синей обводкой */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
@@ -34,9 +34,12 @@
   --accent1:#3a8cff;
   --accent2:#1a6cff;
   --text:#1a2634;
-  --btn-border-light: rgba(58, 140, 255, 0.25);
-  --btn-border-dark: rgba(0, 0, 0, 0.1);
-  --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  
+  /* Полупрозрачные кнопки и панели с размытием */
+  --btn-bg: rgba(255, 255, 255, 0.4);
+  --btn-border: rgba(58, 140, 255, 0.3);
+  --panel-bg: rgba(255, 255, 255, 0.25);
+  --blur-amount: blur(12px);
 }
 
 * {
@@ -103,8 +106,8 @@ body > * {
 
 :root[data-theme="light"] .cube {
   background: color-mix(in srgb, var(--accent1) 15%, rgba(255,255,255,0.9));
-  border-color: var(--btn-border-dark);
-  box-shadow: var(--btn-shadow);
+  border-color: var(--btn-border);
+  box-shadow: none;
 }
 
 .cube.small {
@@ -164,8 +167,11 @@ body > * {
 }
 
 :root[data-theme="light"] .card {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: var(--btn-border-dark);
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1.5px solid var(--btn-border);
+  box-shadow: none;
 }
 
 /* ========================= */
@@ -197,15 +203,16 @@ body > * {
 }
 
 :root[data-theme="light"] .btn {
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1.5px solid var(--btn-border);
   color: var(--text);
-  background: rgba(255, 255, 255, 0.9);
-  border-color: var(--btn-border-dark);
-  box-shadow: var(--btn-shadow);
+  box-shadow: none;
 }
 
 .btn:active {
   transform: scale(.995);
-  box-shadow: 0 6px 16px rgba(0,0,0,.2);
 }
 
 .btn:hover {
@@ -216,6 +223,11 @@ body > * {
       color-mix(in srgb, var(--accent1) 25%, white 12%) 0%,
       rgba(255,255,255,.12) 100%
     );
+}
+
+:root[data-theme="light"] .btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: var(--accent1);
 }
 
 /* ========================= */
@@ -231,6 +243,10 @@ body > * {
 .tools-btn.active {
   border-color: var(--accent1) !important;
   background: rgba(255,255,255,0.15) !important;
+}
+
+:root[data-theme="light"] .tools-btn.active {
+  background: rgba(255, 255, 255, 0.5) !important;
 }
 
 /* Выпадающий список */
@@ -269,19 +285,21 @@ body > * {
 }
 
 :root[data-theme="light"] .tool-item {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: var(--btn-border-dark);
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1.5px solid var(--btn-border);
+  box-shadow: none;
 }
 
 .tool-item:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: var(--accent1);
   transform: translateX(6px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 :root[data-theme="light"] .tool-item:hover {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .tool-icon {
@@ -305,7 +323,7 @@ body > * {
 }
 
 :root[data-theme="light"] .tool-arrow {
-  color: rgba(0, 0, 0, 0.4);
+  color: rgba(0, 0, 0, 0.5);
 }
 
 .tool-item:hover .tool-arrow {
@@ -344,7 +362,7 @@ body > * {
 }
 
 :root[data-theme="light"] .langBlock {
-  border-top-color: var(--btn-border-dark);
+  border-top-color: var(--btn-border);
 }
 
 .langTitle {
@@ -380,14 +398,21 @@ body > * {
 }
 
 :root[data-theme="light"] .langPill {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: var(--btn-border-dark);
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1.5px solid var(--btn-border);
   color: var(--text);
+  box-shadow: none;
 }
 
 .langPill:hover {
   background: rgba(255, 255, 255, .15);
   border-color: var(--accent1);
+}
+
+:root[data-theme="light"] .langPill:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .langPill:active {
@@ -429,14 +454,21 @@ body > * {
 }
 
 :root[data-theme="light"] .themePill {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: var(--btn-border-dark);
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1.5px solid var(--btn-border);
   color: var(--text);
+  box-shadow: none;
 }
 
 .themePill:hover {
   border-color: var(--accent1);
   background: rgba(255, 255, 255, 0.15);
+}
+
+:root[data-theme="light"] .themePill:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .themePill:active {
@@ -477,8 +509,11 @@ body > * {
 
 :root[data-theme="light"] .langSheet,
 :root[data-theme="light"] .themeSheet {
-  background: rgba(240, 240, 245, 0.97);
-  border-color: var(--btn-border-dark);
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1.5px solid var(--btn-border);
+  box-shadow: none;
 }
 
 .langOverlay.show .langSheet,
@@ -497,7 +532,7 @@ body > * {
 
 :root[data-theme="light"] .langSheetHeader,
 :root[data-theme="light"] .themeSheetHeader {
-  border-bottom-color: var(--btn-border-dark);
+  border-bottom-color: var(--btn-border);
 }
 
 .langSheetTitle, .themeSheetTitle {
@@ -519,14 +554,21 @@ body > * {
 
 :root[data-theme="light"] .langClose,
 :root[data-theme="light"] .themeClose {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: var(--btn-border-dark);
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1.5px solid var(--btn-border);
   color: var(--text);
 }
 
 .langClose:hover, .themeClose:hover {
   background: rgba(255, 255, 255, .15);
   border-color: var(--accent1);
+}
+
+:root[data-theme="light"] .langClose:hover,
+:root[data-theme="light"] .themeClose:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .langList, .themeList {
@@ -554,12 +596,17 @@ body > * {
 
 :root[data-theme="light"] .langItem,
 :root[data-theme="light"] .themeItem {
-  border-bottom-color: var(--btn-border-dark);
+  border-bottom-color: var(--btn-border);
 }
 
 .langItem:hover, .themeItem:hover {
   background: rgba(255, 255, 255, .1);
   border-bottom-color: var(--accent1);
+}
+
+:root[data-theme="light"] .langItem:hover,
+:root[data-theme="light"] .themeItem:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .langItem .check, .themeItem .check {
@@ -596,9 +643,12 @@ body > * {
 }
 
 :root[data-theme="light"] .toast-notification {
-  background: rgba(240, 240, 245, 0.97);
-  border-color: var(--btn-border-dark);
-  color: #1a2634;
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1.5px solid var(--btn-border);
+  color: var(--text);
+  box-shadow: none;
 }
 
 @keyframes slideDown {
