@@ -61,18 +61,18 @@
   }
 }
 
-/* bot bubble — заметно ярче */
+/* bot bubble — сероватый как просили */
 .bot .msg{
   align-self:flex-start;
-  background:#222c37;
-  border:1px solid rgba(255,255,255,.10);
+  background:#2a3440;
+  border:1px solid rgba(255,255,255,.12);
   color:#f7fbff;
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
   border-top-left-radius:8px;
 }
 
-/* user bubble — тоже светлее */
+/* user bubble */
 .user .msg{
   align-self:flex-end;
   background: var(--user-bg);
@@ -155,7 +155,7 @@
   gap: 10px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: rgba(18,24,32,.92);
+  background: rgba(18,24,32,.90);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid rgba(255,255,255,.08);
@@ -231,10 +231,13 @@
   gap:10px;
   padding: 8px 14px;
   padding-top: calc(8px + env(safe-area-inset-top));
-  background: rgba(18,24,32,.88);
+
+  /* более прозрачная */
+  background: rgba(18,24,32,.62);
+
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255,255,255,.06);
   flex:0 0 auto;
 }
 
@@ -285,8 +288,8 @@
   margin: 0;
   padding: 10px 12px;
   max-width: 70px;
-  background: #222c37;
-  border: 1px solid rgba(255,255,255,.10);
+  background: #2a3440;
+  border: 1px solid rgba(255,255,255,.12);
   border-radius: 18px;
   border-top-left-radius: 8px;
   backdrop-filter: none;
@@ -328,8 +331,8 @@
 :root[data-theme="blue"] {
   --accent1: #5aaeff;
   --accent2: #3496ff;
-  --user-bg: rgba(90, 174, 255, 0.24);
-  --user-border: rgba(90, 174, 255, 0.30);
+  --user-bg: rgba(90, 174, 255, 0.25);
+  --user-border: rgba(90, 174, 255, 0.32);
 }
 
 :root[data-theme="black"] {
@@ -355,20 +358,20 @@
 :root[data-theme="purple"] {
   --accent1: #c19bff;
   --accent2: #9b73ff;
-  --user-bg: rgba(193, 155, 255, 0.23);
-  --user-border: rgba(193, 155, 255, 0.29);
+  --user-bg: rgba(193, 155, 255, 0.24);
+  --user-border: rgba(193, 155, 255, 0.30);
 }
 
 :root[data-theme="green"] {
   --accent1: #47d5a6;
   --accent2: #28b98b;
-  --user-bg: rgba(71, 213, 166, 0.22);
-  --user-border: rgba(71, 213, 166, 0.28);
+  --user-bg: rgba(71, 213, 166, 0.23);
+  --user-border: rgba(71, 213, 166, 0.29);
 }
 
 :root[data-theme="gray"] {
   --accent1: #97bcff;
   --accent2: #669dff;
-  --user-bg: rgba(151, 188, 255, 0.22);
-  --user-border: rgba(151, 188, 255, 0.28);
+  --user-bg: rgba(151, 188, 255, 0.23);
+  --user-border: rgba(151, 188, 255, 0.29);
 }
