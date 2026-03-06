@@ -11,7 +11,7 @@
   --text: #f7fbff;
 }
 
-/* темы */
+/* Черная тема */
 :root[data-theme="black"]{
   --bgTop:#1b2430;
   --bgMid:#141b24;
@@ -19,26 +19,15 @@
   --accent1:#8bb8ff;
   --accent2:#5a98ff;
 }
-:root[data-theme="purple"]{
-  --bgTop:#2a2038;
-  --bgMid:#20162b;
-  --bgBot:#17101f;
-  --accent1:#c19bff;
-  --accent2:#9b73ff;
-}
-:root[data-theme="green"]{
-  --bgTop:#1d3129;
-  --bgMid:#152720;
-  --bgBot:#101d17;
-  --accent1:#47d5a6;
-  --accent2:#28b98b;
-}
-:root[data-theme="gray"]{
-  --bgTop:#2a3440;
-  --bgMid:#1e2731;
-  --bgBot:#161e26;
-  --accent1:#97bcff;
-  --accent2:#669dff;
+
+/* Светлая тема */
+:root[data-theme="light"]{
+  --bgTop:#e8edf5;
+  --bgMid:#d9e0eb;
+  --bgBot:#cad1de;
+  --accent1:#3a8cff;
+  --accent2:#1a6cff;
+  --text:#1a2634;
 }
 
 * {
@@ -94,7 +83,7 @@ body > * {
   height: 108px;
   border-radius: 18px;
 
-  /* кубики теперь подкрашиваются темой */
+  /* кубики подкрашиваются темой */
   background: color-mix(in srgb, var(--accent1) 18%, white 10%);
   border: 1px solid color-mix(in srgb, var(--accent1) 42%, white 20%);
   backdrop-filter: blur(8px) saturate(120%);
@@ -104,6 +93,13 @@ body > * {
     0 0 18px color-mix(in srgb, var(--accent1) 22%, transparent);
   pointer-events: none;
   opacity: .72;
+}
+
+/* светлая тема - кубики светлее */
+:root[data-theme="light"] .cube {
+  background: color-mix(in srgb, var(--accent1) 15%, rgba(255,255,255,0.9));
+  border-color: color-mix(in srgb, var(--accent1) 30%, rgba(255,255,255,0.9));
+  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
 }
 
 .cube.small {
@@ -162,6 +158,11 @@ body > * {
   box-shadow: 0 18px 42px rgba(0,0,0,.28);
 }
 
+:root[data-theme="light"] .card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 /* ========================= */
 /* КНОПКИ */
 /* ========================= */
@@ -191,6 +192,13 @@ body > * {
   transition: all 0.2s ease;
 }
 
+:root[data-theme="light"] .btn {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 .btn:active {
   transform: scale(.995);
   box-shadow:
@@ -215,6 +223,10 @@ body > * {
   font-size: 14px;
 }
 
+:root[data-theme="light"] .sub {
+  color: rgba(0, 0, 0, 0.6);
+}
+
 .ver {
   margin-top: 10px;
   text-align: center;
@@ -228,11 +240,19 @@ body > * {
   padding-top: 16px;
 }
 
+:root[data-theme="light"] .langBlock {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
 .langTitle {
   font-size: 13px;
   color: rgba(247, 251, 255, .68);
   margin-bottom: 12px;
   text-align: center;
+}
+
+:root[data-theme="light"] .langTitle {
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .langPill {
@@ -254,6 +274,12 @@ body > * {
   gap: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+:root[data-theme="light"] .langPill {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--text);
 }
 
 .langPill:hover {
@@ -296,6 +322,12 @@ body > * {
     0 0 12px color-mix(in srgb, var(--accent1) 14%, transparent);
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+:root[data-theme="light"] .themePill {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--text);
 }
 
 .themePill:hover {
@@ -344,6 +376,12 @@ body > * {
   transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
 }
 
+:root[data-theme="light"] .langSheet,
+:root[data-theme="light"] .themeSheet {
+  background: rgba(240, 240, 245, 0.97);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 .langOverlay.show .langSheet,
 .themeOverlay.show .themeSheet {
   transform: translateY(0);
@@ -356,6 +394,11 @@ body > * {
   justify-content: space-between;
   padding: 14px;
   border-bottom: 1px solid rgba(255, 255, 255, .09);
+}
+
+:root[data-theme="light"] .langSheetHeader,
+:root[data-theme="light"] .themeSheetHeader {
+  border-bottom-color: rgba(0, 0, 0, 0.1);
 }
 
 .langSheetTitle, .themeSheetTitle {
@@ -373,6 +416,13 @@ body > * {
   font-weight: 800;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+:root[data-theme="light"] .langClose,
+:root[data-theme="light"] .themeClose {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--text);
 }
 
 .langClose:hover, .themeClose:hover {
@@ -401,6 +451,11 @@ body > * {
   justify-content: space-between;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+:root[data-theme="light"] .langItem,
+:root[data-theme="light"] .themeItem {
+  border-bottom-color: rgba(0, 0, 0, 0.07);
 }
 
 .langItem:hover, .themeItem:hover {
@@ -439,6 +494,12 @@ body > * {
   animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   pointer-events: none;
   white-space: nowrap;
+}
+
+:root[data-theme="light"] .toast-notification {
+  background: rgba(240, 240, 245, 0.97);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1a2634;
 }
 
 @keyframes slideDown {
