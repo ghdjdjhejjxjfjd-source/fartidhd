@@ -20,7 +20,7 @@
   --accent2:#5a98ff;
 }
 
-/* Светлая тема - только выбор языка/цвета как было, + серая обводка кнопок */
+/* Светлая тема - только серая обводка кнопок */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
@@ -29,7 +29,7 @@
   --accent2:#1a6cff;
   --text:#1a2634;
   
-  /* Сёрая обводка как в WhatsApp */
+  /* Серая обводка как в WhatsApp */
   --btn-border: rgba(0, 0, 0, 0.12);
 }
 
@@ -333,7 +333,7 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS - ВОЗВРАЩАЕМ КАК БЫЛО */
+/* BOTTOM SHEETS - КАК БЫЛО */
 /* ========================= */
 .langOverlay, .themeOverlay {
   position: fixed;
@@ -343,8 +343,9 @@ body > * {
   display: none;
 }
 
+/* ⚠️ ВАЖНО! Эти классы отвечают за показ оверлеев */
 .langOverlay.show, .themeOverlay.show {
-  display: block;
+  display: block !important;
 }
 
 .langSheet, .themeSheet {
@@ -364,13 +365,7 @@ body > * {
   transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
 }
 
-/* Светлая тема - возвращаем как было для bottom sheets */
-:root[data-theme="light"] .langSheet,
-:root[data-theme="light"] .themeSheet {
-  background: rgba(24, 31, 40, .97);
-  border: 1px solid rgba(255, 255, 255, .10);
-}
-
+/* Анимация появления */
 .langOverlay.show .langSheet,
 .themeOverlay.show .themeSheet {
   transform: translateY(0);
