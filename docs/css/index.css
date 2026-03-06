@@ -9,6 +9,12 @@
   --accent2: #3496ff;
 
   --text: #f7fbff;
+  --subtext: rgba(247, 251, 255, 0.68);
+  
+  /* Панели выбора */
+  --sheet-bg: rgba(24, 31, 40, .97);
+  --sheet-border: rgba(255, 255, 255, .10);
+  --sheet-text: #f7fbff;
 }
 
 /* Черная тема */
@@ -18,9 +24,27 @@
   --bgBot:#0e141c;
   --accent1:#8bb8ff;
   --accent2:#5a98ff;
+  --subtext: rgba(247, 251, 255, 0.68);
+  --sheet-bg: rgba(24, 31, 40, .97);
+  --sheet-border: rgba(255, 255, 255, .10);
+  --sheet-text: #f7fbff;
 }
 
-/* Светлая тема - только серая обводка кнопок */
+/* Синяя тема - панели как в меню */
+:root[data-theme="blue"]{
+  --bgTop:#27384b;
+  --bgMid:#1d2b3a;
+  --bgBot:#16212d;
+  --accent1:#5aaeff;
+  --accent2:#3496ff;
+  --text:#f7fbff;
+  --subtext: rgba(247, 251, 255, 0.68);
+  --sheet-bg: rgba(39, 56, 75, 0.95); /* Темно-синий как фон меню */
+  --sheet-border: rgba(90, 174, 255, 0.3);
+  --sheet-text: #f7fbff;
+}
+
+/* Светлая тема - панели светлые с блюром */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
@@ -28,6 +52,12 @@
   --accent1:#3a8cff;
   --accent2:#1a6cff;
   --text:#1a2634;
+  --subtext: rgba(0, 0, 0, 0.55); /* Темно-серый для видимости */
+  
+  /* Светлые панели с блюром */
+  --sheet-bg: rgba(255, 255, 255, 0.85);
+  --sheet-border: rgba(0, 0, 0, 0.1);
+  --sheet-text: #1a2634;
   
   /* Серая обводка как в WhatsApp */
   --btn-border: rgba(0, 0, 0, 0.12);
@@ -153,6 +183,12 @@ body > * {
   box-shadow: 0 18px 42px rgba(0,0,0,.28);
 }
 
+/* Светлая тема - карточка */
+:root[data-theme="light"] .card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 /* ========================= */
 /* КНОПКИ */
 /* ========================= */
@@ -212,10 +248,13 @@ body > * {
   border-color: var(--accent1);
 }
 
+/* ========================= */
+/* ТЕКСТЫ */
+/* ========================= */
 .sub {
   margin-top: 22px;
   text-align: center;
-  color: rgba(247, 251, 255, .68);
+  color: var(--subtext);
   font-size: 14px;
 }
 
@@ -223,18 +262,27 @@ body > * {
   margin-top: 10px;
   text-align: center;
   font-size: 12px;
-  opacity: .50;
+  opacity: 0.5;
+  color: var(--subtext);
 }
 
+/* ========================= */
+/* БЛОК ЯЗЫКА */
+/* ========================= */
 .langBlock {
   margin-top: 22px;
   border-top: 1px solid rgba(255, 255, 255, .10);
   padding-top: 16px;
 }
 
+/* Светлая тема - разделитель */
+:root[data-theme="light"] .langBlock {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
 .langTitle {
   font-size: 13px;
-  color: rgba(247, 251, 255, .68);
+  color: var(--subtext);
   margin-bottom: 12px;
   text-align: center;
 }
@@ -281,6 +329,9 @@ body > * {
   opacity: .8;
 }
 
+/* ========================= */
+/* КНОПКА ТЕМЫ */
+/* ========================= */
 .themePill {
   position: fixed;
   top: calc(10px + env(safe-area-inset-top));
@@ -333,7 +384,7 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS - КАК БЫЛО */
+/* BOTTOM SHEETS - В ЦВЕТ ТЕМЫ */
 /* ========================= */
 .langOverlay, .themeOverlay {
   position: fixed;
@@ -343,7 +394,6 @@ body > * {
   display: none;
 }
 
-/* ⚠️ ВАЖНО! Эти классы отвечают за показ оверлеев */
 .langOverlay.show, .themeOverlay.show {
   display: block !important;
 }
@@ -354,8 +404,8 @@ body > * {
   right: 12px;
   bottom: calc(12px + env(safe-area-inset-bottom));
   border-radius: 18px;
-  background: rgba(24, 31, 40, .97);
-  border: 1px solid rgba(255, 255, 255, .10);
+  background: var(--sheet-bg);
+  border: 1px solid var(--sheet-border);
   backdrop-filter: blur(16px) saturate(118%);
   -webkit-backdrop-filter: blur(16px) saturate(118%);
   box-shadow: 0 20px 44px rgba(0,0,0,.32);
@@ -365,7 +415,6 @@ body > * {
   transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
 }
 
-/* Анимация появления */
 .langOverlay.show .langSheet,
 .themeOverlay.show .themeSheet {
   transform: translateY(0);
@@ -377,19 +426,19 @@ body > * {
   align-items: center;
   justify-content: space-between;
   padding: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, .09);
+  border-bottom: 1px solid var(--sheet-border);
 }
 
 .langSheetTitle, .themeSheetTitle {
   font-weight: 800;
-  color: var(--text);
+  color: var(--sheet-text);
 }
 
 .langClose, .themeClose {
   border: 0;
   background: rgba(255, 255, 255, .08);
-  color: var(--text);
-  border: 1px solid rgba(255, 255, 255, .10);
+  color: var(--sheet-text);
+  border: 1px solid var(--sheet-border);
   border-radius: 12px;
   padding: 8px 10px;
   font-weight: 800;
@@ -399,7 +448,7 @@ body > * {
 
 .langClose:hover, .themeClose:hover {
   background: rgba(255, 255, 255, .11);
-  border-color: rgba(255, 255, 255, .16);
+  border-color: var(--accent1);
 }
 
 .langList, .themeList {
@@ -413,9 +462,9 @@ body > * {
   text-align: left;
   padding: 14px;
   border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .07);
+  border-bottom: 1px solid var(--sheet-border);
   background: transparent;
-  color: var(--text);
+  color: var(--sheet-text);
   font-size: 15px;
   font-weight: 700;
   display: flex;
@@ -427,7 +476,7 @@ body > * {
 
 .langItem:hover, .themeItem:hover {
   background: rgba(255, 255, 255, .06);
-  border-bottom: 1px solid rgba(255, 255, 255, .10);
+  border-bottom-color: var(--accent1);
 }
 
 .langItem .check, .themeItem .check {
@@ -443,16 +492,19 @@ body > * {
   transform: scale(1);
 }
 
+/* ========================= */
+/* TOAST УВЕДОМЛЕНИЯ - В ЦВЕТ ТЕМЫ */
+/* ========================= */
 .toast-notification {
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(24, 31, 40, .97);
-  border: 1px solid rgba(255, 255, 255, .10);
+  background: var(--sheet-bg);
+  border: 1px solid var(--sheet-border);
   border-radius: 24px;
   padding: 12px 20px;
-  color: var(--text);
+  color: var(--sheet-text);
   font-weight: 600;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
