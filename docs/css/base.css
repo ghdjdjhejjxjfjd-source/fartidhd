@@ -10,7 +10,7 @@
   --user-border: rgba(90, 174, 255, 0.34);
 }
 
-/* Цветные темы (для темного режима телефона) */
+/* Черная тема */
 :root[data-theme="black"]{
   --bgTop:#1b2430;
   --bgMid:#141b24;
@@ -22,40 +22,7 @@
   --user-border: rgba(139, 184, 255, 0.30);
 }
 
-:root[data-theme="purple"]{
-  --bgTop:#2a2038;
-  --bgMid:#20162b;
-  --bgBot:#17101f;
-  --accent1:#c19bff;
-  --accent2:#9b73ff;
-  --text:#f7fbff;
-  --user-bg: rgba(193, 155, 255, 0.27);
-  --user-border: rgba(193, 155, 255, 0.32);
-}
-
-:root[data-theme="green"]{
-  --bgTop:#1d3129;
-  --bgMid:#152720;
-  --bgBot:#101d17;
-  --accent1:#47d5a6;
-  --accent2:#28b98b;
-  --text:#f7fbff;
-  --user-bg: rgba(71, 213, 166, 0.26);
-  --user-border: rgba(71, 213, 166, 0.31);
-}
-
-:root[data-theme="gray"]{
-  --bgTop:#2a3440;
-  --bgMid:#1e2731;
-  --bgBot:#161e26;
-  --accent1:#97bcff;
-  --accent2:#669dff;
-  --text:#f7fbff;
-  --user-bg: rgba(151, 188, 255, 0.26);
-  --user-border: rgba(151, 188, 255, 0.31);
-}
-
-/* СВЕТЛАЯ ТЕМА (для светлого режима телефона) */
+/* Светлая тема */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
@@ -65,12 +32,6 @@
   --text:#1a2634;
   --user-bg: rgba(58, 140, 255, 0.12);
   --user-border: rgba(58, 140, 255, 0.20);
-  
-  /* Дополнительные цвета для светлой темы */
-  --card-bg: rgba(255, 255, 255, 0.85);
-  --input-bg: rgba(255, 255, 255, 0.95);
-  --border-light: rgba(0, 0, 0, 0.08);
-  --border-medium: rgba(0, 0, 0, 0.12);
 }
 
 *{
@@ -84,6 +45,7 @@ html,body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
 }
 
+/* защита от вспышек */
 html{
   background: var(--bgBot);
 }
@@ -101,86 +63,23 @@ body{
   -webkit-text-size-adjust: 100%;
 }
 
+/* основной фон */
 body::after{
   content:"";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
+
   background:
     linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 48%, var(--bgBot) 100%);
   background-repeat: no-repeat;
   background-color: var(--bgBot);
+  filter: none;
 }
 
+/* контент поверх */
 body > *{
   position: relative;
   z-index: 2;
-}
-
-/* Стили для светлой темы */
-:root[data-theme="light"] .btn {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.9);
-  border-color: var(--border-medium);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-:root[data-theme="light"] .msg.bot {
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--text);
-  border-color: var(--border-light);
-}
-
-:root[data-theme="light"] .input {
-  background: rgba(255, 255, 255, 0.9);
-  border-top-color: var(--border-light);
-}
-
-:root[data-theme="light"] .input textarea {
-  background: white;
-  color: var(--text);
-  border-color: var(--border-medium);
-}
-
-:root[data-theme="light"] .input textarea::placeholder {
-  color: rgba(0, 0, 0, 0.4);
-}
-
-:root[data-theme="light"] .top a,
-:root[data-theme="light"] .title,
-:root[data-theme="light"] .gear {
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--text);
-  border-color: var(--border-light);
-}
-
-:root[data-theme="light"] .card {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: var(--border-light);
-}
-
-:root[data-theme="light"] .langPill,
-:root[data-theme="light"] .themePill {
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--text);
-  border-color: var(--border-medium);
-}
-
-:root[data-theme="light"] .sub {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-:root[data-theme="light"] .cube {
-  background: color-mix(in srgb, var(--accent1) 15%, rgba(255,255,255,0.8));
-  border-color: color-mix(in srgb, var(--accent1) 30%, rgba(255,255,255,0.9));
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-}
-
-:root[data-theme="light"] .action-btn svg {
-  fill: rgba(0, 0, 0, 0.6);
-}
-
-:root[data-theme="light"] .action-btn:hover svg {
-  fill: var(--accent1);
 }
