@@ -33,17 +33,41 @@
     })();
   </script>
 
-  <!-- ТЕМА -->
+  <!-- ✅ ТЕМА: исправленная логика -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
+      const tg = window.Telegram?.WebApp;
+      
+      function getTelegramTheme() {
+        return tg?.colorScheme || null;
+      }
+      
       function getTheme(){
         const url = new URL(window.location.href);
         const qp = url.searchParams.get("theme");
         if (qp) return qp;
-        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+        
+        const telegramTheme = getTelegramTheme();
+        const savedTheme = (() => { try { return localStorage.getItem(KEY); } catch(e) { return null; } })();
+        
+        // ЛОГИКА:
+        // Если тема телефона темная → используем сохраненную тему (blue/purple/etc)
+        // Если тема телефона светлая → используем light
+        // Если не в Telegram → используем сохраненную или blue
+        
+        if (telegramTheme === 'dark') {
+          return savedTheme || "blue";
+        } else if (telegramTheme === 'light') {
+          return "light";
+        } else {
+          return savedTheme || "blue";
+        }
       }
-      document.documentElement.setAttribute("data-theme", getTheme());
+      
+      const theme = getTheme();
+      document.documentElement.setAttribute("data-theme", theme);
+      try { localStorage.setItem(KEY, theme); } catch(e) {}
     })();
   </script>
 
@@ -111,9 +135,9 @@
     }
   </style>
 
-  <link rel="stylesheet" href="./css/base.css?v=3">
-  <link rel="stylesheet" href="./css/index.css?v=6">
-  <link rel="stylesheet" href="./css/tools.css?v=1">
+  <link rel="stylesheet" href="./css/base.css?v=4">
+  <link rel="stylesheet" href="./css/index.css?v=7">
+  <link rel="stylesheet" href="./css/tools.css?v=2">
 </head>
 
 <body>
@@ -147,7 +171,6 @@
 
   <div class="wrap">
     <div class="card">
-      <!-- ОБЫЧНЫЕ КНОПКИ (с правильными классами) -->
       <button class="btn" id="chatBtn" onclick="openPage('chat.html')">💬 Чат с ИИ</button>
       <button class="btn" id="imgBtn" onclick="openPage('image.html')">🎨 Генерация картинки</button>
       
@@ -158,7 +181,6 @@
         </button>
         
         <div class="tools-dropdown" id="toolsDropdown">
-          <!-- ИНСТРУМЕНТЫ (с правильными классами) -->
           <div class="tool-item" onclick="openTool('remove-bg.html')">
             <span class="tool-icon">📸</span>
             <span class="tool-text" id="toolRemoveBgText">Удаление фона</span>
@@ -231,38 +253,24 @@
     function openPage(page) {
       const tg = window.Telegram?.WebApp;
       const lang = getSavedLang();
-      const theme = getSavedTheme();
+      const theme = getCurrentTheme();
       
-      // Формируем полный URL
       const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
       const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
       
-      if (tg) {
-        // Открываем внутри Telegram WebApp
-        window.location.href = fullUrl;
-      } else {
-        // Если не в Telegram - обычный переход
-        window.location.href = fullUrl;
-      }
+      window.location.href = fullUrl;
     }
 
     // Функция открытия инструментов
     function openTool(toolPage) {
       const tg = window.Telegram?.WebApp;
       const lang = getSavedLang();
-      const theme = getSavedTheme();
+      const theme = getCurrentTheme();
       
-      // Формируем путь к инструменту
       const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
       const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
       
-      if (tg) {
-        // Открываем внутри Telegram WebApp
-        window.location.href = fullUrl;
-      } else {
-        // Если не в Telegram - обычный переход
-        window.location.href = fullUrl;
-      }
+      window.location.href = fullUrl;
     }
 
     // Получение сохраненного языка
@@ -271,10 +279,16 @@
       catch(e) { return "ru"; }
     }
 
-    // Получение сохраненной темы
-    function getSavedTheme() {
-      try { return localStorage.getItem("miniapp_theme_v1") || "blue"; } 
-      catch(e) { return "blue"; }
+    // Получение текущей темы (с учетом Telegram)
+    function getCurrentTheme() {
+      const tg = window.Telegram?.WebApp;
+      const saved = (() => { try { return localStorage.getItem("miniapp_theme_v1"); } catch(e) { return null; } })();
+      
+      if (tg?.colorScheme === 'light') {
+        return "light";
+      } else {
+        return saved || "blue";
+      }
     }
 
     // Инициализация выпадающего меню
@@ -329,7 +343,6 @@
     })();
   </script>
 
-  <!-- Подключаем существующий index.js (он будет работать параллельно) -->
-  <script type="module" src="./js/index.js?v=6"></script>
+  <script type="module" src="./js/index.js?v=7"></script>
 </body>
 </html>
