@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>InstaGroq AI</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
+  <script>
+    (function(){
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.disableVerticalSwipes();
+        
+        const setHeight = () => {
+          const vh = tg.viewportHeight || window.innerHeight;
+          document.documentElement.style.setProperty('--vh', vh + 'px');
+        };
+        
+        setHeight();
+        tg.onEvent('viewportChanged', setHeight);
+      } else {
+        const setHeight = () => {
+          document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+        };
+        setHeight();
+        window.addEventListener('resize', setHeight);
+      }
+    })();
+  </script>
+
+  <!-- ТЕМА -->
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+      }
+      document.documentElement.setAttribute("data-theme", getTheme());
+    })();
+  </script>
+
+  <!-- Запрет зума -->
+  <script>
+    (function(){
+      document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive:false });
+      document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive:false });
+      document.addEventListener("gestureend", (e) => e.preventDefault(), { passive:false });
+
+      let lastTouchEnd = 0;
+      document.addEventListener("touchend", (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) e.preventDefault();
+        lastTouchEnd = now;
+      }, { passive:false });
+
+      document.addEventListener("dblclick", (e) => e.preventDefault(), { passive:false });
+    })();
+  </script>
+
+  <style>
+    /* ПОЛНОЭКРАННЫЕ СТИЛИ */
+    :root {
+      --vh: 100vh;
+    }
+    
+    html, body {
+      height: var(--vh);
+      height: -webkit-fill-available;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+    
+    body {
+      position: relative;
+      background: transparent;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .wrap {
+      height: var(--vh);
+      height: -webkit-fill-available;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .card {
+      width: min(520px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .header, .top, .tool-header {
+      padding-top: 12px !important;
+    }
+  </style>
+
+  <link rel="stylesheet" href="./css/base.css?v=3">
+  <link rel="stylesheet" href="./css/index.css?v=6">
+  <link rel="stylesheet" href="./css/tools.css?v=1">
+</head>
+
+<body>
+  <!-- КНОПКА ТЕМЫ -->
+  <button class="themePill" id="themeBtn" type="button">
+    <span id="themeBtnText">Цвет: Синий</span> <span class="chev">▾</span>
+  </button>
+
+  <!-- КУБИКИ -->
+  <div class="cube f1" style="left:5%; top:8%"></div>
+  <div class="cube small f2" style="left:15%; top:25%"></div>
+  <div class="cube tiny f3" style="left:25%; top:12%"></div>
+  <div class="cube f4" style="left:35%; top:40%"></div>
+  <div class="cube small f5" style="left:45%; top:18%"></div>
+  <div class="cube tiny f6" style="left:55%; top:65%"></div>
+  <div class="cube f1" style="left:65%; top:30%"></div>
+  <div class="cube small f2" style="left:75%; top:55%"></div>
+  <div class="cube tiny f3" style="left:85%; top:15%"></div>
+  <div class="cube f4" style="left:92%; top:75%"></div>
+  
+  <div class="cube f5" style="left:8%; top:70%"></div>
+  <div class="cube small f6" style="left:18%; top:85%"></div>
+  <div class="cube tiny f1" style="left:28%; top:50%"></div>
+  <div class="cube f2" style="left:38%; top:92%"></div>
+  <div class="cube small f3" style="left:48%; top:5%"></div>
+  <div class="cube tiny f4" style="left:58%; top:45%"></div>
+  <div class="cube f5" style="left:68%; top:88%"></div>
+  <div class="cube small f6" style="left:78%; top:72%"></div>
+  <div class="cube tiny f1" style="left:88%; top:35%"></div>
+  <div class="cube f2" style="left:95%; top:60%"></div>
+
+  <div class="wrap">
+    <div class="card">
+      <!-- ОБЫЧНЫЕ КНОПКИ (с правильными классами) -->
+      <button class="btn" id="chatBtn" onclick="openPage('chat.html')">💬 Чат с ИИ</button>
+      <button class="btn" id="imgBtn" onclick="openPage('image.html')">🎨 Генерация картинки</button>
+      
+      <!-- КНОПКА ИНСТРУМЕНТОВ -->
+      <div class="tools-container">
+        <button class="btn tools-btn" id="toolsBtn" type="button">
+          <span id="toolsBtnText">🔧 Инструменты</span> <span class="chev" id="toolsChev">▼</span>
+        </button>
+        
+        <div class="tools-dropdown" id="toolsDropdown">
+          <!-- ИНСТРУМЕНТЫ (с правильными классами) -->
+          <div class="tool-item" onclick="openTool('remove-bg.html')">
+            <span class="tool-icon">📸</span>
+            <span class="tool-text" id="toolRemoveBgText">Удаление фона</span>
+            <span class="tool-arrow">▶</span>
+          </div>
+          <div class="tool-item" onclick="openTool('text-from-image.html')">
+            <span class="tool-icon">🎨</span>
+            <span class="tool-text" id="toolTextFromImageText">Текст с фото</span>
+            <span class="tool-arrow">▶</span>
+          </div>
+          <div class="tool-item" onclick="openTool('selfie-filters.html')">
+            <span class="tool-icon">🤳</span>
+            <span class="tool-text" id="toolSelfieFiltersText">Селфи фильтры</span>
+            <span class="tool-arrow">▶</span>
+          </div>
+          <div class="tool-item" onclick="openTool('music.html')">
+            <span class="tool-icon">🎵</span>
+            <span class="tool-text" id="toolMusicText">Создание музыки</span>
+            <span class="tool-arrow">▶</span>
+          </div>
+          <div class="tool-item" onclick="openTool('meme.html')">
+            <span class="tool-icon">📝</span>
+            <span class="tool-text" id="toolMemeText">Создание мемов</span>
+            <span class="tool-arrow">▶</span>
+          </div>
+          <div class="tool-item" onclick="openTool('qr.html')">
+            <span class="tool-icon">📱</span>
+            <span class="tool-text" id="toolQrText">QR коды</span>
+            <span class="tool-arrow">▶</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub" id="subText">Быстрые ответы • Память • Заметки</div>
+      <div class="ver" id="verText">miniapp v3</div>
+
+      <div class="langBlock">
+        <div class="langTitle" id="langTitle">Язык интерфейса</div>
+        <button class="langPill" id="langBtn" type="button">
+          <span id="langBtnText">Русский (RU)</span> <span class="chev">▾</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Оверлей языков -->
+  <div class="langOverlay" id="langOverlay">
+    <div class="langSheet">
+      <div class="langSheetHeader">
+        <div class="langSheetTitle" id="langSheetTitle">Язык</div>
+        <button class="langClose" id="langClose" type="button">✕</button>
+      </div>
+      <div class="langList" id="langList"></div>
+    </div>
+  </div>
+
+  <!-- Оверлей темы -->
+  <div class="themeOverlay" id="themeOverlay">
+    <div class="themeSheet">
+      <div class="themeSheetHeader">
+        <div class="themeSheetTitle" id="themeSheetTitle">Цвет</div>
+        <button class="themeClose" id="themeClose" type="button">✕</button>
+      </div>
+      <div class="themeList" id="themeList"></div>
+    </div>
+  </div>
+
+  <script>
+    // Функция открытия страниц внутри Telegram
+    function openPage(page) {
+      const tg = window.Telegram?.WebApp;
+      const lang = getSavedLang();
+      const theme = getSavedTheme();
+      
+      // Формируем полный URL
+      const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+      const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+      
+      if (tg) {
+        // Открываем внутри Telegram WebApp
+        window.location.href = fullUrl;
+      } else {
+        // Если не в Telegram - обычный переход
+        window.location.href = fullUrl;
+      }
+    }
+
+    // Функция открытия инструментов
+    function openTool(toolPage) {
+      const tg = window.Telegram?.WebApp;
+      const lang = getSavedLang();
+      const theme = getSavedTheme();
+      
+      // Формируем путь к инструменту
+      const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+      const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+      
+      if (tg) {
+        // Открываем внутри Telegram WebApp
+        window.location.href = fullUrl;
+      } else {
+        // Если не в Telegram - обычный переход
+        window.location.href = fullUrl;
+      }
+    }
+
+    // Получение сохраненного языка
+    function getSavedLang() {
+      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } 
+      catch(e) { return "ru"; }
+    }
+
+    // Получение сохраненной темы
+    function getSavedTheme() {
+      try { return localStorage.getItem("miniapp_theme_v1") || "blue"; } 
+      catch(e) { return "blue"; }
+    }
+
+    // Инициализация выпадающего меню
+    (function() {
+      const toolsBtn = document.getElementById('toolsBtn');
+      const toolsDropdown = document.getElementById('toolsDropdown');
+      const toolsChev = document.getElementById('toolsChev');
+      
+      if (!toolsBtn || !toolsDropdown) return;
+      
+      let isOpen = false;
+      try {
+        isOpen = localStorage.getItem('tools_menu_open') === 'true';
+      } catch(e) {}
+      
+      function toggleTools(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        isOpen = !isOpen;
+        
+        if (isOpen) {
+          toolsDropdown.classList.add('open');
+          toolsBtn.classList.add('active');
+          toolsChev.classList.add('rotate');
+          toolsChev.textContent = '▲';
+        } else {
+          toolsDropdown.classList.remove('open');
+          toolsBtn.classList.remove('active');
+          toolsChev.classList.remove('rotate');
+          toolsChev.textContent = '▼';
+        }
+        
+        try {
+          localStorage.setItem('tools_menu_open', isOpen);
+        } catch(e) {}
+      }
+      
+      toolsBtn.addEventListener('click', toggleTools);
+      
+      document.addEventListener('click', (e) => {
+        if (isOpen && !toolsBtn.contains(e.target) && !toolsDropdown.contains(e.target)) {
+          toggleTools(e);
+        }
+      });
+      
+      if (isOpen) {
+        toolsDropdown.classList.add('open');
+        toolsBtn.classList.add('active');
+        toolsChev.textContent = '▲';
+      }
+    })();
+  </script>
+
+  <!-- Подключаем существующий index.js (он будет работать параллельно) -->
+  <script type="module" src="./js/index.js?v=6"></script>
+</body>
+</html>
