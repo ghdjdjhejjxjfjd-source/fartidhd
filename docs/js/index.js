@@ -1,487 +1,546 @@
-:root {
-  --vh: 100vh;
+// docs/js/index.js
+const tg = window.Telegram?.WebApp;
 
-  --bgTop: #27384b;
-  --bgMid: #1d2b3a;
-  --bgBot: #16212d;
-
-  --accent1: #5aaeff;
-  --accent2: #3496ff;
-
-  --text: #f7fbff;
+// ===== VH (Telegram/iOS) =====
+function applyVH(){
+  if (tg && typeof tg.viewportHeight === "number") {
+    document.documentElement.style.setProperty("--vh", tg.viewportHeight + "px");
+  } else {
+    document.documentElement.style.setProperty("--vh", window.innerHeight + "px");
+  }
 }
 
-/* Черная тема */
-:root[data-theme="black"]{
-  --bgTop:#1b2430;
-  --bgMid:#141b24;
-  --bgBot:#0e141c;
-  --accent1:#8bb8ff;
-  --accent2:#5a98ff;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  applyVH();
+  tg.onEvent("viewportChanged", applyVH);
+} else {
+  applyVH();
+  window.addEventListener("resize", applyVH);
 }
 
-/* Светлая тема - только выбор языка/цвета как было, + серая обводка кнопок */
-:root[data-theme="light"]{
-  --bgTop:#e8edf5;
-  --bgMid:#d9e0eb;
-  --bgBot:#cad1de;
-  --accent1:#3a8cff;
-  --accent2:#1a6cff;
-  --text:#1a2634;
+// ===== storage keys =====
+const STORAGE_LANG = "miniapp_lang_v1";
+const STORAGE_THEME = "miniapp_theme_v1";
+const STORAGE_TOOLS = "tools_menu_open";
+
+// ===== DOM элементы =====
+const chatBtn = document.getElementById("chatBtn");
+const imgBtn = document.getElementById("imgBtn");
+const subText = document.getElementById("subText");
+const verText = document.getElementById("verText");
+const langTitle = document.getElementById("langTitle");
+
+const langBtn = document.getElementById("langBtn");
+const langBtnText = document.getElementById("langBtnText");
+const langOverlay = document.getElementById("langOverlay");
+const langList = document.getElementById("langList");
+const langClose = document.getElementById("langClose");
+const langSheetTitle = document.getElementById("langSheetTitle");
+
+const themeBtn = document.getElementById("themeBtn");
+const themeBtnText = document.getElementById("themeBtnText");
+const themeOverlay = document.getElementById("themeOverlay");
+const themeList = document.getElementById("themeList");
+const themeClose = document.getElementById("themeClose");
+const themeSheetTitle = document.getElementById("themeSheetTitle");
+
+// ===== Элементы инструментов =====
+const toolsBtn = document.getElementById("toolsBtn");
+const toolsDropdown = document.getElementById("toolsDropdown");
+const toolsChev = document.getElementById("toolsChev");
+const toolsBtnText = document.getElementById("toolsBtnText");
+
+const toolRemoveBgText = document.getElementById("toolRemoveBgText");
+const toolTextFromImageText = document.getElementById("toolTextFromImageText");
+const toolSelfieFiltersText = document.getElementById("toolSelfieFiltersText");
+const toolMusicText = document.getElementById("toolMusicText");
+const toolMemeText = document.getElementById("toolMemeText");
+const toolQrText = document.getElementById("toolQrText");
+
+// ===== i18n словарь =====
+const I18N = {
+  ru: { 
+    chat: "Чат с ИИ", 
+    img: "Генерация картинки", 
+    tools: "🔧 Инструменты",
+    removeBg: "Удаление фона",
+    textFromImage: "Текст с фото",
+    selfieFilters: "Селфи фильтры",
+    music: "Создание музыки",
+    meme: "Создание мемов",
+    qr: "QR коды",
+    sub: "Быстрые ответы • Память • Заметки", 
+    ver: "miniapp v3", 
+    lang: "Язык интерфейса", 
+    sheetLang: "Язык",
+    sheetTheme: "Цвет",
+    theme: "Цвет",
+    colors: {
+      blue: "Синий",
+      black: "Черный",
+      light: "Светлый"
+    }
+  },
+  kk: { 
+    chat: "AI чат", 
+    img: "Сурет генерациясы",
+    tools: "🔧 Құралдар",
+    removeBg: "Фонды кетіру",
+    textFromImage: "Фотонан мәтін",
+    selfieFilters: "Селфи фильтрлер",
+    music: "Музыка жасау",
+    meme: "Мем жасау",
+    qr: "QR кодтар",
+    sub: "Жылдам жауаптар • Есте сақтау • Жазбалар", 
+    ver: "miniapp v3", 
+    lang: "Тіл", 
+    sheetLang: "Тіл",
+    sheetTheme: "Түс",
+    theme: "Түс",
+    colors: {
+      blue: "Көк",
+      black: "Қара",
+      light: "Ашық"
+    }
+  },
+  en: { 
+    chat: "AI Chat", 
+    img: "Image generation",
+    tools: "🔧 Tools",
+    removeBg: "Remove Background",
+    textFromImage: "Text from Image",
+    selfieFilters: "Selfie Filters",
+    music: "Create Music",
+    meme: "Create Meme",
+    qr: "QR Codes",
+    sub: "Fast replies • Memory • Notes", 
+    ver: "miniapp v3", 
+    lang: "Language", 
+    sheetLang: "Language",
+    sheetTheme: "Color",
+    theme: "Color",
+    colors: {
+      blue: "Blue",
+      black: "Black",
+      light: "Light"
+    }
+  },
+  tr: { 
+    chat: "Yapay Zekâ Sohbet", 
+    img: "Görsel üretimi",
+    tools: "🔧 Araçlar",
+    removeBg: "Arka planı kaldır",
+    textFromImage: "Fotodan yazı",
+    selfieFilters: "Selfie filtreleri",
+    music: "Müzik oluştur",
+    meme: "Meme oluştur",
+    qr: "QR kodlar",
+    sub: "Hızlı yanıtlar • Hafıza • Notlar", 
+    ver: "miniapp v3", 
+    lang: "Dil", 
+    sheetLang: "Dil",
+    sheetTheme: "Renk",
+    theme: "Renk",
+    colors: {
+      blue: "Mavi",
+      black: "Siyah",
+      light: "Açık"
+    }
+  },
+  uk: { 
+    chat: "AI чат", 
+    img: "Генерація зображень",
+    tools: "🔧 Інструменти",
+    removeBg: "Видалити фон",
+    textFromImage: "Текст з фото",
+    selfieFilters: "Селфі фільтри",
+    music: "Створити музику",
+    meme: "Створити мем",
+    qr: "QR коди",
+    sub: "Швидкі відповіді • Пам’ять • Нотатки", 
+    ver: "miniapp v3", 
+    lang: "Мова", 
+    sheetLang: "Мова",
+    sheetTheme: "Колір",
+    theme: "Колір",
+    colors: {
+      blue: "Синій",
+      black: "Чорний",
+      light: "Світлий"
+    }
+  },
+  fr: { 
+    chat: "Chat IA", 
+    img: "Génération d'image",
+    tools: "🔧 Outils",
+    removeBg: "Supprimer l'arrière-plan",
+    textFromImage: "Texte depuis l'image",
+    selfieFilters: "Filtres selfie",
+    music: "Créer de la musique",
+    meme: "Créer un mème",
+    qr: "Codes QR",
+    sub: "Réponses rapides • Mémoire • Notes", 
+    ver: "miniapp v3", 
+    lang: "Langue", 
+    sheetLang: "Langue",
+    sheetTheme: "Couleur",
+    theme: "Couleur",
+    colors: {
+      blue: "Bleu",
+      black: "Noir",
+      light: "Clair"
+    }
+  },
+};
+
+// ===== Списки =====
+const LANGS = [
+  { code: "ru", label: "Русский (RU)" },
+  { code: "kk", label: "Қазақша (KZ)" },
+  { code: "en", label: "English (EN)" },
+  { code: "tr", label: "Türkçe (TR)" },
+  { code: "uk", label: "Українська (UA)" },
+  { code: "fr", label: "Français (FR)" },
+];
+
+// ТОЛЬКО 3 ТЕМЫ: синий, черный, светлый
+const THEMES = [
+  { code: "blue", label: { ru: "Синий", kk: "Көк", en: "Blue", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
+  { code: "black", label: { ru: "Черный", kk: "Қара", en: "Black", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
+  { code: "light", label: { ru: "Светлый", kk: "Ашық", en: "Light", tr: "Açık", uk: "Світлий", fr: "Clair" } },
+];
+
+// ===== helpers =====
+function getSavedLang(){
+  try{ return localStorage.getItem(STORAGE_LANG) || "ru"; }
+  catch(e){ return "ru"; }
+}
+
+function saveLang(lang){
+  try{ localStorage.setItem(STORAGE_LANG, lang); }catch(e){}
+}
+
+function getSavedTheme(){
+  try{ return localStorage.getItem(STORAGE_THEME) || "blue"; }
+  catch(e){ return "blue"; }
+}
+
+function saveTheme(theme){
+  try{ localStorage.setItem(STORAGE_THEME, theme); }catch(e){}
+}
+
+function applyTheme(theme){
+  document.documentElement.setAttribute("data-theme", theme || "blue");
+}
+
+// ===== Уведомления =====
+function showNotification(message) {
+  setTimeout(() => {
+    const oldToasts = document.querySelectorAll('.toast-notification');
+    oldToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }, 500);
+}
+
+// ===== Обновление ссылок =====
+function updateLinks(lang, theme){
+  if (chatBtn) {
+    chatBtn.setAttribute('onclick', `openPage('chat.html')`);
+  }
+  if (imgBtn) {
+    imgBtn.setAttribute('onclick', `openPage('image.html')`);
+  }
+}
+
+// ===== Обновление UI =====
+function updateUILanguage(lang){
+  const t = I18N[lang] || I18N.ru;
   
-  /* Сёрая обводка как в WhatsApp */
-  --btn-border: rgba(0, 0, 0, 0.12);
-}
-
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html, body {
-  height: 100%;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
-  overflow: hidden;
-  overscroll-behavior: none;
-  touch-action: manipulation;
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  position: relative;
-  background: transparent;
-  background-color: var(--bgBot);
-  color: var(--text);
-  display: flex;
-  flex-direction: column;
-  height: var(--vh);
-  overflow: hidden;
-}
-
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 48%, var(--bgBot) 100%);
-  background-repeat: no-repeat;
-  background-color: var(--bgBot);
-  filter: none;
-}
-
-body > * {
-  position: relative;
-  z-index: 2;
-}
-
-/* ========================= */
-/* КУБИКИ - НЕ ТРОГАЕМ */
-/* ========================= */
-.cube {
-  position: absolute;
-  width: 108px;
-  height: 108px;
-  border-radius: 18px;
-
-  background: color-mix(in srgb, var(--accent1) 18%, white 10%);
-  border: 1px solid color-mix(in srgb, var(--accent1) 42%, white 20%);
-  backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
-  box-shadow:
-    0 8px 20px rgba(0,0,0,.08),
-    0 0 18px color-mix(in srgb, var(--accent1) 22%, transparent);
-  pointer-events: none;
-  opacity: .72;
-}
-
-.cube.small {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  opacity: .52;
-}
-
-.cube.tiny {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  opacity: .38;
-}
-
-/* анимации */
-.f1 { animation: drift1 14s ease-in-out infinite; }
-.f2 { animation: drift2 16s ease-in-out infinite; }
-.f3 { animation: drift3 15s ease-in-out infinite; }
-.f4 { animation: drift4 17s ease-in-out infinite; }
-.f5 { animation: drift5 13s ease-in-out infinite; }
-.f6 { animation: drift6 18s ease-in-out infinite; }
-
-@keyframes drift1{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(12px,-14px)} }
-@keyframes drift2{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-14px,-10px)} }
-@keyframes drift3{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,12px)} }
-@keyframes drift4{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,14px)} }
-@keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(8px,-10px)} }
-@keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-8px,10px)} }
-
-/* ========================= */
-/* ОСНОВНОЙ КОНТЕЙНЕР */
-/* ========================= */
-.wrap {
-  position: relative;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  z-index: 10;
-}
-
-/* ========================= */
-/* КАРТОЧКА МЕНЮ */
-/* ========================= */
-.card {
-  width: min(520px, 100%);
-  padding: 22px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, .10);
-  border: 1px solid rgba(255, 255, 255, .12);
-  backdrop-filter: blur(12px) saturate(118%);
-  -webkit-backdrop-filter: blur(12px) saturate(118%);
-  box-shadow: 0 18px 42px rgba(0,0,0,.28);
-}
-
-/* ========================= */
-/* КНОПКИ */
-/* ========================= */
-.btn {
-  display: block;
-  width: 100%;
-  text-align: center;
-  padding: 17px 16px;
-  border-radius: 20px;
-  font-size: 19px;
-  font-weight: 800;
-  color: var(--text);
-  text-decoration: none;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--accent1) 18%, white 8%) 0%,
-      rgba(255,255,255,.08) 100%
-    );
-  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
-  backdrop-filter: blur(12px) saturate(115%);
-  -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow:
-    0 10px 22px rgba(0,0,0,.14),
-    0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
-  margin-bottom: 14px;
-  transition: all 0.2s ease;
-}
-
-/* Светлая тема - серая обводка кнопок */
-:root[data-theme="light"] .btn {
-  border: 1.5px solid var(--btn-border);
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--text);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.btn:active {
-  transform: scale(.995);
-  box-shadow:
-    0 12px 24px rgba(0,0,0,.18),
-    0 0 18px color-mix(in srgb, var(--accent1) 20%, transparent);
-}
-
-.btn:hover {
-  border-color: color-mix(in srgb, var(--accent1) 35%, rgba(255,255,255,.18));
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--accent1) 22%, white 10%) 0%,
-      rgba(255,255,255,.10) 100%
-    );
-}
-
-/* Светлая тема - hover для кнопок */
-:root[data-theme="light"] .btn:hover {
-  border-color: var(--accent1);
-}
-
-.sub {
-  margin-top: 22px;
-  text-align: center;
-  color: rgba(247, 251, 255, .68);
-  font-size: 14px;
-}
-
-.ver {
-  margin-top: 10px;
-  text-align: center;
-  font-size: 12px;
-  opacity: .50;
-}
-
-.langBlock {
-  margin-top: 22px;
-  border-top: 1px solid rgba(255, 255, 255, .10);
-  padding-top: 16px;
-}
-
-.langTitle {
-  font-size: 13px;
-  color: rgba(247, 251, 255, .68);
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.langPill {
-  width: 100%;
-  border-radius: 16px;
-  padding: 14px 14px;
-  background: rgba(255, 255, 255, .10);
-  border: 1px solid rgba(255, 255, 255, .12);
-  color: var(--text);
-  outline: none;
-  backdrop-filter: blur(12px) saturate(115%);
-  -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: 0 8px 18px rgba(0,0,0,.12);
-  font-size: 15px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-/* Светлая тема - серая обводка для кнопки языка */
-:root[data-theme="light"] .langPill {
-  border: 1.5px solid var(--btn-border);
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--text);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.langPill:hover {
-  background: rgba(255, 255, 255, .13);
-  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
-}
-
-.langPill:active {
-  transform: scale(.995);
-}
-
-.chev {
-  opacity: .8;
-}
-
-.themePill {
-  position: fixed;
-  top: calc(10px + env(safe-area-inset-top));
-  left: 10px;
-  z-index: 10000;
-  padding: 10px 14px;
-  border-radius: 18px;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--accent1) 16%, white 8%) 0%,
-      rgba(255,255,255,.08) 100%
-    );
-  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
-  color: var(--text);
-  backdrop-filter: blur(12px) saturate(115%);
-  -webkit-backdrop-filter: blur(12px) saturate(115%);
-  font-size: 13px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow:
-    0 8px 18px rgba(0,0,0,.12),
-    0 0 12px color-mix(in srgb, var(--accent1) 14%, transparent);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-/* Светлая тема - серая обводка для кнопки темы */
-:root[data-theme="light"] .themePill {
-  border: 1.5px solid var(--btn-border);
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--text);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.themePill:hover {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--accent1) 20%, white 10%) 0%,
-      rgba(255,255,255,.11) 100%
-    );
-  border-color: color-mix(in srgb, var(--accent1) 30%, rgba(255,255,255,.18));
-}
-
-.themePill:active {
-  transform: scale(.985);
-}
-
-/* ========================= */
-/* BOTTOM SHEETS - ВОЗВРАЩАЕМ КАК БЫЛО */
-/* ========================= */
-.langOverlay, .themeOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(0,0,0,.34);
-  display: none;
-}
-
-.langOverlay.show, .themeOverlay.show {
-  display: block;
-}
-
-.langSheet, .themeSheet {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: calc(12px + env(safe-area-inset-bottom));
-  border-radius: 18px;
-  background: rgba(24, 31, 40, .97);
-  border: 1px solid rgba(255, 255, 255, .10);
-  backdrop-filter: blur(16px) saturate(118%);
-  -webkit-backdrop-filter: blur(16px) saturate(118%);
-  box-shadow: 0 20px 44px rgba(0,0,0,.32);
-  overflow: hidden;
-  transform: translateY(110%);
-  opacity: 0;
-  transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
-}
-
-/* Светлая тема - возвращаем как было для bottom sheets */
-:root[data-theme="light"] .langSheet,
-:root[data-theme="light"] .themeSheet {
-  background: rgba(24, 31, 40, .97);
-  border: 1px solid rgba(255, 255, 255, .10);
-}
-
-.langOverlay.show .langSheet,
-.themeOverlay.show .themeSheet {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.langSheetHeader, .themeSheetHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, .09);
-}
-
-.langSheetTitle, .themeSheetTitle {
-  font-weight: 800;
-  color: var(--text);
-}
-
-.langClose, .themeClose {
-  border: 0;
-  background: rgba(255, 255, 255, .08);
-  color: var(--text);
-  border: 1px solid rgba(255, 255, 255, .10);
-  border-radius: 12px;
-  padding: 8px 10px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.langClose:hover, .themeClose:hover {
-  background: rgba(255, 255, 255, .11);
-  border-color: rgba(255, 255, 255, .16);
-}
-
-.langList, .themeList {
-  height: 40vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.langItem, .themeItem {
-  width: 100%;
-  text-align: left;
-  padding: 14px;
-  border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .07);
-  background: transparent;
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.langItem:hover, .themeItem:hover {
-  background: rgba(255, 255, 255, .06);
-  border-bottom: 1px solid rgba(255, 255, 255, .10);
-}
-
-.langItem .check, .themeItem .check {
-  opacity: 0;
-  transform: scale(.9);
-  transition: .15s ease;
-  color: var(--accent1);
-}
-
-.langItem.selected .check,
-.themeItem.selected .check {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.toast-notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(24, 31, 40, .97);
-  border: 1px solid rgba(255, 255, 255, .10);
-  border-radius: 24px;
-  padding: 12px 20px;
-  color: var(--text);
-  font-weight: 600;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.26);
-  z-index: 100000;
-  animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-  pointer-events: none;
-  white-space: nowrap;
-}
-
-@keyframes slideDown {
-  from {
-    transform: translate(-50%, -100%);
-    opacity: 0;
+  if (chatBtn) chatBtn.textContent = t.chat;
+  if (imgBtn) imgBtn.textContent = t.img;
+  if (toolsBtnText) toolsBtnText.innerHTML = t.tools;
+  if (toolRemoveBgText) toolRemoveBgText.textContent = t.removeBg;
+  if (toolTextFromImageText) toolTextFromImageText.textContent = t.textFromImage;
+  if (toolSelfieFiltersText) toolSelfieFiltersText.textContent = t.selfieFilters;
+  if (toolMusicText) toolMusicText.textContent = t.music;
+  if (toolMemeText) toolMemeText.textContent = t.meme;
+  if (toolQrText) toolQrText.textContent = t.qr;
+  if (subText) subText.textContent = t.sub;
+  if (verText) verText.textContent = t.ver;
+  if (langTitle) langTitle.textContent = t.lang;
+  if (langSheetTitle) langSheetTitle.textContent = t.sheetLang;
+  if (themeSheetTitle) themeSheetTitle.textContent = t.sheetTheme;
+  
+  const foundLang = LANGS.find(x => x.code === lang);
+  if (langBtnText) {
+    langBtnText.textContent = foundLang ? foundLang.label : "Русский (RU)";
   }
-  to {
-    transform: translate(-50%, 0);
-    opacity: 1;
+  
+  const currentTheme = getSavedTheme();
+  if (themeBtnText) {
+    themeBtnText.textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
+  }
+  
+  paintSelectedLang(lang);
+  updateThemeList(lang);
+}
+
+function getThemeLabel(themeCode, lang){
+  const theme = THEMES.find(t => t.code === themeCode);
+  if (!theme) return themeCode;
+  return theme.label[lang] || theme.label.ru || themeCode;
+}
+
+function updateThemeList(lang){
+  if (!themeList) return;
+  
+  const items = themeList.querySelectorAll('.themeItem');
+  items.forEach(item => {
+    const code = item.getAttribute('data-theme');
+    const labelSpan = item.querySelector('.theme-label');
+    if (labelSpan) {
+      labelSpan.textContent = getThemeLabel(code, lang);
+    }
+  });
+}
+
+function paintSelectedLang(lang){
+  if (!langList) return;
+  const items = langList.querySelectorAll(".langItem");
+  items.forEach(btn => {
+    const code = btn.getAttribute("data-lang");
+    btn.classList.toggle("selected", code === lang);
+  });
+}
+
+function paintSelectedTheme(theme){
+  if (!themeList) return;
+  const items = themeList.querySelectorAll(".themeItem");
+  items.forEach(btn => {
+    const code = btn.getAttribute("data-theme");
+    btn.classList.toggle("selected", code === theme);
+  });
+}
+
+// ===== Установка языка =====
+function setLang(lang){
+  console.log("setLang:", lang);
+  
+  saveLang(lang);
+  updateUILanguage(lang);
+  
+  const currentTheme = getSavedTheme();
+  updateLinks(lang, currentTheme);
+  
+  closeLang();
+  showNotification(`🌐 ${I18N[lang]?.sheetLang || "Language"}: ${LANGS.find(l => l.code === lang)?.label || lang}`);
+}
+
+// ===== Установка темы =====
+function setTheme(theme){
+  console.log("setTheme:", theme);
+  
+  applyTheme(theme);
+  saveTheme(theme);
+  paintSelectedTheme(theme);
+  
+  const currentLang = getSavedLang();
+  const t = I18N[currentLang] || I18N.ru;
+  
+  if (themeBtnText) {
+    themeBtnText.textContent = `${t.theme}: ${getThemeLabel(theme, currentLang)}`;
+  }
+  
+  updateLinks(currentLang, theme);
+  
+  closeTheme();
+  showNotification(`🎨 ${t.sheetTheme}: ${getThemeLabel(theme, currentLang)}`);
+}
+
+// ===== Логика выпадающего меню инструментов =====
+function initToolsMenu() {
+  if (!toolsBtn || !toolsDropdown || !toolsChev) return;
+  
+  let isOpen = false;
+  try {
+    isOpen = localStorage.getItem(STORAGE_TOOLS) === 'true';
+  } catch(e) {}
+  
+  function toggleTools(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    isOpen = !isOpen;
+    
+    if (isOpen) {
+      toolsDropdown.classList.add('open');
+      toolsBtn.classList.add('active');
+      toolsChev.classList.add('rotate');
+      toolsChev.textContent = '▲';
+    } else {
+      toolsDropdown.classList.remove('open');
+      toolsBtn.classList.remove('active');
+      toolsChev.classList.remove('rotate');
+      toolsChev.textContent = '▼';
+    }
+    
+    try {
+      localStorage.setItem(STORAGE_TOOLS, isOpen);
+    } catch(e) {}
+  }
+  
+  toolsBtn.addEventListener('click', toggleTools);
+  
+  document.addEventListener('click', (e) => {
+    if (isOpen && !toolsBtn.contains(e.target) && !toolsDropdown.contains(e.target)) {
+      toggleTools(e);
+    }
+  });
+  
+  if (isOpen) {
+    toolsDropdown.classList.add('open');
+    toolsBtn.classList.add('active');
+    toolsChev.textContent = '▲';
   }
 }
 
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    transform: translate(-50%, -12px);
-  }
+// ===== Overlay controls =====
+function openLang(){
+  if (!langOverlay || !langBtn) return;
+  langOverlay.classList.add("show");
+  langOverlay.setAttribute("aria-hidden", "false");
+  langBtn.setAttribute("aria-expanded", "true");
 }
+
+function closeLang(){
+  if (!langOverlay || !langBtn) return;
+  langOverlay.classList.remove("show");
+  langOverlay.setAttribute("aria-hidden", "true");
+  langBtn.setAttribute("aria-expanded", "false");
+}
+
+function openTheme(){
+  if (!themeOverlay || !themeBtn) return;
+  themeOverlay.classList.add("show");
+  themeOverlay.setAttribute("aria-hidden", "false");
+  themeBtn.setAttribute("aria-expanded", "true");
+}
+
+function closeTheme(){
+  if (!themeOverlay || !themeBtn) return;
+  themeOverlay.classList.remove("show");
+  themeOverlay.setAttribute("aria-hidden", "true");
+  themeBtn.setAttribute("aria-expanded", "false");
+}
+
+// ===== Сборка списков =====
+function buildLangList(){
+  if (!langList) return;
+  
+  langList.innerHTML = "";
+  LANGS.forEach(lang => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "langItem";
+    btn.setAttribute("data-lang", lang.code);
+    btn.innerHTML = `<span>${lang.label}</span><span class="check">✓</span>`;
+    btn.addEventListener("click", () => setLang(lang.code));
+    langList.appendChild(btn);
+  });
+}
+
+function buildThemeList(){
+  if (!themeList) return;
+  
+  themeList.innerHTML = "";
+  THEMES.forEach(theme => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "themeItem";
+    btn.setAttribute("data-theme", theme.code);
+    
+    const currentLang = getSavedLang();
+    const labelText = theme.label[currentLang] || theme.label.ru;
+    btn.innerHTML = `<span class="theme-label">${labelText}</span><span class="check">✓</span>`;
+    
+    btn.addEventListener("click", () => setTheme(theme.code));
+    themeList.appendChild(btn);
+  });
+}
+
+// ===== Инициализация =====
+function init(){
+  buildLangList();
+  buildThemeList();
+  
+  const savedLang = getSavedLang();
+  const savedTheme = getSavedTheme();
+  
+  applyTheme(savedTheme);
+  
+  updateUILanguage(savedLang);
+  paintSelectedTheme(savedTheme);
+  
+  updateLinks(savedLang, savedTheme);
+  
+  initToolsMenu();
+  
+  if (langBtn) langBtn.addEventListener("click", openLang);
+  if (langClose) langClose.addEventListener("click", closeLang);
+  if (langOverlay) {
+    langOverlay.addEventListener("click", (e) => {
+      if (e.target === langOverlay) closeLang();
+    });
+  }
+  
+  if (themeBtn) themeBtn.addEventListener("click", openTheme);
+  if (themeClose) themeClose.addEventListener("click", closeTheme);
+  if (themeOverlay) {
+    themeOverlay.addEventListener("click", (e) => {
+      if (e.target === themeOverlay) closeTheme();
+    });
+  }
+  
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeLang();
+      closeTheme();
+    }
+  });
+}
+
+// Глобальные функции для HTML
+window.openPage = function(page) {
+  const lang = getSavedLang();
+  const theme = getSavedTheme();
+  
+  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+  const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  
+  window.location.href = fullUrl;
+};
+
+window.openTool = function(toolPage) {
+  const lang = getSavedLang();
+  const theme = getSavedTheme();
+  
+  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+  const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  
+  window.location.href = fullUrl;
+};
+
+window.getSavedLang = getSavedLang;
+window.getSavedTheme = getSavedTheme;
+
+init();
