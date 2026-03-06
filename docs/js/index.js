@@ -1,6 +1,4 @@
 // docs/js/index.js
-import { initTelegramTheme, getThemeFromTelegram } from "./telegram.js";
-
 const tg = window.Telegram?.WebApp;
 
 // ===== VH (Telegram/iOS) =====
@@ -82,10 +80,7 @@ const I18N = {
     colors: {
       blue: "Синий",
       black: "Черный",
-      purple: "Фиолетовый",
-      green: "Зеленый",
-      gray: "Серый",
-      light: "Светлая"
+      light: "Светлый"
     }
   },
   kk: { 
@@ -107,9 +102,6 @@ const I18N = {
     colors: {
       blue: "Көк",
       black: "Қара",
-      purple: "Күлгін",
-      green: "Жасыл",
-      gray: "Сұр",
       light: "Ашық"
     }
   },
@@ -132,9 +124,6 @@ const I18N = {
     colors: {
       blue: "Blue",
       black: "Black",
-      purple: "Purple",
-      green: "Green",
-      gray: "Gray",
       light: "Light"
     }
   },
@@ -157,9 +146,6 @@ const I18N = {
     colors: {
       blue: "Mavi",
       black: "Siyah",
-      purple: "Mor",
-      green: "Yeşil",
-      gray: "Gri",
       light: "Açık"
     }
   },
@@ -182,10 +168,7 @@ const I18N = {
     colors: {
       blue: "Синій",
       black: "Чорний",
-      purple: "Фіолетовий",
-      green: "Зелений",
-      gray: "Сірий",
-      light: "Світла"
+      light: "Світлий"
     }
   },
   fr: { 
@@ -207,9 +190,6 @@ const I18N = {
     colors: {
       blue: "Bleu",
       black: "Noir",
-      purple: "Violet",
-      green: "Vert",
-      gray: "Gris",
       light: "Clair"
     }
   },
@@ -228,10 +208,7 @@ const LANGS = [
 const THEMES = [
   { code: "blue", label: { ru: "Синий", kk: "Көк", en: "Blue", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
   { code: "black", label: { ru: "Черный", kk: "Қара", en: "Black", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
-  { code: "purple", label: { ru: "Фиолетовый", kk: "Күлгін", en: "Purple", tr: "Mor", uk: "Фіолетовий", fr: "Violet" } },
-  { code: "green", label: { ru: "Зеленый", kk: "Жасыл", en: "Green", tr: "Yeşil", uk: "Зелений", fr: "Vert" } },
-  { code: "gray", label: { ru: "Серый", kk: "Сұр", en: "Gray", tr: "Gri", uk: "Сірий", fr: "Gris" } },
-  { code: "light", label: { ru: "Светлая", kk: "Ашық", en: "Light", tr: "Açık", uk: "Світла", fr: "Clair" } },
+  { code: "light", label: { ru: "Светлый", kk: "Ашық", en: "Light", tr: "Açık", uk: "Світлий", fr: "Clair" } },
 ];
 
 // ===== helpers =====
@@ -282,15 +259,6 @@ function updateLinks(lang, theme){
   if (imgBtn) {
     imgBtn.setAttribute('onclick', `openPage('image.html')`);
   }
-  
-  // Обновляем tool items
-  const toolItems = document.querySelectorAll('.tool-item');
-  toolItems.forEach(item => {
-    const originalOnclick = item.getAttribute('onclick') || '';
-    if (originalOnclick.includes('openTool(')) {
-      // Уже есть, оставляем
-    }
-  });
 }
 
 // ===== Обновление UI =====
@@ -516,31 +484,15 @@ function init(){
   
   const savedLang = getSavedLang();
   const savedTheme = getSavedTheme();
-  const telegramTheme = getThemeFromTelegram();
   
-  // Применяем тему с учетом Telegram
-  applyTheme(telegramTheme);
+  applyTheme(savedTheme);
   
   updateUILanguage(savedLang);
   paintSelectedTheme(savedTheme);
   
-  updateLinks(savedLang, telegramTheme);
+  updateLinks(savedLang, savedTheme);
   
   initToolsMenu();
-  
-  // Инициализация слушателя темы Telegram
-  initTelegramTheme((newTheme) => {
-    console.log("Telegram theme changed:", newTheme);
-    const currentLang = getSavedLang();
-    applyTheme(newTheme);
-    updateLinks(currentLang, newTheme);
-    
-    // Обновляем текст кнопки темы
-    const t = I18N[currentLang] || I18N.ru;
-    if (themeBtnText) {
-      themeBtnText.textContent = `${t.theme}: ${getThemeLabel(newTheme, currentLang)}`;
-    }
-  });
   
   if (langBtn) langBtn.addEventListener("click", openLang);
   if (langClose) langClose.addEventListener("click", closeLang);
@@ -569,7 +521,7 @@ function init(){
 // Глобальные функции для HTML
 window.openPage = function(page) {
   const lang = getSavedLang();
-  const theme = getThemeFromTelegram();
+  const theme = getSavedTheme();
   
   const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
   const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
@@ -579,7 +531,7 @@ window.openPage = function(page) {
 
 window.openTool = function(toolPage) {
   const lang = getSavedLang();
-  const theme = getThemeFromTelegram();
+  const theme = getSavedTheme();
   
   const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
   const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
@@ -588,6 +540,6 @@ window.openTool = function(toolPage) {
 };
 
 window.getSavedLang = getSavedLang;
-window.getCurrentTheme = getThemeFromTelegram;
+window.getSavedTheme = getSavedTheme;
 
 init();
