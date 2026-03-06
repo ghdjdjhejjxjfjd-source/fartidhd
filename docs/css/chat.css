@@ -35,13 +35,15 @@
   padding:12px 16px;
   border-radius:18px;
   line-height:1.55;
+
   font-size:17px;
   font-weight:600;
+
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  box-shadow: var(--btn-shadow);
+  box-shadow: none;
   opacity: 0;
   transform: translateY(4px);
   animation: msgIn 0.24s ease-out forwards;
@@ -61,11 +63,11 @@
   }
 }
 
-/* bot bubble */
+/* bot bubble — немного светлее */
 .bot .msg{
   align-self:flex-start;
   background: rgba(66, 78, 92, 0.94);
-  border:1.5px solid var(--btn-border-light);
+  border:1px solid rgba(255,255,255,.18);
   color:#f7fbff;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
@@ -76,7 +78,7 @@
 .user .msg{
   align-self:flex-end;
   background: var(--user-bg);
-  border:1.5px solid var(--user-border);
+  border:1px solid var(--user-border);
   color:#f7fbff;
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
@@ -140,6 +142,11 @@
   fill: #41d98c;
 }
 
+.action-btn.copied {
+  background: transparent;
+  border: none;
+}
+
 /* ============================= */
 /* НИЖНЯЯ ПАНЕЛЬ */
 /* ============================= */
@@ -153,7 +160,7 @@
   background: rgba(18,24,32,.90);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-top: 1.5px solid var(--btn-border-light);
+  border-top: 1px solid rgba(255,255,255,.08);
   min-height: 60px;
 }
 
@@ -161,13 +168,13 @@
   flex: 1;
   padding: 11px 15px;
   border-radius: 18px;
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255,255,255,.12);
   outline: none;
   font-size: 15px;
   font-weight: 400;
   color: #f7fbff;
   background: #25303c;
-  box-shadow: var(--btn-shadow);
+  box-shadow: none;
   caret-color: var(--accent2);
   resize: none;
   max-height: 120px;
@@ -183,18 +190,18 @@
 
 .input textarea:focus{
   background: #2a3644;
-  border-color: var(--accent1);
+  border-color: rgba(90,174,255,.40);
 }
 
 .input button{
   padding:0 16px;
   border-radius:16px;
-  border:1.5px solid var(--btn-border-light);
+  border:1px solid rgba(255,255,255,.10);
   font-size:16px;
   font-weight:800;
   background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
   color:#fff;
-  box-shadow: var(--btn-shadow);
+  box-shadow: none;
   height: 42px;
   align-self: flex-end;
   cursor: pointer;
@@ -203,7 +210,6 @@
 
 .input button:hover{
   filter: brightness(1.05);
-  border-color: var(--accent1);
 }
 
 .input button:active {
@@ -234,50 +240,64 @@
   flex:0 0 auto;
 }
 
+/* кнопка назад — добавлен blur */
 .top a{
   color:#f7fbff;
   text-decoration:none;
   font-size:15px;
+
   background: rgba(255,255,255,.12);
+
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+
   padding: 6px 12px;
   border-radius: 16px;
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255,255,255,.16);
 }
 
+/* заголовок */
 .title{
   font-weight:600;
   font-size:16px;
   color: #f7fbff;
+
   background: rgba(255,255,255,.12);
+
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+
   padding: 6px 14px;
   border-radius: 16px;
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255,255,255,.16);
   margin-left: 2px;
 }
 
 .spacer{ flex:1; }
 
+/* кнопка настроек */
 .gear{
   width:34px;
   height:34px;
   border-radius:17px;
-  border:1.5px solid var(--btn-border-light);
+
+  border:1px solid rgba(255,255,255,.16);
+
   background: rgba(255,255,255,.12);
+
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+
   color:#fff;
   font-size:17px;
+
   display:flex;
   align-items:center;
   justify-content:center;
 }
 
 /* ============================= */
-/* TYPING BUBBLE */
+/* typing bubble */
 /* ============================= */
 .msg.bot.typing{
   align-self: flex-start;
@@ -285,12 +305,12 @@
   padding: 10px 12px;
   max-width: 70px;
   background: rgba(66, 78, 92, 0.94);
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255,255,255,.18);
   border-radius: 18px;
   border-top-left-radius: 8px;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
-  box-shadow: var(--btn-shadow);
+  box-shadow: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -321,20 +341,79 @@
   50% { opacity: .98; transform: translateY(-2px) scale(1.08); }
 }
 
-/* ============================= */
-/* ТЕМЫ */
-/* ============================= */
+/* ================================================= */
+/* СВЕТЛАЯ ТЕМА */
+/* ================================================= */
+:root[data-theme="light"] {
+  --accent1: #3a8cff;
+  --accent2: #1a6cff;
+  --user-bg: rgba(58, 140, 255, 0.12);
+  --user-border: rgba(58, 140, 255, 0.20);
+  --text: #1a2634;
+}
+
+:root[data-theme="light"] .bot .msg {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #1a2634;
+}
+
+:root[data-theme="light"] .user .msg {
+  color: #1a2634;
+}
+
+:root[data-theme="light"] .input {
+  background: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .input textarea {
+  background: white;
+  color: #1a2634;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme="light"] .input textarea::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="light"] .input button {
+  color: white;
+}
+
+:root[data-theme="light"] .top a,
+:root[data-theme="light"] .title,
+:root[data-theme="light"] .gear {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #1a2634;
+}
+
+:root[data-theme="light"] .action-btn svg {
+  fill: rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="light"] .action-btn:hover svg {
+  fill: var(--accent1);
+}
+
+:root[data-theme="light"] .msg.bot.typing {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .typing .dot {
+  background: #1a2634;
+}
+
+/* ================================================= */
+/* ТЕМЫ (только синий и черный) */
+/* ================================================= */
 :root[data-theme="blue"] {
   --accent1: #5aaeff;
   --accent2: #3496ff;
   --user-bg: rgba(90, 174, 255, 0.28);
   --user-border: rgba(90, 174, 255, 0.34);
-  --btn-border-light: rgba(90, 174, 255, 0.3);
-  
-  /* Панель настроек - синяя как меню */
-  --sheet-bg: rgba(39, 56, 75, 0.95);
-  --sheet-border: rgba(90, 174, 255, 0.3);
-  --sheet-text: #f7fbff;
 }
 
 :root[data-theme="black"] {
@@ -342,220 +421,5 @@
   --accent2: #5a98ff;
   --user-bg: rgba(139, 184, 255, 0.25);
   --user-border: rgba(139, 184, 255, 0.30);
-  --btn-border-light: rgba(139, 184, 255, 0.3);
-  
-  /* Панель настроек - черная */
-  --sheet-bg: rgba(24, 31, 40, .97);
-  --sheet-border: rgba(255, 255, 255, .10);
-  --sheet-text: #f7fbff;
-}
-
-:root[data-theme="light"] {
-  --accent1: #3a8cff;
-  --accent2: #1a6cff;
-  --user-bg: rgba(58, 140, 255, 0.12);
-  --user-border: rgba(58, 140, 255, 0.20);
-  --text: #1a2634;
-  --btn-border-light: rgba(0, 0, 0, 0.15);
-  
-  /* Панель настроек - светлая с блюром */
-  --sheet-bg: rgba(255, 255, 255, 0.85);
-  --sheet-border: rgba(0, 0, 0, 0.1);
-  --sheet-text: #1a2634;
-  
-  /* Полупрозрачные кнопки с блюром */
-  --btn-bg: rgba(255, 255, 255, 0.4);
-  --btn-blur: blur(12px);
-}
-
-/* Светлая тема - кнопки с блюром */
-:root[data-theme="light"] .btn,
-:root[data-theme="light"] .tools-btn,
-:root[data-theme="light"] .tool-item,
-:root[data-theme="light"] .langPill,
-:root[data-theme="light"] .themePill {
-  background: var(--btn-bg);
-  backdrop-filter: var(--btn-blur);
-  -webkit-backdrop-filter: var(--btn-blur);
-  border: 1.5px solid var(--btn-border-light);
-}
-
-/* ============================= */
-/* ПАНЕЛЬ НАСТРОЕК - В ЦВЕТ ТЕМЫ */
-/* ============================= */
-.overlay{
-  position:fixed;
-  inset:0;
-  background: rgba(0,0,0,.55);
-  display:none;
-  align-items:flex-end;
-  padding:16px;
-  z-index:50;
-}
-
-.sheet{
-  width:100%;
-  border-radius:18px;
-  background: var(--sheet-bg);
-  border: 1.5px solid var(--sheet-border);
-  padding:14px;
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 20px 44px rgba(0,0,0,.32);
-}
-
-.sheet h3{
-  margin:0 0 10px 0;
-  font-size:16px;
-  font-weight:800;
-  color: var(--sheet-text);
-}
-
-.row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:10px 0;
-  border-top:1.5px solid var(--sheet-border);
-  color: var(--sheet-text);
-}
-
-.row:first-of-type{ border-top:none; }
-
-.pill{
-  border:1.5px solid var(--sheet-border);
-  background: rgba(255,255,255,.10);
-  color: var(--sheet-text);
-  padding:10px 12px;
-  border-radius:14px;
-  font-weight:700;
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  box-shadow: 0 10px 22px rgba(0,0,0,.14);
-}
-
-.pill:hover {
-  border-color: var(--accent1);
-}
-
-/* Настройки - ряды */
-.settings-row {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-  margin-bottom: 4px;
-}
-
-.settings-row select {
-  width: 100%;
-  margin-top: 4px;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1.5px solid var(--sheet-border);
-  background: rgba(255,255,255,.1);
-  color: var(--sheet-text);
-  outline: none;
-}
-
-.settings-row select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.settings-row select option {
-  background: var(--sheet-bg);
-  color: var(--sheet-text);
-}
-
-/* Лимиты */
-.limit-hint {
-  font-size: 12px;
-  color: #999;
-  margin-top: 2px;
-  margin-bottom: 8px;
-  padding-left: 8px;
-  text-align: left;
-  width: 100%;
-}
-
-.limit-hint.warning {
-  color: #ff4444;
-}
-
-/* Кнопки */
-.button-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-  justify-content: space-between;
-}
-
-.button-row button {
-  flex: 1;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1.5px solid var(--sheet-border);
-  background: rgba(255,255,255,.1);
-  color: var(--sheet-text);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.button-row button.primary {
-  background: var(--accent1);
-  border-color: var(--accent2);
-  color: white;
-}
-
-.button-row button.primary:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.button-row button:hover:not(:disabled) {
-  background: rgba(255,255,255,.2);
-}
-
-.button-row button.primary:hover:not(:disabled) {
-  background: var(--accent2);
-}
-
-.unsaved-badge {
-  font-size: 11px;
-  color: #ffaa00;
-  margin-left: 8px;
-}
-
-/* Стили для светлой темы в настройках */
-:root[data-theme="light"] .settings-row select {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: var(--sheet-border);
-  color: var(--sheet-text);
-}
-
-:root[data-theme="light"] .button-row button {
-  background: var(--btn-bg);
-  backdrop-filter: var(--btn-blur);
-  -webkit-backdrop-filter: var(--btn-blur);
-  border: 1.5px solid var(--btn-border-light);
-  color: var(--sheet-text);
-}
-
-:root[data-theme="light"] .button-row button.primary {
-  background: var(--accent1);
-  color: white;
-}
-
-:root[data-theme="light"] .pill {
-  background: var(--btn-bg);
-  backdrop-filter: var(--btn-blur);
-  -webkit-backdrop-filter: var(--btn-blur);
-  border: 1.5px solid var(--btn-border-light);
-  color: var(--sheet-text);
+  --text: #f7fbff;
 }
