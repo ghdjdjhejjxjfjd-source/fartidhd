@@ -33,58 +33,25 @@
     })();
   </script>
 
-  <!-- ТЕМА: исправленная логика -->
+  <!-- ТЕМА: применяем сразу -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
-      const tg = window.Telegram?.WebApp;
-      
-      function getTelegramTheme() {
-        return tg?.colorScheme || null;
-      }
-      
       function getTheme(){
         const url = new URL(window.location.href);
         const qp = url.searchParams.get("theme");
         if (qp) return qp;
-        
-        const telegramTheme = getTelegramTheme();
-        const savedTheme = (() => { try { return localStorage.getItem(KEY); } catch(e) { return null; } })();
-        
-        if (telegramTheme === 'dark') {
-          return savedTheme || "blue";
-        } else if (telegramTheme === 'light') {
-          return "light";
-        } else {
-          return savedTheme || "blue";
-        }
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
       }
-      
       const theme = getTheme();
       document.documentElement.setAttribute("data-theme", theme);
-      try { localStorage.setItem(KEY, theme); } catch(e) {}
+      try{ localStorage.setItem(KEY, theme); }catch(e){}
     })();
   </script>
 
-  <!-- Слушатель изменений темы Telegram -->
-  <script>
-    (function(){
-      const tg = window.Telegram?.WebApp;
-      if (tg) {
-        tg.onEvent('themeChanged', () => {
-          const url = new URL(window.location.href);
-          const newTheme = tg.colorScheme === 'light' ? 'light' : 
-                          (localStorage.getItem("miniapp_theme_v1") || "blue");
-          url.searchParams.set('theme', newTheme);
-          window.location.href = url.toString();
-        });
-      }
-    })();
-  </script>
-
-  <link rel="stylesheet" href="./css/base.css?v=4">
+  <link rel="stylesheet" href="./css/base.css?v=3">
   <link rel="stylesheet" href="./css/panels.css?v=3">
-  <link rel="stylesheet" href="./css/chat.css?v=4">
+  <link rel="stylesheet" href="./css/chat.css?v=3">
   
   <style>
     .limit-hint {
@@ -158,21 +125,31 @@
 
     /* Стили для светлой темы */
     :root[data-theme="light"] .settings-row select {
-      background: rgba(255,255,255,0.9);
-      border-color: rgba(0,0,0,0.15);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 0, 0, 0.15);
       color: #1a2634;
     }
     :root[data-theme="light"] .button-row button {
-      background: rgba(255,255,255,0.9);
-      border-color: rgba(0,0,0,0.15);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 0, 0, 0.15);
       color: #1a2634;
     }
     :root[data-theme="light"] .button-row button.primary {
       background: var(--accent1);
       color: white;
     }
+    :root[data-theme="light"] .sheet {
+      background: rgba(240, 240, 245, 0.97);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    :root[data-theme="light"] .pill {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 0, 0, 0.1);
+      color: #1a2634;
+    }
   </style>
 </head>
+
 <body>
 
   <div class="top">
@@ -200,6 +177,7 @@
     <div class="sheet">
       <h3 id="settingsTitle">⚙️ Настройки</h3>
 
+      <!-- Стиль ответа с отображением лимита -->
       <div class="settings-row">
         <div id="styleLabel">Стиль ответа</div>
         <select id="styleSel">
@@ -210,6 +188,7 @@
       </div>
       <div id="style-limit" class="limit-hint"></div>
 
+      <!-- Характер с отображением лимита -->
       <div class="settings-row">
         <div id="personaLabel">Характер</div>
         <select id="personaSel">
@@ -221,23 +200,26 @@
       </div>
       <div id="persona-limit" class="limit-hint"></div>
 
+      <!-- Кнопка очистки чата -->
       <div class="row">
         <div id="chatLabel">Чат</div>
         <button class="pill" id="clearBtn">🧹 Очистить</button>
       </div>
 
+      <!-- Кнопки: Сохранить и Отмена -->
       <div class="button-row">
         <button class="primary" id="saveSettingsBtn" disabled>💾 Сохранить</button>
         <button id="cancelSettingsBtn">✖ Отмена</button>
       </div>
 
+      <!-- Индикатор несохраненных изменений -->
       <div id="unsaved-indicator" style="display: none; text-align: center; margin-top: 8px; font-size: 12px; color: #ffaa00;">
         ⚡ Есть несохраненные изменения
       </div>
     </div>
   </div>
 
-  <script type="module" src="./js/chat-page.js?v=3"></script>
+  <script type="module" src="./js/chat-page.js"></script>
 
   <script>
     const STORAGE_LANG = "miniapp_lang_v1";
@@ -388,6 +370,7 @@
     document.getElementById("chatLabel").textContent = t.chat;
     document.getElementById("clearBtn").textContent = t.clear;
     
+    // Обновляем текст новых кнопок
     const saveBtn = document.getElementById("saveSettingsBtn");
     const cancelBtn = document.getElementById("cancelSettingsBtn");
     if (saveBtn) saveBtn.textContent = t.save;
