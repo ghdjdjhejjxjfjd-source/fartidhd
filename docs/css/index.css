@@ -1,49 +1,46 @@
-/* docs/css/index.css */
-
 :root {
   --vh: 100vh;
-  
-  /* ✅ немного уменьшил яркость */
-  --bgDark: 0.65;
-  
-  --bgTop: #0b2d55;
-  --bgMid: #081f3f;
-  --bgBot: #06162b;
-  
-  --accent1: #3aa0ff;
-  --accent2: #0a84ff;
-  
-  --text: #fff;
+
+  --bgDark: 1;
+
+  --bgTop: #11161d;
+  --bgMid: #0d1218;
+  --bgBot: #0a0e13;
+
+  --accent1: #4da3ff;
+  --accent2: #2d8cff;
+
+  --text: #f3f6fb;
 }
 
 /* темы */
 :root[data-theme="black"]{
-  --bgTop:#0b0f18;
-  --bgMid:#070b12;
-  --bgBot:#04060b;
-  --accent1:#6aa7ff;
-  --accent2:#2f7bff;
+  --bgTop:#0d1015;
+  --bgMid:#090c11;
+  --bgBot:#07090d;
+  --accent1:#7dafff;
+  --accent2:#4f8fff;
 }
 :root[data-theme="purple"]{
-  --bgTop:#2d1750;
-  --bgMid:#1a1236;
-  --bgBot:#0a0716;
-  --accent1:#b98cff;
-  --accent2:#7a5cff;
+  --bgTop:#18121f;
+  --bgMid:#120d18;
+  --bgBot:#0c0911;
+  --accent1:#b18cff;
+  --accent2:#8a63ff;
 }
 :root[data-theme="green"]{
-  --bgTop:#0b4f41;
-  --bgMid:#08352d;
-  --bgBot:#061a16;
-  --accent1:#2fd6a3;
-  --accent2:#11a87b;
+  --bgTop:#0f1816;
+  --bgMid:#0c1311;
+  --bgBot:#080d0b;
+  --accent1:#39c99c;
+  --accent2:#22aa82;
 }
 :root[data-theme="gray"]{
-  --bgTop:#2a3442;
-  --bgMid:#1a2330;
-  --bgBot:#0b1018;
-  --accent1:#7fb2ff;
-  --accent2:#4b8dff;
+  --bgTop:#161a20;
+  --bgMid:#11151a;
+  --bgBot:#0c0f13;
+  --accent1:#8ab4ff;
+  --accent2:#5a94ff;
 }
 
 * {
@@ -72,76 +69,67 @@ body {
   overflow: hidden;
 }
 
-/* ✅ только градиент, без узоров и кругов */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: var(--bgTop);
+  background:
+    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 50%, var(--bgBot) 100%);
   background-repeat: no-repeat;
-  background-color: var(--bgTop);
-  filter: brightness(var(--bgDark));
+  background-color: var(--bgBot);
+  filter: none;
 }
 
-/* ❌ УБРАЛ: body::before с узорами */
-
-/* контент поверх */
 body > * {
   position: relative;
   z-index: 2;
 }
 
-/* ========================= */
-/* ✅ МНОГО КУБИКОВ */
-/* ========================= */
+/* декоративные кубики делаем тише */
 .cube {
   position: absolute;
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, .08);
-  border: 1.5px solid rgba(255, 255, 255, .2);
-  backdrop-filter: blur(10px) saturate(140%);
-  -webkit-backdrop-filter: blur(10px) saturate(140%);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.05) inset;
+  background: rgba(255, 255, 255, .025);
+  border: 1px solid rgba(255, 255, 255, .05);
+  backdrop-filter: blur(6px) saturate(105%);
+  -webkit-backdrop-filter: blur(6px) saturate(105%);
+  box-shadow: none;
   pointer-events: none;
-  opacity: .85;
+  opacity: .32;
 }
 
 .cube.small {
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
-  opacity: .75;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  opacity: .24;
 }
 
 .cube.tiny {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  opacity: .65;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  opacity: .18;
 }
 
-/* анимации */
-.f1 { animation: drift1 10s ease-in-out infinite; }
-.f2 { animation: drift2 12s ease-in-out infinite; }
-.f3 { animation: drift3 11s ease-in-out infinite; }
-.f4 { animation: drift4 13s ease-in-out infinite; }
-.f5 { animation: drift5 9s  ease-in-out infinite; }
-.f6 { animation: drift6 14s ease-in-out infinite; }
+.f1 { animation: drift1 14s ease-in-out infinite; }
+.f2 { animation: drift2 16s ease-in-out infinite; }
+.f3 { animation: drift3 15s ease-in-out infinite; }
+.f4 { animation: drift4 17s ease-in-out infinite; }
+.f5 { animation: drift5 13s ease-in-out infinite; }
+.f6 { animation: drift6 18s ease-in-out infinite; }
 
-@keyframes drift1{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(18px,-22px)} }
-@keyframes drift2{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-22px,-14px)} }
-@keyframes drift3{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(16px,18px)} }
-@keyframes drift4{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-18px,22px)} }
-@keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,-18px)} }
-@keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,16px)} }
+@keyframes drift1{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(12px,-14px)} }
+@keyframes drift2{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-14px,-10px)} }
+@keyframes drift3{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,12px)} }
+@keyframes drift4{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,14px)} }
+@keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(8px,-10px)} }
+@keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-8px,10px)} }
 
-/* ========================= */
-/* ОСНОВНОЙ КОНТЕЙНЕР */
-/* ========================= */
 .wrap {
   position: relative;
   height: 100%;
@@ -152,102 +140,86 @@ body > * {
   z-index: 10;
 }
 
-/* ========================= */
-/* КАРТОЧКА МЕНЮ */
-/* ========================= */
 .card {
   width: min(520px, 100%);
   padding: 22px;
-  border-radius: 26px;
-  background: rgba(255, 255, 255, .06);
-  border: 1.5px solid rgba(255, 255, 255, .2);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.05) inset,
-              0 22px 60px rgba(0,0,0,.30);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .035);
+  border: 1px solid rgba(255, 255, 255, .07);
+  backdrop-filter: blur(10px) saturate(110%);
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  box-shadow: 0 16px 40px rgba(0,0,0,.30);
 }
 
-/* ========================= */
-/* КНОПКИ */
-/* ========================= */
 .btn {
   display: block;
   width: 100%;
   text-align: center;
-  padding: 18px 16px;
-  border-radius: 22px;
-  font-size: 22px;
-  font-weight: 900;
+  padding: 17px 16px;
+  border-radius: 20px;
+  font-size: 19px;
+  font-weight: 800;
   color: var(--text);
   text-decoration: none;
-  background: rgba(255, 255, 255, .12);
-  border: 1.5px solid rgba(255, 255, 255, .2);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset,
-              0 18px 40px rgba(0,0,0,.25);
-  margin-bottom: 16px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .08);
+  backdrop-filter: blur(10px) saturate(110%);
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  box-shadow: 0 8px 20px rgba(0,0,0,.16);
+  margin-bottom: 14px;
   transition: all 0.2s ease;
 }
 
-/* ✅ свечение ТОЛЬКО при нажатии, убрал с hover */
 .btn:active {
   transform: scale(.995);
-  box-shadow: 
-    0 0 0 1px rgba(255,255,255,.1) inset,
-    0 18px 40px rgba(0,0,0,.3),
-    0 0 25px var(--accent1);
+  box-shadow: 0 10px 22px rgba(0,0,0,.22);
 }
 
-/* ✅ обычное состояние без свечения */
 .btn:hover {
-  border-color: rgba(255, 255, 255, .35);
-  background: rgba(255, 255, 255, .18);
+  border-color: rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .08);
 }
 
-/* ========================= */
-/* НИЖНЯЯ ПАНЕЛЬ */
-/* ========================= */
 .sub {
-  margin-top: 24px;
+  margin-top: 22px;
   text-align: center;
-  color: rgba(255, 255, 255, .62);
+  color: rgba(243, 246, 251, .56);
   font-size: 14px;
 }
 
 .ver {
-  margin-top: 12px;
+  margin-top: 10px;
   text-align: center;
   font-size: 12px;
-  opacity: .5;
+  opacity: .38;
 }
 
 .langBlock {
-  margin-top: 24px;
-  border-top: 1.5px solid rgba(255, 255, 255, .2);
+  margin-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, .08);
   padding-top: 16px;
 }
 
 .langTitle {
   font-size: 13px;
-  color: rgba(255, 255, 255, .62);
+  color: rgba(243, 246, 251, .56);
   margin-bottom: 12px;
   text-align: center;
 }
 
 .langPill {
   width: 100%;
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 14px 14px;
-  background: rgba(255, 255, 255, .12);
-  border: 1.5px solid rgba(255, 255, 255, .2);
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .08);
   color: var(--text);
   outline: none;
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  box-shadow: 0 8px 20px rgba(0,0,0,.18);
-  font-size: 16px;
-  font-weight: 800;
+  backdrop-filter: blur(10px) saturate(110%);
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  box-shadow: 0 8px 18px rgba(0,0,0,.14);
+  font-size: 15px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -257,17 +229,16 @@ body > * {
 }
 
 .langPill:hover {
-  background: rgba(255, 255, 255, .18);
-  border-color: rgba(255, 255, 255, .35);
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .12);
 }
 
 .langPill:active {
   transform: scale(.995);
-  box-shadow: 0 8px 20px rgba(0,0,0,.25), 0 0 25px var(--accent1);
 }
 
 .chev {
-  opacity: .8;
+  opacity: .72;
 }
 
 .themePill {
@@ -276,40 +247,36 @@ body > * {
   left: 10px;
   z-index: 10000;
   padding: 10px 14px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, .12);
-  border: 1.5px solid rgba(255, 255, 255, .2);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .08);
   color: var(--text);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  font-size: 14px;
-  font-weight: 900;
+  backdrop-filter: blur(12px) saturate(110%);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  font-size: 13px;
+  font-weight: 800;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  box-shadow: 0 8px 18px rgba(0,0,0,.14);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .themePill:hover {
-  background: rgba(255, 255, 255, .18);
-  border-color: rgba(255, 255, 255, .35);
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .12);
 }
 
 .themePill:active {
-  transform: scale(.98);
-  box-shadow: 0 8px 20px rgba(0,0,0,.25), 0 0 25px var(--accent1);
+  transform: scale(.985);
 }
 
-/* ========================= */
-/* BOTTOM SHEETS */
-/* ========================= */
 .langOverlay, .themeOverlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0,0,0,.30);
+  background: rgba(0,0,0,.34);
   display: none;
 }
 
@@ -322,16 +289,16 @@ body > * {
   left: 12px;
   right: 12px;
   bottom: calc(12px + env(safe-area-inset-bottom));
-  border-radius: 20px;
-  background: rgba(255, 255, 255, .06);
-  border: 1.5px solid rgba(255, 255, 255, .2);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  box-shadow: 0 20px 50px rgba(0,0,0,.35);
+  border-radius: 18px;
+  background: rgba(18, 22, 29, .96);
+  border: 1px solid rgba(255, 255, 255, .08);
+  backdrop-filter: blur(14px) saturate(110%);
+  -webkit-backdrop-filter: blur(14px) saturate(110%);
+  box-shadow: 0 20px 44px rgba(0,0,0,.34);
   overflow: hidden;
   transform: translateY(110%);
   opacity: 0;
-  transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
 }
 
 .langOverlay.show .langSheet,
@@ -344,30 +311,30 @@ body > * {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 14px;
-  border-bottom: 1.5px solid rgba(255, 255, 255, .2);
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
 
 .langSheetTitle, .themeSheetTitle {
-  font-weight: 900;
+  font-weight: 800;
   color: var(--text);
 }
 
 .langClose, .themeClose {
   border: 0;
-  background: rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .06);
   color: var(--text);
-  border: 1.5px solid rgba(255, 255, 255, .2);
+  border: 1px solid rgba(255, 255, 255, .08);
   border-radius: 12px;
   padding: 8px 10px;
-  font-weight: 900;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .langClose:hover, .themeClose:hover {
-  background: rgba(255, 255, 255, .18);
-  border-color: rgba(255, 255, 255, .35);
+  background: rgba(255, 255, 255, .09);
+  border-color: rgba(255, 255, 255, .12);
 }
 
 .langList, .themeList {
@@ -379,13 +346,13 @@ body > * {
 .langItem, .themeItem {
   width: 100%;
   text-align: left;
-  padding: 14px 14px;
+  padding: 14px;
   border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .2);
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
   background: transparent;
   color: var(--text);
-  font-size: 16px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -394,8 +361,8 @@ body > * {
 }
 
 .langItem:hover, .themeItem:hover {
-  background: rgba(255, 255, 255, .12);
-  border-bottom: 1px solid rgba(255, 255, 255, .35);
+  background: rgba(255, 255, 255, .05);
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
 
 .langItem .check, .themeItem .check {
@@ -416,15 +383,15 @@ body > * {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, .12);
-  border: 1.5px solid rgba(255, 255, 255, .2);
-  border-radius: 30px;
-  padding: 12px 24px;
+  background: rgba(18, 22, 29, .96);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 24px;
+  padding: 12px 20px;
   color: var(--text);
   font-weight: 600;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.28);
   z-index: 100000;
   animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   pointer-events: none;
@@ -445,6 +412,6 @@ body > * {
 @keyframes fadeOut {
   to {
     opacity: 0;
-    transform: translate(-50%, -20px);
+    transform: translate(-50%, -12px);
   }
 }
