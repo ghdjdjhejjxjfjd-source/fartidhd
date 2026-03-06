@@ -41,7 +41,7 @@
   word-break: break-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  box-shadow: var(--btn-shadow);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   opacity: 0;
   transform: translateY(4px);
   animation: msgIn 0.24s ease-out forwards;
@@ -61,22 +61,22 @@
   }
 }
 
-/* bot bubble */
+/* bot bubble - убрана синяя обводка, добавлена незаметная */
 .bot .msg{
   align-self:flex-start;
   background: rgba(66, 78, 92, 0.94);
-  border:1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color:#f7fbff;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
   border-top-left-radius:8px;
 }
 
-/* user bubble */
+/* user bubble - убрана синяя обводка, добавлена незаметная */
 .user .msg{
   align-self:flex-end;
   background: var(--user-bg);
-  border:1.5px solid var(--user-border);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color:#f7fbff;
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
@@ -153,7 +153,7 @@
   background: rgba(18,24,32,.90);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-top: 1.5px solid var(--btn-border-light);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   min-height: 60px;
 }
 
@@ -161,13 +161,13 @@
   flex: 1;
   padding: 11px 15px;
   border-radius: 18px;
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   outline: none;
   font-size: 15px;
   font-weight: 400;
   color: #f7fbff;
   background: #25303c;
-  box-shadow: var(--btn-shadow);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   caret-color: var(--accent2);
   resize: none;
   max-height: 120px;
@@ -183,18 +183,18 @@
 
 .input textarea:focus{
   background: #2a3644;
-  border-color: var(--accent1);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .input button{
   padding:0 16px;
   border-radius:16px;
-  border:1.5px solid var(--btn-border-light);
+  border: none;
   font-size:16px;
   font-weight:800;
   background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
   color:#fff;
-  box-shadow: var(--btn-shadow);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   height: 42px;
   align-self: flex-end;
   cursor: pointer;
@@ -203,7 +203,6 @@
 
 .input button:hover{
   filter: brightness(1.05);
-  border-color: var(--accent1);
 }
 
 .input button:active {
@@ -216,7 +215,7 @@
 }
 
 /* ============================= */
-/* ВЕРХНЯЯ ПАНЕЛЬ */
+/* ВЕРХНЯЯ ПАНЕЛЬ - УБРАНА СИНЯЯ ОБВОДКА */
 /* ============================= */
 .top{
   position: fixed;
@@ -238,24 +237,24 @@
   color:#f7fbff;
   text-decoration:none;
   font-size:15px;
-  background: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 6px 12px;
   border-radius: 16px;
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .title{
   font-weight:600;
   font-size:16px;
   color: #f7fbff;
-  background: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 6px 14px;
   border-radius: 16px;
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   margin-left: 2px;
 }
 
@@ -265,8 +264,8 @@
   width:34px;
   height:34px;
   border-radius:17px;
-  border:1.5px solid var(--btn-border-light);
-  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255,255,255,.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   color:#fff;
@@ -285,12 +284,12 @@
   padding: 10px 12px;
   max-width: 70px;
   background: rgba(66, 78, 92, 0.94);
-  border: 1.5px solid var(--btn-border-light);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
   border-top-left-radius: 8px;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
-  box-shadow: var(--btn-shadow);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -329,7 +328,6 @@
   --accent2: #3496ff;
   --user-bg: rgba(90, 174, 255, 0.28);
   --user-border: rgba(90, 174, 255, 0.34);
-  --btn-border-light: rgba(90, 174, 255, 0.3);
 }
 
 :root[data-theme="black"] {
@@ -337,7 +335,6 @@
   --accent2: #5a98ff;
   --user-bg: rgba(139, 184, 255, 0.25);
   --user-border: rgba(139, 184, 255, 0.30);
-  --btn-border-light: rgba(139, 184, 255, 0.3);
 }
 
 :root[data-theme="light"] {
@@ -349,7 +346,7 @@
   
   /* Полупрозрачные кнопки и панели с размытием */
   --btn-bg: rgba(255, 255, 255, 0.4);
-  --btn-border: rgba(58, 140, 255, 0.3);
+  --btn-border: rgba(0, 0, 0, 0.08);
   --panel-bg: rgba(255, 255, 255, 0.25);
   --blur-amount: blur(12px);
 }
@@ -359,27 +356,27 @@
   background: var(--btn-bg);
   backdrop-filter: var(--blur-amount);
   -webkit-backdrop-filter: var(--blur-amount);
-  border-color: var(--btn-border);
+  border: 1px solid var(--btn-border);
   color: var(--text);
 }
 
 :root[data-theme="light"] .user .msg {
   color: var(--text);
   background: var(--user-bg);
-  border-color: var(--user-border);
+  border: 1px solid var(--btn-border);
 }
 
 :root[data-theme="light"] .input {
   background: var(--panel-bg);
   backdrop-filter: var(--blur-amount);
   -webkit-backdrop-filter: var(--blur-amount);
-  border-top-color: var(--btn-border);
+  border-top: 1px solid var(--btn-border);
 }
 
 :root[data-theme="light"] .input textarea {
   background: rgba(255, 255, 255, 0.6);
   color: var(--text);
-  border-color: var(--btn-border);
+  border: 1px solid var(--btn-border);
 }
 
 :root[data-theme="light"] .input textarea::placeholder {
@@ -388,7 +385,7 @@
 
 :root[data-theme="light"] .input button {
   color: white;
-  border-color: var(--btn-border);
+  border: none;
 }
 
 :root[data-theme="light"] .top a,
@@ -397,7 +394,7 @@
   background: var(--btn-bg);
   backdrop-filter: var(--blur-amount);
   -webkit-backdrop-filter: var(--blur-amount);
-  border-color: var(--btn-border);
+  border: 1px solid var(--btn-border);
   color: var(--text);
 }
 
@@ -413,9 +410,206 @@
   background: var(--btn-bg);
   backdrop-filter: var(--blur-amount);
   -webkit-backdrop-filter: var(--blur-amount);
-  border-color: var(--btn-border);
+  border: 1px solid var(--btn-border);
 }
 
 :root[data-theme="light"] .typing .dot {
   background: var(--text);
+}
+
+/* ============================= */
+/* ПАНЕЛЬ НАСТРОЕК - ДЛЯ СИНЕЙ ТЕМЫ */
+/* ============================= */
+.overlay{
+  position:fixed;
+  inset:0;
+  background: rgba(0,0,0,.55);
+  display:none;
+  align-items:flex-end;
+  padding:16px;
+  z-index:50;
+}
+
+.sheet{
+  width:100%;
+  border-radius:18px;
+  padding:14px;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 20px 44px rgba(0,0,0,.32);
+}
+
+/* Синяя тема - панель настроек синяя */
+:root[data-theme="blue"] .sheet {
+  background: rgba(39, 56, 75, 0.95);
+  border: 1px solid rgba(90, 174, 255, 0.2);
+}
+
+:root[data-theme="blue"] .sheet h3,
+:root[data-theme="blue"] .sheet div,
+:root[data-theme="blue"] .settings-row,
+:root[data-theme="blue"] .row,
+:root[data-theme="blue"] .limit-hint {
+  color: #f7fbff;
+}
+
+:root[data-theme="blue"] .settings-row select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(90, 174, 255, 0.3);
+  color: #f7fbff;
+}
+
+:root[data-theme="blue"] .settings-row select option {
+  background: rgba(39, 56, 75, 0.95);
+  color: #f7fbff;
+}
+
+:root[data-theme="blue"] .button-row button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(90, 174, 255, 0.3);
+  color: #f7fbff;
+}
+
+:root[data-theme="blue"] .button-row button.primary {
+  background: var(--accent1);
+  border-color: var(--accent2);
+  color: white;
+}
+
+:root[data-theme="blue"] .pill {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(90, 174, 255, 0.3);
+  color: #f7fbff;
+}
+
+/* Черная тема - панель настроек черная */
+:root[data-theme="black"] .sheet {
+  background: rgba(24, 31, 40, .97);
+  border: 1px solid rgba(255, 255, 255, .10);
+}
+
+:root[data-theme="black"] .sheet h3,
+:root[data-theme="black"] .sheet div,
+:root[data-theme="black"] .settings-row,
+:root[data-theme="black"] .row,
+:root[data-theme="black"] .limit-hint {
+  color: #f7fbff;
+}
+
+/* Светлая тема - панель настроек светлая */
+:root[data-theme="light"] .sheet {
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1px solid var(--btn-border);
+}
+
+:root[data-theme="light"] .sheet h3,
+:root[data-theme="light"] .sheet div,
+:root[data-theme="light"] .settings-row,
+:root[data-theme="light"] .row,
+:root[data-theme="light"] .limit-hint {
+  color: var(--text);
+}
+
+.sheet h3{
+  margin:0 0 10px 0;
+  font-size:16px;
+  font-weight:800;
+}
+
+.row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 0;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.row:first-of-type{ border-top:none; }
+
+.pill{
+  padding:10px 12px;
+  border-radius:14px;
+  font-weight:700;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Настройки - ряды */
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.settings-row select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  outline: none;
+}
+
+.settings-row select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Лимиты */
+.limit-hint {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+  margin-bottom: 8px;
+  padding-left: 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.limit-hint.warning {
+  color: #ff4444;
+}
+
+/* Кнопки */
+.button-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  justify-content: space-between;
+}
+
+.button-row button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.button-row button.primary:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.button-row button:hover:not(:disabled) {
+  background: rgba(255,255,255,.2);
+}
+
+.button-row button.primary:hover:not(:disabled) {
+  background: var(--accent2);
+}
+
+.unsaved-badge {
+  font-size: 11px;
+  color: #ffaa00;
+  margin-left: 8px;
 }
