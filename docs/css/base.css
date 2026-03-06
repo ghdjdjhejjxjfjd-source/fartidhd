@@ -1,47 +1,47 @@
 :root{
   --vh: 100vh;
 
-  /* более спокойная тёмная база */
+  /* немного ярче общая база */
   --bgDark: 1;
 
-  --bgTop:#11161d;
-  --bgMid:#0d1218;
-  --bgBot:#0a0e13;
+  --bgTop:#16202b;
+  --bgMid:#111a23;
+  --bgBot:#0d141c;
 
-  --accent1:#4da3ff;
-  --accent2:#2d8cff;
+  --accent1:#5aaeff;
+  --accent2:#3496ff;
 
-  --text:#f3f6fb;
+  --text:#f7fbff;
 }
 
 /* темы */
 :root[data-theme="black"]{
-  --bgTop:#0d1015;
-  --bgMid:#090c11;
-  --bgBot:#07090d;
-  --accent1:#7dafff;
-  --accent2:#4f8fff;
+  --bgTop:#131922;
+  --bgMid:#0e141b;
+  --bgBot:#0a0f15;
+  --accent1:#8bb8ff;
+  --accent2:#5a98ff;
 }
 :root[data-theme="purple"]{
-  --bgTop:#18121f;
-  --bgMid:#120d18;
-  --bgBot:#0c0911;
-  --accent1:#b18cff;
-  --accent2:#8a63ff;
+  --bgTop:#21172d;
+  --bgMid:#181021;
+  --bgBot:#120b19;
+  --accent1:#c19bff;
+  --accent2:#9b73ff;
 }
 :root[data-theme="green"]{
-  --bgTop:#0f1816;
-  --bgMid:#0c1311;
-  --bgBot:#080d0b;
-  --accent1:#39c99c;
-  --accent2:#22aa82;
+  --bgTop:#13231e;
+  --bgMid:#0f1a16;
+  --bgBot:#0b120f;
+  --accent1:#47d5a6;
+  --accent2:#28b98b;
 }
 :root[data-theme="gray"]{
-  --bgTop:#161a20;
-  --bgMid:#11151a;
-  --bgBot:#0c0f13;
-  --accent1:#8ab4ff;
-  --accent2:#5a94ff;
+  --bgTop:#1b222b;
+  --bgMid:#141a21;
+  --bgBot:#0f141a;
+  --accent1:#97bcff;
+  --accent2:#669dff;
 }
 
 *{
@@ -72,7 +72,7 @@ body{
   -webkit-text-size-adjust: 100%;
 }
 
-/* спокойный ровный фон */
+/* спокойный, но чуть более яркий фон */
 body::after{
   content:"";
   position: fixed;
@@ -80,13 +80,13 @@ body::after{
   pointer-events: none;
   z-index: 0;
   background:
-    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 50%, var(--bgBot) 100%);
+    linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 48%, var(--bgBot) 100%);
   background-repeat: no-repeat;
   background-color: var(--bgBot);
   filter: none;
 }
 
-/* убираем шумный паттерн */
+/* узор оставляем выключенным */
 body::before{
   display:none;
 }
