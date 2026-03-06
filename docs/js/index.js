@@ -1,4 +1,6 @@
 // docs/js/index.js
+import { initTelegramTheme, getThemeFromTelegram } from "./telegram.js";
+
 const tg = window.Telegram?.WebApp;
 
 // ===== VH (Telegram/iOS) =====
@@ -82,7 +84,8 @@ const I18N = {
       black: "Черный",
       purple: "Фиолетовый",
       green: "Зеленый",
-      gray: "Серый"
+      gray: "Серый",
+      light: "Светлая"
     }
   },
   kk: { 
@@ -106,7 +109,8 @@ const I18N = {
       black: "Қара",
       purple: "Күлгін",
       green: "Жасыл",
-      gray: "Сұр"
+      gray: "Сұр",
+      light: "Ашық"
     }
   },
   en: { 
@@ -130,7 +134,8 @@ const I18N = {
       black: "Black",
       purple: "Purple",
       green: "Green",
-      gray: "Gray"
+      gray: "Gray",
+      light: "Light"
     }
   },
   tr: { 
@@ -154,7 +159,8 @@ const I18N = {
       black: "Siyah",
       purple: "Mor",
       green: "Yeşil",
-      gray: "Gri"
+      gray: "Gri",
+      light: "Açık"
     }
   },
   uk: { 
@@ -178,7 +184,8 @@ const I18N = {
       black: "Чорний",
       purple: "Фіолетовий",
       green: "Зелений",
-      gray: "Сірий"
+      gray: "Сірий",
+      light: "Світла"
     }
   },
   fr: { 
@@ -202,7 +209,8 @@ const I18N = {
       black: "Noir",
       purple: "Violet",
       green: "Vert",
-      gray: "Gris"
+      gray: "Gris",
+      light: "Clair"
     }
   },
 };
@@ -223,6 +231,7 @@ const THEMES = [
   { code: "purple", label: { ru: "Фиолетовый", kk: "Күлгін", en: "Purple", tr: "Mor", uk: "Фіолетовий", fr: "Violet" } },
   { code: "green", label: { ru: "Зеленый", kk: "Жасыл", en: "Green", tr: "Yeşil", uk: "Зелений", fr: "Vert" } },
   { code: "gray", label: { ru: "Серый", kk: "Сұр", en: "Gray", tr: "Gri", uk: "Сірий", fr: "Gris" } },
+  { code: "light", label: { ru: "Светлая", kk: "Ашық", en: "Light", tr: "Açık", uk: "Світла", fr: "Clair" } },
 ];
 
 // ===== helpers =====
@@ -268,17 +277,18 @@ function showNotification(message) {
 // ===== Обновление ссылок =====
 function updateLinks(lang, theme){
   if (chatBtn) {
-    chatBtn.href = `./chat.html?v=2&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+    chatBtn.setAttribute('onclick', `openPage('chat.html')`);
   }
   if (imgBtn) {
-    imgBtn.href = `./image.html?v=1&lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+    imgBtn.setAttribute('onclick', `openPage('image.html')`);
   }
   
-  const toolLinks = document.querySelectorAll('.tool-item');
-  toolLinks.forEach(link => {
-    const href = link.getAttribute('href');
-    if (href && !href.includes('?')) {
-      link.href = `${href}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  // Обновляем tool items
+  const toolItems = document.querySelectorAll('.tool-item');
+  toolItems.forEach(item => {
+    const originalOnclick = item.getAttribute('onclick') || '';
+    if (originalOnclick.includes('openTool(')) {
+      // Уже есть, оставляем
     }
   });
 }
@@ -431,7 +441,6 @@ function initToolsMenu() {
   if (isOpen) {
     toolsDropdown.classList.add('open');
     toolsBtn.classList.add('active');
-    toolsChev.classList.remove('rotate');
     toolsChev.textContent = '▲';
   }
 }
@@ -507,15 +516,31 @@ function init(){
   
   const savedLang = getSavedLang();
   const savedTheme = getSavedTheme();
+  const telegramTheme = getThemeFromTelegram();
   
-  applyTheme(savedTheme);
+  // Применяем тему с учетом Telegram
+  applyTheme(telegramTheme);
   
   updateUILanguage(savedLang);
   paintSelectedTheme(savedTheme);
   
-  updateLinks(savedLang, savedTheme);
+  updateLinks(savedLang, telegramTheme);
   
   initToolsMenu();
+  
+  // Инициализация слушателя темы Telegram
+  initTelegramTheme((newTheme) => {
+    console.log("Telegram theme changed:", newTheme);
+    const currentLang = getSavedLang();
+    applyTheme(newTheme);
+    updateLinks(currentLang, newTheme);
+    
+    // Обновляем текст кнопки темы
+    const t = I18N[currentLang] || I18N.ru;
+    if (themeBtnText) {
+      themeBtnText.textContent = `${t.theme}: ${getThemeLabel(newTheme, currentLang)}`;
+    }
+  });
   
   if (langBtn) langBtn.addEventListener("click", openLang);
   if (langClose) langClose.addEventListener("click", closeLang);
@@ -540,5 +565,29 @@ function init(){
     }
   });
 }
+
+// Глобальные функции для HTML
+window.openPage = function(page) {
+  const lang = getSavedLang();
+  const theme = getThemeFromTelegram();
+  
+  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+  const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  
+  window.location.href = fullUrl;
+};
+
+window.openTool = function(toolPage) {
+  const lang = getSavedLang();
+  const theme = getThemeFromTelegram();
+  
+  const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+  const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  
+  window.location.href = fullUrl;
+};
+
+window.getSavedLang = getSavedLang;
+window.getCurrentTheme = getThemeFromTelegram;
 
 init();
