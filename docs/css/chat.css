@@ -14,6 +14,7 @@
 /* ============================= */
 /* СООБЩЕНИЯ */
 /* ============================= */
+
 .msg-wrapper {
   display: flex;
   flex-direction: column;
@@ -32,20 +33,23 @@
 
 .msg{
   max-width:84%;
-  padding:11px 15px;
+  padding:12px 16px;
   border-radius:18px;
-  line-height:1.5;
-  font-size:16px;
-  font-weight:500;
+
+  line-height:1.55;
+
+  font-size:17px;
+  font-weight:600;
+
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  box-shadow: none;
+
   opacity: 0;
   transform: translateY(4px);
   animation: msgIn 0.24s ease-out forwards;
-  will-change: transform, opacity;
+
   width: fit-content;
   margin: 0;
   display: inline-block;
@@ -61,34 +65,39 @@
   }
 }
 
-/* bot bubble — немного белее и стекляннее */
+/* пузырь ИИ */
+
 .bot .msg{
   align-self:flex-start;
-  background: rgba(58, 70, 84, 0.92);
-  border:1px solid rgba(255,255,255,.16);
+
+  background: rgba(70,82,98,.92);
+  border:1px solid rgba(255,255,255,.18);
+
   color:#f7fbff;
-  backdrop-filter: blur(8px) saturate(112%);
-  -webkit-backdrop-filter: blur(8px) saturate(112%);
+
+  backdrop-filter: blur(10px) saturate(112%);
+  -webkit-backdrop-filter: blur(10px) saturate(112%);
+
   border-top-left-radius:8px;
 }
 
-/* user bubble */
+/* пузырь пользователя */
+
 .user .msg{
   align-self:flex-end;
+
   background: var(--user-bg);
   border:1px solid var(--user-border);
+
   color:#f7fbff;
-  backdrop-filter:none;
-  -webkit-backdrop-filter:none;
-  text-align:left;
+
   border-bottom-right-radius:8px;
-  width: fit-content;
-  display: inline-block;
 }
 
 /* ============================= */
-/* КНОПКИ ПОД СООБЩЕНИЯМИ ИИ */
+/* КНОПКИ ПОД СООБЩЕНИЯМИ */
 /* ============================= */
+
 .message-actions {
   display: flex;
   gap: 6px;
@@ -96,22 +105,22 @@
   margin-left: 6px;
   opacity: .85;
   height: 20px;
-  pointer-events: auto;
-  overflow: visible;
   align-items: center;
 }
 
 .action-btn {
   background: transparent;
   border: none;
-  border-radius: 0;
   width: 18px;
   height: 18px;
   padding: 0;
+
   cursor: pointer;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   transition: all 0.18s ease;
   opacity: 0.78;
 }
@@ -121,65 +130,62 @@
   transform: scale(1.08);
 }
 
-.action-btn:active {
-  transform: scale(0.95);
-}
-
 .action-btn svg {
   width: 16px;
   height: 16px;
   fill: rgba(247,251,255,.92);
-  transition: all 0.18s ease;
 }
 
 .action-btn:hover svg {
   fill: var(--accent1);
 }
 
-.action-btn.copied svg {
-  fill: #41d98c;
-}
-
-.action-btn.copied {
-  background: transparent;
-  border: none;
-}
-
 /* ============================= */
 /* НИЖНЯЯ ПАНЕЛЬ */
 /* ============================= */
+
 .input{
   flex:0 0 auto;
+
   display: flex;
   align-items: flex-end;
   gap: 10px;
+
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
+
   background: rgba(18,24,32,.90);
+
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+
   border-top: 1px solid rgba(255,255,255,.08);
-  min-height: 60px;
 }
 
 .input textarea {
   flex: 1;
-  padding: 11px 15px;
+
+  padding: 12px 15px;
+
   border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.12);
+
+  border: 1px solid rgba(255,255,255,.14);
+
   outline: none;
-  font-size: 15px;
-  font-weight: 400;
+
+  font-size:16px;
+
   color: #f7fbff;
+
   background: #25303c;
-  box-shadow: none;
+
   caret-color: var(--accent2);
+
   resize: none;
+
   max-height: 120px;
-  min-height: 24px;
-  line-height: 1.45;
-  font-family: inherit;
-  overflow-y: auto;
+
+  line-height: 1.5;
 }
 
 .input textarea::placeholder{
@@ -193,16 +199,26 @@
 
 .input button{
   padding:0 16px;
+
   border-radius:16px;
+
   border:1px solid rgba(255,255,255,.10);
+
   font-size:16px;
   font-weight:800;
-  background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+
+  background: linear-gradient(
+      180deg,
+      var(--accent1),
+      var(--accent2)
+  );
+
   color:#fff;
-  box-shadow: none;
+
   height: 42px;
-  align-self: flex-end;
-  cursor: pointer;
+
+  cursor:pointer;
+
   transition: all 0.18s ease;
 }
 
@@ -210,110 +226,142 @@
   filter: brightness(1.05);
 }
 
-.input button:active {
-  transform: scale(0.96);
-}
-
-.input button:disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
 /* ============================= */
 /* ВЕРХНЯЯ ПАНЕЛЬ */
 /* ============================= */
+
 .top{
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+
   z-index: 20;
+
   display:flex;
   align-items:center;
   gap:10px;
+
   padding: 8px 14px;
   padding-top: calc(8px + env(safe-area-inset-top));
 
-  /* полностью прозрачная */
   background: transparent;
 
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
   border-bottom: none;
-  flex:0 0 auto;
 }
+
+/* кнопка назад */
 
 .top a{
   color:#f7fbff;
+
   text-decoration:none;
+
   font-size:15px;
-  background: rgba(255,255,255,.07);
+
+  background: rgba(255,255,255,.16);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border:1px solid rgba(255,255,255,.30);
+
   padding: 6px 12px;
+
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.10);
 }
 
+/* заголовок */
+
 .title{
-  font-weight:600;
+  font-weight:700;
+
   font-size:16px;
-  color: #f7fbff;
-  background: rgba(255,255,255,.07);
+
+  color:#f7fbff;
+
+  background: rgba(255,255,255,.16);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border:1px solid rgba(255,255,255,.30);
+
   padding: 6px 14px;
+
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.10);
+
   margin-left: 2px;
 }
 
-.spacer{ flex:1; }
+.spacer{
+  flex:1;
+}
+
+/* кнопка настроек */
 
 .gear{
   width:34px;
   height:34px;
+
   border-radius:17px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.07);
+
+  border:1px solid rgba(255,255,255,.30);
+
+  background: rgba(255,255,255,.16);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
   color:#fff;
+
   font-size:17px;
+
   display:flex;
   align-items:center;
   justify-content:center;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
 }
 
 /* ============================= */
 /* typing bubble */
 /* ============================= */
+
 .msg.bot.typing{
   align-self: flex-start;
-  margin: 0;
+
   padding: 10px 12px;
+
   max-width: 70px;
-  background: rgba(58, 70, 84, 0.92);
-  border: 1px solid rgba(255,255,255,.16);
+
+  background: rgba(70,82,98,.92);
+
+  border: 1px solid rgba(255,255,255,.18);
+
   border-radius: 18px;
+
   border-top-left-radius: 8px;
-  backdrop-filter: blur(8px) saturate(112%);
-  -webkit-backdrop-filter: blur(8px) saturate(112%);
-  box-shadow: none;
+
   display: inline-flex;
+
   align-items: center;
   justify-content: center;
-  opacity: 1;
-  animation: none;
 }
 
 .typing-dots{
   display: inline-flex;
-  align-items: center;
   gap: 6px;
 }
 
 .typing .dot{
   width: 6px;
   height: 6px;
+
   border-radius: 50%;
+
   background: rgba(247,251,255,.92);
+
   opacity: .48;
+
   animation: typingPulse 1.1s infinite ease-in-out;
 }
 
@@ -321,57 +369,6 @@
 .typing .dot:nth-child(3){ animation-delay: .30s; }
 
 @keyframes typingPulse{
-  0%, 100% { opacity: .40; transform: translateY(0) scale(1); }
-  50% { opacity: .98; transform: translateY(-2px) scale(1.08); }
-}
-
-/* ================================================= */
-/* ТЕМЫ */
-/* ================================================= */
-:root[data-theme="blue"] {
-  --accent1: #5aaeff;
-  --accent2: #3496ff;
-  --user-bg: rgba(90, 174, 255, 0.25);
-  --user-border: rgba(90, 174, 255, 0.32);
-}
-
-:root[data-theme="black"] {
-  --accent1: #8bb8ff;
-  --accent2: #5a98ff;
-  --user-bg: rgba(139, 184, 255, 0.22);
-  --user-border: rgba(139, 184, 255, 0.28);
-  --text: #f7fbff;
-}
-
-:root[data-theme="black"] #sendBtn{
-  background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: none;
-}
-
-:root[data-theme="black"] #sendBtn,
-:root[data-theme="black"] #sendBtn svg{
-  color: #ffffff;
-  fill: #ffffff;
-}
-
-:root[data-theme="purple"] {
-  --accent1: #c19bff;
-  --accent2: #9b73ff;
-  --user-bg: rgba(193, 155, 255, 0.24);
-  --user-border: rgba(193, 155, 255, 0.30);
-}
-
-:root[data-theme="green"] {
-  --accent1: #47d5a6;
-  --accent2: #28b98b;
-  --user-bg: rgba(71, 213, 166, 0.23);
-  --user-border: rgba(71, 213, 166, 0.29);
-}
-
-:root[data-theme="gray"] {
-  --accent1: #97bcff;
-  --accent2: #669dff;
-  --user-bg: rgba(151, 188, 255, 0.23);
-  --user-border: rgba(151, 188, 255, 0.29);
+  0%, 100% { opacity: .40; transform: translateY(0); }
+  50% { opacity: .98; transform: translateY(-2px); }
 }
