@@ -24,6 +24,7 @@ if (tg) {
 const STORAGE_LANG = "miniapp_lang_v1";
 const STORAGE_THEME = "miniapp_theme_v1";
 const STORAGE_TOOLS = "tools_menu_open";
+const STORAGE_PLATFORM = "miniapp_platform_v1"; // НОВЫЙ ключ для платформы
 
 // ===== DOM элементы =====
 const chatBtn = document.getElementById("chatBtn");
@@ -45,6 +46,14 @@ const themeOverlay = document.getElementById("themeOverlay");
 const themeList = document.getElementById("themeList");
 const themeClose = document.getElementById("themeClose");
 const themeSheetTitle = document.getElementById("themeSheetTitle");
+
+// НОВЫЕ элементы для платформы
+const platformBtn = document.getElementById("platformBtn");
+const platformBtnText = document.getElementById("platformBtnText");
+const platformOverlay = document.getElementById("platformOverlay");
+const platformList = document.getElementById("platformList");
+const platformClose = document.getElementById("platformClose");
+const platformSheetTitle = document.getElementById("platformSheetTitle");
 
 // ===== Элементы инструментов =====
 const toolsBtn = document.getElementById("toolsBtn");
@@ -77,10 +86,16 @@ const I18N = {
     sheetLang: "Язык",
     sheetTheme: "Цвет",
     theme: "Цвет",
+    platform: "Режим", // НОВОЕ
+    platformSheet: "Режим", // НОВОЕ
     colors: {
       blue: "Синий",
       black: "Черный",
       light: "Светлый"
+    },
+    platforms: { // НОВОЕ
+      ios: "🍏 iOS",
+      android: "🤖 Android"
     }
   },
   kk: { 
@@ -99,10 +114,16 @@ const I18N = {
     sheetLang: "Тіл",
     sheetTheme: "Түс",
     theme: "Түс",
+    platform: "Режим",
+    platformSheet: "Режим",
     colors: {
       blue: "Көк",
       black: "Қара",
       light: "Ашық"
+    },
+    platforms: {
+      ios: "🍏 iOS",
+      android: "🤖 Android"
     }
   },
   en: { 
@@ -121,10 +142,16 @@ const I18N = {
     sheetLang: "Language",
     sheetTheme: "Color",
     theme: "Color",
+    platform: "Mode",
+    platformSheet: "Mode",
     colors: {
       blue: "Blue",
       black: "Black",
       light: "Light"
+    },
+    platforms: {
+      ios: "🍏 iOS",
+      android: "🤖 Android"
     }
   },
   tr: { 
@@ -143,10 +170,16 @@ const I18N = {
     sheetLang: "Dil",
     sheetTheme: "Renk",
     theme: "Renk",
+    platform: "Mod",
+    platformSheet: "Mod",
     colors: {
       blue: "Mavi",
       black: "Siyah",
       light: "Açık"
+    },
+    platforms: {
+      ios: "🍏 iOS",
+      android: "🤖 Android"
     }
   },
   uk: { 
@@ -165,10 +198,16 @@ const I18N = {
     sheetLang: "Мова",
     sheetTheme: "Колір",
     theme: "Колір",
+    platform: "Режим",
+    platformSheet: "Режим",
     colors: {
       blue: "Синій",
       black: "Чорний",
       light: "Світлий"
+    },
+    platforms: {
+      ios: "🍏 iOS",
+      android: "🤖 Android"
     }
   },
   fr: { 
@@ -187,10 +226,16 @@ const I18N = {
     sheetLang: "Langue",
     sheetTheme: "Couleur",
     theme: "Couleur",
+    platform: "Mode",
+    platformSheet: "Mode",
     colors: {
       blue: "Bleu",
       black: "Noir",
       light: "Clair"
+    },
+    platforms: {
+      ios: "🍏 iOS",
+      android: "🤖 Android"
     }
   },
 };
@@ -210,6 +255,12 @@ const THEMES = [
   { code: "blue", label: { ru: "Синий", kk: "Көк", en: "Blue", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
   { code: "black", label: { ru: "Черный", kk: "Қара", en: "Black", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
   { code: "light", label: { ru: "Светлый", kk: "Ашық", en: "Light", tr: "Açık", uk: "Світлий", fr: "Clair" } },
+];
+
+// НОВЫЙ список платформ
+const PLATFORMS = [
+  { code: "ios", label: { ru: "🍏 iOS", kk: "🍏 iOS", en: "🍏 iOS", tr: "🍏 iOS", uk: "🍏 iOS", fr: "🍏 iOS" } },
+  { code: "android", label: { ru: "🤖 Android", kk: "🤖 Android", en: "🤖 Android", tr: "🤖 Android", uk: "🤖 Android", fr: "🤖 Android" } },
 ];
 
 // ===== helpers =====
@@ -235,6 +286,30 @@ function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme || "blue");
 }
 
+// НОВЫЕ функции для платформы
+function getSavedPlatform(){
+  try{ return localStorage.getItem(STORAGE_PLATFORM) || "ios"; }
+  catch(e){ return "ios"; }
+}
+
+function savePlatform(platform){
+  try{ localStorage.setItem(STORAGE_PLATFORM, platform); }catch(e){}
+}
+
+function applyPlatform(platform){
+  if (platform === "android") {
+    document.documentElement.classList.add('android-mode');
+  } else {
+    document.documentElement.classList.remove('android-mode');
+  }
+}
+
+function getPlatformLabel(platformCode, lang){
+  const platform = PLATFORMS.find(p => p.code === platformCode);
+  if (!platform) return platformCode;
+  return platform.label[lang] || platform.label.ru || platformCode;
+}
+
 // ===== Уведомления =====
 function showNotification(message) {
   setTimeout(() => {
@@ -253,7 +328,7 @@ function showNotification(message) {
 }
 
 // ===== Обновление ссылок =====
-function updateLinks(lang, theme){
+function updateLinks(lang, theme, platform){
   if (chatBtn) {
     chatBtn.setAttribute('onclick', `openPage('chat.html')`);
   }
@@ -280,6 +355,7 @@ function updateUILanguage(lang){
   if (langTitle) langTitle.textContent = t.lang;
   if (langSheetTitle) langSheetTitle.textContent = t.sheetLang;
   if (themeSheetTitle) themeSheetTitle.textContent = t.sheetTheme;
+  if (platformSheetTitle) platformSheetTitle.textContent = t.platformSheet; // НОВОЕ
   
   const foundLang = LANGS.find(x => x.code === lang);
   if (langBtnText) {
@@ -291,8 +367,15 @@ function updateUILanguage(lang){
     themeBtnText.textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
   }
   
+  // НОВОЕ - обновляем текст кнопки платформы
+  const currentPlatform = getSavedPlatform();
+  if (platformBtnText) {
+    platformBtnText.textContent = getPlatformLabel(currentPlatform, lang);
+  }
+  
   paintSelectedLang(lang);
   updateThemeList(lang);
+  updatePlatformList(lang); // НОВОЕ
 }
 
 function getThemeLabel(themeCode, lang){
@@ -310,6 +393,20 @@ function updateThemeList(lang){
     const labelSpan = item.querySelector('.theme-label');
     if (labelSpan) {
       labelSpan.textContent = getThemeLabel(code, lang);
+    }
+  });
+}
+
+// НОВАЯ функция для обновления списка платформ
+function updatePlatformList(lang){
+  if (!platformList) return;
+  
+  const items = platformList.querySelectorAll('.platformItem');
+  items.forEach(item => {
+    const code = item.getAttribute('data-platform');
+    const labelSpan = item.querySelector('.platform-label');
+    if (labelSpan) {
+      labelSpan.textContent = getPlatformLabel(code, lang);
     }
   });
 }
@@ -332,6 +429,16 @@ function paintSelectedTheme(theme){
   });
 }
 
+// НОВАЯ функция для подсветки выбранной платформы
+function paintSelectedPlatform(platform){
+  if (!platformList) return;
+  const items = platformList.querySelectorAll(".platformItem");
+  items.forEach(btn => {
+    const code = btn.getAttribute("data-platform");
+    btn.classList.toggle("selected", code === platform);
+  });
+}
+
 // ===== Установка языка =====
 function setLang(lang){
   console.log("setLang:", lang);
@@ -340,7 +447,8 @@ function setLang(lang){
   updateUILanguage(lang);
   
   const currentTheme = getSavedTheme();
-  updateLinks(lang, currentTheme);
+  const currentPlatform = getSavedPlatform();
+  updateLinks(lang, currentTheme, currentPlatform);
   
   closeLang();
   showNotification(`🌐 ${I18N[lang]?.sheetLang || "Language"}: ${LANGS.find(l => l.code === lang)?.label || lang}`);
@@ -355,16 +463,39 @@ function setTheme(theme){
   paintSelectedTheme(theme);
   
   const currentLang = getSavedLang();
+  const currentPlatform = getSavedPlatform();
   const t = I18N[currentLang] || I18N.ru;
   
   if (themeBtnText) {
     themeBtnText.textContent = `${t.theme}: ${getThemeLabel(theme, currentLang)}`;
   }
   
-  updateLinks(currentLang, theme);
+  updateLinks(currentLang, theme, currentPlatform);
   
   closeTheme();
   showNotification(`🎨 ${t.sheetTheme}: ${getThemeLabel(theme, currentLang)}`);
+}
+
+// ===== Установка платформы (iOS/Android) - НОВАЯ =====
+function setPlatform(platform){
+  console.log("setPlatform:", platform);
+  
+  savePlatform(platform);
+  applyPlatform(platform);
+  paintSelectedPlatform(platform);
+  
+  const currentLang = getSavedLang();
+  const currentTheme = getSavedTheme();
+  const t = I18N[currentLang] || I18N.ru;
+  
+  if (platformBtnText) {
+    platformBtnText.textContent = getPlatformLabel(platform, currentLang);
+  }
+  
+  updateLinks(currentLang, currentTheme, platform);
+  
+  closePlatform();
+  showNotification(`📱 ${t.platformSheet}: ${getPlatformLabel(platform, currentLang)}`);
 }
 
 // ===== Логика выпадающего меню инструментов =====
@@ -443,6 +574,21 @@ function closeTheme(){
   themeBtn.setAttribute("aria-expanded", "false");
 }
 
+// НОВЫЕ функции для открытия/закрытия оверлея платформы
+function openPlatform(){
+  if (!platformOverlay || !platformBtn) return;
+  platformOverlay.classList.add("show");
+  platformOverlay.setAttribute("aria-hidden", "false");
+  platformBtn.setAttribute("aria-expanded", "true");
+}
+
+function closePlatform(){
+  if (!platformOverlay || !platformBtn) return;
+  platformOverlay.classList.remove("show");
+  platformOverlay.setAttribute("aria-hidden", "true");
+  platformBtn.setAttribute("aria-expanded", "false");
+}
+
 // ===== Сборка списков =====
 function buildLangList(){
   if (!langList) return;
@@ -478,20 +624,44 @@ function buildThemeList(){
   });
 }
 
+// НОВАЯ функция для сборки списка платформ
+function buildPlatformList(){
+  if (!platformList) return;
+  
+  platformList.innerHTML = "";
+  PLATFORMS.forEach(platform => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "platformItem";
+    btn.setAttribute("data-platform", platform.code);
+    
+    const currentLang = getSavedLang();
+    const labelText = platform.label[currentLang] || platform.label.ru;
+    btn.innerHTML = `<span class="platform-label">${labelText}</span><span class="check">✓</span>`;
+    
+    btn.addEventListener("click", () => setPlatform(platform.code));
+    platformList.appendChild(btn);
+  });
+}
+
 // ===== Инициализация =====
 function init(){
   buildLangList();
   buildThemeList();
+  buildPlatformList(); // НОВОЕ
   
   const savedLang = getSavedLang();
   const savedTheme = getSavedTheme();
+  const savedPlatform = getSavedPlatform(); // НОВОЕ
   
   applyTheme(savedTheme);
+  applyPlatform(savedPlatform); // НОВОЕ
   
   updateUILanguage(savedLang);
   paintSelectedTheme(savedTheme);
+  paintSelectedPlatform(savedPlatform); // НОВОЕ
   
-  updateLinks(savedLang, savedTheme);
+  updateLinks(savedLang, savedTheme, savedPlatform);
   
   initToolsMenu();
   
@@ -511,10 +681,20 @@ function init(){
     });
   }
   
+  // НОВЫЕ обработчики для платформы
+  if (platformBtn) platformBtn.addEventListener("click", openPlatform);
+  if (platformClose) platformClose.addEventListener("click", closePlatform);
+  if (platformOverlay) {
+    platformOverlay.addEventListener("click", (e) => {
+      if (e.target === platformOverlay) closePlatform();
+    });
+  }
+  
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       closeLang();
       closeTheme();
+      closePlatform(); // НОВОЕ
     }
   });
 }
@@ -523,9 +703,10 @@ function init(){
 window.openPage = function(page) {
   const lang = getSavedLang();
   const theme = getSavedTheme();
+  const platform = getSavedPlatform(); // НОВОЕ
   
   const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-  const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&platform=${encodeURIComponent(platform)}`;
   
   window.location.href = fullUrl;
 };
@@ -533,14 +714,16 @@ window.openPage = function(page) {
 window.openTool = function(toolPage) {
   const lang = getSavedLang();
   const theme = getSavedTheme();
+  const platform = getSavedPlatform(); // НОВОЕ
   
   const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-  const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+  const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&platform=${encodeURIComponent(platform)}`;
   
   window.location.href = fullUrl;
 };
 
 window.getSavedLang = getSavedLang;
 window.getSavedTheme = getSavedTheme;
+window.getSavedPlatform = getSavedPlatform; // НОВОЕ
 
 init();
