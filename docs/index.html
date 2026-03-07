@@ -147,7 +147,7 @@
 
   <div class="wrap">
     <div class="card">
-      <!-- ОБЫЧНЫЕ КНОПКИ (с правильными классами) -->
+      <!-- ОБЫЧНЫЕ КНОПКИ -->
       <button class="btn" id="chatBtn" onclick="openPage('chat.html')">💬 Чат с ИИ</button>
       <button class="btn" id="imgBtn" onclick="openPage('image.html')">🎨 Генерация картинки</button>
       
@@ -158,7 +158,6 @@
         </button>
         
         <div class="tools-dropdown" id="toolsDropdown">
-          <!-- ИНСТРУМЕНТЫ (с правильными классами) -->
           <div class="tool-item" onclick="openTool('remove-bg.html')">
             <span class="tool-icon">📸</span>
             <span class="tool-text" id="toolRemoveBgText">Удаление фона</span>
@@ -195,10 +194,19 @@
       <div class="sub" id="subText">Быстрые ответы • Память • Заметки</div>
       <div class="ver" id="verText">miniapp v3</div>
 
+      <!-- БЛОК ЯЗЫКА -->
       <div class="langBlock">
         <div class="langTitle" id="langTitle">Язык интерфейса</div>
         <button class="langPill" id="langBtn" type="button">
           <span id="langBtnText">Русский (RU)</span> <span class="chev">▾</span>
+        </button>
+      </div>
+
+      <!-- БЛОК ПЛАТФОРМЫ (iOS/Android) - НОВЫЙ -->
+      <div class="platformBlock">
+        <div class="platformTitle" id="platformTitle">Режим</div>
+        <button class="platformPill" id="platformBtn" type="button">
+          <span id="platformBtnText">iOS</span> <span class="chev">▾</span>
         </button>
       </div>
     </div>
@@ -226,24 +234,29 @@
     </div>
   </div>
 
+  <!-- Оверлей платформы (iOS/Android) - НОВЫЙ -->
+  <div class="platformOverlay" id="platformOverlay">
+    <div class="platformSheet">
+      <div class="platformSheetHeader">
+        <div class="platformSheetTitle" id="platformSheetTitle">Режим</div>
+        <button class="platformClose" id="platformClose" type="button">✕</button>
+      </div>
+      <div class="platformList" id="platformList"></div>
+    </div>
+  </div>
+
   <script>
     // Функция открытия страниц внутри Telegram
     function openPage(page) {
       const tg = window.Telegram?.WebApp;
       const lang = getSavedLang();
       const theme = getSavedTheme();
+      const platform = getSavedPlatform();
       
-      // Формируем полный URL
       const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-      const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+      const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&platform=${encodeURIComponent(platform)}`;
       
-      if (tg) {
-        // Открываем внутри Telegram WebApp
-        window.location.href = fullUrl;
-      } else {
-        // Если не в Telegram - обычный переход
-        window.location.href = fullUrl;
-      }
+      window.location.href = fullUrl;
     }
 
     // Функция открытия инструментов
@@ -251,18 +264,12 @@
       const tg = window.Telegram?.WebApp;
       const lang = getSavedLang();
       const theme = getSavedTheme();
+      const platform = getSavedPlatform();
       
-      // Формируем путь к инструменту
       const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-      const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}`;
+      const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&platform=${encodeURIComponent(platform)}`;
       
-      if (tg) {
-        // Открываем внутри Telegram WebApp
-        window.location.href = fullUrl;
-      } else {
-        // Если не в Telegram - обычный переход
-        window.location.href = fullUrl;
-      }
+      window.location.href = fullUrl;
     }
 
     // Получение сохраненного языка
@@ -275,6 +282,12 @@
     function getSavedTheme() {
       try { return localStorage.getItem("miniapp_theme_v1") || "blue"; } 
       catch(e) { return "blue"; }
+    }
+
+    // Получение сохраненной платформы (iOS/Android) - НОВОЕ
+    function getSavedPlatform() {
+      try { return localStorage.getItem("miniapp_platform_v1") || "ios"; } 
+      catch(e) { return "ios"; }
     }
 
     // Инициализация выпадающего меню
@@ -329,7 +342,7 @@
     })();
   </script>
 
-  <!-- Подключаем существующий index.js (он будет работать параллельно) -->
-  <script type="module" src="./js/index.js?v=6"></script>
+  <!-- Подключаем index.js -->
+  <script type="module" src="./js/index.js?v=7"></script>
 </body>
 </html>
