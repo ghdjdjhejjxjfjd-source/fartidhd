@@ -65,6 +65,38 @@
   --btn-blur: blur(12px);
 }
 
+/* ========================= */
+/* ANDROID MODE - КУБИКИ И ЭФФЕКТЫ ИСЧЕЗАЮТ */
+/* ========================= */
+html.android-mode .cube {
+  display: none !important;
+}
+
+html.android-mode .card,
+html.android-mode .btn,
+html.android-mode .tools-btn,
+html.android-mode .tool-item,
+html.android-mode .langPill,
+html.android-mode .themePill,
+html.android-mode .platformPill {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.android-mode[data-theme="light"] .btn,
+html.android-mode[data-theme="light"] .tools-btn,
+html.android-mode[data-theme="light"] .tool-item,
+html.android-mode[data-theme="light"] .langPill,
+html.android-mode[data-theme="light"] .themePill,
+html.android-mode[data-theme="light"] .platformPill {
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -110,7 +142,7 @@ body > * {
 }
 
 /* ========================= */
-/* КУБИКИ - НЕ ТРОГАЕМ */
+/* КУБИКИ */
 /* ========================= */
 .cube {
   position: absolute;
@@ -186,7 +218,7 @@ body > * {
 }
 
 /* ========================= */
-/* КНОПКИ - СВЕТЛАЯ ТЕМА С БЛЮРОМ И СЕРОЙ ОБВОДКОЙ */
+/* КНОПКИ */
 /* ========================= */
 .btn {
   display: block;
@@ -445,6 +477,67 @@ body > * {
 }
 
 /* ========================= */
+/* БЛОК ПЛАТФОРМЫ (iOS/Android) - НОВЫЙ */
+/* ========================= */
+.platformBlock {
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, .10);
+  padding-top: 16px;
+}
+
+/* Светлая тема - разделитель */
+:root[data-theme="light"] .platformBlock {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.platformTitle {
+  font-size: 13px;
+  color: var(--subtext);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.platformPill {
+  width: 100%;
+  border-radius: 16px;
+  padding: 14px 14px;
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .12);
+  color: var(--text);
+  outline: none;
+  backdrop-filter: blur(12px) saturate(115%);
+  -webkit-backdrop-filter: blur(12px) saturate(115%);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Светлая тема - кнопка платформы с блюром и серой обводкой */
+:root[data-theme="light"] .platformPill {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: 1.5px solid var(--btn-border);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.platformPill:hover {
+  background: rgba(255, 255, 255, .13);
+  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
+}
+
+.platformPill:active {
+  transform: scale(.995);
+}
+
+/* ========================= */
 /* КНОПКА ТЕМЫ */
 /* ========================= */
 .themePill {
@@ -501,9 +594,9 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS - С ПОЛНОЙ ОБВОДКОЙ */
+/* BOTTOM SHEETS - ЯЗЫК, ЦВЕТ, ПЛАТФОРМА */
 /* ========================= */
-.langOverlay, .themeOverlay {
+.langOverlay, .themeOverlay, .platformOverlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -511,18 +604,18 @@ body > * {
   display: none;
 }
 
-.langOverlay.show, .themeOverlay.show {
+.langOverlay.show, .themeOverlay.show, .platformOverlay.show {
   display: block !important;
 }
 
-.langSheet, .themeSheet {
+.langSheet, .themeSheet, .platformSheet {
   position: absolute;
   left: 12px;
   right: 12px;
   bottom: calc(12px + env(safe-area-inset-bottom));
   border-radius: 18px;
   background: var(--sheet-bg);
-  border: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px для полной обводки */
+  border: 1.5px solid var(--sheet-border);
   backdrop-filter: blur(16px) saturate(118%);
   -webkit-backdrop-filter: blur(16px) saturate(118%);
   box-shadow: 0 20px 44px rgba(0,0,0,.32);
@@ -533,29 +626,30 @@ body > * {
 }
 
 .langOverlay.show .langSheet,
-.themeOverlay.show .themeSheet {
+.themeOverlay.show .themeSheet,
+.platformOverlay.show .platformSheet {
   transform: translateY(0);
   opacity: 1;
 }
 
-.langSheetHeader, .themeSheetHeader {
+.langSheetHeader, .themeSheetHeader, .platformSheetHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px;
-  border-bottom: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px */
+  border-bottom: 1.5px solid var(--sheet-border);
 }
 
-.langSheetTitle, .themeSheetTitle {
+.langSheetTitle, .themeSheetTitle, .platformSheetTitle {
   font-weight: 800;
   color: var(--sheet-text);
 }
 
-.langClose, .themeClose {
+.langClose, .themeClose, .platformClose {
   border: 0;
   background: rgba(255, 255, 255, .08);
   color: var(--sheet-text);
-  border: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px */
+  border: 1.5px solid var(--sheet-border);
   border-radius: 12px;
   padding: 8px 10px;
   font-weight: 800;
@@ -563,23 +657,23 @@ body > * {
   transition: all 0.2s ease;
 }
 
-.langClose:hover, .themeClose:hover {
+.langClose:hover, .themeClose:hover, .platformClose:hover {
   background: rgba(255, 255, 255, .11);
   border-color: var(--accent1);
 }
 
-.langList, .themeList {
+.langList, .themeList, .platformList {
   height: 40vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-.langItem, .themeItem {
+.langItem, .themeItem, .platformItem {
   width: 100%;
   text-align: left;
   padding: 14px;
   border: 0;
-  border-bottom: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px */
+  border-bottom: 1.5px solid var(--sheet-border);
   background: transparent;
   color: var(--sheet-text);
   font-size: 15px;
@@ -592,15 +686,15 @@ body > * {
 }
 
 /* Последний элемент без нижней границы */
-.langItem:last-child, .themeItem:last-child {
+.langItem:last-child, .themeItem:last-child, .platformItem:last-child {
   border-bottom: none;
 }
 
-.langItem:hover, .themeItem:hover {
+.langItem:hover, .themeItem:hover, .platformItem:hover {
   background: rgba(255, 255, 255, .06);
 }
 
-.langItem .check, .themeItem .check {
+.langItem .check, .themeItem .check, .platformItem .check {
   opacity: 0;
   transform: scale(.9);
   transition: .15s ease;
@@ -608,7 +702,8 @@ body > * {
 }
 
 .langItem.selected .check,
-.themeItem.selected .check {
+.themeItem.selected .check,
+.platformItem.selected .check {
   opacity: 1;
   transform: scale(1);
 }
@@ -622,7 +717,7 @@ body > * {
   left: 50%;
   transform: translateX(-50%);
   background: var(--sheet-bg);
-  border: 1.5px solid var(--sheet-border); /* Увеличено до 1.5px */
+  border: 1.5px solid var(--sheet-border);
   border-radius: 24px;
   padding: 12px 20px;
   color: var(--sheet-text);
