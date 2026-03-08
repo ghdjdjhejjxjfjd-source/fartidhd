@@ -3,8 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>Создание музыки</title>
+  <title>Music Lab</title>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.min.js"></script>
+
+  <!-- ТЕМА -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
@@ -17,6 +21,8 @@
       document.documentElement.setAttribute("data-theme", getTheme());
     })();
   </script>
+
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
   <script>
     (function(){
       const tg = window.Telegram?.WebApp;
@@ -27,94 +33,540 @@
       }
     })();
   </script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0b0f18; color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+    
+    body { 
+      background: #0b0f18; 
+      color: white; 
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+      min-height: 100vh; 
+    }
+
+    :root[data-theme="blue"] { --accent: #3aa0ff; --accent2: #0a84ff; }
+    :root[data-theme="black"] { --accent: #6aa7ff; --accent2: #2f7bff; }
+    :root[data-theme="purple"] { --accent: #b98cff; --accent2: #7a5cff; }
+    :root[data-theme="green"] { --accent: #2fd6a3; --accent2: #11a87b; }
+    :root[data-theme="light"] { --accent: #3a8cff; --accent2: #1a6cff; }
+
     .tool-header {
       position: fixed; top: 0; left: 0; right: 0; z-index: 20;
       display: flex; align-items: center; gap: 10px;
       padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(8,16,30,.55); backdrop-filter: blur(32px);
+      background: rgba(8,16,30,.95); backdrop-filter: blur(32px);
       border-bottom: 1px solid rgba(255,255,255,.08);
     }
+
     .tool-back {
       color: #fff; text-decoration: none; font-size: 20px;
       width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
       background: rgba(255,255,255,.1); border-radius: 18px;
     }
+
     .tool-title { font-weight: 700; font-size: 18px; flex: 1; text-align: center; color: #fff; }
     .tool-spacer { width: 36px; }
-    .tool-container { padding: 80px 16px 20px; min-height: 100vh; }
-    .piano {
-      display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
-      margin: 20px 0;
+
+    .container { 
+      padding: 80px 16px 20px; 
+      min-height: 100vh; 
     }
-    .key {
-      aspect-ratio: 3/4; background: rgba(255,255,255,.1);
-      border-radius: 12px; display: flex; align-items: center; justify-content: center;
-      font-size: 18px; cursor: pointer; transition: all 0.1s;
+
+    /* Секция BPM */
+    .bpm-section {
+      background: rgba(255,255,255,.05);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,.1);
     }
-    .key:active { background: #3aa0ff; transform: scale(0.95); }
-    .controls {
-      display: flex; gap: 12px; margin: 20px 0;
+
+    .bpm-label {
+      font-size: 14px;
+      color: rgba(255,255,255,.6);
+      margin-bottom: 10px;
+      text-align: center;
     }
-    .control-btn {
-      flex: 1; padding: 16px; border-radius: 16px; border: none;
-      font-size: 16px; font-weight: 700; cursor: pointer;
-      background: rgba(255,255,255,.1); color: white;
+
+    .bpm-control {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
-    .play-btn { background: linear-gradient(180deg, #3aa0ff 0%, #0a84ff 100%); }
-    :root[data-theme="purple"] .play-btn { background: linear-gradient(180deg, #b98cff 0%, #7a5cff 100%); }
-    :root[data-theme="green"] .play-btn { background: linear-gradient(180deg, #2fd6a3 0%, #11a87b 100%); }
+
+    .bpm-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .bpm-slider {
+      flex: 1;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,.1);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .bpm-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    }
+
+    /* Кнопки управления */
+    .transport {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .transport-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.05);
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .transport-btn.play {
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
+      border: none;
+    }
+
+    .transport-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Секвенсор */
+    .sequencer {
+      background: rgba(255,255,255,.05);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .track {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .track:last-child {
+      margin-bottom: 0;
+    }
+
+    .track-icon {
+      width: 40px;
+      font-size: 24px;
+      text-align: center;
+    }
+
+    .track-name {
+      width: 80px;
+      font-size: 14px;
+      color: rgba(255,255,255,.6);
+    }
+
+    .steps {
+      flex: 1;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 5px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .step {
+      min-width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.1s;
+      border: 1px solid rgba(255,255,255,.05);
+    }
+
+    .step.active {
+      background: var(--accent);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(58,160,255,.3);
+    }
+
+    .step.playing {
+      background: var(--accent2);
+      animation: pulse 0.1s ease;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    /* Звуки */
+    .sounds-section {
+      background: rgba(255,255,255,.05);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .sound-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .sound-btn {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.05);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sound-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .sound-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Кнопки действий */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.05);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn.random {
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
+      border: none;
+    }
+
+    /* Индикатор громкости */
+    .volume-indicator {
+      height: 4px;
+      background: rgba(255,255,255,.1);
+      border-radius: 2px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+
+    .volume-level {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.05s;
+    }
+
+    /* Переводы */
+    .lang-ru, .lang-en, .lang-kk, .lang-tr, .lang-uk, .lang-fr {
+      display: none;
+    }
+
+    [lang="ru"] .lang-ru { display: block; }
+    [lang="en"] .lang-en { display: block; }
+    [lang="kk"] .lang-kk { display: block; }
+    [lang="tr"] .lang-tr { display: block; }
+    [lang="uk"] .lang-uk { display: block; }
+    [lang="fr"] .lang-fr { display: block; }
   </style>
 </head>
 <body>
   <div class="tool-header">
     <a href="../index.html" class="tool-back">←</a>
-    <div class="tool-title" id="toolTitle">Создание музыки</div>
+    <div class="tool-title" id="toolTitle">🎵 Music Lab</div>
     <div class="tool-spacer"></div>
   </div>
-  <div class="tool-container">
-    <div class="piano">
-      <div class="key" data-note="C">До</div>
-      <div class="key" data-note="D">Ре</div>
-      <div class="key" data-note="E">Ми</div>
-      <div class="key" data-note="F">Фа</div>
-      <div class="key" data-note="G">Соль</div>
-      <div class="key" data-note="A">Ля</div>
-      <div class="key" data-note="B">Си</div>
+
+  <div class="container">
+    <!-- BPM контрол -->
+    <div class="bpm-section">
+      <div class="bpm-label">⚡ BPM (темп)</div>
+      <div class="bpm-control">
+        <span class="bpm-value" id="bpmValue">120</span>
+        <input type="range" class="bpm-slider" id="bpmSlider" min="60" max="180" value="120">
+      </div>
     </div>
-    <div class="controls">
-      <button class="control-btn play-btn" id="playBtn">▶ Играть</button>
-      <button class="control-btn" id="clearBtn">🧹 Очистить</button>
+
+    <!-- Кнопки управления -->
+    <div class="transport">
+      <button class="transport-btn" id="playBtn">▶</button>
+      <button class="transport-btn" id="stopBtn">⏹</button>
+      <button class="transport-btn" id="clearBtn">🧹</button>
+    </div>
+
+    <!-- Секвенсор -->
+    <div class="sequencer">
+      <!-- Бочка -->
+      <div class="track">
+        <span class="track-icon">🥁</span>
+        <span class="track-name">Kick</span>
+        <div class="steps" id="kickSteps"></div>
+      </div>
+
+      <!-- Хэт -->
+      <div class="track">
+        <span class="track-icon">🔔</span>
+        <span class="track-name">Hi-hat</span>
+        <div class="steps" id="hatSteps"></div>
+      </div>
+
+      <!-- Мелодия -->
+      <div class="track">
+        <span class="track-icon">🎹</span>
+        <span class="track-name">Melody</span>
+        <div class="steps" id="melodySteps"></div>
+      </div>
+    </div>
+
+    <!-- Выбор звуков -->
+    <div class="sounds-section">
+      <div class="sound-grid">
+        <button class="sound-btn active" data-sound="kick">🥁 Kick</button>
+        <button class="sound-btn" data-sound="snare">🥁 Snare</button>
+        <button class="sound-btn" data-sound="hat">🔔 Hi-hat</button>
+        <button class="sound-btn" data-sound="piano">🎹 Piano</button>
+        <button class="sound-btn" data-sound="bass">🎸 Bass</button>
+        <button class="sound-btn" data-sound="synth">🎛 Synth</button>
+      </div>
+    </div>
+
+    <!-- Кнопки действий -->
+    <div class="action-buttons">
+      <button class="action-btn" id="saveBtn">💾 Скачать</button>
+      <button class="action-btn random" id="randomBtn">🎲 Рандом</button>
+    </div>
+
+    <!-- Визуализация -->
+    <div class="volume-indicator">
+      <div class="volume-level" id="volumeLevel"></div>
     </div>
   </div>
+
   <script>
-    const I18N = {
-      ru: { title: "Создание музыки", play: "▶ Играть", clear: "🧹 Очистить" },
-      en: { title: "Create Music", play: "▶ Play", clear: "🧹 Clear" }
+    // ===== НАСТРОЙКИ =====
+    const TRANSLATIONS = {
+      ru: { title: "🎵 Music Lab", play: "▶", stop: "⏹", clear: "🧹", save: "💾 Скачать", random: "🎲 Рандом" },
+      en: { title: "🎵 Music Lab", play: "▶", stop: "⏹", clear: "🧹", save: "💾 Download", random: "🎲 Random" },
+      kk: { title: "🎵 Music Lab", play: "▶", stop: "⏹", clear: "🧹", save: "💾 Жүктеу", random: "🎲 Рандом" },
+      tr: { title: "🎵 Music Lab", play: "▶", stop: "⏹", clear: "🧹", save: "💾 İndir", random: "🎲 Rastgele" },
+      uk: { title: "🎵 Music Lab", play: "▶", stop: "⏹", clear: "🧹", save: "💾 Завантажити", random: "🎲 Рандом" },
+      fr: { title: "🎵 Music Lab", play: "▶", stop: "⏹", clear: "🧹", save: "💾 Télécharger", random: "🎲 Aléatoire" }
     };
-    const lang = (new URL(window.location.href)).searchParams.get("lang") || localStorage.getItem("miniapp_lang_v1") || "ru";
-    const t = I18N[lang] || I18N.ru;
+
+    function getLang() {
+      const url = new URL(window.location.href);
+      const qp = url.searchParams.get("lang");
+      if (qp) return qp;
+      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } 
+      catch(e) { return "ru"; }
+    }
+
+    const lang = getLang();
+    const t = TRANSLATIONS[lang] || TRANSLATIONS.ru;
     document.getElementById('toolTitle').textContent = t.title;
     document.getElementById('playBtn').textContent = t.play;
+    document.getElementById('stopBtn').textContent = t.stop;
     document.getElementById('clearBtn').textContent = t.clear;
+    document.getElementById('saveBtn').textContent = t.save;
+    document.getElementById('randomBtn').textContent = t.random;
+
+    // ===== МУЗЫКА =====
+    const synth = new Tone.Synth().toDestination();
+    const kick = new Tone.MembraneSynth().toDestination();
+    const hat = new Tone.NoiseSynth({ noise: { type: 'white' } }).toDestination();
     
-    // Здесь будет логика пианино
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
+    // Секвенсор
+    const sequence = {
+      kick: new Array(16).fill(false),
+      hat: new Array(16).fill(false),
+      melody: new Array(16).fill(false)
+    };
+
+    let currentStep = 0;
+    let isPlaying = false;
+
+    // Создание шагов
+    function createSteps(containerId, track) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      
+      for (let i = 0; i < 16; i++) {
+        const step = document.createElement('div');
+        step.className = 'step' + (sequence[track][i] ? ' active' : '');
+        step.dataset.index = i;
+        step.dataset.track = track;
+        
+        step.addEventListener('click', () => {
+          sequence[track][i] = !sequence[track][i];
+          step.classList.toggle('active');
+        });
+        
+        container.appendChild(step);
+      }
+    }
+
+    createSteps('kickSteps', 'kick');
+    createSteps('hatSteps', 'hat');
+    createSteps('melodySteps', 'melody');
+
+    // BPM
+    const bpmSlider = document.getElementById('bpmSlider');
+    const bpmValue = document.getElementById('bpmValue');
     
-    document.querySelectorAll('.key').forEach(key => {
-      key.addEventListener('click', () => {
-        const note = key.dataset.note;
-        const osc = audioCtx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = 440; // Потом настроим ноты
-        osc.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.5);
+    bpmSlider.addEventListener('input', (e) => {
+      const bpm = e.target.value;
+      bpmValue.textContent = bpm;
+      Tone.Transport.bpm.value = bpm;
+    });
+
+    // Воспроизведение
+    document.getElementById('playBtn').addEventListener('click', () => {
+      if (isPlaying) {
+        Tone.Transport.pause();
+        isPlaying = false;
+      } else {
+        Tone.Transport.start();
+        isPlaying = true;
+      }
+    });
+
+    document.getElementById('stopBtn').addEventListener('click', () => {
+      Tone.Transport.stop();
+      isPlaying = false;
+      currentStep = 0;
+      
+      // Убираем подсветку
+      document.querySelectorAll('.step').forEach(step => {
+        step.classList.remove('playing');
       });
     });
+
+    // Очистка
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      for (let track in sequence) {
+        sequence[track].fill(false);
+      }
+      
+      document.querySelectorAll('.step').forEach(step => {
+        step.classList.remove('active');
+      });
+    });
+
+    // Рандом
+    document.getElementById('randomBtn').addEventListener('click', () => {
+      for (let track in sequence) {
+        for (let i = 0; i < 16; i++) {
+          sequence[track][i] = Math.random() > 0.7;
+        }
+      }
+      
+      document.querySelectorAll('.step').forEach(step => {
+        const track = step.dataset.track;
+        const index = parseInt(step.dataset.index);
+        if (sequence[track][index]) {
+          step.classList.add('active');
+        } else {
+          step.classList.remove('active');
+        }
+      });
+    });
+
+    // Выбор звуков
+    document.querySelectorAll('.sound-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const sound = btn.dataset.sound;
+        // Здесь можно менять звуки для треков
+      });
+    });
+
+    // Секвенсор
+    Tone.Transport.scheduleRepeat((time) => {
+      // Играем текущий шаг
+      if (sequence.kick[currentStep]) {
+        kick.triggerAttackRelease('C1', '8n', time);
+      }
+      if (sequence.hat[currentStep]) {
+        hat.triggerAttackRelease('16n', time);
+      }
+      if (sequence.melody[currentStep]) {
+        const notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+        const note = notes[Math.floor(Math.random() * notes.length)];
+        synth.triggerAttackRelease(note, '8n', time);
+      }
+
+      // Подсветка шага
+      document.querySelectorAll('.step').forEach(step => {
+        step.classList.remove('playing');
+      });
+      
+      document.querySelectorAll(`[data-index="${currentStep}"]`).forEach(step => {
+        step.classList.add('playing');
+      });
+
+      // Визуализация громкости
+      const volumeLevel = document.getElementById('volumeLevel');
+      volumeLevel.style.width = Math.random() * 100 + '%';
+
+      currentStep = (currentStep + 1) % 16;
+    }, '16n');
+
+    // Сохранение
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const audioContext = Tone.context;
+      // Здесь можно добавить запись
+      alert('🎵 Трек готов! (Запись будет позже)');
+    });
+
+    // Telegram
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
   </script>
 </body>
 </html>
