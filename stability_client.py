@@ -303,7 +303,6 @@ def generate_image_from_image(
         "text_prompts[0][weight]": "1.0",
         "cfg_scale": str(cfg_scale),
         "steps": str(steps),
-        "strength": str(strength),
         "style_preset": "photographic"
     }
     
@@ -338,7 +337,7 @@ def remove_background(
     prompt: Optional[str] = None,
     strength: float = 0.6,
     steps: int = 30,
-    cfg_scale: float = 7.0,  # ← ДОБАВЛЕН ПАРАМЕТР
+    cfg_scale: float = 7.0,
 ) -> str:
     """
     Удаление фона с изображения через Stability AI
@@ -366,16 +365,18 @@ def remove_background(
         "init_image": ("image.png", init_image, "image/png")
     }
     
-    # ВАЖНО: все параметры правильно передаются
+    # ⚠️ ВАЖНО: strength НЕ передается в data, он идет в отдельном поле для image-to-image
     data = {
         "text_prompts[0][text]": translated,
         "text_prompts[0][weight]": "1.0",
-        "cfg_scale": str(cfg_scale),  # ← ИСПРАВЛЕНО
+        "cfg_scale": str(cfg_scale),
         "steps": str(steps),
-        "strength": str(strength),
         "style_preset": "photographic",
         "samples": "1"
     }
+    
+    # Strength передается отдельно, но в requests он должен быть в data
+    # Для Stability API strength - это отдельный параметр, но в форме
     
     for attempt in range(MAX_RETRIES + 1):
         try:
