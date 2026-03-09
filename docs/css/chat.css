@@ -61,46 +61,34 @@
   }
 }
 
-/* Сообщение с фото */
-.msg.user.image-message {
+/* Сообщение с фото - как в ChatGPT */
+.msg.user {
+  max-width: 300px;
+  padding: 8px;
+}
+
+.msg.user .image-preview-container {
   display: flex;
-  flex-direction: column;
-  padding: 0;
-  overflow: hidden;
-  background: transparent;
-  border: none;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
-.msg.user .message-image {
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 12px;
-  margin-bottom: 8px;
-  border: 1px solid rgba(255,255,255,0.2);
-}
-
-.msg.user .message-text {
-  padding: 8px 12px;
-  background: var(--user-bg);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
-  border-bottom-right-radius: 8px;
-  color: #f7fbff;
-  width: fit-content;
-  max-width: 100%;
-}
-
-:root[data-theme="light"] .msg.user .message-text {
-  color: var(--text);
+.msg.user .message-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
 .msg.user .image-label {
   font-size: 13px;
   color: rgba(255,255,255,0.7);
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+}
+
+.msg.user .message-text {
+  margin-top: 4px;
+  word-break: break-word;
 }
 
 :root[data-theme="light"] .msg.user .image-label {
@@ -589,6 +577,10 @@
 
 :root[data-theme="light"] .preview-name {
   color: var(--text);
+}
+
+:root[data-theme="light"] .msg.user .message-thumb {
+  border: 1px solid var(--btn-border);
 }
 
 /* ============================= */
