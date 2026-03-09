@@ -1,10 +1,11 @@
 import os
 from typing import Optional
+import base64
 
 from openai import OpenAI
 
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
-OPENAI_MODEL = (os.getenv("OPENAI_MODEL") or "gpt-3.5-turbo").strip()
+OPENAI_MODEL = (os.getenv("OPENAI_MODEL") or "gpt-4-vision-preview").strip()
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
@@ -66,14 +67,15 @@ def extract_user_message(full_text: str) -> str:
     return full_text
 
 def ask_openai(
-    user_text: str,  # Это может быть prompt_with_memory или просто текст
+    user_text: str,
     *,
     lang: str = "ru",
     persona: str = "friendly",
     style: str = "steps",
+    image_base64: Optional[str] = None,
 ) -> str:
     """
-    Отправка запроса в OpenAI
+    Отправка запроса в OpenAI (с поддержкой фото)
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -81,25 +83,16 @@ def ask_openai(
     # Извлекаем текущее сообщение пользователя
     current_message = extract_user_message(user_text)
     
-    # Если передан prompt_with_memory, используем его как контекст
-    if "Conversation:" in user_text or "User:" in user_text:
-        # Передаём всю историю как контекст
-        messages = [
-            {"role": "system", "content": f"Ты {persona} собеседник. {STYLES.get(style)} Отвечай на {lang} языке."},
-            {"role": "user", "content": user_text}
-        ]
-    else:
-        # Простой запрос без истории
-        persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
-        style_desc = STYLES.get(style, STYLES["steps"])
-        
-        lang_names = {
-            "ru": "русском", "kk": "казахском", "en": "английском",
-            "tr": "турецком", "uk": "украинском", "fr": "французском"
-        }
-        target_lang = lang_names.get(lang, "русском")
-        
-        system_prompt = f"""Ты {persona} собеседник. Говоришь на {target_lang} языке.
+    lang_names = {
+        "ru": "русском", "kk": "казахском", "en": "английском",
+        "tr": "турецком", "uk": "украинском", "fr": "французском"
+    }
+    target_lang = lang_names.get(lang, "русском")
+    
+    persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
+    style_desc = STYLES.get(style, STYLES["steps"])
+    
+    system_prompt = f"""Ты {persona} собеседник. Говоришь на {target_lang} языке.
 
 ТВОЙ ХАРАКТЕР:
 {persona_desc}
@@ -109,12 +102,37 @@ def ask_openai(
 
 ВАЖНО:
 - Не повторяйся
-- Будь естественным"""
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_text}
-        ]
+- Будь естественным
+- Отвечай на языке пользователя ({target_lang})"""
+
+    # Формируем сообщения
+    messages = [
+        {"role": "system", "content": system_prompt}
+    ]
+    
+    # Если есть фото, добавляем его
+    if image_base64:
+        # Убираем префикс data:image/...;base64, если есть
+        if ',' in image_base64:
+            image_base64 = image_base64.split(',')[1]
+            
+        messages.append({
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": current_message or "Что на этом фото?"
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{image_base64}"
+                    }
+                }
+            ]
+        })
+    else:
+        messages.append({"role": "user", "content": current_message})
 
     temps = {
         "fun": 0.95, "friendly": 0.85, "smart": 0.7, "strict": 0.4
@@ -123,10 +141,10 @@ def ask_openai(
 
     try:
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model="gpt-4-vision-preview" if image_base64 else OPENAI_MODEL,
             messages=messages,
             temperature=temperature,
-            max_tokens=600,
+            max_tokens=800 if image_base64 else 600,
             presence_penalty=0.6,
             frequency_penalty=0.6,
         )
@@ -136,8 +154,15 @@ def ask_openai(
         
     except Exception as e:
         print(f"OpenAI error: {e}")
-        return "Извините, ошибка. Попробуйте позже."
-
+        error_messages = {
+            "ru": "Извините, ошибка при обработке фото. Попробуйте позже.",
+            "kk": "Кешіріңіз, фото өңдеу қатесі. Қайталаңыз.",
+            "en": "Sorry, error processing image. Try again.",
+            "tr": "Üzgünüm, fotoğraf işleme hatası. Tekrar deneyin.",
+            "uk": "Вибачте, помилка обробки фото. Спробуйте ще.",
+            "fr": "Désolé, erreur de traitement de l'image. Réessayez."
+        }
+        return error_messages.get(lang, error_messages["ru"])
 
 def is_openai_available() -> bool:
     return bool(OPENAI_API_KEY)
