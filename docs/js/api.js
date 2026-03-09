@@ -2,12 +2,13 @@
 
 const API_BASE = "https://fayrat-production.up.railway.app";
 const API_CHAT = API_BASE + "/api/chat";
+const API_CHAT_WITH_IMAGE = API_BASE + "/api/chat-with-image";
 const API_CLEAR_MEMORY = API_BASE + "/api/memory/clear";
 const API_BALANCE = API_BASE + "/api/stars/balance";
-const API_LIMITS = API_BASE + "/api/user/limits";  // ✅ новый эндпоинт
-const API_STYLE_CHANGE = API_BASE + "/api/user/style/change";  // ✅ новый эндпоинт
-const API_PERSONA = API_BASE + "/api/user/persona";  // ✅ для смены характера
-const API_AI_MODE = API_BASE + "/api/user/ai_mode";  // ✅ для получения режима
+const API_LIMITS = API_BASE + "/api/user/limits";
+const API_STYLE_CHANGE = API_BASE + "/api/user/style/change";
+const API_PERSONA = API_BASE + "/api/user/persona";
+const API_AI_MODE = API_BASE + "/api/user/ai_mode";
 
 function getLang(){
   return localStorage.getItem("miniapp_lang_v1") || "ru";
@@ -72,6 +73,45 @@ export async function askAI(promptText) {
   }
 }
 
+// НОВАЯ ФУНКЦИЯ ДЛЯ ОТПРАВКИ С ФОТО
+export async function askAIWithImage(promptText, imageFile, imageBase64) {
+  const user = getTelegramUser();
+
+  const formData = new FormData();
+  formData.append('tg_user_id', user.tg_user_id);
+  formData.append('tg_username', user.tg_username);
+  formData.append('tg_first_name', user.tg_first_name);
+  formData.append('text', promptText || '');
+  formData.append('lang', getLang());
+  formData.append('style', getStyle());
+  formData.append('persona', getPersona());
+  formData.append('image', imageFile);
+
+  try {
+    const r = await fetch(API_CHAT_WITH_IMAGE, {
+      method: "POST",
+      body: formData
+    });
+
+    if (r.status === 402) {
+      const data = await r.json();
+      if (data.error === "insufficient_stars") {
+        throw new Error("❌ Недостаточно звезд. Купите звезды в меню.");
+      }
+    }
+
+    if (!r.ok) {
+      throw new Error("API error " + r.status);
+    }
+
+    const data = await r.json();
+    return (data.reply || "").trim();
+  } catch (e) {
+    console.error("Chat with image error:", e);
+    throw e;
+  }
+}
+
 export async function clearAIMemory() {
   const user = getTelegramUser();
 
@@ -99,10 +139,6 @@ export async function getStarsBalance() {
   }
   return 0;
 }
-
-// =========================
-// НОВЫЕ ФУНКЦИИ ДЛЯ ЛИМИТОВ
-// =========================
 
 export async function getUserLimits() {
   const user = getTelegramUser();
@@ -143,7 +179,6 @@ export async function changeStyle(newStyle) {
       return { success: false, error: "unknown", message: data.error };
     }
     
-    // Если успешно, сохраняем в localStorage
     localStorage.setItem("ai_style", newStyle);
     
     return { success: true, data };
@@ -177,7 +212,6 @@ export async function changePersona(newPersona) {
       return { success: false, error: "unknown", message: data.error };
     }
     
-    // Если успешно, сохраняем в localStorage
     localStorage.setItem("ai_persona", newPersona);
     
     return { success: true, data };
