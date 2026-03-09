@@ -56,6 +56,25 @@ STYLES = {
     "detail": "Answer in detail but without unnecessary words."
 }
 
+def detect_language(text: str) -> str:
+    """Определяем язык текста"""
+    # Простая эвристика по символам
+    cyrillic = sum(1 for c in text if 'а' <= c.lower() <= 'я')
+    latin = sum(1 for c in text if 'a' <= c.lower() <= 'z')
+    
+    if cyrillic > latin * 2:
+        return "Russian"
+    elif text and (text[0] in 'қәғңүұһі' or 'қ' in text or 'ә' in text):
+        return "Kazakh"
+    elif text and ('ğ' in text or 'ü' in text or 'ş' in text or 'ı' in text):
+        return "Turkish"
+    elif text and ('є' in text or 'ї' in text or 'і' in text):
+        return "Ukrainian"
+    elif text and ('é' in text or 'è' in text or 'ç' in text):
+        return "French"
+    else:
+        return "English"
+
 def extract_user_message(full_text: str) -> str:
     """Извлекаем последнее сообщение пользователя из истории"""
     if "User:" in full_text:
@@ -69,13 +88,14 @@ def extract_user_message(full_text: str) -> str:
 def ask_openai(
     user_text: str,
     *,
-    lang: str = "ru",
+    lang: str = "ru",  # Этот параметр больше не используется для языка ответа
     persona: str = "friendly",
     style: str = "steps",
     image_base64: Optional[str] = None,
 ) -> str:
     """
     Отправка запроса в OpenAI (с поддержкой фото)
+    OpenAI сам определяет язык и отвечает на том же языке
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -83,27 +103,30 @@ def ask_openai(
     # Извлекаем текущее сообщение пользователя
     current_message = extract_user_message(user_text)
     
-    lang_names = {
-        "ru": "русском", "kk": "казахском", "en": "английском",
-        "tr": "турецком", "uk": "украинском", "fr": "французском"
-    }
-    target_lang = lang_names.get(lang, "русском")
+    # Определяем язык сообщения
+    detected_lang = detect_language(current_message)
     
     persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
     style_desc = STYLES.get(style, STYLES["steps"])
     
-    system_prompt = f"""Ты {persona} собеседник. Говоришь на {target_lang} языке.
+    system_prompt = f"""You are a {persona} assistant.
 
-ТВОЙ ХАРАКТЕР:
+YOUR PERSONALITY:
 {persona_desc}
 
-СТИЛЬ ОТВЕТА:
+RESPONSE STYLE:
 {style_desc}
 
-ВАЖНО:
-- Не повторяйся
-- Будь естественным
-- Отвечай на языке пользователя ({target_lang})"""
+IMPORTANT RULES:
+- ALWAYS respond in the SAME LANGUAGE as the user's message
+- If user writes in Russian, answer in Russian
+- If user writes in English, answer in English
+- If user writes in Kazakh, answer in Kazakh
+- If user writes in Turkish, answer in Turkish
+- If user writes in Ukrainian, answer in Ukrainian
+- If user writes in French, answer in French
+- Be consistent with your personality
+- Never switch languages mid-conversation"""
 
     # Формируем сообщения
     messages = [
@@ -121,7 +144,7 @@ def ask_openai(
             "content": [
                 {
                     "type": "text",
-                    "text": current_message or "Что на этом фото?"
+                    "text": current_message or "What's in this image?"
                 },
                 {
                     "type": "image_url",
@@ -154,15 +177,7 @@ def ask_openai(
         
     except Exception as e:
         print(f"OpenAI error: {e}")
-        error_messages = {
-            "ru": "Извините, ошибка при обработке фото. Попробуйте позже.",
-            "kk": "Кешіріңіз, фото өңдеу қатесі. Қайталаңыз.",
-            "en": "Sorry, error processing image. Try again.",
-            "tr": "Üzgünüm, fotoğraf işleme hatası. Tekrar deneyin.",
-            "uk": "Вибачте, помилка обробки фото. Спробуйте ще.",
-            "fr": "Désolé, erreur de traitement de l'image. Réessayez."
-        }
-        return error_messages.get(lang, error_messages["ru"])
+        return "Извините, ошибка. Попробуйте позже."
 
 def is_openai_available() -> bool:
     return bool(OPENAI_API_KEY)
