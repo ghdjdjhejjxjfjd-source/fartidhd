@@ -338,6 +338,7 @@ def remove_background(
     prompt: Optional[str] = None,
     strength: float = 0.6,
     steps: int = 30,
+    cfg_scale: float = 7.0,  # ← ДОБАВЛЕН ПАРАМЕТР
 ) -> str:
     """
     Удаление фона с изображения через Stability AI
@@ -365,13 +366,13 @@ def remove_background(
         "init_image": ("image.png", init_image, "image/png")
     }
     
-    # ВАЖНО: добавляем strength в параметры!
+    # ВАЖНО: все параметры правильно передаются
     data = {
         "text_prompts[0][text]": translated,
         "text_prompts[0][weight]": "1.0",
-        "cfg_scale": "7.0",
+        "cfg_scale": str(cfg_scale),  # ← ИСПРАВЛЕНО
         "steps": str(steps),
-        "strength": str(strength),  # ← ЭТО БЫЛО ПРОПУЩЕНО!
+        "strength": str(strength),
         "style_preset": "photographic",
         "samples": "1"
     }
