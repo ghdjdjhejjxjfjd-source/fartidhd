@@ -1,4 +1,4 @@
-# stability_client.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
+# stability_client.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С УДАЛЕНИЕМ ФОНА
 import os
 import base64
 import time
@@ -329,6 +329,82 @@ def generate_image_from_image(
                 time.sleep(RETRY_DELAY * (attempt + 1))
                 continue
             raise RuntimeError(f"Image-to-image generation failed: {str(e)}")
+
+# ========== НОВАЯ ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ ФОНА ==========
+def remove_background(
+    init_image: bytes,
+    prompt: Optional[str] = None,
+    strength: float = 0.6,
+    steps: int = 30,
+) -> str:
+    """
+    Удаление фона с изображения через Stability AI
+    Использует image-to-image со специальным промптом
+    """
+    if not STABILITY_API_KEY:
+        raise RuntimeError("STABILITY_API_KEY is not set")
+    
+    if not init_image:
+        raise ValueError("Init image is required")
+    
+    # Промпт для удаления фона
+    bg_prompt = prompt or "subject on transparent background, white background, no background, isolated object"
+    
+    translated = translate_text(bg_prompt)
+    print(f"🖼 Removing background with prompt: {translated}")
+    
+    url = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image"
+    
+    headers = {
+        "Authorization": f"Bearer {STABILITY_API_KEY}",
+        "Accept": "application/json"
+    }
+    
+    files = {
+        "init_image": ("image.png", init_image, "image/png")
+    }
+    
+    # Для удаления фона используем низкий strength (0.6)
+    # и специальные настройки
+    data = {
+        "text_prompts[0][text]": translated,
+        "text_prompts[0][weight]": "1.0",
+        "cfg_scale": "7.0",
+        "steps": str(steps),
+        "style_preset": "photographic",
+        "samples": "1"
+    }
+    
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            response = requests.post(url, headers=headers, files=files, data=data, timeout=90)
+            
+            if response.status_code == 200:
+                data = response.json()
+                image_base64 = data["artifacts"][0]["base64"]
+                return f"data:image/png;base64,{image_base64}"
+            
+            # Если ошибка, пробуем с другим промптом
+            if attempt == 0 and response.status_code != 200:
+                # Пробуем более простой промпт
+                data["text_prompts[0][text]"] = "white background, no background"
+                continue
+                
+            error_detail = "Unknown error"
+            try:
+                error_json = response.json()
+                error_detail = error_json.get('message', str(error_json))
+            except:
+                error_detail = response.text[:200]
+            
+            raise RuntimeError(f"Stability API error {response.status_code}: {error_detail}")
+            
+        except Exception as e:
+            if attempt < MAX_RETRIES:
+                print(f"🔄 Retry {attempt + 1}/{MAX_RETRIES}")
+                time.sleep(RETRY_DELAY * (attempt + 1))
+                continue
+            raise RuntimeError(f"Background removal failed: {str(e)}")
 
 def is_stability_available() -> bool:
     return bool(STABILITY_API_KEY)
