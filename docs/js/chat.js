@@ -213,28 +213,49 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     wrapper.className = `msg-wrapper ${type}`;
     
     if (type === 'user' && imageData) {
-      // Сообщение с фото
+      // Сообщение с фото (как в ChatGPT)
       const messageDiv = document.createElement('div');
-      messageDiv.className = 'msg user image-message';
+      messageDiv.className = 'msg user';
+      messageDiv.style.display = 'flex';
+      messageDiv.style.flexDirection = 'column';
+      messageDiv.style.padding = '8px';
+      messageDiv.style.maxWidth = '300px';
       
-      // Метка "Фото"
-      const labelDiv = document.createElement('div');
-      labelDiv.className = 'image-label';
-      labelDiv.innerHTML = '📷 ' + (getImageLabel());
+      // Контейнер для фото и метки
+      const imgContainer = document.createElement('div');
+      imgContainer.style.display = 'flex';
+      imgContainer.style.alignItems = 'center';
+      imgContainer.style.gap = '8px';
+      imgContainer.style.marginBottom = '4px';
       
-      // Само фото
+      // Маленькое фото
       const img = document.createElement('img');
-      img.className = 'message-image';
       img.src = imageData;
+      img.style.width = '40px';
+      img.style.height = '40px';
+      img.style.borderRadius = '8px';
+      img.style.objectFit = 'cover';
+      
+      // Метка
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'image-label';
+      labelSpan.innerHTML = '📷 ' + (getImageLabel());
+      labelSpan.style.fontSize = '13px';
+      labelSpan.style.color = 'rgba(255,255,255,0.7)';
+      
+      imgContainer.appendChild(img);
+      imgContainer.appendChild(labelSpan);
+      messageDiv.appendChild(imgContainer);
       
       // Текст сообщения
-      const textDiv = document.createElement('div');
-      textDiv.className = 'message-text';
-      textDiv.textContent = text || '📷 Фото';
+      if (text && text !== '📷 Фото') {
+        const textDiv = document.createElement('div');
+        textDiv.textContent = text;
+        textDiv.style.marginTop = '4px';
+        textDiv.style.wordBreak = 'break-word';
+        messageDiv.appendChild(textDiv);
+      }
       
-      messageDiv.appendChild(labelDiv);
-      messageDiv.appendChild(img);
-      messageDiv.appendChild(textDiv);
       wrapper.appendChild(messageDiv);
       
     } else {
@@ -351,6 +372,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       const data = await res.json();
       const newMode = data.ai_mode;
       
+      // Сохраняем режим
+      currentAiMode = newMode;
+      
       // Показываем/скрываем кнопку галереи
       if (galleryBtn) {
         if (newMode === 'quality') {
@@ -367,6 +391,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       return newMode;
     } catch (err) {
       console.log("Mode check error:", err);
+      return null;
     }
   }
 
@@ -375,8 +400,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     currentImageFile = null;
     currentImageBase64 = null;
     currentImageName = '';
-    imagePreviewContainer.style.display = 'none';
-    fileInput.value = '';
+    if (imagePreviewContainer) {
+      imagePreviewContainer.style.display = 'none';
+    }
+    if (fileInput) {
+      fileInput.value = '';
+    }
   }
 
   // Инициализация галереи
@@ -433,6 +462,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     saveHistory(history);
     try {
       await clearAIMemory();
+      console.log("✅ Server memory cleared");
     } catch (e) {
       console.error("Failed to clear server memory:", e);
     }
@@ -743,16 +773,28 @@ Response:`;
     sending = true;
     sendBtnEl.disabled = true;
 
+    // Сохраняем фото перед очисткой
+    const hasImage = currentImageFile !== null;
+    const imageToSend = currentImageBase64;
+    const imageFileToSend = currentImageFile;
+    const imageName = currentImageName;
+
     // Добавляем сообщение пользователя
-    if (currentImageFile) {
-      add("user", t || '📷 Фото', true, currentImageBase64);
+    if (hasImage) {
+      add("user", t || '📷 Фото', true, imageToSend);
     } else {
       add("user", t, true);
     }
     
+    // Очищаем поле ввода
     inputEl.value = "";
     if (inputEl.tagName === 'TEXTAREA') {
       inputEl.style.height = 'auto';
+    }
+    
+    // Очищаем фото ПОСЛЕ добавления в чат
+    if (hasImage) {
+      clearCurrentImage();
     }
     
     addTyping();
@@ -761,7 +803,7 @@ Response:`;
     let success = false;
 
     // Определяем режим
-    const mode = await checkAiMode();
+    const mode = currentAiMode;
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
@@ -771,9 +813,9 @@ Response:`;
         }
 
         let answer;
-        if (currentImageFile && mode === 'quality') {
+        if (hasImage && mode === 'quality') {
           // Отправляем с фото
-          answer = await askAIWithImage(t, currentImageFile, currentImageBase64);
+          answer = await askAIWithImage(t, imageFileToSend, imageToSend);
         } else {
           // Обычный запрос
           answer = await askAI(t);
@@ -816,8 +858,6 @@ Response:`;
       }
     }
 
-    // Очищаем фото после отправки
-    clearCurrentImage();
     sending = false;
     sendBtnEl.disabled = false;
   }
@@ -899,12 +939,19 @@ Response:`;
         
         isReloading = true;
         
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.setItem("current_ai_mode", data.ai_mode);
-        
+        // Очищаем историю на сервере
         try {
           await clearAIMemory();
-        } catch (e) {}
+          console.log("✅ Server memory cleared on mode change");
+        } catch (e) {
+          console.error("Failed to clear server memory:", e);
+        }
+        
+        // Очищаем локальную историю
+        history = [];
+        saveHistory(history);
+        
+        localStorage.setItem("current_ai_mode", data.ai_mode);
         
         alert("🔄 Режим изменен. Страница обновится...");
         
@@ -1016,7 +1063,8 @@ Response:`;
       checkAiMode();
     }, 1000);
     
-    setInterval(checkAiMode, 3000);
+    // Проверка изменений режима
+    setInterval(checkModeChange, 3000);
     
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && !isReloading) {
