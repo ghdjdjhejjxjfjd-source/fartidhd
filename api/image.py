@@ -1,4 +1,4 @@
-# api/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
+# api/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С REMOVE_BG
 from flask import request, jsonify
 from datetime import datetime
 import time
@@ -136,9 +136,12 @@ def api_image():
     negative_prompt = request.form.get("negative_prompt") or None
     
     try:
-        from stability_client import generate_image, generate_image_from_image
+        # Импортируем все функции из stability_client
+        from stability_client import generate_image, generate_image_from_image, remove_background
         
+        # ===== ОБРАБОТКА РАЗНЫХ РЕЖИМОВ =====
         if mode == "txt2img":
+            # Генерация по тексту
             image_base64 = generate_image(
                 prompt=prompt,
                 negative_prompt=negative_prompt,
@@ -147,7 +150,18 @@ def api_image():
                 width=width,
                 height=height,
             )
-        elif mode in ["img2img", "remove_bg", "inpaint", "upscale"] and image_data:
+            
+        elif mode == "remove_bg":
+            # ⭐ УДАЛЕНИЕ ФОНА через специальную функцию
+            image_base64 = remove_background(
+                init_image=image_data,
+                prompt=prompt or "subject on transparent background, white background",
+                strength=0.6,  # Низкий strength чтобы сохранить объект
+                steps=steps,
+            )
+            
+        elif mode in ["img2img", "inpaint", "upscale"]:
+            # Обычный image-to-image
             image_base64 = generate_image_from_image(
                 prompt=prompt,
                 init_image=image_data,
@@ -161,6 +175,7 @@ def api_image():
         if not image_base64:
             return jsonify({"error": "generation_failed"}), 500
         
+        # Списываем звезды если не FREE
         if not a["is_free"]:
             spend_stars(tg_user_id_int, cost)
         
