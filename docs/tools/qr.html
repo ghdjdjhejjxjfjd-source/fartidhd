@@ -3,9 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>QR коды</title>
+  <title>QR Конструктор</title>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+  <!-- ТЕМА -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
@@ -18,114 +21,761 @@
       document.documentElement.setAttribute("data-theme", getTheme());
     })();
   </script>
-  <script>
-    (function(){
-      const tg = window.Telegram?.WebApp;
-      if (tg) {
-        tg.ready();
-        tg.expand();
-        tg.disableVerticalSwipes();
-      }
-    })();
-  </script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0b0f18; color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
-    .tool-header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 20;
-      display: flex; align-items: center; gap: 10px;
-      padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(8,16,30,.55); backdrop-filter: blur(32px);
-      border-bottom: 1px solid rgba(255,255,255,.08);
+    
+    body { 
+      background: #0b0f18; 
+      color: white; 
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+      min-height: 100vh; 
     }
-    .tool-back {
-      color: #fff; text-decoration: none; font-size: 20px;
-      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,.1); border-radius: 18px;
+
+    :root[data-theme="blue"] { --accent: #3aa0ff; --accent2: #0a84ff; }
+    :root[data-theme="black"] { --accent: #6aa7ff; --accent2: #2f7bff; }
+    :root[data-theme="light"] { --accent: #3a8cff; --accent2: #1a6cff; }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    .tool-title { font-weight: 700; font-size: 18px; flex: 1; text-align: center; color: #fff; }
-    .tool-spacer { width: 36px; }
-    .tool-container { padding: 80px 16px 20px; min-height: 100vh; }
-    .input-area {
-      background: rgba(255,255,255,.05); border-radius: 16px; padding: 20px;
+
+    .back-btn {
+      color: white;
+      text-decoration: none;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .container {
+      padding: 80px 16px 20px;
+      min-height: 100vh;
+    }
+
+    /* Загрузка фото */
+    .upload-area {
+      background: rgba(255,255,255,0.05);
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 24px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      margin: 20px 0;
+      transition: all 0.3s;
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .upload-text {
+      font-size: 16px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* Превью */
+    .preview-section {
+      display: none;
       margin: 20px 0;
     }
-    .qr-input {
-      width: 100%; padding: 16px; border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.1);
-      color: white; font-size: 16px; margin-bottom: 16px;
+
+    .image-preview {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 20px;
     }
-    .qr-btn {
-      width: 100%; padding: 16px; border-radius: 16px; border: none;
-      font-size: 16px; font-weight: 700; cursor: pointer;
-      background: linear-gradient(180deg, #3aa0ff 0%, #0a84ff 100%);
-      color: white; margin-bottom: 20px;
+
+    /* Поле ввода текста */
+    .input-group {
+      margin-bottom: 20px;
     }
-    .qr-result {
-      display: none; text-align: center;
+
+    .input-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 8px;
+      display: block;
     }
-    #qrCanvas { max-width: 100%; border-radius: 16px; }
-    .save-btn {
-      width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,.2);
-      background: rgba(255,255,255,.1); color: white; font-size: 16px;
-      margin-top: 16px; cursor: pointer;
+
+    .text-input {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* Настройки расположения (появляются при вводе текста) */
+    .layout-settings {
+      display: none;
+      background: rgba(255,255,255,0.05);
+      border-radius: 24px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .settings-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+
+    .layout-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .layout-btn {
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.05);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .layout-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .layout-icon {
+      font-size: 24px;
+    }
+
+    /* Стили текста */
+    .text-style-options {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .style-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.05);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .style-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Размер шрифта */
+    .font-size-control {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .font-size-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .font-size-slider {
+      flex: 1;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .font-size-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Отступы */
+    .spacing-options {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .spacing-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.05);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .spacing-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Предпросмотр страницы */
+    .page-preview {
+      background: rgba(255,255,255,0.05);
+      border-radius: 24px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .preview-title {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+    }
+
+    .preview-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .preview-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .preview-text {
+      padding: 16px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: white;
+    }
+
+    /* QR код */
+    .qr-section {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .qr-canvas {
+      max-width: 100%;
+      border-radius: 16px;
+      background: white;
+      padding: 16px;
+    }
+
+    .qr-link {
+      margin: 12px 0;
+      font-size: 14px;
+      color: var(--accent);
+      word-break: break-all;
+    }
+
+    /* Кнопки */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 8px 0;
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-group .btn {
+      margin: 0;
     }
   </style>
 </head>
 <body>
-  <div class="tool-header">
-    <a href="../index.html" class="tool-back">←</a>
-    <div class="tool-title" id="toolTitle">QR коды</div>
-    <div class="tool-spacer"></div>
+
+  <div class="header">
+    <a href="../index.html" class="back-btn">←</a>
+    <div class="title" id="title">QR Конструктор</div>
+    <div class="spacer"></div>
   </div>
-  <div class="tool-container">
-    <div class="input-area">
-      <input type="text" class="qr-input" id="qrText" placeholder="Введи текст или ссылку">
-      <button class="qr-btn" id="generateBtn">🔳 Создать QR код</button>
-      <div class="qr-result" id="qrResult">
-        <canvas id="qrCanvas"></canvas>
-        <button class="save-btn" id="saveBtn">💾 Сохранить</button>
+
+  <div class="container">
+    <!-- Загрузка фото -->
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📸</div>
+      <div class="upload-text" id="uploadText">Загрузи фото для страницы</div>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+    </div>
+
+    <!-- Превью и настройки -->
+    <div class="preview-section" id="previewSection">
+      <img class="image-preview" id="imagePreview" src="">
+
+      <!-- Поле ввода текста -->
+      <div class="input-group">
+        <label class="input-label" id="textLabel">Текст страницы</label>
+        <textarea class="text-input" id="textInput" rows="3" placeholder="Напиши текст..."></textarea>
       </div>
+
+      <!-- Настройки расположения (появляются при вводе текста) -->
+      <div class="layout-settings" id="layoutSettings">
+        <div class="settings-title" id="layoutTitle">🎯 Расположение</div>
+        
+        <div class="layout-options">
+          <button class="layout-btn active" data-layout="top">
+            <span class="layout-icon">⬆️</span>
+            <span id="layoutTop">Текст сверху</span>
+          </button>
+          <button class="layout-btn" data-layout="bottom">
+            <span class="layout-icon">⬇️</span>
+            <span id="layoutBottom">Текст снизу</span>
+          </button>
+          <button class="layout-btn" data-layout="left">
+            <span class="layout-icon">⬅️</span>
+            <span id="layoutLeft">Текст слева</span>
+          </button>
+          <button class="layout-btn" data-layout="right">
+            <span class="layout-icon">➡️</span>
+            <span id="layoutRight">Текст справа</span>
+          </button>
+        </div>
+
+        <div class="settings-title" id="styleTitle">🎨 Стиль текста</div>
+        <div class="text-style-options">
+          <button class="style-btn active" data-style="normal">Обычный</button>
+          <button class="style-btn" data-style="bold">Жирный</button>
+          <button class="style-btn" data-style="italic">Курсив</button>
+          <button class="style-btn" data-style="underline">Подчеркнутый</button>
+        </div>
+
+        <div class="settings-title" id="fontSizeTitle">🔤 Размер шрифта</div>
+        <div class="font-size-control">
+          <span class="font-size-value" id="fontSizeValue">16px</span>
+          <input type="range" class="font-size-slider" id="fontSizeSlider" min="12" max="32" value="16">
+        </div>
+
+        <div class="settings-title" id="spacingTitle">📏 Отступы</div>
+        <div class="spacing-options">
+          <button class="spacing-btn active" data-spacing="small">Маленькие</button>
+          <button class="spacing-btn" data-spacing="medium">Средние</button>
+          <button class="spacing-btn" data-spacing="large">Большие</button>
+        </div>
+      </div>
+
+      <!-- Предпросмотр страницы -->
+      <div class="page-preview">
+        <div class="preview-title" id="previewTitle">👀 Предпросмотр страницы</div>
+        <div class="preview-card" id="previewCard">
+          <img class="preview-image" id="previewImage" src="">
+          <div class="preview-text" id="previewText"></div>
+        </div>
+      </div>
+
+      <!-- Кнопки -->
+      <button class="btn btn-primary" id="generateBtn">🔳 Создать QR код</button>
+    </div>
+
+    <!-- QR результат -->
+    <div class="qr-section" id="qrSection">
+      <canvas class="qr-canvas" id="qrCanvas"></canvas>
+      <div class="qr-link" id="qrLink"></div>
+      
+      <div class="btn-group">
+        <button class="btn btn-primary" id="saveQrBtn">💾 Сохранить QR</button>
+        <button class="btn btn-secondary" id="shareQrBtn">📤 Поделиться</button>
+      </div>
+      
+      <button class="btn btn-secondary" id="newQrBtn">✨ Создать новый</button>
     </div>
   </div>
+
   <script>
-    const I18N = {
-      ru: { title: "QR коды", placeholder: "Введи текст или ссылку", generate: "🔳 Создать QR код", save: "💾 Сохранить" },
-      en: { title: "QR Codes", placeholder: "Enter text or link", generate: "🔳 Generate QR code", save: "💾 Save" }
+    // ===== ПЕРЕВОДЫ =====
+    const TRANSLATIONS = {
+      ru: {
+        title: "QR Конструктор",
+        upload: "Загрузи фото для страницы",
+        textLabel: "Текст страницы",
+        textPlaceholder: "Напиши текст...",
+        layoutTitle: "🎯 Расположение",
+        layoutTop: "Текст сверху",
+        layoutBottom: "Текст снизу",
+        layoutLeft: "Текст слева",
+        layoutRight: "Текст справа",
+        styleTitle: "🎨 Стиль текста",
+        fontSizeTitle: "🔤 Размер шрифта",
+        spacingTitle: "📏 Отступы",
+        spacingSmall: "Маленькие",
+        spacingMedium: "Средние",
+        spacingLarge: "Большие",
+        previewTitle: "👀 Предпросмотр страницы",
+        generate: "🔳 Создать QR код",
+        saveQr: "💾 Сохранить QR",
+        shareQr: "📤 Поделиться",
+        newQr: "✨ Создать новый"
+      },
+      en: {
+        title: "QR Constructor",
+        upload: "Upload photo for page",
+        textLabel: "Page text",
+        textPlaceholder: "Write text...",
+        layoutTitle: "🎯 Layout",
+        layoutTop: "Text on top",
+        layoutBottom: "Text on bottom",
+        layoutLeft: "Text on left",
+        layoutRight: "Text on right",
+        styleTitle: "🎨 Text style",
+        fontSizeTitle: "🔤 Font size",
+        spacingTitle: "📏 Spacing",
+        spacingSmall: "Small",
+        spacingMedium: "Medium",
+        spacingLarge: "Large",
+        previewTitle: "👀 Page preview",
+        generate: "🔳 Generate QR",
+        saveQr: "💾 Save QR",
+        shareQr: "📤 Share",
+        newQr: "✨ Create new"
+      }
     };
-    const lang = (new URL(window.location.href)).searchParams.get("lang") || localStorage.getItem("miniapp_lang_v1") || "ru";
-    const t = I18N[lang] || I18N.ru;
-    document.getElementById('toolTitle').textContent = t.title;
-    document.getElementById('qrText').placeholder = t.placeholder;
+
+    function getLang() {
+      const url = new URL(window.location.href);
+      const qp = url.searchParams.get("lang");
+      if (qp) return qp;
+      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } 
+      catch(e) { return "ru"; }
+    }
+
+    const lang = getLang();
+    const t = TRANSLATIONS[lang] || TRANSLATIONS.ru;
+
+    // Применяем переводы
+    document.getElementById('title').textContent = t.title;
+    document.getElementById('uploadText').textContent = t.upload;
+    document.getElementById('textLabel').textContent = t.textLabel;
+    document.getElementById('textInput').placeholder = t.textPlaceholder;
+    document.getElementById('layoutTitle').textContent = t.layoutTitle;
+    document.getElementById('layoutTop').textContent = t.layoutTop;
+    document.getElementById('layoutBottom').textContent = t.layoutBottom;
+    document.getElementById('layoutLeft').textContent = t.layoutLeft;
+    document.getElementById('layoutRight').textContent = t.layoutRight;
+    document.getElementById('styleTitle').textContent = t.styleTitle;
+    document.getElementById('fontSizeTitle').textContent = t.fontSizeTitle;
+    document.getElementById('spacingTitle').textContent = t.spacingTitle;
+    document.querySelector('[data-spacing="small"]').textContent = t.spacingSmall;
+    document.querySelector('[data-spacing="medium"]').textContent = t.spacingMedium;
+    document.querySelector('[data-spacing="large"]').textContent = t.spacingLarge;
+    document.getElementById('previewTitle').textContent = t.previewTitle;
     document.getElementById('generateBtn').textContent = t.generate;
-    document.getElementById('saveBtn').textContent = t.save;
-    
+    document.getElementById('saveQrBtn').textContent = t.saveQr;
+    document.getElementById('shareQrBtn').textContent = t.shareQr;
+    document.getElementById('newQrBtn').textContent = t.newQr;
+
+    // ===== ЭЛЕМЕНТЫ =====
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewSection = document.getElementById('previewSection');
+    const imagePreview = document.getElementById('imagePreview');
+    const textInput = document.getElementById('textInput');
+    const layoutSettings = document.getElementById('layoutSettings');
+    const previewImage = document.getElementById('previewImage');
+    const previewText = document.getElementById('previewText');
     const generateBtn = document.getElementById('generateBtn');
-    const qrText = document.getElementById('qrText');
-    const qrResult = document.getElementById('qrResult');
+    const qrSection = document.getElementById('qrSection');
     const qrCanvas = document.getElementById('qrCanvas');
-    
-    generateBtn.addEventListener('click', () => {
-      if (!qrText.value.trim()) {
-        alert('Введите текст');
-        return;
+    const qrLink = document.getElementById('qrLink');
+    const saveQrBtn = document.getElementById('saveQrBtn');
+    const shareQrBtn = document.getElementById('shareQrBtn');
+    const newQrBtn = document.getElementById('newQrBtn');
+    const fontSizeSlider = document.getElementById('fontSizeSlider');
+    const fontSizeValue = document.getElementById('fontSizeValue');
+
+    // ===== ПЕРЕМЕННЫЕ =====
+    let currentImage = null;
+    let currentLayout = 'top';
+    let currentStyle = 'normal';
+    let currentSpacing = 'small';
+    let currentFontSize = 16;
+
+    // ===== ЗАГРУЗКА ФОТО =====
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+          currentImage = e.target.result;
+          imagePreview.src = currentImage;
+          previewImage.src = currentImage;
+          uploadArea.style.display = 'none';
+          previewSection.style.display = 'block';
+          updatePreview();
+        };
+        
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // ===== ТЕКСТ =====
+    textInput.addEventListener('input', (e) => {
+      previewText.textContent = e.target.value || 'Текст страницы';
+      
+      // Показываем настройки если текст не пустой
+      if (e.target.value.trim()) {
+        layoutSettings.style.display = 'block';
+      } else {
+        layoutSettings.style.display = 'none';
       }
       
-      QRCode.toCanvas(qrCanvas, qrText.value, { width: 300 }, (err) => {
+      updatePreview();
+    });
+
+    // ===== РАСПОЛОЖЕНИЕ =====
+    document.querySelectorAll('.layout-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentLayout = btn.dataset.layout;
+        updatePreview();
+      });
+    });
+
+    // ===== СТИЛЬ ТЕКСТА =====
+    document.querySelectorAll('.style-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentStyle = btn.dataset.style;
+        updatePreview();
+      });
+    });
+
+    // ===== РАЗМЕР ШРИФТА =====
+    fontSizeSlider.addEventListener('input', (e) => {
+      currentFontSize = e.target.value;
+      fontSizeValue.textContent = currentFontSize + 'px';
+      updatePreview();
+    });
+
+    // ===== ОТСТУПЫ =====
+    document.querySelectorAll('.spacing-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.spacing-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSpacing = btn.dataset.spacing;
+        updatePreview();
+      });
+    });
+
+    // ===== ОБНОВЛЕНИЕ ПРЕДПРОСМОТРА =====
+    function updatePreview() {
+      const previewCard = document.getElementById('previewCard');
+      const previewImage = document.getElementById('previewImage');
+      const previewText = document.getElementById('previewText');
+      
+      // Стили текста
+      let textStyles = '';
+      textStyles += `font-size: ${currentFontSize}px; `;
+      textStyles += `font-weight: ${currentStyle === 'bold' ? 'bold' : 'normal'}; `;
+      textStyles += `font-style: ${currentStyle === 'italic' ? 'italic' : 'normal'}; `;
+      textStyles += `text-decoration: ${currentStyle === 'underline' ? 'underline' : 'none'}; `;
+      
+      // Отступы
+      let padding = '16px';
+      if (currentSpacing === 'small') padding = '8px';
+      if (currentSpacing === 'large') padding = '24px';
+      
+      previewText.style.cssText = textStyles + `padding: ${padding};`;
+      
+      // Расположение
+      previewCard.style.display = 'flex';
+      previewCard.style.flexDirection = 'column';
+      
+      if (currentLayout === 'top') {
+        previewCard.style.flexDirection = 'column';
+        previewCard.innerHTML = `
+          <div class="preview-text" style="${textStyles} padding: ${padding};">${previewText.textContent}</div>
+          <img class="preview-image" src="${currentImage}" style="width: 100%; height: 200px; object-fit: cover;">
+        `;
+      } else if (currentLayout === 'bottom') {
+        previewCard.style.flexDirection = 'column';
+        previewCard.innerHTML = `
+          <img class="preview-image" src="${currentImage}" style="width: 100%; height: 200px; object-fit: cover;">
+          <div class="preview-text" style="${textStyles} padding: ${padding};">${previewText.textContent}</div>
+        `;
+      } else if (currentLayout === 'left') {
+        previewCard.style.flexDirection = 'row';
+        previewCard.innerHTML = `
+          <div class="preview-text" style="${textStyles} padding: ${padding}; flex: 1;">${previewText.textContent}</div>
+          <img class="preview-image" src="${currentImage}" style="width: 150px; height: 150px; object-fit: cover;">
+        `;
+      } else if (currentLayout === 'right') {
+        previewCard.style.flexDirection = 'row';
+        previewCard.innerHTML = `
+          <img class="preview-image" src="${currentImage}" style="width: 150px; height: 150px; object-fit: cover;">
+          <div class="preview-text" style="${textStyles} padding: ${padding}; flex: 1;">${previewText.textContent}</div>
+        `;
+      }
+    }
+
+    // ===== ГЕНЕРАЦИЯ QR =====
+    generateBtn.addEventListener('click', () => {
+      if (!currentImage) return;
+      
+      // Создаем данные для страницы
+      const pageData = {
+        image: currentImage,
+        text: textInput.value,
+        layout: currentLayout,
+        style: currentStyle,
+        fontSize: currentFontSize,
+        spacing: currentSpacing
+      };
+      
+      // Кодируем в JSON
+      const jsonData = JSON.stringify(pageData);
+      
+      // Создаем ссылку (в реальности здесь будет ID в базе данных)
+      const pageUrl = `https://instagroq.page/${btoa(jsonData).substring(0, 20)}`;
+      
+      // Генерируем QR
+      QRCode.toCanvas(qrCanvas, pageUrl, { width: 300 }, (err) => {
         if (err) {
           alert('Ошибка создания QR');
         } else {
-          qrResult.style.display = 'block';
+          qrLink.textContent = pageUrl;
+          previewSection.style.display = 'none';
+          qrSection.style.display = 'block';
         }
       });
     });
-    
-    document.getElementById('saveBtn').addEventListener('click', () => {
+
+    // ===== СОХРАНЕНИЕ QR =====
+    saveQrBtn.addEventListener('click', () => {
       const link = document.createElement('a');
-      link.download = 'qrcode.png';
+      link.download = 'qr-code.png';
       link.href = qrCanvas.toDataURL();
       link.click();
     });
+
+    // ===== ПОДЕЛИТЬСЯ =====
+    shareQrBtn.addEventListener('click', () => {
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.sendData(JSON.stringify({
+          type: 'qr',
+          url: qrLink.textContent
+        }));
+      } else {
+        navigator.clipboard.writeText(qrLink.textContent);
+        alert('Ссылка скопирована!');
+      }
+    });
+
+    // ===== НОВЫЙ QR =====
+    newQrBtn.addEventListener('click', () => {
+      qrSection.style.display = 'none';
+      uploadArea.style.display = 'block';
+      previewSection.style.display = 'none';
+      fileInput.value = '';
+      textInput.value = '';
+      currentImage = null;
+    });
+
+    // ===== TELEGRAM =====
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
   </script>
 </body>
 </html>
