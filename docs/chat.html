@@ -51,7 +51,7 @@
 
   <link rel="stylesheet" href="./css/base.css?v=3">
   <link rel="stylesheet" href="./css/panels.css?v=3">
-  <link rel="stylesheet" href="./css/chat.css?v=3">
+  <link rel="stylesheet" href="./css/chat.css?v=4">
   
   <style>
     .limit-hint {
@@ -123,6 +123,109 @@
       margin-left: 8px;
     }
 
+    /* ===== НОВЫЕ СТИЛИ ДЛЯ ЗАГРУЗКИ ФОТО ===== */
+    .image-preview-container {
+      display: none;
+      padding: 8px 12px;
+      padding-top: 0;
+      background: rgba(18,24,32,.90);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    
+    :root[data-theme="light"] .image-preview-container {
+      background: var(--panel-bg);
+      backdrop-filter: var(--blur-amount);
+      -webkit-backdrop-filter: var(--blur-amount);
+      border-top: 1px solid var(--btn-border);
+    }
+    
+    .image-preview-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 8px 12px;
+    }
+    
+    :root[data-theme="light"] .image-preview-wrapper {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .preview-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    
+    .preview-name {
+      flex: 1;
+      font-size: 14px;
+      color: rgba(255,255,255,0.9);
+    }
+    
+    :root[data-theme="light"] .preview-name {
+      color: var(--text);
+    }
+    
+    .remove-image {
+      background: none;
+      border: none;
+      color: #ff4444;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    
+    /* Кнопка галереи */
+    .gallery-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      padding: 0 8px;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: all 0.2s;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      color: rgba(255,255,255,0.9);
+    }
+    
+    .gallery-btn:hover {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    
+    .gallery-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .gallery-btn.hidden {
+      display: none;
+    }
+    
+    :root[data-theme="light"] .gallery-btn {
+      color: var(--text);
+    }
+    
+    /* Контейнер для поля ввода с кнопкой */
+    .input-wrapper {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex: 1;
+    }
+    
+    .input {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
     /* Стили для светлой темы */
     :root[data-theme="light"] .settings-row select {
       background: rgba(255, 255, 255, 0.9);
@@ -161,17 +264,31 @@
 
   <div class="chat" id="chat"></div>
 
+  <!-- Контейнер для превью фото (появляется при загрузке) -->
+  <div class="image-preview-container" id="imagePreviewContainer">
+    <div class="image-preview-wrapper">
+      <img class="preview-thumb" id="previewThumb" src="">
+      <span class="preview-name" id="previewName">image.jpg</span>
+      <button class="remove-image" id="removeImageBtn">✕</button>
+    </div>
+  </div>
+
   <div class="input">
-    <textarea id="text"
-      placeholder="Напиши сообщение…"
-      autocomplete="on"
-      autocapitalize="sentences"
-      autocorrect="on"
-      spellcheck="true"
-      rows="1"
-    ></textarea>
+    <button class="gallery-btn" id="galleryBtn" title="Прикрепить фото">📷</button>
+    <div class="input-wrapper">
+      <textarea id="text"
+        placeholder="Напиши сообщение…"
+        autocomplete="on"
+        autocapitalize="sentences"
+        autocorrect="on"
+        spellcheck="true"
+        rows="1"
+      ></textarea>
+    </div>
     <button id="sendBtn">▶</button>
   </div>
+
+  <input type="file" id="fileInput" accept="image/*" hidden>
 
   <div class="overlay" id="overlay">
     <div class="sheet">
@@ -219,7 +336,7 @@
     </div>
   </div>
 
-  <script type="module" src="./js/chat-page.js"></script>
+  <script type="module" src="./js/chat-page.js?v=2"></script>
 
   <script>
     const STORAGE_LANG = "miniapp_lang_v1";
@@ -250,6 +367,9 @@
         close:"Закрыть",
         save:"💾 Сохранить",
         cancel:"✖ Отмена",
+        gallery:"Прикрепить фото",
+        imageName:"Фото",
+        remove:"Удалить"
       },
       kk: {
         title:"AI чат",
@@ -269,6 +389,9 @@
         close:"Жабу",
         save:"💾 Сақтау",
         cancel:"✖ Болдырмау",
+        gallery:"Фото тіркеу",
+        imageName:"Фото",
+        remove:"Жою"
       },
       en: {
         title:"AI Chat",
@@ -288,6 +411,9 @@
         close:"Close",
         save:"💾 Save",
         cancel:"✖ Cancel",
+        gallery:"Attach photo",
+        imageName:"Photo",
+        remove:"Remove"
       },
       tr: {
         title:"Yapay Zekâ Sohbet",
@@ -307,6 +433,9 @@
         close:"Kapat",
         save:"💾 Kaydet",
         cancel:"✖ İptal",
+        gallery:"Fotoğraf ekle",
+        imageName:"Fotoğraf",
+        remove:"Kaldır"
       },
       uk: {
         title:"AI чат",
@@ -326,6 +455,9 @@
         close:"Закрити",
         save:"💾 Зберегти",
         cancel:"✖ Скасувати",
+        gallery:"Прикріпити фото",
+        imageName:"Фото",
+        remove:"Видалити"
       },
       fr: {
         title:"Chat IA",
@@ -345,6 +477,9 @@
         close:"Fermer",
         save:"💾 Enregistrer",
         cancel:"✖ Annuler",
+        gallery:"Joindre une photo",
+        imageName:"Photo",
+        remove:"Supprimer"
       },
     };
 
@@ -375,6 +510,10 @@
     const cancelBtn = document.getElementById("cancelSettingsBtn");
     if (saveBtn) saveBtn.textContent = t.save;
     if (cancelBtn) cancelBtn.textContent = t.cancel;
+
+    // Устанавливаем title для кнопки галереи
+    const galleryBtn = document.getElementById("galleryBtn");
+    if (galleryBtn) galleryBtn.title = t.gallery;
 
     try{ localStorage.setItem(STORAGE_LANG, lang); }catch(e){}
   </script>
