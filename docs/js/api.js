@@ -1,4 +1,4 @@
-// docs/js/api.js
+// docs/js/api.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 
 const API_BASE = "https://fayrat-production.up.railway.app";
 const API_CHAT = API_BASE + "/api/chat";
@@ -73,7 +73,7 @@ export async function askAI(promptText) {
   }
 }
 
-// НОВАЯ ФУНКЦИЯ ДЛЯ ОТПРАВКИ С ФОТО
+// Функция для отправки с фото
 export async function askAIWithImage(promptText, imageFile, imageBase64) {
   const user = getTelegramUser();
 
@@ -101,7 +101,8 @@ export async function askAIWithImage(promptText, imageFile, imageBase64) {
     }
 
     if (!r.ok) {
-      throw new Error("API error " + r.status);
+      const data = await r.json();
+      throw new Error(data.message || "API error " + r.status);
     }
 
     const data = await r.json();
@@ -115,13 +116,22 @@ export async function askAIWithImage(promptText, imageFile, imageBase64) {
 export async function clearAIMemory() {
   const user = getTelegramUser();
 
-  const r = await fetch(API_CLEAR_MEMORY, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tg_user_id: user.tg_user_id }),
-  });
-
-  return r.ok;
+  try {
+    const r = await fetch(API_CLEAR_MEMORY, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tg_user_id: user.tg_user_id }),
+    });
+    
+    if (r.ok) {
+      console.log("✅ Server memory cleared");
+    }
+    
+    return r.ok;
+  } catch (e) {
+    console.error("Error clearing memory:", e);
+    return false;
+  }
 }
 
 export async function getStarsBalance() {
