@@ -77,7 +77,6 @@
       min-height: 100vh;
     }
 
-    /* Область загрузки */
     .upload-area {
       background: rgba(255,255,255,0.05);
       border: 2px dashed rgba(255,255,255,0.2);
@@ -104,7 +103,6 @@
       color: rgba(255,255,255,0.7);
     }
 
-    /* Результат */
     .result-container {
       display: none;
     }
@@ -152,7 +150,6 @@
       border: 1px solid rgba(255,255,255,0.2);
     }
 
-    /* Загрузка */
     .loading {
       display: none;
       position: fixed;
@@ -182,14 +179,15 @@
       to { transform: rotate(360deg); }
     }
 
-    .demo-badge {
-      background: rgba(255,255,255,0.1);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 12px;
-      margin-bottom: 20px;
+    .success-message {
+      display: none;
+      background: rgba(0,255,0,0.2);
+      border: 1px solid #00ff00;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 10px 0;
       text-align: center;
-      color: var(--accent);
+      color: #00ff00;
     }
   </style>
 </head>
@@ -202,10 +200,6 @@
   </div>
 
   <div class="container">
-    <div class="demo-badge" id="demoBadge">
-      ⚡ Демо-режим (тестовое удаление фона)
-    </div>
-
     <!-- Область загрузки -->
     <div class="upload-area" id="uploadArea">
       <div class="upload-icon">📸</div>
@@ -213,14 +207,19 @@
       <input type="file" id="fileInput" accept="image/*" hidden>
     </div>
 
-    <!-- Результат (оригинал скрыт) -->
+    <!-- Результат -->
     <div class="result-container" id="resultContainer">
       <div class="image-box">
         <img class="result-image" id="resultImg" src="">
       </div>
 
+      <!-- Сообщение об успехе -->
+      <div class="success-message" id="successMessage">
+        ✅ Фото сохранено в галерею
+      </div>
+
       <button class="btn btn-primary" id="processBtn">✨ Удалить фон</button>
-      <button class="btn btn-secondary" id="downloadBtn" style="display: none;">💾 Скачать</button>
+      <button class="btn btn-secondary" id="downloadBtn" style="display: none;">💾 Сохранить</button>
       <button class="btn btn-secondary" id="newBtn">📸 Новое фото</button>
     </div>
   </div>
@@ -228,29 +227,32 @@
   <!-- Загрузка -->
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <div id="loadingText">Обработка...</div>
+    <div id="loadingText">Удаляю фон...</div>
   </div>
 
   <script>
+    // ⚠️ НАСТРОЙКИ
+    const API_BASE = "https://fayrat-production.up.railway.app";
+
     // Переводы
     const translations = {
       ru: {
         title: "Удаление фона",
         upload: "Нажми чтобы выбрать фото",
         process: "✨ Удалить фон",
-        download: "💾 Скачать",
+        download: "💾 Сохранить",
         new: "📸 Новое фото",
-        loading: "Обработка...",
-        demo: "⚡ Демо-режим (тестовое удаление фона)"
+        loading: "Удаляю фон...",
+        success: "✅ Фото сохранено в галерею"
       },
       en: {
         title: "Remove Background",
         upload: "Click to select photo",
         process: "✨ Remove Background",
-        download: "💾 Download",
+        download: "💾 Save",
         new: "📸 New Photo",
-        loading: "Processing...",
-        demo: "⚡ Demo mode (test background removal)"
+        loading: "Removing background...",
+        success: "✅ Photo saved to gallery"
       }
     };
 
@@ -262,7 +264,14 @@
       catch(e) { return 'ru'; }
     }
 
+    function getUser() {
+      const tg = window.Telegram?.WebApp;
+      if (!tg || !tg.initDataUnsafe?.user) return null;
+      return tg.initDataUnsafe.user;
+    }
+
     const lang = getLang();
+    const user = getUser();
     const t = translations[lang] || translations.ru;
 
     document.getElementById('title').textContent = t.title;
@@ -271,7 +280,6 @@
     document.getElementById('downloadBtn').textContent = t.download;
     document.getElementById('newBtn').textContent = t.new;
     document.getElementById('loadingText').textContent = t.loading;
-    document.getElementById('demoBadge').textContent = t.demo;
 
     // Элементы
     const uploadArea = document.getElementById('uploadArea');
@@ -282,8 +290,10 @@
     const downloadBtn = document.getElementById('downloadBtn');
     const newBtn = document.getElementById('newBtn');
     const loading = document.getElementById('loading');
+    const successMessage = document.getElementById('successMessage');
 
     let currentFile = null;
+    let currentResultBlob = null;
 
     // Загрузка фото
     uploadArea.addEventListener('click', () => fileInput.click());
@@ -291,73 +301,132 @@
     fileInput.addEventListener('change', (e) => {
       if (e.target.files[0]) {
         const file = e.target.files[0];
+        
+        // Проверка размера (макс 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Файл слишком большой. Максимум 5MB');
+          return;
+        }
+        
         currentFile = file;
         
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          // Сразу показываем результат (оригинал не показываем)
-          uploadArea.style.display = 'none';
-          resultContainer.style.display = 'block';
-          downloadBtn.style.display = 'none';
-          resultImg.src = ''; // Пусто пока не нажали кнопку
-        };
-        reader.readAsDataURL(file);
+        // Сразу показываем результат (пустой)
+        uploadArea.style.display = 'none';
+        resultContainer.style.display = 'block';
+        downloadBtn.style.display = 'none';
+        successMessage.style.display = 'none';
+        resultImg.src = '';
       }
     });
 
-    // Демо-обработка (без ИИ)
+    // Удаление фона через Stability AI
     processBtn.addEventListener('click', async () => {
-      if (!currentFile) return;
+      if (!currentFile || !user) {
+        alert('Нужно авторизоваться в Telegram');
+        return;
+      }
 
       loading.style.display = 'flex';
       processBtn.disabled = true;
 
-      // Имитация обработки
-      setTimeout(() => {
-        // Создаем canvas для демо-эффекта
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+      try {
+        const formData = new FormData();
+        formData.append('tg_user_id', user.id);
+        formData.append('tg_username', user.username || '');
+        formData.append('tg_first_name', user.first_name || '');
+        formData.append('prompt', 'remove background, transparent background');
+        formData.append('mode', 'remove_bg');
+        formData.append('image', currentFile);
+
+        const response = await fetch(`${API_BASE}/api/image`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.error === 'insufficient_stars') {
+            throw new Error('Недостаточно звезд');
+          } else {
+            throw new Error(data.message || 'Ошибка обработки');
+          }
+        }
+
+        // Показываем результат
+        resultImg.src = data.image_base64;
         
-        const img = new Image();
-        img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          
-          // Рисуем изображение
-          ctx.drawImage(img, 0, 0);
-          
-          // Демо-эффект: делаем фон прозрачным (на самом деле просто обводка)
-          // Это просто для демонстрации, настоящий фон удалим позже через API
-          
-          // Получаем результат
-          resultImg.src = canvas.toDataURL('image/png');
-          
-          // Показываем кнопку скачивания
-          downloadBtn.style.display = 'block';
-          
-          // Прячем загрузку
-          loading.style.display = 'none';
-          processBtn.disabled = false;
-        };
+        // Конвертируем base64 в blob для сохранения
+        const base64Data = data.image_base64.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteArrays = [];
         
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(currentFile);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteArrays.push(byteCharacters.charCodeAt(i));
+        }
         
-      }, 1500); // Имитация загрузки 1.5 сек
+        currentResultBlob = new Blob([new Uint8Array(byteArrays)], { type: 'image/png' });
+
+        downloadBtn.style.display = 'block';
+        successMessage.style.display = 'none';
+
+      } catch (error) {
+        alert('Ошибка: ' + error.message);
+      } finally {
+        loading.style.display = 'none';
+        processBtn.disabled = false;
+      }
     });
 
-    // Скачивание
-    downloadBtn.addEventListener('click', () => {
-      if (!resultImg.src) return;
-      
-      const link = document.createElement('a');
-      link.download = 'no-bg.png';
-      link.href = resultImg.src;
-      link.click();
+    // Сохранение на телефон
+    downloadBtn.addEventListener('click', async () => {
+      if (!currentResultBlob) return;
+
+      const tg = window.Telegram?.WebApp;
+
+      // Пробуем через Telegram WebApp (сохраняет в галерею)
+      if (tg && tg.sendData) {
+        try {
+          // Конвертируем blob в base64 для отправки
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64 = reader.result.split(',')[1];
+            tg.sendData(JSON.stringify({
+              type: 'photo',
+              file: base64,
+              filename: 'no-bg.png'
+            }));
+            
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+              successMessage.style.display = 'none';
+            }, 3000);
+          };
+          reader.readAsDataURL(currentResultBlob);
+          
+        } catch (e) {
+          // Если не получилось через Telegram, пробуем через ссылку
+          fallbackDownload();
+        }
+      } else {
+        fallbackDownload();
+      }
     });
+
+    function fallbackDownload() {
+      // Создаем ссылку для скачивания
+      const url = URL.createObjectURL(currentResultBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'no-bg.png';
+      link.click();
+      URL.revokeObjectURL(url);
+      
+      successMessage.style.display = 'block';
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+      }, 3000);
+    }
 
     // Новое фото
     newBtn.addEventListener('click', () => {
@@ -365,6 +434,7 @@
       resultContainer.style.display = 'none';
       fileInput.value = '';
       currentFile = null;
+      currentResultBlob = null;
     });
 
     // Telegram
