@@ -1,5 +1,5 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
-import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits } from "./api.js";
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ С ПОДДЕРЖКОЙ ФОТО
+import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, askAIWithImage } from "./api.js";
 import { tg } from "./telegram.js";
 
 export const STORAGE_KEY = "chat_history_v1";
@@ -88,7 +88,20 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let isLoadingLimits = false;
   let settingsOpen = false;
 
+  // Новые переменные для фото
+  let currentImageFile = null;
+  let currentImageBase64 = null;
+  let currentImageName = '';
+
   const TYPING_ID = "typing-indicator";
+
+  // Элементы для фото
+  const galleryBtn = document.getElementById('galleryBtn');
+  const fileInput = document.getElementById('fileInput');
+  const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+  const previewThumb = document.getElementById('previewThumb');
+  const previewName = document.getElementById('previewName');
+  const removeImageBtn = document.getElementById('removeImageBtn');
 
   function helloText(){
     const lang = getLang();
@@ -195,15 +208,42 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return actionsDiv;
   }
 
-  function add(type, text, persist=true){
+  function add(type, text, persist=true, imageData=null) {
     const wrapper = document.createElement('div');
     wrapper.className = `msg-wrapper ${type}`;
     
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `msg ${type}`;
-    messageDiv.textContent = text;
-    
-    wrapper.appendChild(messageDiv);
+    if (type === 'user' && imageData) {
+      // Сообщение с фото
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'msg user image-message';
+      
+      // Метка "Фото"
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'image-label';
+      labelDiv.innerHTML = '📷 ' + (getImageLabel());
+      
+      // Само фото
+      const img = document.createElement('img');
+      img.className = 'message-image';
+      img.src = imageData;
+      
+      // Текст сообщения
+      const textDiv = document.createElement('div');
+      textDiv.className = 'message-text';
+      textDiv.textContent = text || '📷 Фото';
+      
+      messageDiv.appendChild(labelDiv);
+      messageDiv.appendChild(img);
+      messageDiv.appendChild(textDiv);
+      wrapper.appendChild(messageDiv);
+      
+    } else {
+      // Обычное сообщение
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `msg ${type}`;
+      messageDiv.textContent = text;
+      wrapper.appendChild(messageDiv);
+    }
     
     if (type === 'bot') {
       const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -241,9 +281,26 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     chatEl.scrollTop = chatEl.scrollHeight;
 
     if (persist) {
-      history.push({ role: type === "user" ? "user" : "assistant", text: String(text || "") });
+      history.push({ 
+        role: type === "user" ? "user" : "assistant", 
+        text: String(text || ""),
+        image: imageData || null
+      });
       saveHistory(history);
     }
+  }
+
+  function getImageLabel() {
+    const lang = getLang();
+    const labels = {
+      "ru": "Фото",
+      "kk": "Фото",
+      "en": "Photo",
+      "tr": "Fotoğraf",
+      "uk": "Фото",
+      "fr": "Photo"
+    };
+    return labels[lang] || "Фото";
   }
 
   function getLang(){
@@ -275,10 +332,93 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     } else {
       for (const m of history){
         if (!m || !m.text) continue;
-        add(m.role === "user" ? "user" : "bot", m.text, false);
+        add(m.role === "user" ? "user" : "bot", m.text, false, m.image || null);
       }
     }
     chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  // Функция для проверки режима AI
+  async function checkAiMode() {
+    if (!currentUserId) return;
+    
+    try {
+      const API_BASE = "https://fayrat-production.up.railway.app";
+      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
+      
+      if (!res.ok) return;
+      
+      const data = await res.json();
+      const newMode = data.ai_mode;
+      
+      // Показываем/скрываем кнопку галереи
+      if (galleryBtn) {
+        if (newMode === 'quality') {
+          galleryBtn.classList.remove('hidden');
+        } else {
+          galleryBtn.classList.add('hidden');
+          // Если есть фото в режиме fast - очищаем
+          if (currentImageFile) {
+            clearCurrentImage();
+          }
+        }
+      }
+      
+      return newMode;
+    } catch (err) {
+      console.log("Mode check error:", err);
+    }
+  }
+
+  // Очистка текущего фото
+  function clearCurrentImage() {
+    currentImageFile = null;
+    currentImageBase64 = null;
+    currentImageName = '';
+    imagePreviewContainer.style.display = 'none';
+    fileInput.value = '';
+  }
+
+  // Инициализация галереи
+  function initGallery() {
+    if (!galleryBtn || !fileInput || !imagePreviewContainer || !previewThumb || !previewName || !removeImageBtn) return;
+    
+    // Клик на кнопку галереи
+    galleryBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+    
+    // Выбор файла
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        const file = e.target.files[0];
+        
+        // Проверка размера (макс 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Файл слишком большой. Максимум 5MB');
+          return;
+        }
+        
+        currentImageFile = file;
+        currentImageName = file.name;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          currentImageBase64 = e.target.result;
+          previewThumb.src = currentImageBase64;
+          previewName.textContent = currentImageName.length > 20 ? 
+            currentImageName.substring(0, 17) + '...' : 
+            currentImageName;
+          imagePreviewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Удаление фото
+    removeImageBtn.addEventListener('click', () => {
+      clearCurrentImage();
+    });
   }
 
   async function clearHistory(skipConfirm = false) {
@@ -593,7 +733,7 @@ Response:`;
 
   async function send(){
     const t = inputEl.value.trim();
-    if(!t || sending || isReloading) return;
+    if((!t && !currentImageFile) || sending || isReloading) return;
 
     if (!navigator.onLine) {
       add("bot", "📡 Нет интернет-соединения. Проверьте подключение.", true);
@@ -603,9 +743,14 @@ Response:`;
     sending = true;
     sendBtnEl.disabled = true;
 
-    add("user", t, true);
-    inputEl.value = "";
+    // Добавляем сообщение пользователя
+    if (currentImageFile) {
+      add("user", t || '📷 Фото', true, currentImageBase64);
+    } else {
+      add("user", t, true);
+    }
     
+    inputEl.value = "";
     if (inputEl.tagName === 'TEXTAREA') {
       inputEl.style.height = 'auto';
     }
@@ -615,6 +760,9 @@ Response:`;
     let lastError = null;
     let success = false;
 
+    // Определяем режим
+    const mode = await checkAiMode();
+
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         const hasInternet = await waitForInternet(1);
@@ -622,7 +770,14 @@ Response:`;
           throw new Error("no_internet");
         }
 
-        const answer = await askAI(t);
+        let answer;
+        if (currentImageFile && mode === 'quality') {
+          // Отправляем с фото
+          answer = await askAIWithImage(t, currentImageFile, currentImageBase64);
+        } else {
+          // Обычный запрос
+          answer = await askAI(t);
+        }
         
         removeTyping();
         add("bot", answer || "…", true);
@@ -661,6 +816,8 @@ Response:`;
       }
     }
 
+    // Очищаем фото после отправки
+    clearCurrentImage();
     sending = false;
     sendBtnEl.disabled = false;
   }
@@ -851,8 +1008,15 @@ Response:`;
       add("bot", "📡 Интернет пропал. Ответы временно недоступны.", true);
     });
     
-    setTimeout(checkModeChange, 1000);
-    setInterval(checkModeChange, 3000);
+    // Инициализация галереи
+    initGallery();
+    
+    // Проверка режима
+    setTimeout(() => {
+      checkAiMode();
+    }, 1000);
+    
+    setInterval(checkAiMode, 3000);
     
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && !isReloading) {
