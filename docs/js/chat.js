@@ -88,7 +88,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let isLoadingLimits = false;
   let settingsOpen = false;
 
-  // Новые переменные для фото
+  // Переменные для фото
   let currentImageFile = null;
   let currentImageBase64 = null;
   let currentImageName = '';
@@ -208,18 +208,27 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return actionsDiv;
   }
 
-  function add(type, text, persist=true, imageData=null) {
+  function getImageLabel() {
+    const lang = getLang();
+    const labels = {
+      "ru": "Фото",
+      "kk": "Фото",
+      "en": "Photo",
+      "tr": "Fotoğraf",
+      "uk": "Фото",
+      "fr": "Photo"
+    };
+    return labels[lang] || "Фото";
+  }
+
+  function add(type, text, persist = true, imageData = null) {
     const wrapper = document.createElement('div');
     wrapper.className = `msg-wrapper ${type}`;
-    
+
     if (type === 'user' && imageData) {
-      // Сообщение с фото (как в ChatGPT)
+      // Сообщение с фото
       const messageDiv = document.createElement('div');
       messageDiv.className = 'msg user';
-      messageDiv.style.display = 'flex';
-      messageDiv.style.flexDirection = 'column';
-      messageDiv.style.padding = '8px';
-      messageDiv.style.maxWidth = '300px';
       
       // Контейнер для фото и метки
       const imgContainer = document.createElement('div');
@@ -228,7 +237,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       imgContainer.style.gap = '8px';
       imgContainer.style.marginBottom = '4px';
       
-      // Маленькое фото
+      // Фото
       const img = document.createElement('img');
       img.src = imageData;
       img.style.width = '40px';
@@ -239,7 +248,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       // Метка
       const labelSpan = document.createElement('span');
       labelSpan.className = 'image-label';
-      labelSpan.innerHTML = '📷 ' + (getImageLabel());
+      labelSpan.textContent = '📷 ' + getImageLabel();
       labelSpan.style.fontSize = '13px';
       labelSpan.style.color = 'rgba(255,255,255,0.7)';
       
@@ -247,8 +256,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       imgContainer.appendChild(labelSpan);
       messageDiv.appendChild(imgContainer);
       
-      // Текст сообщения
-      if (text && text !== '📷 Фото') {
+      // Текст
+      if (text && text.trim()) {
         const textDiv = document.createElement('div');
         textDiv.textContent = text;
         textDiv.style.marginTop = '4px';
@@ -265,20 +274,20 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       messageDiv.textContent = text;
       wrapper.appendChild(messageDiv);
     }
-    
+
     if (type === 'bot') {
       const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       wrapper.setAttribute('data-message-id', messageId);
-      
+
       const actions = createMessageActions(text, messageId);
       wrapper.appendChild(actions);
-      
+
       let hideTimeout;
       wrapper.addEventListener('mouseenter', () => {
         clearTimeout(hideTimeout);
         actions.classList.add('show');
       });
-      
+
       wrapper.addEventListener('mouseleave', () => {
         hideTimeout = setTimeout(() => {
           if (!actions.matches(':hover')) {
@@ -286,42 +295,29 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
           }
         }, 300);
       });
-      
+
       actions.addEventListener('mouseenter', () => {
         clearTimeout(hideTimeout);
       });
-      
+
       actions.addEventListener('mouseleave', () => {
         hideTimeout = setTimeout(() => {
           actions.classList.remove('show');
         }, 300);
       });
     }
-    
+
     chatEl.appendChild(wrapper);
     chatEl.scrollTop = chatEl.scrollHeight;
 
     if (persist) {
-      history.push({ 
-        role: type === "user" ? "user" : "assistant", 
-        text: String(text || ""),
+      history.push({
+        role: type === 'user' ? 'user' : 'assistant',
+        text: String(text || ''),
         image: imageData || null
       });
       saveHistory(history);
     }
-  }
-
-  function getImageLabel() {
-    const lang = getLang();
-    const labels = {
-      "ru": "Фото",
-      "kk": "Фото",
-      "en": "Photo",
-      "tr": "Fotoğraf",
-      "uk": "Фото",
-      "fr": "Photo"
-    };
-    return labels[lang] || "Фото";
   }
 
   function getLang(){
