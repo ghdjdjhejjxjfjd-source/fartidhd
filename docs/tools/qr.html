@@ -74,48 +74,15 @@
       min-height: 100vh;
     }
 
-    /* Загрузка фото */
-    .upload-area {
+    /* Основной ввод */
+    .main-input {
       background: rgba(255,255,255,0.05);
-      border: 2px dashed rgba(255,255,255,0.2);
       border-radius: 24px;
-      padding: 30px 20px;
-      text-align: center;
-      cursor: pointer;
-      margin: 20px 0;
-      transition: all 0.3s;
-    }
-
-    .upload-area:hover {
-      border-color: var(--accent);
-      background: rgba(255,255,255,0.08);
-    }
-
-    .upload-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-    }
-
-    .upload-text {
-      font-size: 16px;
-      color: rgba(255,255,255,0.7);
-    }
-
-    /* Превью */
-    .preview-section {
-      display: none;
-      margin: 20px 0;
-    }
-
-    .image-preview {
-      width: 100%;
-      max-height: 200px;
-      object-fit: cover;
-      border-radius: 16px;
+      padding: 20px;
       margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
-    /* Поле ввода текста */
     .input-group {
       margin-bottom: 20px;
     }
@@ -144,7 +111,63 @@
       background: rgba(255,255,255,0.15);
     }
 
-    /* Настройки расположения (появляются при вводе текста) */
+    /* Кнопка загрузки фото */
+    .upload-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: 2px dashed rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.05);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .upload-btn:hover {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.1);
+    }
+
+    .upload-icon {
+      font-size: 24px;
+    }
+
+    /* Секция с фото */
+    .photo-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .image-preview {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 10px;
+    }
+
+    .remove-photo {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    .remove-photo-btn {
+      background: none;
+      border: none;
+      color: #ff4444;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    /* Настройки расположения */
     .layout-settings {
       display: none;
       background: rgba(255,255,255,0.05);
@@ -304,25 +327,87 @@
     }
 
     .preview-card {
-      background: rgba(255,255,255,0.1);
+      background: white;
       border-radius: 16px;
       overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
     .preview-image {
       width: 100%;
       height: 200px;
       object-fit: cover;
+      display: block;
     }
 
-    .preview-text {
-      padding: 16px;
+    .preview-text-content {
+      padding: 20px;
+      color: #1a2634;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      word-wrap: break-word;
+    }
+
+    /* Кнопка генерации */
+    .generate-btn {
+      width: 100%;
+      padding: 18px;
+      border-radius: 20px;
+      border: none;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
+      color: white;
+      margin: 20px 0;
+      transition: all 0.2s;
+    }
+
+    .generate-btn:active {
+      transform: scale(0.98);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Индикатор загрузки */
+    .loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
       font-size: 16px;
-      line-height: 1.5;
       color: white;
     }
 
-    /* QR код */
+    /* QR результат */
     .qr-section {
       display: none;
       text-align: center;
@@ -338,14 +423,22 @@
 
     .qr-link {
       margin: 12px 0;
-      font-size: 14px;
+      font-size: 12px;
       color: var(--accent);
       word-break: break-all;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
     }
 
-    /* Кнопки */
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
     .btn {
-      width: 100%;
+      flex: 1;
       padding: 16px;
       border-radius: 16px;
       border: none;
@@ -353,7 +446,6 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
-      margin: 8px 0;
     }
 
     .btn-primary {
@@ -367,13 +459,12 @@
       border: 1px solid rgba(255,255,255,0.2);
     }
 
-    .btn-group {
-      display: flex;
-      gap: 12px;
+    .btn:hover {
+      transform: translateY(-2px);
     }
 
-    .btn-group .btn {
-      margin: 0;
+    .btn:active {
+      transform: translateY(0);
     }
   </style>
 </head>
@@ -386,24 +477,38 @@
   </div>
 
   <div class="container">
-    <!-- Загрузка фото -->
-    <div class="upload-area" id="uploadArea">
-      <div class="upload-icon">📸</div>
-      <div class="upload-text" id="uploadText">Загрузи фото для страницы</div>
-      <input type="file" id="fileInput" accept="image/*" hidden>
+    <!-- Индикатор загрузки -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">Создаю QR код...</div>
     </div>
 
-    <!-- Превью и настройки -->
-    <div class="preview-section" id="previewSection">
-      <img class="image-preview" id="imagePreview" src="">
+    <!-- Основной блок -->
+    <div id="mainBlock">
+      <!-- Поле ввода текста/ссылки -->
+      <div class="main-input">
+        <div class="input-group">
+          <label class="input-label" id="textLabel">Текст или ссылка</label>
+          <input type="text" class="text-input" id="textInput" placeholder="https:// или любой текст" value="https://t.me/InstaGroqBot">
+        </div>
 
-      <!-- Поле ввода текста -->
-      <div class="input-group">
-        <label class="input-label" id="textLabel">Текст страницы</label>
-        <textarea class="text-input" id="textInput" rows="3" placeholder="Напиши текст..."></textarea>
+        <!-- Кнопка загрузки фото -->
+        <button class="upload-btn" id="uploadBtn">
+          <span class="upload-icon">📸</span>
+          <span id="uploadBtnText">Загрузить фото</span>
+        </button>
+        <input type="file" id="fileInput" accept="image/*" hidden>
       </div>
 
-      <!-- Настройки расположения (появляются при вводе текста) -->
+      <!-- Секция с фото (появляется после загрузки) -->
+      <div class="photo-section" id="photoSection">
+        <div class="remove-photo">
+          <button class="remove-photo-btn" id="removePhotoBtn">✕ Удалить фото</button>
+        </div>
+        <img class="image-preview" id="imagePreview" src="">
+      </div>
+
+      <!-- Настройки расположения (появляются при наличии фото и текста) -->
       <div class="layout-settings" id="layoutSettings">
         <div class="settings-title" id="layoutTitle">🎯 Расположение</div>
         
@@ -431,7 +536,6 @@
           <button class="style-btn active" data-style="normal">Обычный</button>
           <button class="style-btn" data-style="bold">Жирный</button>
           <button class="style-btn" data-style="italic">Курсив</button>
-          <button class="style-btn" data-style="underline">Подчеркнутый</button>
         </div>
 
         <div class="settings-title" id="fontSizeTitle">🔤 Размер шрифта</div>
@@ -449,16 +553,16 @@
       </div>
 
       <!-- Предпросмотр страницы -->
-      <div class="page-preview">
+      <div class="page-preview" id="pagePreview">
         <div class="preview-title" id="previewTitle">👀 Предпросмотр страницы</div>
         <div class="preview-card" id="previewCard">
-          <img class="preview-image" id="previewImage" src="">
-          <div class="preview-text" id="previewText"></div>
+          <img class="preview-image" id="previewImage" src="" style="display: none;">
+          <div class="preview-text-content" id="previewText">https://t.me/InstaGroqBot</div>
         </div>
       </div>
 
-      <!-- Кнопки -->
-      <button class="btn btn-primary" id="generateBtn">🔳 Создать QR код</button>
+      <!-- Кнопка создания QR -->
+      <button class="generate-btn" id="generateBtn">🔳 Создать QR код</button>
     </div>
 
     <!-- QR результат -->
@@ -480,9 +584,8 @@
     const TRANSLATIONS = {
       ru: {
         title: "QR Конструктор",
-        upload: "Загрузи фото для страницы",
-        textLabel: "Текст страницы",
-        textPlaceholder: "Напиши текст...",
+        textLabel: "Текст или ссылка",
+        uploadBtn: "Загрузить фото",
         layoutTitle: "🎯 Расположение",
         layoutTop: "Текст сверху",
         layoutBottom: "Текст снизу",
@@ -496,15 +599,15 @@
         spacingLarge: "Большие",
         previewTitle: "👀 Предпросмотр страницы",
         generate: "🔳 Создать QR код",
+        loading: "Создаю QR код...",
         saveQr: "💾 Сохранить QR",
         shareQr: "📤 Поделиться",
         newQr: "✨ Создать новый"
       },
       en: {
         title: "QR Constructor",
-        upload: "Upload photo for page",
-        textLabel: "Page text",
-        textPlaceholder: "Write text...",
+        textLabel: "Text or link",
+        uploadBtn: "Upload photo",
         layoutTitle: "🎯 Layout",
         layoutTop: "Text on top",
         layoutBottom: "Text on bottom",
@@ -518,6 +621,7 @@
         spacingLarge: "Large",
         previewTitle: "👀 Page preview",
         generate: "🔳 Generate QR",
+        loading: "Generating QR...",
         saveQr: "💾 Save QR",
         shareQr: "📤 Share",
         newQr: "✨ Create new"
@@ -537,9 +641,8 @@
 
     // Применяем переводы
     document.getElementById('title').textContent = t.title;
-    document.getElementById('uploadText').textContent = t.upload;
     document.getElementById('textLabel').textContent = t.textLabel;
-    document.getElementById('textInput').placeholder = t.textPlaceholder;
+    document.getElementById('uploadBtnText').textContent = t.uploadBtn;
     document.getElementById('layoutTitle').textContent = t.layoutTitle;
     document.getElementById('layoutTop').textContent = t.layoutTop;
     document.getElementById('layoutBottom').textContent = t.layoutBottom;
@@ -553,20 +656,24 @@
     document.querySelector('[data-spacing="large"]').textContent = t.spacingLarge;
     document.getElementById('previewTitle').textContent = t.previewTitle;
     document.getElementById('generateBtn').textContent = t.generate;
+    document.getElementById('loadingText').textContent = t.loading;
     document.getElementById('saveQrBtn').textContent = t.saveQr;
     document.getElementById('shareQrBtn').textContent = t.shareQr;
     document.getElementById('newQrBtn').textContent = t.newQr;
 
     // ===== ЭЛЕМЕНТЫ =====
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('fileInput');
-    const previewSection = document.getElementById('previewSection');
-    const imagePreview = document.getElementById('imagePreview');
     const textInput = document.getElementById('textInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const photoSection = document.getElementById('photoSection');
+    const imagePreview = document.getElementById('imagePreview');
+    const removePhotoBtn = document.getElementById('removePhotoBtn');
     const layoutSettings = document.getElementById('layoutSettings');
     const previewImage = document.getElementById('previewImage');
     const previewText = document.getElementById('previewText');
     const generateBtn = document.getElementById('generateBtn');
+    const loading = document.getElementById('loading');
+    const mainBlock = document.getElementById('mainBlock');
     const qrSection = document.getElementById('qrSection');
     const qrCanvas = document.getElementById('qrCanvas');
     const qrLink = document.getElementById('qrLink');
@@ -584,7 +691,7 @@
     let currentFontSize = 16;
 
     // ===== ЗАГРУЗКА ФОТО =====
-    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadBtn.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', (e) => {
       if (e.target.files[0]) {
@@ -595,28 +702,40 @@
           currentImage = e.target.result;
           imagePreview.src = currentImage;
           previewImage.src = currentImage;
-          uploadArea.style.display = 'none';
-          previewSection.style.display = 'block';
+          previewImage.style.display = 'block';
+          photoSection.style.display = 'block';
           updatePreview();
+          checkLayoutSettings();
         };
         
         reader.readAsDataURL(file);
       }
     });
 
+    // ===== УДАЛЕНИЕ ФОТО =====
+    removePhotoBtn.addEventListener('click', () => {
+      currentImage = null;
+      photoSection.style.display = 'none';
+      previewImage.style.display = 'none';
+      fileInput.value = '';
+      updatePreview();
+      checkLayoutSettings();
+    });
+
     // ===== ТЕКСТ =====
     textInput.addEventListener('input', (e) => {
-      previewText.textContent = e.target.value || 'Текст страницы';
-      
-      // Показываем настройки если текст не пустой
-      if (e.target.value.trim()) {
+      previewText.textContent = e.target.value || 'https://t.me/InstaGroqBot';
+      checkLayoutSettings();
+    });
+
+    // ===== ПРОВЕРКА ПОКАЗА НАСТРОЕК =====
+    function checkLayoutSettings() {
+      if (currentImage && textInput.value.trim()) {
         layoutSettings.style.display = 'block';
       } else {
         layoutSettings.style.display = 'none';
       }
-      
-      updatePreview();
-    });
+    }
 
     // ===== РАСПОЛОЖЕНИЕ =====
     document.querySelectorAll('.layout-btn').forEach(btn => {
@@ -662,80 +781,168 @@
       const previewText = document.getElementById('previewText');
       
       // Стили текста
-      let textStyles = '';
-      textStyles += `font-size: ${currentFontSize}px; `;
-      textStyles += `font-weight: ${currentStyle === 'bold' ? 'bold' : 'normal'}; `;
-      textStyles += `font-style: ${currentStyle === 'italic' ? 'italic' : 'normal'}; `;
-      textStyles += `text-decoration: ${currentStyle === 'underline' ? 'underline' : 'none'}; `;
+      let fontWeight = 'normal';
+      let fontStyle = 'normal';
+      
+      if (currentStyle === 'bold') fontWeight = 'bold';
+      if (currentStyle === 'italic') fontStyle = 'italic';
       
       // Отступы
-      let padding = '16px';
-      if (currentSpacing === 'small') padding = '8px';
-      if (currentSpacing === 'large') padding = '24px';
+      let padding = '20px';
+      if (currentSpacing === 'small') padding = '12px';
+      if (currentSpacing === 'large') padding = '32px';
       
-      previewText.style.cssText = textStyles + `padding: ${padding};`;
+      // Текст
+      const textContent = textInput.value || 'https://t.me/InstaGroqBot';
       
-      // Расположение
-      previewCard.style.display = 'flex';
-      previewCard.style.flexDirection = 'column';
+      // Очищаем карточку
+      previewCard.innerHTML = '';
       
+      // Строим в зависимости от расположения
       if (currentLayout === 'top') {
-        previewCard.style.flexDirection = 'column';
-        previewCard.innerHTML = `
-          <div class="preview-text" style="${textStyles} padding: ${padding};">${previewText.textContent}</div>
-          <img class="preview-image" src="${currentImage}" style="width: 100%; height: 200px; object-fit: cover;">
+        // Текст сверху
+        const textDiv = document.createElement('div');
+        textDiv.className = 'preview-text-content';
+        textDiv.textContent = textContent;
+        textDiv.style.cssText = `
+          padding: ${padding};
+          color: #1a2634;
+          font-size: ${currentFontSize}px;
+          font-weight: ${fontWeight};
+          font-style: ${fontStyle};
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+          line-height: 1.6;
+          word-wrap: break-word;
         `;
+        previewCard.appendChild(textDiv);
+        
+        if (currentImage) {
+          const img = document.createElement('img');
+          img.className = 'preview-image';
+          img.src = currentImage;
+          img.style.cssText = 'width: 100%; height: 200px; object-fit: cover; display: block;';
+          previewCard.appendChild(img);
+        }
+        
       } else if (currentLayout === 'bottom') {
-        previewCard.style.flexDirection = 'column';
-        previewCard.innerHTML = `
-          <img class="preview-image" src="${currentImage}" style="width: 100%; height: 200px; object-fit: cover;">
-          <div class="preview-text" style="${textStyles} padding: ${padding};">${previewText.textContent}</div>
+        // Текст снизу
+        if (currentImage) {
+          const img = document.createElement('img');
+          img.className = 'preview-image';
+          img.src = currentImage;
+          img.style.cssText = 'width: 100%; height: 200px; object-fit: cover; display: block;';
+          previewCard.appendChild(img);
+        }
+        
+        const textDiv = document.createElement('div');
+        textDiv.className = 'preview-text-content';
+        textDiv.textContent = textContent;
+        textDiv.style.cssText = `
+          padding: ${padding};
+          color: #1a2634;
+          font-size: ${currentFontSize}px;
+          font-weight: ${fontWeight};
+          font-style: ${fontStyle};
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+          line-height: 1.6;
+          word-wrap: break-word;
         `;
+        previewCard.appendChild(textDiv);
+        
       } else if (currentLayout === 'left') {
+        // Текст слева
+        previewCard.style.display = 'flex';
         previewCard.style.flexDirection = 'row';
-        previewCard.innerHTML = `
-          <div class="preview-text" style="${textStyles} padding: ${padding}; flex: 1;">${previewText.textContent}</div>
-          <img class="preview-image" src="${currentImage}" style="width: 150px; height: 150px; object-fit: cover;">
+        
+        const textDiv = document.createElement('div');
+        textDiv.className = 'preview-text-content';
+        textDiv.textContent = textContent;
+        textDiv.style.cssText = `
+          flex: 1;
+          padding: ${padding};
+          color: #1a2634;
+          font-size: ${currentFontSize}px;
+          font-weight: ${fontWeight};
+          font-style: ${fontStyle};
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+          line-height: 1.6;
+          word-wrap: break-word;
         `;
+        previewCard.appendChild(textDiv);
+        
+        if (currentImage) {
+          const img = document.createElement('img');
+          img.className = 'preview-image';
+          img.src = currentImage;
+          img.style.cssText = 'width: 150px; height: 150px; object-fit: cover; display: block;';
+          previewCard.appendChild(img);
+        }
+        
       } else if (currentLayout === 'right') {
+        // Текст справа
+        previewCard.style.display = 'flex';
         previewCard.style.flexDirection = 'row';
-        previewCard.innerHTML = `
-          <img class="preview-image" src="${currentImage}" style="width: 150px; height: 150px; object-fit: cover;">
-          <div class="preview-text" style="${textStyles} padding: ${padding}; flex: 1;">${previewText.textContent}</div>
+        
+        if (currentImage) {
+          const img = document.createElement('img');
+          img.className = 'preview-image';
+          img.src = currentImage;
+          img.style.cssText = 'width: 150px; height: 150px; object-fit: cover; display: block;';
+          previewCard.appendChild(img);
+        }
+        
+        const textDiv = document.createElement('div');
+        textDiv.className = 'preview-text-content';
+        textDiv.textContent = textContent;
+        textDiv.style.cssText = `
+          flex: 1;
+          padding: ${padding};
+          color: #1a2634;
+          font-size: ${currentFontSize}px;
+          font-weight: ${fontWeight};
+          font-style: ${fontStyle};
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+          line-height: 1.6;
+          word-wrap: break-word;
         `;
+        previewCard.appendChild(textDiv);
       }
     }
 
     // ===== ГЕНЕРАЦИЯ QR =====
-    generateBtn.addEventListener('click', () => {
-      if (!currentImage) return;
+    generateBtn.addEventListener('click', async () => {
+      // Показываем загрузку
+      loading.style.display = 'flex';
       
-      // Создаем данные для страницы
-      const pageData = {
-        image: currentImage,
-        text: textInput.value,
-        layout: currentLayout,
-        style: currentStyle,
-        fontSize: currentFontSize,
-        spacing: currentSpacing
-      };
-      
-      // Кодируем в JSON
-      const jsonData = JSON.stringify(pageData);
-      
-      // Создаем ссылку (в реальности здесь будет ID в базе данных)
-      const pageUrl = `https://instagroq.page/${btoa(jsonData).substring(0, 20)}`;
-      
-      // Генерируем QR
-      QRCode.toCanvas(qrCanvas, pageUrl, { width: 300 }, (err) => {
-        if (err) {
-          alert('Ошибка создания QR');
-        } else {
-          qrLink.textContent = pageUrl;
-          previewSection.style.display = 'none';
-          qrSection.style.display = 'block';
-        }
-      });
+      // Имитация загрузки 2 секунды
+      setTimeout(() => {
+        // Данные для страницы
+        const pageData = {
+          text: textInput.value || 'https://t.me/InstaGroqBot',
+          image: currentImage,
+          layout: currentLayout,
+          style: currentStyle,
+          fontSize: currentFontSize,
+          spacing: currentSpacing
+        };
+        
+        // Создаем ссылку (в реальности тут будет ID)
+        const pageUrl = `https://instagroq.page/${Date.now()}`;
+        
+        // Генерируем QR
+        QRCode.toCanvas(qrCanvas, pageUrl, { width: 300 }, (err) => {
+          if (err) {
+            alert('Ошибка создания QR');
+          } else {
+            qrLink.textContent = pageUrl;
+            mainBlock.style.display = 'none';
+            qrSection.style.display = 'block';
+          }
+          
+          // Прячем загрузку
+          loading.style.display = 'none';
+        });
+      }, 2000);
     });
 
     // ===== СОХРАНЕНИЕ QR =====
@@ -763,11 +970,13 @@
     // ===== НОВЫЙ QR =====
     newQrBtn.addEventListener('click', () => {
       qrSection.style.display = 'none';
-      uploadArea.style.display = 'block';
-      previewSection.style.display = 'none';
-      fileInput.value = '';
-      textInput.value = '';
+      mainBlock.style.display = 'block';
+      textInput.value = 'https://t.me/InstaGroqBot';
       currentImage = null;
+      photoSection.style.display = 'none';
+      previewImage.style.display = 'none';
+      fileInput.value = '';
+      updatePreview();
     });
 
     // ===== TELEGRAM =====
@@ -776,6 +985,9 @@
       tg.ready();
       tg.expand();
     }
+
+    // Начальный предпросмотр
+    updatePreview();
   </script>
 </body>
 </html>
