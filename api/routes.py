@@ -1,9 +1,10 @@
-# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С ПОЛНЫМИ ЛОГАМИ
+# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С ПОДДЕРЖКОЙ ФОТО
 from flask import request, jsonify
 from datetime import datetime
 import re
 from functools import wraps
 from time import time
+import base64
 
 from .config import api, BOT_TOKEN, GROUP_ID, send_log_to_group
 from .db import (
@@ -143,7 +144,7 @@ def api_add_spent():
     return jsonify({"success": True})
 
 # =========================
-# CHAT ENDPOINT - С ПОЛНЫМИ ЛОГАМИ
+# CHAT ENDPOINT
 # =========================
 def extract_last_user_message(raw: str) -> str:
     s = (raw or "").strip()
@@ -211,7 +212,7 @@ def api_chat():
         else:
             reply = ask_openai(prompt_with_memory, lang=lang, persona=persona, style=style)
         
-        # ✅ ТОЛЬКО ЗДЕСЬ списываем звезды
+        # Списываем звезды
         if not a["is_free"]:
             spend_stars(tg_user_id_int, COST_PER_MESSAGE)
             add_stars_spent(tg_user_id_int, COST_PER_MESSAGE)
@@ -219,10 +220,10 @@ def api_chat():
         increment_messages(tg_user_id_int)
         mem_add(tg_user_id_int, "assistant", reply)
         
-        # Получаем новый баланс после списания
+        # Получаем новый баланс
         new_balance = get_balance(tg_user_id_int)
         
-        # 🟢 ПОЛНЫЙ ЛОГ как раньше + баланс
+        # Лог
         time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_text = (
             f"🕒 {time_str}\n"
@@ -244,13 +245,11 @@ def api_chat():
         })
         
     except Exception as e:
-        # При ошибке удаляем сообщение из памяти
         mem_clear_last(tg_user_id_int)
         
         error_msg = str(e)
         print(f"❌ Ошибка у {tg_user_id_int}: {error_msg}")
         
-        # Лог ошибки
         time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         send_log_to_group(
             f"❌ ОШИБКА\n"
@@ -268,6 +267,123 @@ def api_chat():
             }), 503
         
         return jsonify({"error": "ai_unavailable"}), 503
+
+# =========================
+# CHAT WITH IMAGE ENDPOINT (НОВЫЙ)
+# =========================
+@api.post("/api/chat-with-image")
+@rate_limit
+def api_chat_with_image():
+    try:
+        # Получаем данные из формы
+        tg_user_id = request.form.get("tg_user_id") or 0
+        if not validate_user_id(tg_user_id):
+            return jsonify({"error": "invalid_user_id"}), 400
+        
+        tg_user_id_int = int(tg_user_id)
+        text = request.form.get("text") or ""
+        lang = request.form.get("lang") or "ru"
+        style = request.form.get("style") or "steps"
+        persona = request.form.get("persona") or "friendly"
+        tg_username = request.form.get("tg_username") or "—"
+        tg_first_name = request.form.get("tg_first_name") or "—"
+        
+        # Получаем фото
+        image_file = request.files.get("image")
+        if not image_file:
+            return jsonify({"error": "image_required"}), 400
+        
+        # Проверка размера
+        image_file.seek(0, 2)
+        size = image_file.tell()
+        image_file.seek(0)
+        
+        if size > 5 * 1024 * 1024:
+            return jsonify({"error": "file_too_large", "message": "Файл слишком большой (макс 5MB)"}), 400
+        
+        # Читаем и конвертируем в base64
+        image_data = image_file.read()
+        image_base64 = base64.b64encode(image_data).decode('utf-8')
+        
+        # Проверка доступа
+        a = get_access(tg_user_id_int)
+        if a["is_blocked"]:
+            return jsonify({"error": "blocked"}), 403
+        
+        # Проверка режима
+        ai_mode = get_ai_mode(tg_user_id_int) or "fast"
+        if ai_mode != "quality":
+            return jsonify({"error": "image_only_in_quality_mode"}), 400
+        
+        # Проверка баланса
+        balance = get_balance(tg_user_id_int)
+        COST_PER_MESSAGE = 1.0  # Quality mode
+        
+        if not a["is_free"] and balance < COST_PER_MESSAGE:
+            return jsonify({"error": "insufficient_stars"}), 402
+        
+        # Получаем историю
+        history = mem_get(tg_user_id_int, limit=24)
+        prompt_with_memory = build_memory_prompt(history, text)
+        
+        # Сохраняем сообщение пользователя (с пометкой о фото)
+        mem_add(tg_user_id_int, "user", f"[Фото] {text if text else 'Без описания'}")
+        
+        try:
+            # Отправляем в OpenAI с фото
+            reply = ask_openai(
+                prompt_with_memory, 
+                lang=lang, 
+                persona=persona, 
+                style=style,
+                image_base64=image_base64
+            )
+            
+            # Списываем звезды
+            if not a["is_free"]:
+                spend_stars(tg_user_id_int, COST_PER_MESSAGE)
+                add_stars_spent(tg_user_id_int, COST_PER_MESSAGE)
+            
+            increment_messages(tg_user_id_int)
+            mem_add(tg_user_id_int, "assistant", reply)
+            
+            new_balance = get_balance(tg_user_id_int)
+            
+            # Лог
+            time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_text = (
+                f"🕒 {time_str}\n"
+                f"👤 {tg_first_name} (@{tg_username})\n"
+                f"🆔 {tg_user_id_int}\n"
+                f"💰 Баланс: {new_balance} ⭐\n"
+                f"📸 Запрос с фото: {text[:100]}\n\n"
+                f"🤖 Ответ: {reply[:200]}\n"
+                f"⚡ Режим: {ai_mode} (с фото), стоимость: {COST_PER_MESSAGE} ⭐"
+            )
+            
+            send_log_to_group(log_text)
+            
+            return jsonify({
+                "success": True,
+                "reply": reply,
+                "balance": new_balance,
+                "cost": COST_PER_MESSAGE
+            })
+            
+        except Exception as e:
+            mem_clear_last(tg_user_id_int)
+            raise e
+            
+    except Exception as e:
+        error_msg = str(e)
+        print(f"❌ Ошибка в chat-with-image: {error_msg}")
+        
+        if "API key" in error_msg:
+            return jsonify({"error": "service_error", "message": "Ошибка сервиса"}), 500
+        elif "credit" in error_msg.lower() or "balance" in error_msg.lower():
+            return jsonify({"error": "insufficient_balance", "message": "Закончились кредиты"}), 402
+        else:
+            return jsonify({"error": "processing_error", "message": "Ошибка обработки фото"}), 500
 
 # =========================
 # MEMORY ENDPOINT
