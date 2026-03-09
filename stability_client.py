@@ -303,6 +303,7 @@ def generate_image_from_image(
         "text_prompts[0][weight]": "1.0",
         "cfg_scale": str(cfg_scale),
         "steps": str(steps),
+        "strength": str(strength),
         "style_preset": "photographic"
     }
     
@@ -310,18 +311,19 @@ def generate_image_from_image(
         try:
             response = requests.post(url, headers=headers, files=files, data=data, timeout=90)
             
-            if response.status_code != 200:
-                error_detail = "Unknown error"
-                try:
-                    error_json = response.json()
-                    error_detail = error_json.get('message', str(error_json))
-                except:
-                    error_detail = response.text[:200]
-                raise RuntimeError(f"Stability API error {response.status_code}: {error_detail}")
+            if response.status_code == 200:
+                data = response.json()
+                image_base64 = data["artifacts"][0]["base64"]
+                return f"data:image/png;base64,{image_base64}"
             
-            data = response.json()
-            image_base64 = data["artifacts"][0]["base64"]
-            return f"data:image/png;base64,{image_base64}"
+            error_detail = "Unknown error"
+            try:
+                error_json = response.json()
+                error_detail = error_json.get('message', str(error_json))
+            except:
+                error_detail = response.text[:200]
+            
+            raise RuntimeError(f"Stability API error {response.status_code}: {error_detail}")
             
         except Exception as e:
             if attempt < MAX_RETRIES:
@@ -330,7 +332,7 @@ def generate_image_from_image(
                 continue
             raise RuntimeError(f"Image-to-image generation failed: {str(e)}")
 
-# ========== НОВАЯ ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ ФОНА ==========
+# ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ ФОНА ==========
 def remove_background(
     init_image: bytes,
     prompt: Optional[str] = None,
@@ -339,7 +341,6 @@ def remove_background(
 ) -> str:
     """
     Удаление фона с изображения через Stability AI
-    Использует image-to-image со специальным промптом
     """
     if not STABILITY_API_KEY:
         raise RuntimeError("STABILITY_API_KEY is not set")
@@ -364,29 +365,31 @@ def remove_background(
         "init_image": ("image.png", init_image, "image/png")
     }
     
-    # Для удаления фона используем низкий strength (0.6)
-    # и специальные настройки
+    # ВАЖНО: добавляем strength в параметры!
     data = {
         "text_prompts[0][text]": translated,
         "text_prompts[0][weight]": "1.0",
         "cfg_scale": "7.0",
         "steps": str(steps),
+        "strength": str(strength),  # ← ЭТО БЫЛО ПРОПУЩЕНО!
         "style_preset": "photographic",
         "samples": "1"
     }
     
     for attempt in range(MAX_RETRIES + 1):
         try:
+            print(f"🔄 Attempt {attempt + 1}/{MAX_RETRIES + 1}")
             response = requests.post(url, headers=headers, files=files, data=data, timeout=90)
             
             if response.status_code == 200:
                 data = response.json()
                 image_base64 = data["artifacts"][0]["base64"]
+                print("✅ Background removed successfully")
                 return f"data:image/png;base64,{image_base64}"
             
-            # Если ошибка, пробуем с другим промптом
-            if attempt == 0 and response.status_code != 200:
-                # Пробуем более простой промпт
+            # Если ошибка 400, пробуем с другим промптом
+            if response.status_code == 400 and attempt == 0:
+                print("⚠️ Got 400 error, trying with simpler prompt")
                 data["text_prompts[0][text]"] = "white background, no background"
                 continue
                 
@@ -401,7 +404,7 @@ def remove_background(
             
         except Exception as e:
             if attempt < MAX_RETRIES:
-                print(f"🔄 Retry {attempt + 1}/{MAX_RETRIES}")
+                print(f"🔄 Retry {attempt + 1}/{MAX_RETRIES} after error: {e}")
                 time.sleep(RETRY_DELAY * (attempt + 1))
                 continue
             raise RuntimeError(f"Background removal failed: {str(e)}")
