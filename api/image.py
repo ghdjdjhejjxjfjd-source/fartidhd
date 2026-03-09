@@ -136,7 +136,7 @@ def api_image():
     negative_prompt = request.form.get("negative_prompt") or None
     
     try:
-        # Импортируем все функции из stability_client
+        # ✅ ИМПОРТИРУЕМ ВСЕ ФУНКЦИИ
         from stability_client import generate_image, generate_image_from_image, remove_background
         
         # ===== ОБРАБОТКА РАЗНЫХ РЕЖИМОВ =====
@@ -152,7 +152,8 @@ def api_image():
             )
             
         elif mode == "remove_bg":
-            # ⭐ УДАЛЕНИЕ ФОНА через специальную функцию
+            # ⭐ УДАЛЕНИЕ ФОНА
+            print(f"🖼 Processing remove_bg for user {tg_user_id_int}")
             image_base64 = remove_background(
                 init_image=image_data,
                 prompt=prompt or "subject on transparent background, white background",
@@ -199,6 +200,7 @@ def api_image():
         
     except Exception as e:
         error_msg = str(e)
+        print(f"❌ Error in api_image: {error_msg}")
         send_log_to_group(f"❌ Ошибка генерации: {tg_user_id_int} - {error_msg[:100]}")
         
         if "API key" in error_msg:
