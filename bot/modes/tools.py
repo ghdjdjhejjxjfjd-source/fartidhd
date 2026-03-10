@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from bot.ui.keyboards import tools_keyboard, back_button
+from bot.ui.keyboards import back_button
 
 async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     query = update.callback_query
