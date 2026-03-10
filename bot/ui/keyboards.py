@@ -1,4 +1,3 @@
-# bot/ui/keyboards.py
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from api import get_use_mini_app, get_access
 from payments import get_balance
@@ -15,19 +14,22 @@ def main_menu(user_id: int) -> InlineKeyboardMarkup:
         keyboard.append([InlineKeyboardButton("⛔ Доступ заблокирован", callback_data="blocked")])
         return InlineKeyboardMarkup(keyboard)
 
-    keyboard.append([InlineKeyboardButton(f"💰 Баланс: {balance} ⭐", callback_data="balance")])
+    # Баланс
+    keyboard.append([InlineKeyboardButton(f"⭐ Баланс: {balance} звезд", callback_data="profile")])
 
+    # Mini App или встроенные режимы
     if use_mini_app:
-        if (balance >= 1 or a.get("is_free")) and is_valid_https_url(MINIAPP_URL):
-            keyboard.append([InlineKeyboardButton("🚀 Mini App", web_app=WebAppInfo(url=MINIAPP_URL))])
+        can_open = (balance >= 1 or a.get("is_free")) and is_valid_https_url(MINIAPP_URL)
+        if can_open:
+            keyboard.append([InlineKeyboardButton("🚀 Открыть Mini App", web_app=WebAppInfo(url=MINIAPP_URL))])
         else:
-            keyboard.append([InlineKeyboardButton("🚀 Mini App", callback_data="need_stars")])
+            keyboard.append([InlineKeyboardButton("🚀 Открыть Mini App", callback_data="need_stars")])
     else:
-        keyboard.append([InlineKeyboardButton("💬 Чат с ИИ", callback_data="mode_chat")])
-        keyboard.append([InlineKeyboardButton("🖼 Картинка", callback_data="mode_image")])
-        keyboard.append([InlineKeyboardButton("🔧 Инструменты", callback_data="mode_tools")])
+        keyboard.append([InlineKeyboardButton("💬 Чат с ИИ", callback_data="chat")])
+        keyboard.append([InlineKeyboardButton("🖼 Генерация картинки", callback_data="image")])
+        keyboard.append([InlineKeyboardButton("🔧 Инструменты", callback_data="tools")])
 
-    keyboard.append([InlineKeyboardButton("⭐ Купить звезды", callback_data="buy_menu")])
+    # Кнопки внизу
     keyboard.append([
         InlineKeyboardButton("⚙️ Настройки", callback_data="settings"),
         InlineKeyboardButton("❓ Помощь", callback_data="help")
@@ -36,25 +38,31 @@ def main_menu(user_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 def back_button() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="back")]])
+    return InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]])
 
-def tools_keyboard(user_id: int) -> InlineKeyboardMarkup:
-    a = get_access(user_id)
-    balance = get_balance(user_id)
-    
-    tools = [
-        ("remove_bg", "📸 Удаление фона", 2),
-        ("ocr", "📝 Текст с фото", 1),
-        ("meme", "🎭 Создание мемов", 1),
-        ("qr", "📱 QR код", 1),
+def settings_keyboard() -> InlineKeyboardMarkup:
+    keyboard = [
+        [InlineKeyboardButton("🌐 Язык", callback_data="settings_lang")],
+        [InlineKeyboardButton("🎭 Характер", callback_data="settings_persona")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]
     ]
-    
-    keyboard = []
-    for tool_id, name, cost in tools:
-        if a.get("is_free") or balance >= cost:
-            keyboard.append([InlineKeyboardButton(f"{name} ({cost}⭐)", callback_data=f"tool_{tool_id}")])
-        else:
-            keyboard.append([InlineKeyboardButton(f"{name} ❌", callback_data="need_stars")])
-    
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back")])
+    return InlineKeyboardMarkup(keyboard)
+
+def lang_keyboard() -> InlineKeyboardMarkup:
+    keyboard = [
+        [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")],
+        [InlineKeyboardButton("🇬🇧 English", callback_data="lang_en")],
+        [InlineKeyboardButton("🇰🇿 Қазақша", callback_data="lang_kk")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="settings")]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+def persona_keyboard() -> InlineKeyboardMarkup:
+    keyboard = [
+        [InlineKeyboardButton("😊 Общительный", callback_data="persona_friendly")],
+        [InlineKeyboardButton("😂 Весёлый", callback_data="persona_fun")],
+        [InlineKeyboardButton("🧐 Умный", callback_data="persona_smart")],
+        [InlineKeyboardButton("😐 Строгий", callback_data="persona_strict")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="settings")]
+    ]
     return InlineKeyboardMarkup(keyboard)
