@@ -1,4 +1,3 @@
-# bot/utils.py
 from api import get_last_menu, set_last_menu, clear_last_menu
 from bot.ui.keyboards import main_menu
 
