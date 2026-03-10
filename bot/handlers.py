@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from api import get_access, set_last_menu
 from bot.config import send_log_http, build_start_log
-from bot.ui.keyboards import main_menu
+from bot.ui.keyboards import main_menu, back_button
 from bot.modes import chat, image, profile, settings, tools
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -51,7 +51,24 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     elif data == "help":
         text = "❓ Помощь\n\nЧат с ИИ: 1⭐\nГенерация картинок: 2⭐\nИнструменты: от 1⭐\n\nПо вопросам: @instagroq_support"
-        await query.message.edit_text(text, reply_markup=main_menu(uid))
+        await query.message.edit_text(text, reply_markup=back_button())
+    
+    elif data == "need_stars":
+        await query.message.edit_text("❌ Недостаточно звезд! Купи в меню.", reply_markup=back_button())
+    
+    elif data.startswith("lang_"):
+        await settings.handle_lang(update, context, uid)
+    
+    elif data.startswith("persona_"):
+        await settings.handle_persona(update, context, uid)
+    
+    elif data == "settings_lang":
+        from bot.ui.keyboards import lang_keyboard
+        await query.message.edit_text("🌐 Выбери язык:", reply_markup=lang_keyboard())
+    
+    elif data == "settings_persona":
+        from bot.ui.keyboards import persona_keyboard
+        await query.message.edit_text("🎭 Выбери характер:", reply_markup=persona_keyboard())
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
@@ -73,4 +90,4 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if mode == "image":
         await image.handle_photo(update, context)
     else:
-        await update.message.reply_text("Отправь текст или выбери режим в меню")
+        await update.message.reply_text("Выбери режим генерации картинки в меню")
