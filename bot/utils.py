@@ -8,17 +8,14 @@ async def delete_prev_menu(bot, user_id: int):
         return
     try:
         await bot.delete_message(chat_id=chat_id, message_id=msg_id)
-        print(f"🗑️ Удалено старое меню для {user_id}")
     except Exception:
         pass
     clear_last_menu(user_id)
 
 async def send_fresh_menu(bot, user_id: int, text: str = None):
     await delete_prev_menu(bot, user_id)
-    
     if text is None:
         text = "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇"
-    
     m = await bot.send_message(
         chat_id=user_id,
         text=text,
