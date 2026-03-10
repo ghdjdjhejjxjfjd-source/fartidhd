@@ -4,7 +4,7 @@ import time
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from telegram import Update
 
-from bot.handlers import start, on_button, handle_message
+from bot.handlers import start, on_button, handle_message, handle_photo
 from bot_admin import (
     cmd_whoami,
     cmd_free,
@@ -72,6 +72,7 @@ def start_bot():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(on_button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
     app.add_handler(CommandHandler("whoami", cmd_whoami))
     app.add_handler(CommandHandler("free", cmd_free))
