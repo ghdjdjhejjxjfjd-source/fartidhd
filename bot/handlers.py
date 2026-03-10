@@ -1,10 +1,9 @@
-# bot/handlers.py
 from telegram import Update
 from telegram.ext import ContextTypes
 from api import get_access, set_last_menu
 from bot.config import send_log_http, build_start_log
-from bot.ui.keyboards import main_menu, back_button, tools_keyboard
-from bot.modes import chat_mode, image_mode, tools_mode
+from bot.ui.keyboards import main_menu
+from bot.modes import chat, image, profile, settings, tools
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     send_log_http(build_start_log(update))
@@ -12,7 +11,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_main_menu(update, context, user.id)
 
 async def send_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
-    text = "🤖 InstaGroq AI\n\nВыбирай:"
+    text = "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇"
     if update.callback_query:
         await update.callback_query.message.edit_text(text, reply_markup=main_menu(uid))
         set_last_menu(uid, uid, update.callback_query.message.message_id)
@@ -32,46 +31,46 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text("⛔ Доступ заблокирован.")
         return
     
-    if data == "back":
+    if data == "back_to_menu":
         await send_main_menu(update, context, uid)
-    elif data == "balance":
-        from payments import get_balance
-        bal = get_balance(uid)
-        await query.message.edit_text(f"💰 Баланс: {bal} ⭐", reply_markup=back_button())
-    elif data == "mode_chat":
-        await chat_mode.start(update, context)
-    elif data == "mode_image":
-        await image_mode.start(update, context)
-    elif data == "mode_tools":
-        await query.message.edit_text("🔧 Инструменты:", reply_markup=tools_keyboard(uid))
-    elif data.startswith("tool_"):
-        await tools_mode.handle_tool(update, context, data.replace("tool_", ""))
-    elif data == "need_stars":
-        await query.message.edit_text("❌ Недостаточно звезд", reply_markup=back_button())
-    elif data == "help":
-        await query.message.edit_text("❓ Помощь\n\nЧат: 1⭐\nКартинка: 2⭐\nИнструменты: от 1⭐", reply_markup=back_button())
+    
+    elif data == "profile":
+        await profile.show(update, context, uid)
+    
+    elif data == "chat":
+        await chat.start(update, context)
+    
+    elif data == "image":
+        await image.start(update, context)
+    
+    elif data == "tools":
+        await tools.show_menu(update, context, uid)
+    
     elif data == "settings":
-        await query.message.edit_text("⚙️ Настройки скоро", reply_markup=back_button())
+        await settings.show_menu(update, context, uid)
+    
+    elif data == "help":
+        text = "❓ Помощь\n\nЧат с ИИ: 1⭐\nГенерация картинок: 2⭐\nИнструменты: от 1⭐\n\nПо вопросам: @instagroq_support"
+        await query.message.edit_text(text, reply_markup=main_menu(uid))
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
         return
+    
     user = update.effective_user
     text = update.message.text
     mode = context.user_data.get("mode")
     
     if mode == "chat":
-        await chat_mode.handle_message(update, context, text)
+        await chat.handle_message(update, context, text)
     elif mode == "image":
-        await image_mode.handle_message(update, context, text)
-    elif mode and mode.startswith("tool_"):
-        await tools_mode.handle_text(update, context, text)
+        await image.handle_message(update, context, text)
     else:
         await send_main_menu(update, context, user.id)
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mode = context.user_data.get("mode")
-    if mode and mode.startswith("tool_"):
-        await tools_mode.handle_photo(update, context)
+    if mode == "image":
+        await image.handle_photo(update, context)
     else:
-        await update.message.reply_text("Выбери инструмент сначала")
+        await update.message.reply_text("Отправь текст или выбери режим в меню")
