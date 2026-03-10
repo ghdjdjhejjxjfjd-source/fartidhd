@@ -14,10 +14,8 @@ def main_menu(user_id: int) -> InlineKeyboardMarkup:
         keyboard.append([InlineKeyboardButton("⛔ Доступ заблокирован", callback_data="blocked")])
         return InlineKeyboardMarkup(keyboard)
 
-    # Баланс
     keyboard.append([InlineKeyboardButton(f"⭐ Баланс: {balance} звезд", callback_data="profile")])
 
-    # Mini App или встроенные режимы
     if use_mini_app:
         can_open = (balance >= 1 or a.get("is_free")) and is_valid_https_url(MINIAPP_URL)
         if can_open:
@@ -29,7 +27,6 @@ def main_menu(user_id: int) -> InlineKeyboardMarkup:
         keyboard.append([InlineKeyboardButton("🖼 Генерация картинки", callback_data="image")])
         keyboard.append([InlineKeyboardButton("🔧 Инструменты", callback_data="tools")])
 
-    # Кнопки внизу
     keyboard.append([
         InlineKeyboardButton("⚙️ Настройки", callback_data="settings"),
         InlineKeyboardButton("❓ Помощь", callback_data="help")
