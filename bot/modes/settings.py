@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 from api import set_user_lang, set_user_persona
-from bot.ui.keyboards import settings_keyboard, back_button
+from bot.ui.keyboards import back_button, settings_keyboard
 
 async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     query = update.callback_query
