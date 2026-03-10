@@ -8,7 +8,7 @@ from telegram.ext import ContextTypes
 from functools import wraps
 
 from api import set_free, set_blocked, get_access
-from bot.handlers import send_fresh_menu, send_block_notice, update_user_menu
+from bot.utils import send_fresh_menu, send_block_notice, update_user_menu
 from payments import add_stars, get_balance, reset_balance
 
 ADMIN_USER_ID_RAW = (os.getenv("ADMIN_USER_ID") or "0").strip()
