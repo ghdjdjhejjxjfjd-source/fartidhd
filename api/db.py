@@ -1,4 +1,4 @@
-# api/db.py - ИСПРАВЛЕННАЯ ПОЛНАЯ ВЕРСИЯ
+# api/db.py - ПОЛНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ
 import sqlite3
 import time
 import threading
@@ -164,14 +164,14 @@ def set_free(user_id: int, value: bool) -> None:
         else:
             cur.execute(
                 """
-                INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode, style, ai_lang)
-                VALUES (?, ?, 0, ?, ?, 'fast', 'steps', 'ru')
+                INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode, style, ai_lang, lang, persona)
+                VALUES (?, ?, 0, ?, ?, 'fast', 'steps', 'ru', 'ru', 'friendly')
                 """,
                 (user_id, 1 if value else 0, now, now)
             )
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -193,14 +193,14 @@ def set_blocked(user_id: int, value: bool) -> None:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cur.execute(
                 """
-                INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode, style, ai_lang)
-                VALUES (?, 0, ?, ?, ?, 'fast', 'steps', 'ru')
+                INSERT INTO access (user_id, is_free, is_blocked, updated_at, registered_at, ai_mode, style, ai_lang, lang, persona)
+                VALUES (?, 0, ?, ?, ?, 'fast', 'steps', 'ru', 'ru', 'friendly')
                 """,
                 (user_id, 1 if value else 0, now, now)
             )
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -265,14 +265,15 @@ def set_last_menu(user_id: int, chat_id: int, message_id: int) -> None:
             cur.execute(
                 """
                 INSERT INTO access (user_id, is_free, is_blocked, updated_at, 
-                                   last_menu_chat_id, last_menu_message_id, registered_at, ai_mode, style, ai_lang)
-                VALUES (?, 0, 0, ?, ?, ?, ?, 'fast', 'steps', 'ru')
+                                   last_menu_chat_id, last_menu_message_id, registered_at, 
+                                   ai_mode, style, ai_lang, lang, persona)
+                VALUES (?, 0, 0, ?, ?, ?, ?, 'fast', 'steps', 'ru', 'ru', 'friendly')
                 """,
                 (user_id, now, chat_id, message_id, now)
             )
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -329,14 +330,15 @@ def set_use_mini_app(user_id: int, value: bool) -> None:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cur.execute(
                 """
-                INSERT INTO access (user_id, use_mini_app, updated_at, registered_at, ai_mode, style, ai_lang)
-                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru')
+                INSERT INTO access (user_id, use_mini_app, updated_at, registered_at, 
+                                   ai_mode, style, ai_lang, lang, persona)
+                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru', 'ru', 'friendly')
                 """,
                 (user_id, 1 if value else 0, now, now)
             )
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -361,14 +363,15 @@ def set_user_persona(user_id: int, persona: str) -> None:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cur.execute(
                 """
-                INSERT INTO access (user_id, persona, updated_at, registered_at, ai_mode, style, ai_lang)
-                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru')
+                INSERT INTO access (user_id, persona, updated_at, registered_at, 
+                                   ai_mode, style, ai_lang, lang)
+                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru', 'ru')
                 """,
                 (user_id, persona, now, now)
             )
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -393,14 +396,15 @@ def set_user_style(user_id: int, style: str) -> None:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cur.execute(
                 """
-                INSERT INTO access (user_id, style, updated_at, registered_at, ai_mode, ai_lang)
-                VALUES (?, ?, ?, ?, 'fast', 'ru')
+                INSERT INTO access (user_id, style, updated_at, registered_at, 
+                                   ai_mode, ai_lang, lang, persona)
+                VALUES (?, ?, ?, ?, 'fast', 'ru', 'ru', 'friendly')
                 """,
                 (user_id, style, now, now)
             )
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -425,14 +429,15 @@ def set_user_lang(user_id: int, lang: str) -> None:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cur.execute(
                 """
-                INSERT INTO access (user_id, lang, updated_at, registered_at, ai_mode, style, ai_lang)
-                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru')
+                INSERT INTO access (user_id, lang, updated_at, registered_at, 
+                                   ai_mode, style, ai_lang, persona)
+                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru', 'friendly')
                 """,
                 (user_id, lang, now, now)
             )
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -460,21 +465,22 @@ def set_user_ai_lang(user_id: int, lang: str) -> None:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cur.execute(
                 """
-                INSERT INTO access (user_id, ai_lang, updated_at, registered_at, ai_mode, style, lang)
-                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru')
+                INSERT INTO access (user_id, ai_lang, updated_at, registered_at, 
+                                   ai_mode, style, lang, persona)
+                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru', 'friendly')
                 """,
                 (user_id, lang, now, now)
             )
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
             )
 
 # =========================
-# ФУНКЦИИ ДЛЯ РЕЖИМА ИИ
+# ФУНКЦИИ ДЛЯ РЕЖИМА ИИ - ИСПРАВЛЕНО
 # =========================
 def get_ai_mode(user_id: int) -> str:
     a = get_access(user_id)
@@ -488,32 +494,40 @@ def set_ai_mode(user_id: int, mode: str) -> None:
         cur = conn.cursor()
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        cur.execute(
-            "SELECT ai_mode_changes FROM access WHERE user_id = ?",
-            (user_id,)
-        )
-        row = cur.fetchone()
+        # Проверяем существует ли пользователь
+        cur.execute("SELECT user_id FROM access WHERE user_id = ?", (user_id,))
+        exists = cur.fetchone()
         
-        if row:
+        if exists:
+            # Обновляем существующего пользователя
             cur.execute(
                 """
                 UPDATE access
-                SET ai_mode = ?, ai_mode_changes = ai_mode_changes + 1, last_ai_mode_change = ?, updated_at = ?
+                SET ai_mode = ?, 
+                    ai_mode_changes = COALESCE(ai_mode_changes, 0) + 1, 
+                    last_ai_mode_change = ?, 
+                    updated_at = ?
                 WHERE user_id = ?
                 """,
                 (mode, now, now, user_id)
             )
         else:
+            # Создаем нового пользователя
             cur.execute(
                 """
-                INSERT INTO access (user_id, ai_mode, ai_mode_changes, last_ai_mode_change, updated_at, registered_at, style, ai_lang)
-                VALUES (?, ?, 1, ?, ?, ?, 'steps', 'ru')
+                INSERT INTO access (
+                    user_id, ai_mode, ai_mode_changes, last_ai_mode_change, 
+                    updated_at, registered_at, style, ai_lang, lang, persona
+                )
+                VALUES (?, ?, 1, ?, ?, ?, 'steps', 'ru', 'ru', 'friendly')
                 """,
                 (user_id, mode, now, now, now)
             )
+            
+            # Создаем запись в user_limits
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -536,17 +550,20 @@ async def get_ai_mode_changes(user_id: int) -> int:
     last_change = row[1]
     
     if last_change:
-        last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
-        now = datetime.now()
-        delta = now - last_date
-        if delta.days >= 1:
-            with db_connection() as conn:
-                cur = conn.cursor()
-                cur.execute(
-                    "UPDATE access SET ai_mode_changes = 0 WHERE user_id = ?",
-                    (user_id,)
-                )
-            return 8
+        try:
+            last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
+            now = datetime.now()
+            delta = now - last_date
+            if delta.days >= 1:
+                with db_connection() as conn:
+                    cur = conn.cursor()
+                    cur.execute(
+                        "UPDATE access SET ai_mode_changes = 0 WHERE user_id = ?",
+                        (user_id,)
+                    )
+                return 8
+        except:
+            pass
     
     remaining = 8 - changes
     return max(0, remaining)
@@ -569,7 +586,7 @@ def check_and_reset_limits(user_id: int) -> None:
         if not row:
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date, groq_persona_changes, groq_style_changes, openai_style_changes)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date, groq_persona_changes, groq_style_changes, openai_style_changes)
                 VALUES (?, ?, 0, 0, 0)
                 """,
                 (user_id, today)
@@ -717,12 +734,13 @@ def increment_messages(user_id: int):
             """, (now, user_id))
         else:
             cur.execute("""
-                INSERT INTO access (user_id, total_messages, updated_at, registered_at, ai_mode, style, ai_lang)
-                VALUES (?, 1, ?, ?, 'fast', 'steps', 'ru')
+                INSERT INTO access (user_id, total_messages, updated_at, registered_at, 
+                                   ai_mode, style, ai_lang, lang, persona)
+                VALUES (?, 1, ?, ?, 'fast', 'steps', 'ru', 'ru', 'friendly')
             """, (user_id, now, now))
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -746,12 +764,13 @@ def increment_images(user_id: int):
             """, (now, user_id))
         else:
             cur.execute("""
-                INSERT INTO access (user_id, total_images, updated_at, registered_at, ai_mode, style, ai_lang)
-                VALUES (?, 1, ?, ?, 'fast', 'steps', 'ru')
+                INSERT INTO access (user_id, total_images, updated_at, registered_at, 
+                                   ai_mode, style, ai_lang, lang, persona)
+                VALUES (?, 1, ?, ?, 'fast', 'steps', 'ru', 'ru', 'friendly')
             """, (user_id, now, now))
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
@@ -775,12 +794,13 @@ def add_stars_spent(user_id: int, amount: int):
             """, (amount, now, user_id))
         else:
             cur.execute("""
-                INSERT INTO access (user_id, total_stars_spent, updated_at, registered_at, ai_mode, style, ai_lang)
-                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru')
+                INSERT INTO access (user_id, total_stars_spent, updated_at, registered_at, 
+                                   ai_mode, style, ai_lang, lang, persona)
+                VALUES (?, ?, ?, ?, 'fast', 'steps', 'ru', 'ru', 'friendly')
             """, (user_id, amount, now, now))
             cur.execute(
                 """
-                INSERT INTO user_limits (user_id, last_reset_date)
+                INSERT OR IGNORE INTO user_limits (user_id, last_reset_date)
                 VALUES (?, ?)
                 """,
                 (user_id, now[:10])
