@@ -464,41 +464,35 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
-    showLoading(window.t?.saving || "Сохранение...");
+    showLoading("Сохранение...");
     
     let success = true;
-    let errorMessage = '';
-    let modeChanged = false;
     
     if (tempAiMode) {
       const result = await changeAiMode(tempAiMode);
-      if (!result.success) {
-        success = false;
-        errorMessage = result.message || 'Ошибка при смене режима ИИ';
-      } else {
+      if (result.success) {
         localStorage.setItem("ai_mode", tempAiMode);
         currentAiMode = tempAiMode;
-        modeChanged = true;
+      } else {
+        success = false;
       }
     }
     
     if (tempStyle && success) {
       const result = await changeStyle(tempStyle);
-      if (!result.success) {
-        success = false;
-        errorMessage = result.message || 'Ошибка при смене стиля';
-      } else {
+      if (result.success) {
         localStorage.setItem("ai_style", tempStyle);
+      } else {
+        success = false;
       }
     }
     
     if (tempPersona && currentAiMode === 'fast' && success) {
       const result = await changePersona(tempPersona);
-      if (!result.success) {
-        success = false;
-        errorMessage = result.message || 'Ошибка при смене характера';
-      } else {
+      if (result.success) {
         localStorage.setItem("ai_persona", tempPersona);
+      } else {
+        success = false;
       }
     }
     
@@ -511,17 +505,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       hasUnsavedChanges = false;
       
       await fetchLimits();
-      
       updateSaveButton();
       updateUnsavedIndicator();
       closeSettings();
-      
-      if (modeChanged) {
-        // Просто логируем в консоль, не добавляем в чат
-        console.log("✅ Режим ИИ изменен");
-      }
     } else {
-      alert(`❌ ${errorMessage}`);
+      alert("❌ Ошибка при сохранении");
     }
   }
 
