@@ -501,7 +501,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
           history = [];
           saveHistory(history);
           chatEl.innerHTML = "";
-          add("bot", helloText(), false); // false = не сохранять в историю
+          add("bot", helloText(), true);
         } catch (e) {
           console.error("Failed to clear memory:", e);
         }
@@ -773,45 +773,10 @@ Response:`;
     }
   }
 
+  // Убрал авто-перезагрузку из checkModeChange
   async function checkModeChange() {
-    if (!currentUserId || isReloading) return;
-    
-    try {
-      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
-      if (!res.ok) return;
-      
-      const data = await res.json();
-      
-      const currentMode = localStorage.getItem("current_ai_mode");
-      if (currentMode && data.ai_mode !== currentMode) {
-        if (sending) {
-          setTimeout(() => checkModeChange(), 500);
-          return;
-        }
-        
-        if (reloadTimer) clearTimeout(reloadTimer);
-        
-        isReloading = true;
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.setItem("current_ai_mode", data.ai_mode);
-        
-        try { await clearAIMemory(); } catch (e) {}
-        
-        add("bot", "🔄 Режим изменен. Страница обновится...", true);
-        
-        reloadTimer = setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-        
-      } else if (!currentMode) {
-        localStorage.setItem("current_ai_mode", data.ai_mode);
-        await updatePersonaLock();
-      } else {
-        await updatePersonaLock();
-      }
-    } catch (err) {
-      console.log("Mode check error:", err);
-    }
+    // Эта функция больше не нужна, удаляем или оставляем пустой
+    return;
   }
 
   function bindUI(){
@@ -893,13 +858,6 @@ Response:`;
     
     window.addEventListener('offline', () => {
       add("bot", "📡 Интернет пропал. Ответы временно недоступны.", true);
-    });
-    
-    setTimeout(checkModeChange, 1000);
-    setInterval(checkModeChange, 3000);
-    
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && !isReloading) checkModeChange();
     });
     
     renderFromHistory();
