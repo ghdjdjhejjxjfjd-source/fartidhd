@@ -7,6 +7,7 @@ from .db import (
     set_user_lang, get_user_lang,
     set_user_persona, get_user_persona,
     set_user_style, get_user_style,
+    set_user_ai_lang, get_user_ai_lang,  # ← ДОБАВЛЕНО
     set_use_mini_app, get_use_mini_app,
     set_free, set_blocked,
     increment_messages, increment_images, add_stars_spent,
@@ -35,6 +36,7 @@ __all__ = [
     'set_user_lang', 'get_user_lang',
     'set_user_persona', 'get_user_persona',
     'set_user_style', 'get_user_style',
+    'set_user_ai_lang', 'get_user_ai_lang',  # ← ДОБАВЛЕНО
     'set_use_mini_app', 'get_use_mini_app',
     'set_free', 'set_blocked',
     'increment_messages', 'increment_images', 'add_stars_spent',
