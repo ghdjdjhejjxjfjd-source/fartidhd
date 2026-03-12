@@ -127,7 +127,10 @@ def confirm_ai_mode_kb(user_id: int, new_mode: str) -> InlineKeyboardMarkup:
 
 def persona_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура выбора характера"""
+    from api import get_ai_mode
+    
     current = get_user_persona(user_id) or "friendly"
+    ai_mode = get_ai_mode(user_id)
     
     personas = [
         ("friendly", "😊 Общительный"),
@@ -137,9 +140,14 @@ def persona_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     ]
     
     keyboard = []
-    for p_id, p_name in personas:
-        mark = " ✅" if p_id == current else ""
-        keyboard.append([InlineKeyboardButton(f"{p_name}{mark}", callback_data=f"set_persona:{p_id}")])
+    
+    # Если качественный режим - показываем заглушку
+    if ai_mode == "quality":
+        keyboard.append([InlineKeyboardButton("🔒 Характер недоступен в этом режиме", callback_data="ignore")])
+    else:
+        for p_id, p_name in personas:
+            mark = " ✅" if p_id == current else ""
+            keyboard.append([InlineKeyboardButton(f"{p_name}{mark}", callback_data=f"set_persona:{p_id}")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     return InlineKeyboardMarkup(keyboard)
