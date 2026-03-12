@@ -1,4 +1,4 @@
-# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С ПОЛНЫМИ ЛОГАМИ
+# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 from flask import request, jsonify
 from datetime import datetime
 import re
@@ -493,7 +493,7 @@ def api_style_change():
     })
 
 # =========================
-# ЭНДПОИНТЫ ДЛЯ РЕЖИМА ИИ
+# ЭНДПОИНТЫ ДЛЯ РЕЖИМА ИИ - ИСПРАВЛЕНО!
 # =========================
 
 @api.get("/api/user/ai_mode/<int:user_id>")
@@ -516,9 +516,26 @@ def api_set_user_ai_mode():
     if ai_mode not in valid_modes:
         return jsonify({"error": f"ai_mode must be one of {valid_modes}"}), 400
     
-    set_ai_mode(int(user_id), ai_mode)
-    return jsonify({
-        "success": True,
-        "user_id": user_id,
-        "ai_mode": ai_mode
-    })
+    try:
+        # Запоминаем старый режим на случай ошибки
+        old_mode = get_ai_mode(int(user_id))
+        
+        # Пытаемся установить новый режим
+        set_ai_mode(int(user_id), ai_mode)
+        
+        # Возвращаем успех с новым режимом
+        return jsonify({
+            "success": True,
+            "user_id": user_id,
+            "ai_mode": ai_mode,
+            "old_mode": old_mode
+        })
+        
+    except Exception as e:
+        print(f"❌ Error setting AI mode for {user_id}: {e}")
+        # При ошибке возвращаем старый режим
+        return jsonify({
+            "error": "failed_to_set_mode",
+            "message": "Не удалось сменить режим. Попробуйте позже.",
+            "current_mode": get_ai_mode(int(user_id))  # Возвращаем актуальный режим
+        }), 500
