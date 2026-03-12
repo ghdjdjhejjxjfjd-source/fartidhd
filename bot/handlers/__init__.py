@@ -10,7 +10,7 @@ from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
 
 # Импортируем handle_message из оригинального handlers.py
-from ..handlers import handle_message
+from bot.handlers import handle_message
 
 __all__ = [
     'start',
