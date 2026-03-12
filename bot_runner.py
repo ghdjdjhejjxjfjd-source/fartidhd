@@ -1,10 +1,10 @@
-# bot_runner.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import os
 import time
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from telegram import Update
 
-from bot.handlers import start, on_button, handle_message
+from bot.handlers import start, on_button  # импорт из новой структуры
+from bot.handlers import handle_message  # handle_message пока еще в handlers.py
 from bot_admin import (
     cmd_whoami,
     cmd_free,
