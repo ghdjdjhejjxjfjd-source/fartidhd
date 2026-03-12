@@ -44,30 +44,32 @@
   --sheet-text: #f7fbff;
 }
 
-/* Светлая тема - ТОЛЬКО СЕРАЯ ОБВОДКА */
+/* ===== СВЕТЛАЯ ТЕМА - ИСПРАВЛЕНО ===== */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
   --bgBot:#cad1de;
   --accent1:#3a8cff;
   --accent2:#1a6cff;
-  --text:#1a2634;
-  --subtext: rgba(0, 0, 0, 0.55);
   
-  /* Светлые панели с блюром */
+  /* 📝 ТЕКСТ - СВЕТЛЕЕ */
+  --text-primary: #2c3e50;      /* Основной текст */
+  --text-secondary: #4a5a6a;     /* Второстепенный текст */
+  
+  /* Панели */
   --sheet-bg: rgba(255, 255, 255, 0.85);
-  --sheet-border: #c0c0c0; /* СЕРАЯ ОБВОДКА */
-  --sheet-text: #1a2634;
+  --sheet-border: rgba(0, 0, 0, 0.1);
+  --sheet-text: var(--text-primary);
   
-  /* Серая обводка для кнопок */
-  --btn-border: #c0c0c0; /* СЕРАЯ ОБВОДКА */
+  /* 🔘 СЕРАЯ ОБВОДКА ДЛЯ КНОПОК */
+  --btn-border: #c0c0c0;
   --btn-border-width: 1.5px;
   --btn-bg: rgba(255, 255, 255, 0.4);
   --btn-blur: blur(12px);
 }
 
 /* ========================= */
-/* ANDROID MODE - КУБИКИ И ЭФФЕКТЫ ИСЧЕЗАЮТ */
+/* ANDROID MODE */
 /* ========================= */
 html.android-mode .cube {
   display: none !important;
@@ -96,6 +98,7 @@ html.android-mode[data-theme="light"] .themePill,
 html.android-mode[data-theme="light"] .platformPill {
   border: var(--btn-border-width) solid var(--btn-border) !important;
   background: rgba(255, 255, 255, 0.8) !important;
+  color: var(--text-primary) !important;
 }
 
 * {
@@ -247,13 +250,13 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - кнопки с СЕРОЙ ОБВОДКОЙ */
+/* Светлая тема - кнопки с СЕРОЙ ОБВОДКОЙ и светлым текстом */
 :root[data-theme="light"] .btn {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
-  color: var(--text);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);  /* Текст светлее */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -295,12 +298,13 @@ body > * {
   background: rgba(255,255,255,0.15) !important;
 }
 
-/* Светлая тема - кнопка инструментов с СЕРОЙ ОБВОДКОЙ */
+/* Светлая тема - кнопка инструментов */
 :root[data-theme="light"] .tools-btn {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
 }
 
 :root[data-theme="light"] .tools-btn.active {
@@ -324,7 +328,7 @@ body > * {
   margin: 12px 0 8px 0;
 }
 
-/* Элементы инструментов - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
+/* Элементы инструментов */
 .tool-item {
   display: flex;
   align-items: center;
@@ -343,12 +347,13 @@ body > * {
   box-shadow: 0 10px 22px rgba(0,0,0,.14);
 }
 
-/* Светлая тема - элементы инструментов с СЕРОЙ ОБВОДКОЙ */
+/* Светлая тема - элементы инструментов */
 :root[data-theme="light"] .tool-item {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -386,7 +391,7 @@ body > * {
 
 /* Светлая тема - стрелка */
 :root[data-theme="light"] .tool-arrow {
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--text-secondary);
 }
 
 .tool-item:hover .tool-arrow {
@@ -404,6 +409,11 @@ body > * {
   font-size: 14px;
 }
 
+/* Светлая тема - тексты */
+:root[data-theme="light"] .sub {
+  color: var(--text-secondary);
+}
+
 .ver {
   margin-top: 10px;
   text-align: center;
@@ -412,8 +422,12 @@ body > * {
   color: var(--subtext);
 }
 
+:root[data-theme="light"] .ver {
+  color: var(--text-secondary);
+}
+
 /* ========================= */
-/* БЛОК ЯЗЫКА - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
+/* БЛОК ЯЗЫКА */
 /* ========================= */
 .langBlock {
   margin-top: 22px;
@@ -431,6 +445,10 @@ body > * {
   color: var(--subtext);
   margin-bottom: 12px;
   text-align: center;
+}
+
+:root[data-theme="light"] .langTitle {
+  color: var(--text-secondary);
 }
 
 .langPill {
@@ -454,13 +472,13 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - кнопка языка с СЕРОЙ ОБВОДКОЙ */
+/* Светлая тема - кнопка языка */
 :root[data-theme="light"] .langPill {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
-  color: var(--text);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -478,7 +496,7 @@ body > * {
 }
 
 /* ========================= */
-/* БЛОК ПЛАТФОРМЫ - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
+/* БЛОК ПЛАТФОРМЫ */
 /* ========================= */
 .platformBlock {
   margin-top: 16px;
@@ -496,6 +514,10 @@ body > * {
   color: var(--subtext);
   margin-bottom: 12px;
   text-align: center;
+}
+
+:root[data-theme="light"] .platformTitle {
+  color: var(--text-secondary);
 }
 
 .platformPill {
@@ -519,13 +541,13 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - кнопка платформы с СЕРОЙ ОБВОДКОЙ */
+/* Светлая тема - кнопка платформы */
 :root[data-theme="light"] .platformPill {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
-  color: var(--text);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -539,7 +561,7 @@ body > * {
 }
 
 /* ========================= */
-/* КНОПКА ТЕМЫ - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
+/* КНОПКА ТЕМЫ */
 /* ========================= */
 .themePill {
   position: fixed;
@@ -570,13 +592,13 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - кнопка темы с СЕРОЙ ОБВОДКОЙ */
+/* Светлая тема - кнопка темы */
 :root[data-theme="light"] .themePill {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
-  color: var(--text);
+  border: var(--btn-border-width) solid var(--btn-border);
+  color: var(--text-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -595,7 +617,7 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
+/* BOTTOM SHEETS */
 /* ========================= */
 .langOverlay, .themeOverlay, .platformOverlay {
   position: fixed;
@@ -710,7 +732,7 @@ body > * {
 }
 
 /* ========================= */
-/* TOAST УВЕДОМЛЕНИЯ - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
+/* TOAST УВЕДОМЛЕНИЯ */
 /* ========================= */
 .toast-notification {
   position: fixed;
