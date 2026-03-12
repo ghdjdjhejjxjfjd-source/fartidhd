@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (один тап для клавиатуры + звезды)
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (блокировка кнопки после ошибки интернета)
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -662,18 +662,11 @@ Response:`;
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
 
-    // БЛОКИРУЕМ КНОПКУ
+    // БЛОКИРУЕМ КНОПКУ СРАЗУ
     sending = true;
     sendBtnEl.disabled = true;
 
-    // ПРОВЕРКА ИНТЕРНЕТА
-    if (!navigator.onLine) {
-      add("bot", "📡 Нет интернет-соединения. Проверьте подключение.", true);
-      sending = false;
-      sendBtnEl.disabled = false;
-      return;
-    }
-
+    // Добавляем сообщение пользователя
     add("user", t, true);
     inputEl.value = "";
     if (inputEl.tagName === 'TEXTAREA') inputEl.style.height = 'auto';
@@ -703,9 +696,11 @@ Response:`;
         if (!navigator.onLine || e.message === "no_internet") {
           removeTyping();
           add("bot", "📡 Интернет пропал. Проверьте подключение.", true);
-          sending = false;
-          sendBtnEl.disabled = false;
-          return;
+          
+          // ⚠️ ВАЖНО: НЕ разблокируем кнопку!
+          // sending остается true, кнопка disabled
+          
+          return; // Выходим, не разблокируя кнопку
         }
         
         if (attempt < MAX_RETRIES) {
@@ -718,25 +713,35 @@ Response:`;
     removeTyping();
     
     if (!success) {
-      // ✅ ПРАВИЛЬНАЯ ОБРАБОТКА ОШИБОК
       const errorMessage = lastError?.message || "";
       const errorStatus = lastError?.status || "";
       
-      // Проверяем разные варианты ошибки недостатка звезд
       if (errorMessage.includes("insufficient_stars") || 
           errorMessage.includes("402") || 
           errorMessage.includes("Insufficient stars") ||
           errorStatus === 402) {
         add("bot", "❌ Недостаточно звезд. Купите в меню: ⭐ Купить звезды", true);
+        
+        // Разблокируем кнопку только при ошибке звезд
+        sending = false;
+        sendBtnEl.disabled = false;
       } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
         add("bot", "📡 Проблема с сетью. Проверьте интернет.", true);
+        
+        // ⚠️ При сетевой ошибке НЕ разблокируем кнопку
+        // sending остается true, кнопка disabled
       } else {
         add("bot", "❌ Ошибка сервера. Попробуйте позже.", true);
+        
+        // Разблокируем при других ошибках
+        sending = false;
+        sendBtnEl.disabled = false;
       }
+    } else {
+      // Успешно отправили - разблокируем
+      sending = false;
+      sendBtnEl.disabled = false;
     }
-
-    sending = false;
-    sendBtnEl.disabled = false;
   }
 
   async function updateMenuBalance() {
@@ -813,12 +818,15 @@ Response:`;
   function setupNetworkListeners() {
     window.addEventListener('online', () => {
       add("bot", "📡 Интернет соединение восстановлено!", true);
+      // При восстановлении интернета разблокируем кнопку, если не идет отправка
+      if (!sending) {
+        sendBtnEl.disabled = false;
+      }
     });
     
     window.addEventListener('offline', () => {
-      if (sendBtnEl) {
-        sendBtnEl.disabled = true;
-      }
+      // При пропадании интернета блокируем кнопку
+      sendBtnEl.disabled = true;
     });
   }
 
@@ -835,15 +843,14 @@ Response:`;
       }
     });
 
-    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ ТАП (ЗУМ) НО РАЗРЕШАЕМ ОДИН ТАП ДЛЯ ЗАКРЫТИЯ КЛАВИАТУРЫ
+    // Запрещаем мультитач
     chatEl.addEventListener("touchstart", (e) => {
-      // Запрещаем только мультитач (2+ пальца)
       if (e.touches.length > 1) {
         e.preventDefault();
       }
     }, { passive: false });
 
-    // ✅ ЗАПРЕЩАЕМ ЖЕСТЫ МАСШТАБИРОВАНИЯ
+    // Запрещаем жесты масштабирования
     document.addEventListener('gesturestart', (e) => {
       e.preventDefault();
     }, { passive: false });
@@ -856,25 +863,22 @@ Response:`;
       e.preventDefault();
     }, { passive: false });
 
-    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ ТАП НО РАЗРЕШАЕМ ОДИН
+    // Запрещаем двойной тап
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
-      // Запрещаем только если это двойной тап (быстро 2 касания)
       if (now - lastTouchEnd <= 300 && e.touches.length === 0) {
         e.preventDefault();
       }
       lastTouchEnd = now;
     }, { passive: false });
 
-    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ КЛИК МЫШЬЮ
     document.addEventListener('dblclick', (e) => {
       e.preventDefault();
     }, { passive: false });
 
-    // ✅ ОДИН ТАП ДЛЯ ЗАКРЫТИЯ КЛАВИАТУРЫ (как раньше)
+    // Один тап для закрытия клавиатуры
     chatEl.addEventListener("pointerdown", () => {
-      // Закрываем клавиатуру при тапе на чат
       if (document.activeElement === inputEl) {
         inputEl.blur();
       }
