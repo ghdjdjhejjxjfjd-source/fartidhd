@@ -9,8 +9,8 @@ from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
 
-# Импортируем handle_message из bot/handlers.py (на уровень выше)
-from bot.handlers import handle_message
+# Импортируем handle_message из переименованного файла
+from bot.old_handlers import handle_message
 
 __all__ = [
     'start',
