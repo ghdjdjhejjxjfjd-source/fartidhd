@@ -12,7 +12,7 @@ from bot.utils import edit_to_menu, send_fresh_menu, set_last_menu, update_user_
 from bot.settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from bot.chat import inline_chat_start
 from bot.image import inline_image_start
-
+from .state import navigation_stack  # ← импорт из state.py
 from .navigation import back_to_previous, back_to_menu, ignore
 from .tabs.profile import show_profile
 from .tabs.help import show_help
@@ -20,9 +20,6 @@ from .tabs.status import show_status
 from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
-
-# Храним предыдущую вкладку для навигации
-navigation_stack = {}
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
