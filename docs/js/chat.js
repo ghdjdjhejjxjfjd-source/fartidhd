@@ -517,10 +517,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       closeSettings();
       
       if (modeChanged) {
-        add("bot", "✅ Режим ИИ изменен", true);
+        // Просто логируем в консоль, не добавляем в чат
+        console.log("✅ Режим ИИ изменен");
       }
     } else {
-      add("bot", `❌ ${errorMessage}`, true);
+      alert(`❌ ${errorMessage}`);
     }
   }
 
