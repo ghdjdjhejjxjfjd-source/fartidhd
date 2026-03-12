@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (звезды + зум)
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (один тап для клавиатуры + звезды)
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -720,8 +720,13 @@ Response:`;
     if (!success) {
       // ✅ ПРАВИЛЬНАЯ ОБРАБОТКА ОШИБОК
       const errorMessage = lastError?.message || "";
+      const errorStatus = lastError?.status || "";
       
-      if (errorMessage.includes("insufficient_stars") || errorMessage.includes("402")) {
+      // Проверяем разные варианты ошибки недостатка звезд
+      if (errorMessage.includes("insufficient_stars") || 
+          errorMessage.includes("402") || 
+          errorMessage.includes("Insufficient stars") ||
+          errorStatus === 402) {
         add("bot", "❌ Недостаточно звезд. Купите в меню: ⭐ Купить звезды", true);
       } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
         add("bot", "📡 Проблема с сетью. Проверьте интернет.", true);
@@ -830,8 +835,9 @@ Response:`;
       }
     });
 
-    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ ТАП (ЗУМ)
+    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ ТАП (ЗУМ) НО РАЗРЕШАЕМ ОДИН ТАП ДЛЯ ЗАКРЫТИЯ КЛАВИАТУРЫ
     chatEl.addEventListener("touchstart", (e) => {
+      // Запрещаем только мультитач (2+ пальца)
       if (e.touches.length > 1) {
         e.preventDefault();
       }
@@ -850,20 +856,29 @@ Response:`;
       e.preventDefault();
     }, { passive: false });
 
-    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ ТАП НА ВСЕЙ СТРАНИЦЕ
+    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ ТАП НО РАЗРЕШАЕМ ОДИН
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
-      if (now - lastTouchEnd <= 300) {
+      // Запрещаем только если это двойной тап (быстро 2 касания)
+      if (now - lastTouchEnd <= 300 && e.touches.length === 0) {
         e.preventDefault();
       }
       lastTouchEnd = now;
     }, { passive: false });
 
-    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ КЛИК
+    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ КЛИК МЫШЬЮ
     document.addEventListener('dblclick', (e) => {
       e.preventDefault();
     }, { passive: false });
+
+    // ✅ ОДИН ТАП ДЛЯ ЗАКРЫТИЯ КЛАВИАТУРЫ (как раньше)
+    chatEl.addEventListener("pointerdown", () => {
+      // Закрываем клавиатуру при тапе на чат
+      if (document.activeElement === inputEl) {
+        inputEl.blur();
+      }
+    });
 
     const gearBtn = document.getElementById('gearBtn');
     if (gearBtn) gearBtn.addEventListener('click', openSettings);
