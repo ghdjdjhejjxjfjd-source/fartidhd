@@ -3,12 +3,16 @@
   padding:16px;
   padding-top: calc(64px + env(safe-area-inset-top));
   overflow-y:auto;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch; /* Оставляем плавный скролл */
+  overflow-scrolling: touch;
   display:flex;
   flex-direction:column;
   gap:10px;
   min-height:0;
   touch-action: manipulation;
+  /* Оптимизация для Android */
+  will-change: scroll-position;
+  transform: translateZ(0);
 }
 
 /* ============================= */
@@ -20,6 +24,9 @@
   width: 100%;
   margin: 0;
   padding: 0;
+  /* Аппаратное ускорение для Android */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .msg-wrapper.bot {
@@ -35,20 +42,23 @@
   padding:12px 16px;
   border-radius:18px;
   line-height:1.55;
-  font-size:18px; /* Увеличил с 17px до 18px */
-  font-weight:500; /* Оставил среднюю жирность */
+  font-size:18px;
+  font-weight:500;
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Уменьшил тень для производительности */
   opacity: 0;
-  transform: translateY(4px);
+  transform: translateY(4px) translateZ(0);
   animation: msgIn 0.24s ease-out forwards;
   will-change: transform, opacity;
   width: fit-content;
   margin: 0;
   display: inline-block;
+  /* Аппаратное ускорение */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .msg.bot{ animation-duration: 0.26s; }
@@ -57,37 +67,70 @@
 @keyframes msgIn{
   to{
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
   }
 }
 
-/* bot bubble - ЯРЧЕ И ЧИТАБЕЛЬНЕЕ */
+/* bot bubble */
 .bot .msg{
   align-self:flex-start;
   background: rgba(66, 78, 92, 0.94);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color:#ffffff; /* Чисто белый (было f7fbff) */
+  color:#ffffff;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
   border-top-left-radius:8px;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3); /* Тень для контраста */
-  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
-/* user bubble - ЯРЧЕ И ЧИТАБЕЛЬНЕЕ */
+/* user bubble */
 .user .msg{
   align-self:flex-end;
   background: var(--user-bg);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color:#ffffff; /* Чисто белый (было f7fbff) */
+  color:#ffffff;
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
   text-align:left;
   border-bottom-right-radius:8px;
   width: fit-content;
   display: inline-block;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3); /* Тень для контраста */
-  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ============================= */
+/* ANDROID СПЕЦИФИЧЕСКИЕ СТИЛИ */
+/* ============================= */
+html.android-mode .chat {
+  -webkit-overflow-scrolling: auto; /* На Android auto работает лучше */
+  overflow-scrolling: auto;
+  scroll-behavior: smooth;
+}
+
+html.android-mode .msg {
+  /* Убираем размытие на Android для производительности */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15); /* Простая тень */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Аппаратное ускорение */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+html.android-mode .bot .msg {
+  background: #2a3644; /* Сплошной цвет вместо размытия */
+}
+
+html.android-mode .user .msg {
+  background: rgba(90, 174, 255, 0.35); /* Чуть плотнее */
+}
+
+/* Убираем все анимации для плавности на Android */
+html.android-mode .msg {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 /* ============================= */
@@ -161,6 +204,13 @@
   min-height: 60px;
 }
 
+/* Android - убираем размытие */
+html.android-mode .input {
+  background: #1a2634;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 .input textarea {
   flex: 1;
   padding: 11px 15px;
@@ -171,7 +221,7 @@
   font-weight: 400;
   color: #f7fbff;
   background: #25303c;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   caret-color: var(--accent2);
   resize: none;
   max-height: 120px;
@@ -179,6 +229,8 @@
   line-height: 1.45;
   font-family: inherit;
   overflow-y: auto;
+  /* Аппаратное ускорение */
+  transform: translateZ(0);
 }
 
 .input textarea::placeholder{
@@ -190,6 +242,12 @@
   border-color: rgba(255, 255, 255, 0.15);
 }
 
+/* Android - textarea */
+html.android-mode .input textarea {
+  background: #2a3644;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
 .input button{
   padding:0 16px;
   border-radius:16px;
@@ -198,7 +256,7 @@
   font-weight:800;
   background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
   color:#fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   height: 42px;
   align-self: flex-end;
   cursor: pointer;
@@ -219,7 +277,7 @@
 }
 
 /* ============================= */
-/* ВЕРХНЯЯ ПАНЕЛЬ - УБРАНА СИНЯЯ ОБВОДКА */
+/* ВЕРХНЯЯ ПАНЕЛЬ */
 /* ============================= */
 .top{
   position: fixed;
@@ -235,6 +293,16 @@
   -webkit-backdrop-filter: none;
   border-bottom: none;
   flex:0 0 auto;
+}
+
+/* Android - верхняя панель */
+html.android-mode .top a,
+html.android-mode .title,
+html.android-mode .gear {
+  background: #1a2634 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .top a{
@@ -293,12 +361,19 @@
   border-top-left-radius: 8px;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   opacity: 1;
   animation: none;
+}
+
+/* Android - typing bubble */
+html.android-mode .msg.bot.typing {
+  background: #2a3644;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .typing-dots{
@@ -348,7 +423,6 @@
   --user-border: rgba(58, 140, 255, 0.20);
   --text: #1a2634;
   
-  /* Полупрозрачные кнопки и панели с размытием */
   --btn-bg: rgba(255, 255, 255, 0.4);
   --btn-border: rgba(0, 0, 0, 0.08);
   --panel-bg: rgba(255, 255, 255, 0.25);
@@ -421,8 +495,31 @@
   background: var(--text);
 }
 
+/* Светлая тема для Android */
+html.android-mode[data-theme="light"] .bot .msg {
+  background: #e8ecf3;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1a2634;
+  backdrop-filter: none;
+}
+
+html.android-mode[data-theme="light"] .user .msg {
+  background: rgba(58, 140, 255, 0.15);
+  color: #1a2634;
+}
+
+html.android-mode[data-theme="light"] .input {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+html.android-mode[data-theme="light"] .input textarea {
+  background: white;
+  color: #1a2634;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 /* ============================= */
-/* ПАНЕЛЬ НАСТРОЕК - ДЛЯ СИНЕЙ ТЕМЫ */
+/* ПАНЕЛЬ НАСТРОЕК */
 /* ============================= */
 .overlay{
   position:fixed;
@@ -443,64 +540,26 @@
   box-shadow: 0 20px 44px rgba(0,0,0,.32);
 }
 
-/* Синяя тема - панель настроек синяя */
+/* Android - панель настроек без размытия */
+html.android-mode .sheet {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: #1a2634;
+}
+
+/* Синяя тема - панель настроек */
 :root[data-theme="blue"] .sheet {
   background: rgba(39, 56, 75, 0.95);
   border: 1px solid rgba(90, 174, 255, 0.2);
 }
 
-:root[data-theme="blue"] .sheet h3,
-:root[data-theme="blue"] .sheet div,
-:root[data-theme="blue"] .settings-row,
-:root[data-theme="blue"] .row,
-:root[data-theme="blue"] .limit-hint {
-  color: #f7fbff;
-}
-
-:root[data-theme="blue"] .settings-row select {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(90, 174, 255, 0.3);
-  color: #f7fbff;
-}
-
-:root[data-theme="blue"] .settings-row select option {
-  background: rgba(39, 56, 75, 0.95);
-  color: #f7fbff;
-}
-
-:root[data-theme="blue"] .button-row button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(90, 174, 255, 0.3);
-  color: #f7fbff;
-}
-
-:root[data-theme="blue"] .button-row button.primary {
-  background: var(--accent1);
-  border-color: var(--accent2);
-  color: white;
-}
-
-:root[data-theme="blue"] .pill {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(90, 174, 255, 0.3);
-  color: #f7fbff;
-}
-
-/* Черная тема - панель настроек черная */
+/* Черная тема - панель настроек */
 :root[data-theme="black"] .sheet {
   background: rgba(24, 31, 40, .97);
   border: 1px solid rgba(255, 255, 255, .10);
 }
 
-:root[data-theme="black"] .sheet h3,
-:root[data-theme="black"] .sheet div,
-:root[data-theme="black"] .settings-row,
-:root[data-theme="black"] .row,
-:root[data-theme="black"] .limit-hint {
-  color: #f7fbff;
-}
-
-/* Светлая тема - панель настроек светлая */
+/* Светлая тема - панель настроек */
 :root[data-theme="light"] .sheet {
   background: var(--panel-bg);
   backdrop-filter: var(--blur-amount);
@@ -508,14 +567,7 @@
   border: 1px solid var(--btn-border);
 }
 
-:root[data-theme="light"] .sheet h3,
-:root[data-theme="light"] .sheet div,
-:root[data-theme="light"] .settings-row,
-:root[data-theme="light"] .row,
-:root[data-theme="light"] .limit-hint {
-  color: var(--text);
-}
-
+/* Остальные стили без изменений */
 .sheet h3{
   margin:0 0 10px 0;
   font-size:16px;
