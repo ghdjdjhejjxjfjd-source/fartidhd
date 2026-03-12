@@ -1,5 +1,6 @@
 from .start import start
-from .router import on_button, open_tab, navigation_stack
+from .router import on_button, open_tab
+from .state import navigation_stack  # ← добавить
 from .navigation import back_to_previous, back_to_menu, ignore
 
 from .tabs.profile import show_profile
@@ -13,7 +14,7 @@ __all__ = [
     'start',
     'on_button',
     'open_tab',
-    'navigation_stack',
+    'navigation_stack',  # ← добавить
     'back_to_previous',
     'back_to_menu',
     'ignore',
