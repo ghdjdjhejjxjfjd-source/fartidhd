@@ -2,7 +2,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-from api import get_access, get_user_persona, get_user_lang, get_user_style, get_ai_mode, increment_messages, add_stars_spent
+from api import get_access, get_user_persona, get_user_lang, get_user_ai_lang, get_user_style, get_ai_mode, increment_messages, add_stars_spent
 from payments import get_balance, spend_stars
 from groq_client import ask_groq
 from openai_client import ask_openai
@@ -36,11 +36,18 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     mode_names = {"fast": "🚀 Быстрый (Groq)", "quality": "💎 Качественный (OpenAI)"}
     style_names = {"short": "📏 Коротко", "steps": "📋 По шагам", "detail": "📚 Подробно"}
+    lang_names = {
+        "ru": "🇷🇺 Русский", "en": "🇬🇧 English", "kk": "🇰🇿 Қазақша",
+        "tr": "🇹🇷 Türkçe", "uk": "🇺🇦 Українська", "fr": "🇫🇷 Français"
+    }
+    
     current_style = get_user_style(uid)
+    current_ai_lang = get_user_ai_lang(uid)
     
     await query.message.reply_text(
         f"💬 Напиши сообщение для ИИ.\n"
         f"Режим: {mode_names.get(ai_mode, 'Быстрый')}\n"
+        f"Язык ответов: {lang_names.get(current_ai_lang, 'Русский')}\n"
         f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
         f"Стоимость: {cost}⭐ за сообщение\n\n"
         f"Отправь текст, и я отвечу.\n"
@@ -53,7 +60,8 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     global last_bot_message
     
     a = get_access(uid)
-    lang = get_user_lang(uid)
+    interface_lang = get_user_lang(uid)  # язык интерфейса
+    ai_lang = get_user_ai_lang(uid)      # язык ответов ИИ
     persona = get_user_persona(uid)
     style = get_user_style(uid)
     ai_mode = get_ai_mode(uid)
@@ -76,18 +84,18 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     try:
         # Выбираем AI в зависимости от режима
         if ai_mode == "fast":
-            # Groq - можно использовать характер и стиль
+            # Groq - используем язык ИИ, характер и стиль
             reply = ask_groq(
                 user_text=text,
-                lang=lang,
+                lang=ai_lang,  # язык ответов ИИ
                 persona=persona,
                 style=style
             )
         else:
-            # OpenAI - характер не используется, стиль используется
+            # OpenAI - используем язык ИИ и стиль (характер не используется)
             reply = ask_openai(
                 user_text=text,
-                lang=lang,
+                lang=ai_lang,  # язык ответов ИИ
                 style=style
             )
         
