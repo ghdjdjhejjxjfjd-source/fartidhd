@@ -1,8 +1,8 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ РАБОЧАЯ ВЕРСИЯ
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
-const API_BASE = "https://fayrat-production.up.railway.app";  // ← ДОБАВЛЕНО!
+const API_BASE = "https://fayrat-production.up.railway.app";
 
 export const STORAGE_KEY = "chat_history_v1";
 const MAX_RETRIES = 3;
@@ -66,19 +66,19 @@ async function waitForInternet(retries = MAX_RETRIES) {
   return false;
 }
 
-function showLoading(message = "Сохранение...") {
-  const overlay = document.getElementById('loadingOverlay');
-  const text = document.getElementById('loadingText');
-  if (overlay) {
-    if (text) text.textContent = message;
-    overlay.style.display = 'flex';
-  }
-}
-
-function hideLoading() {
-  const overlay = document.getElementById('loadingOverlay');
-  if (overlay) {
-    overlay.style.display = 'none';
+// Функция для показа загрузки на кнопке
+function setButtonLoading(button, isLoading) {
+  if (!button) return;
+  
+  if (isLoading) {
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-small"></span>';
+    // Добавляем класс чтобы запретить закрытие по клику вне
+    document.body.classList.add('saving');
+  } else {
+    button.disabled = false;
+    button.innerHTML = window.t?.save || "💾 Сохранить";
+    document.body.classList.remove('saving');
   }
 }
 
@@ -461,7 +461,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
-    showLoading("Сохранение...");
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    setButtonLoading(saveBtn, true);
     
     let success = true;
     let errorMsg = "";
@@ -497,7 +498,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
-    hideLoading();
+    setButtonLoading(saveBtn, false);
     
     if (success) {
       tempStyle = null;
@@ -515,6 +516,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   }
 
   function cancelSettings() {
+    // Не даем закрыть если идет сохранение
+    if (document.body.classList.contains('saving')) return;
+    
     const personaSelect = document.getElementById('personaSel');
     const styleSelect = document.getElementById('styleSel');
     const aiModeSelect = document.getElementById('aiModeSel');
@@ -838,6 +842,7 @@ Response:`;
     if (overlay) {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
+          if (document.body.classList.contains('saving')) return; // Не закрываем при сохранении
           if (hasUnsavedChanges) {
             if (confirm('У вас есть несохраненные изменения. Закрыть без сохранения?')) {
               cancelSettings();
