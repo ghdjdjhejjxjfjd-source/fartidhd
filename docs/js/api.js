@@ -4,10 +4,11 @@ const API_BASE = "https://fayrat-production.up.railway.app";
 const API_CHAT = API_BASE + "/api/chat";
 const API_CLEAR_MEMORY = API_BASE + "/api/memory/clear";
 const API_BALANCE = API_BASE + "/api/stars/balance";
-const API_LIMITS = API_BASE + "/api/user/limits";  // ✅ новый эндпоинт
-const API_STYLE_CHANGE = API_BASE + "/api/user/style/change";  // ✅ новый эндпоинт
-const API_PERSONA = API_BASE + "/api/user/persona";  // ✅ для смены характера
-const API_AI_MODE = API_BASE + "/api/user/ai_mode";  // ✅ для получения режима
+const API_LIMITS = API_BASE + "/api/user/limits";
+const API_STYLE_CHANGE = API_BASE + "/api/user/style/change";
+const API_PERSONA = API_BASE + "/api/user/persona";
+const API_AI_MODE = API_BASE + "/api/user/ai_mode";
+const API_AI_MODE_CHANGE = API_BASE + "/api/user/ai_mode";  // POST для смены режима
 
 function getLang(){
   return localStorage.getItem("miniapp_lang_v1") || "ru";
@@ -19,6 +20,10 @@ function getStyle(){
 
 function getPersona(){
   return localStorage.getItem("ai_persona") || "friendly";
+}
+
+function getAiMode() {
+  return localStorage.getItem("ai_mode") || "fast";
 }
 
 function getTelegramUser(){
@@ -35,12 +40,14 @@ function getTelegramUser(){
 
 export async function askAI(promptText) {
   const user = getTelegramUser();
+  const aiMode = getAiMode();
 
   const payload = {
     text: promptText,
     lang: getLang(),
     style: getStyle(),
     persona: getPersona(),
+    ai_mode: aiMode,  // Добавляем режим ИИ в запрос
     tg_user_id: user.tg_user_id,
     tg_username: user.tg_username,
     tg_first_name: user.tg_first_name,
@@ -101,7 +108,7 @@ export async function getStarsBalance() {
 }
 
 // =========================
-// НОВЫЕ ФУНКЦИИ ДЛЯ ЛИМИТОВ
+// ФУНКЦИИ ДЛЯ ЛИМИТОВ
 // =========================
 
 export async function getUserLimits() {
@@ -188,6 +195,52 @@ export async function changePersona(newPersona) {
   }
 }
 
+// =========================
+// НОВАЯ ФУНКЦИЯ ДЛЯ СМЕНЫ РЕЖИМА ИИ
+// =========================
+
+export async function changeAiMode(newMode) {
+  const user = getTelegramUser();
+  if (!user.tg_user_id) return { success: false, error: "no_user" };
+  
+  // Проверяем что режим валидный
+  if (newMode !== "fast" && newMode !== "quality") {
+    return { success: false, error: "invalid_mode", message: "Неверный режим" };
+  }
+  
+  try {
+    const r = await fetch(API_AI_MODE_CHANGE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: user.tg_user_id,
+        ai_mode: newMode
+      }),
+    });
+    
+    const data = await r.json();
+    
+    if (!r.ok) {
+      if (data.error === "limit_exceeded") {
+        return { success: false, error: "limit_exceeded", message: data.message };
+      }
+      if (data.error === "no_changes_left") {
+        return { success: false, error: "no_changes_left", message: "Лимит смен режима на сегодня исчерпан" };
+      }
+      return { success: false, error: "unknown", message: data.error || "Ошибка при смене режима" };
+    }
+    
+    // Если успешно, сохраняем в localStorage
+    localStorage.setItem("ai_mode", newMode);
+    
+    return { success: true, data };
+    
+  } catch (e) {
+    console.error("Change AI mode error:", e);
+    return { success: false, error: "network", message: e.message };
+  }
+}
+
 export async function getCurrentMode() {
   const user = getTelegramUser();
   if (!user.tg_user_id) return null;
@@ -196,6 +249,10 @@ export async function getCurrentMode() {
     const r = await fetch(`${API_AI_MODE}/${user.tg_user_id}`);
     if (r.ok) {
       const data = await r.json();
+      // Сохраняем в localStorage
+      if (data.ai_mode) {
+        localStorage.setItem("ai_mode", data.ai_mode);
+      }
       return data.ai_mode;
     }
   } catch (e) {
