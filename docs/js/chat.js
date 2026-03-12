@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// docs/js/chat.js - ИСПРАВЛЕННАЯ РАБОЧАЯ ВЕРСИЯ
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -64,7 +64,6 @@ async function waitForInternet(retries = MAX_RETRIES) {
   return false;
 }
 
-// Функция для показа индикатора загрузки
 function showLoading(message = "Сохранение...") {
   const overlay = document.getElementById('loadingOverlay');
   const text = document.getElementById('loadingText');
@@ -399,7 +398,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   function updateSaveButton() {
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (!saveBtn) return;
-    
     saveBtn.disabled = !hasUnsavedChanges;
   }
 
@@ -420,7 +418,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
     
     hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null) || (tempAiMode !== null);
-    
     updateSaveButton();
     updateUnsavedIndicator();
   }
@@ -441,7 +438,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
     
     hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null) || (tempAiMode !== null);
-    
     updateSaveButton();
     updateUnsavedIndicator();
   }
@@ -456,7 +452,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
     
     hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null) || (tempAiMode !== null);
-    
     updateSaveButton();
     updateUnsavedIndicator();
   }
@@ -467,32 +462,36 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     showLoading("Сохранение...");
     
     let success = true;
+    let errorMsg = "";
     
     if (tempAiMode) {
       const result = await changeAiMode(tempAiMode);
-      if (result.success) {
+      if (result && result.success) {
         localStorage.setItem("ai_mode", tempAiMode);
         currentAiMode = tempAiMode;
       } else {
         success = false;
+        errorMsg = result?.message || "Ошибка смены режима";
       }
     }
     
     if (tempStyle && success) {
       const result = await changeStyle(tempStyle);
-      if (result.success) {
+      if (result && result.success) {
         localStorage.setItem("ai_style", tempStyle);
       } else {
         success = false;
+        errorMsg = result?.message || "Ошибка смены стиля";
       }
     }
     
     if (tempPersona && currentAiMode === 'fast' && success) {
       const result = await changePersona(tempPersona);
-      if (result.success) {
+      if (result && result.success) {
         localStorage.setItem("ai_persona", tempPersona);
       } else {
         success = false;
+        errorMsg = result?.message || "Ошибка смены характера";
       }
     }
     
@@ -509,7 +508,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       updateUnsavedIndicator();
       closeSettings();
     } else {
-      alert("❌ Ошибка при сохранении");
+      alert(`❌ ${errorMsg}`);
     }
   }
 
@@ -518,15 +517,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const styleSelect = document.getElementById('styleSel');
     const aiModeSelect = document.getElementById('aiModeSel');
     
-    if (personaSelect) {
-      personaSelect.value = getPersona();
-    }
-    if (styleSelect) {
-      styleSelect.value = getStyle();
-    }
-    if (aiModeSelect) {
-      aiModeSelect.value = getAiModeFromStorage();
-    }
+    if (personaSelect) personaSelect.value = getPersona();
+    if (styleSelect) styleSelect.value = getStyle();
+    if (aiModeSelect) aiModeSelect.value = getAiModeFromStorage();
     
     tempStyle = null;
     tempPersona = null;
@@ -535,7 +528,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     
     updateSaveButton();
     updateUnsavedIndicator();
-    
     closeSettings();
   }
 
@@ -556,15 +548,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       const styleSelect = document.getElementById('styleSel');
       const aiModeSelect = document.getElementById('aiModeSel');
       
-      if (personaSelect) {
-        personaSelect.value = getPersona();
-      }
-      if (styleSelect) {
-        styleSelect.value = getStyle();
-      }
-      if (aiModeSelect) {
-        aiModeSelect.value = getAiModeFromStorage();
-      }
+      if (personaSelect) personaSelect.value = getPersona();
+      if (styleSelect) styleSelect.value = getStyle();
+      if (aiModeSelect) aiModeSelect.value = getAiModeFromStorage();
       
       tempStyle = null;
       tempPersona = null;
@@ -585,7 +571,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const lang = getLang();
     const persona = tempPersona || getPersona();
     const style = tempStyle || getStyle();
-    const aiMode = tempAiMode || getAiModeFromStorage();
     
     const maxHistory = 20;
     const recentHistory = history.slice(-maxHistory);
@@ -602,12 +587,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }
 
     const langNames = {
-      "ru": "Russian",
-      "kk": "Kazakh",
-      "en": "English",
-      "tr": "Turkish",
-      "uk": "Ukrainian",
-      "fr": "French"
+      "ru": "Russian", "kk": "Kazakh", "en": "English",
+      "tr": "Turkish", "uk": "Ukrainian", "fr": "French"
     };
     const targetLang = langNames[lang] || "Russian";
 
@@ -618,10 +599,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     }[style] || "Answer naturally.";
 
     const personaDesc = {
-      "friendly": "You are FRIENDLY and WARM. Use smileys 🙂 in EVERY message. Ask how they are doing.",
-      "fun": "You are FUN and HUMOROUS. Use lots of emojis 😄 😂 in EVERY message. Make jokes and be playful.",
-      "strict": "You are STRICT and SERIOUS. NEVER use emojis. Be short and direct. Only facts.",
-      "smart": "You are SMART and THOUGHTFUL. Use smart emojis 🧐 🤔 in EVERY message. Give detailed explanations."
+      "friendly": "You are FRIENDLY and WARM. Use smileys 🙂 in EVERY message.",
+      "fun": "You are FUN and HUMOROUS. Use lots of emojis 😄 😂 in EVERY message.",
+      "strict": "You are STRICT and SERIOUS. NEVER use emojis. Be short and direct.",
+      "smart": "You are SMART and THOUGHTFUL. Use smart emojis 🧐 🤔 in EVERY message."
     }[persona] || "You are friendly and warm.";
 
     return `${conversationHistory}
@@ -650,10 +631,7 @@ Response:`;
 
     add("user", t, true);
     inputEl.value = "";
-    
-    if (inputEl.tagName === 'TEXTAREA') {
-      inputEl.style.height = 'auto';
-    }
+    if (inputEl.tagName === 'TEXTAREA') inputEl.style.height = 'auto';
     
     addTyping();
 
@@ -663,9 +641,7 @@ Response:`;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         const hasInternet = await waitForInternet(1);
-        if (!hasInternet) {
-          throw new Error("no_internet");
-        }
+        if (!hasInternet) throw new Error("no_internet");
 
         const answer = await askAI(t);
         
@@ -723,23 +699,19 @@ Response:`;
     if (!currentUserId) return;
     
     try {
-      const API_BASE = "https://fayrat-production.up.railway.app";
       const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
-      
       if (!res.ok) return;
       
       const data = await res.json();
-      const isOpenAI = data.ai_mode === "quality";
       currentAiMode = data.ai_mode;
       
       const personaSelect = document.getElementById('personaSel');
-      
       if (!personaSelect) return;
       
       const oldLock = document.getElementById('persona-lock-icon');
       if (oldLock) oldLock.remove();
       
-      if (isOpenAI) {
+      if (data.ai_mode === "quality") {
         personaSelect.disabled = true;
         personaSelect.style.opacity = '0.6';
         
@@ -754,9 +726,7 @@ Response:`;
         personaSelect.style.opacity = '1';
       }
       
-      if (settingsOpen) {
-        await fetchLimits();
-      }
+      if (settingsOpen) await fetchLimits();
       
     } catch (err) {
       console.log("Persona lock update error:", err);
@@ -767,9 +737,7 @@ Response:`;
     if (!currentUserId || isReloading) return;
     
     try {
-      const API_BASE = "https://fayrat-production.up.railway.app";
       const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
-      
       if (!res.ok) return;
       
       const data = await res.json();
@@ -781,18 +749,13 @@ Response:`;
           return;
         }
         
-        if (reloadTimer) {
-          clearTimeout(reloadTimer);
-        }
+        if (reloadTimer) clearTimeout(reloadTimer);
         
         isReloading = true;
-        
         localStorage.removeItem(STORAGE_KEY);
         localStorage.setItem("current_ai_mode", data.ai_mode);
         
-        try {
-          await clearAIMemory();
-        } catch (e) {}
+        try { await clearAIMemory(); } catch (e) {}
         
         add("bot", "🔄 Режим изменен. Страница обновится...", true);
         
@@ -813,7 +776,6 @@ Response:`;
 
   function bindUI(){
     sendBtnEl.addEventListener("click", send);
-    
     if (inputEl.tagName === 'TEXTAREA') {
       inputEl.addEventListener('input', autoResizeTextarea);
     }
@@ -830,24 +792,16 @@ Response:`;
     });
     
     const gearBtn = document.getElementById('gearBtn');
-    if (gearBtn) {
-      gearBtn.addEventListener('click', openSettings);
-    }
+    if (gearBtn) gearBtn.addEventListener('click', openSettings);
     
     const saveBtn = document.getElementById('saveSettingsBtn');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', saveSettings);
-    }
+    if (saveBtn) saveBtn.addEventListener('click', saveSettings);
     
     const cancelBtn = document.getElementById('cancelSettingsBtn');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', cancelSettings);
-    }
+    if (cancelBtn) cancelBtn.addEventListener('click', cancelSettings);
     
     const closeBtn = document.getElementById('closeSettings');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', cancelSettings);
-    }
+    if (closeBtn) closeBtn.addEventListener('click', cancelSettings);
     
     const personaSelect = document.getElementById('personaSel');
     if (personaSelect) {
@@ -874,9 +828,7 @@ Response:`;
     if (clearBtn) {
       clearBtn.addEventListener('click', async () => {
         const success = await clearHistory(false);
-        if (success) {
-          closeSettings();
-        }
+        if (success) closeSettings();
       });
     }
     
@@ -907,9 +859,7 @@ Response:`;
     setInterval(checkModeChange, 3000);
     
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && !isReloading) {
-        checkModeChange();
-      }
+      if (!document.hidden && !isReloading) checkModeChange();
     });
     
     renderFromHistory();
