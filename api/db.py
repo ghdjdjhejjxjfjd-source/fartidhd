@@ -552,6 +552,45 @@ async def get_ai_mode_changes(user_id: int) -> int:
     return max(0, remaining)
 
 # =========================
+# НОВАЯ СИНХРОННАЯ ФУНКЦИЯ ДЛЯ ЛИМИТОВ РЕЖИМА ИИ
+# =========================
+def get_ai_mode_changes_sync(user_id: int) -> int:
+    """Синхронная версия get_ai_mode_changes - возвращает сколько осталось смен"""
+    with db_connection() as conn:
+        cur = conn.cursor()
+        
+        cur.execute(
+            "SELECT ai_mode_changes, last_ai_mode_change FROM access WHERE user_id = ?",
+            (user_id,)
+        )
+        row = cur.fetchone()
+    
+    if not row:
+        return 8
+    
+    changes = row[0] or 0
+    last_change = row[1]
+    
+    if last_change:
+        try:
+            last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
+            now = datetime.now()
+            delta = now - last_date
+            if delta.days >= 1:
+                with db_connection() as conn:
+                    cur = conn.cursor()
+                    cur.execute(
+                        "UPDATE access SET ai_mode_changes = 0 WHERE user_id = ?",
+                        (user_id,)
+                    )
+                return 8
+        except:
+            pass
+    
+    remaining = 8 - changes
+    return max(0, remaining)
+
+# =========================
 # ФУНКЦИИ ДЛЯ ЛИМИТОВ
 # =========================
 def check_and_reset_limits(user_id: int) -> None:
