@@ -114,16 +114,45 @@ export async function getUserLimits() {
     const r = await fetch(`${API_LIMITS}/${user.tg_user_id}`);
     if (r.ok) {
       const data = await r.json();
-      // Добавляем ai_mode_changes если его нет
-      if (!data.limits.ai_mode_changes) {
-        data.limits.ai_mode_changes = 0;
+      
+      // Убеждаемся что все поля есть
+      if (!data.limits) {
+        data.limits = {};
       }
-      return data;
+      
+      // Явно устанавливаем значения по умолчанию
+      const limits = {
+        groq_persona: data.limits.groq_persona || 0,
+        groq_style: data.limits.groq_style || 0,
+        openai_style: data.limits.openai_style || 0,
+        groq_persona_max: data.limits.groq_persona_max || 5,
+        groq_style_max: data.limits.groq_style_max || 5,
+        openai_style_max: data.limits.openai_style_max || 7,
+        ai_mode_changes: data.limits.ai_mode_changes || 0
+      };
+      
+      return {
+        ai_mode: data.ai_mode || 'fast',
+        limits: limits
+      };
     }
   } catch (e) {
     console.error("Error fetching limits:", e);
   }
-  return null;
+  
+  // Возвращаем значения по умолчанию при ошибке
+  return {
+    ai_mode: 'fast',
+    limits: {
+      groq_persona: 0,
+      groq_style: 0,
+      openai_style: 0,
+      groq_persona_max: 5,
+      groq_style_max: 5,
+      openai_style_max: 7,
+      ai_mode_changes: 0
+    }
+  };
 }
 
 export async function changeStyle(newStyle) {
