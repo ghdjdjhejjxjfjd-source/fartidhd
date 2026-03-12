@@ -1,5 +1,5 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from api import get_use_mini_app, get_user_persona, get_user_lang, get_ai_mode
+from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_style, get_ai_mode
 from payments import get_balance
 from .config import MINIAPP_URL, is_valid_https_url
 
@@ -25,6 +25,7 @@ TAB_TEXT = {
                "💎 Остаток: {balance}\n\n"
                "⚙️ ТЕКУЩЕЕ\n"
                "🎭 Характер: {persona}\n"
+               "📝 Стиль: {style}\n"
                "🌐 Язык: {lang}\n"
                "🔄 Режим работы: {mode}\n"
                "⚡ Режим ИИ: {ai_mode}\n"
@@ -39,14 +40,15 @@ TAB_TEXT = {
     "balance": "⭐ Ваш баланс звезд",
     "mode_settings": "🔄 Режим работы\n\nВыбери как пользоваться ботом:",
     "persona_settings": "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:",
+    "style_settings": "📝 Стиль ответа\n\nВыбери стиль ответов ИИ:",
     "lang_settings": "🌐 Язык\n\nВыбери язык интерфейса:",
     "ai_mode_settings": "⚡ Режим ИИ\n\n━━━━━━━━━━━━━━━━━━━━━━\n"
                         "🚀 БЫСТРЫЙ (0.3 ⭐)\n"
-                        "• Экономичный, быстрые ответы\n"
-                        "• Для простых вопросов\n\n"
+                        "• Groq AI\n"
+                        "• Можно менять характер и стиль\n\n"
                         "💎 КАЧЕСТВЕННЫЙ (1 ⭐)\n"
-                        "• Умнее и лучше\n"
-                        "• Для сложных задач\n"
+                        "• OpenAI\n"
+                        "• Можно менять только стиль\n"
                         "━━━━━━━━━━━━━━━━━━━━━━\n\n"
                         "📊 Сегодня осталось смен режима: {changes_left}/8\n"
                         "⏰ Сброс в 00:00 (GMT+6)",
@@ -65,12 +67,17 @@ def tab_kb(user_id: int) -> InlineKeyboardMarkup:
 def settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура настроек"""
     use_mini_app = get_use_mini_app(user_id)
+    ai_mode = get_ai_mode(user_id)
     
     keyboard = []
     
-    # Кнопка характера ТОЛЬКО если режим Встроенный
-    if not use_mini_app:
+    # Кнопка характера ТОЛЬКО если режим Встроенный И режим Быстрый
+    if not use_mini_app and ai_mode == "fast":
         keyboard.append([InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")])
+    
+    # Кнопка стиля ТОЛЬКО если режим Встроенный
+    if not use_mini_app:
+        keyboard.append([InlineKeyboardButton("📝 Стиль ответа", callback_data="tab:style_settings")])
     
     # Остальные кнопки всегда
     keyboard.append([InlineKeyboardButton("🔄 Режим работы", callback_data="tab:mode_settings")])
@@ -103,7 +110,6 @@ def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     
     keyboard = []
     
-    # Показываем кнопки (без звезд на самих кнопках)
     if current == "fast":
         keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый", callback_data="ignore")])
         keyboard.append([InlineKeyboardButton("💎 Качественный", callback_data="confirm_ai_mode:quality")])
@@ -127,10 +133,7 @@ def confirm_ai_mode_kb(user_id: int, new_mode: str) -> InlineKeyboardMarkup:
 
 def persona_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура выбора характера"""
-    from api import get_ai_mode
-    
     current = get_user_persona(user_id) or "friendly"
-    ai_mode = get_ai_mode(user_id)
     
     personas = [
         ("friendly", "😊 Общительный"),
@@ -140,14 +143,28 @@ def persona_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     ]
     
     keyboard = []
+    for p_id, p_name in personas:
+        mark = " ✅" if p_id == current else ""
+        keyboard.append([InlineKeyboardButton(f"{p_name}{mark}", callback_data=f"set_persona:{p_id}")])
     
-    # Если качественный режим - показываем заглушку
-    if ai_mode == "quality":
-        keyboard.append([InlineKeyboardButton("🔒 Характер недоступен в этом режиме", callback_data="ignore")])
-    else:
-        for p_id, p_name in personas:
-            mark = " ✅" if p_id == current else ""
-            keyboard.append([InlineKeyboardButton(f"{p_name}{mark}", callback_data=f"set_persona:{p_id}")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
+    return InlineKeyboardMarkup(keyboard)
+
+
+def style_settings_kb(user_id: int) -> InlineKeyboardMarkup:
+    """Клавиатура выбора стиля ответа"""
+    current = get_user_style(user_id) or "steps"
+    
+    styles = [
+        ("short", "📏 Коротко"),
+        ("steps", "📋 По шагам"),
+        ("detail", "📚 Подробно")
+    ]
+    
+    keyboard = []
+    for s_id, s_name in styles:
+        mark = " ✅" if s_id == current else ""
+        keyboard.append([InlineKeyboardButton(f"{s_name}{mark}", callback_data=f"set_style:{s_id}")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     return InlineKeyboardMarkup(keyboard)
