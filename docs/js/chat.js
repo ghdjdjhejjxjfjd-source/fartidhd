@@ -95,12 +95,13 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     openai_style: 0,
     groq_persona_max: 5,
     groq_style_max: 5,
-    openai_style_max: 7
+    openai_style_max: 7,
+    ai_mode_changes: 0
   };
   
   let tempStyle = null;
   let tempPersona = null;
-  let tempAiMode = null;  // НОВОЕ: временный режим ИИ
+  let tempAiMode = null;
   let hasUnsavedChanges = false;
   let currentAiMode = 'fast';
   let isLoadingLimits = false;
@@ -340,7 +341,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         openai_style: data.limits.openai_style || 0,
         groq_persona_max: data.limits.groq_persona_max || 5,
         groq_style_max: data.limits.groq_style_max || 5,
-        openai_style_max: data.limits.openai_style_max || 7
+        openai_style_max: data.limits.openai_style_max || 7,
+        ai_mode_changes: data.limits.ai_mode_changes || 0
       };
       
       if (settingsOpen) {
@@ -386,12 +388,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       styleLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
     }
 
-    // НОВОЕ: отображение лимита для режима ИИ
+    // Отображение лимита для режима ИИ
     const aiModeLimitSpan = document.getElementById('aiMode-limit');
     if (aiModeLimitSpan) {
-      const t = window.I18N?.[getLang()] || window.I18N?.ru;
       const remaining = 8 - (currentLimits.ai_mode_changes || 0);
-      aiModeLimitSpan.textContent = (t?.aiModeLimit || 'Осталось смен режима: {remaining}/8').replace('{remaining}', remaining);
+      aiModeLimitSpan.textContent = `📊 Осталось смен режима: ${remaining}/8`;
       aiModeLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
     }
   }
@@ -400,27 +401,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (!saveBtn) return;
     
-    let canSave = hasUnsavedChanges;
-    
-    if (canSave && tempPersona && currentAiMode === 'fast') {
-      if (currentLimits.groq_persona >= currentLimits.groq_persona_max) {
-        canSave = false;
-      }
-    }
-    
-    if (canSave && tempStyle) {
-      if (currentAiMode === 'fast') {
-        if (currentLimits.groq_style >= currentLimits.groq_style_max) {
-          canSave = false;
-        }
-      } else {
-        if (currentLimits.openai_style >= currentLimits.openai_style_max) {
-          canSave = false;
-        }
-      }
-    }
-    
-    saveBtn.disabled = !canSave;
+    saveBtn.disabled = !hasUnsavedChanges;
   }
 
   function updateUnsavedIndicator() {
@@ -466,7 +447,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateUnsavedIndicator();
   }
 
-  // НОВОЕ: обработка изменения режима ИИ
   function handleAiModeChange(newMode) {
     const originalMode = getAiModeFromStorage();
     
@@ -489,8 +469,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     
     let success = true;
     let errorMessage = '';
+    let modeChanged = false;
     
-    // Сохраняем режим ИИ
     if (tempAiMode) {
       const result = await changeAiMode(tempAiMode);
       if (!result.success) {
@@ -499,6 +479,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       } else {
         localStorage.setItem("ai_mode", tempAiMode);
         currentAiMode = tempAiMode;
+        modeChanged = true;
       }
     }
     
@@ -536,11 +517,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       updateUnsavedIndicator();
       closeSettings();
       
-      // Если сменился режим ИИ, перезагружаем через 2 секунды
-      if (tempAiMode) {
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+      if (modeChanged) {
+        alert("✅ Режим ИИ изменен");
       }
     } else {
       alert(`❌ ${errorMessage}`);
@@ -897,7 +875,6 @@ Response:`;
       });
     }
     
-    // НОВОЕ: обработчик для режима ИИ
     const aiModeSelect = document.getElementById('aiModeSel');
     if (aiModeSelect) {
       aiModeSelect.addEventListener('change', (e) => {
