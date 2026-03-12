@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// docs/js/chat.js - ИСПРАВЛЕННАЯ РАБОЧАЯ ВЕРСИЯ
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -9,6 +9,21 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 const MAX_HISTORY = 100;
 const MAX_STORAGE_SIZE = 4 * 1024 * 1024;
+
+// Функция для показа загрузки на кнопке
+function setButtonLoading(button, isLoading) {
+  if (!button) return;
+  
+  if (isLoading) {
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-small"></span>';
+    document.body.classList.add('saving');
+  } else {
+    button.disabled = false;
+    button.innerHTML = window.t?.save || "💾 Сохранить";
+    document.body.classList.remove('saving');
+  }
+}
 
 function getLangFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -64,22 +79,6 @@ async function waitForInternet(retries = MAX_RETRIES) {
     await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
   }
   return false;
-}
-
-// Функция для показа загрузки на кнопке
-function setButtonLoading(button, isLoading) {
-  if (!button) return;
-  
-  if (isLoading) {
-    button.disabled = true;
-    button.innerHTML = '<span class="spinner-small"></span>';
-    // Добавляем класс чтобы запретить закрытие по клику вне
-    document.body.classList.add('saving');
-  } else {
-    button.disabled = false;
-    button.innerHTML = window.t?.save || "💾 Сохранить";
-    document.body.classList.remove('saving');
-  }
 }
 
 export function createChatController({ chatEl, inputEl, sendBtnEl }) {
@@ -510,15 +509,17 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       updateSaveButton();
       updateUnsavedIndicator();
       closeSettings();
+      
+      // Вместо alert показываем сообщение в чате
+      add("bot", "✅ Настройки сохранены", true);
     } else {
-      alert(`❌ ${errorMsg}`);
+      // Вместо alert показываем сообщение в чате
+      add("bot", `❌ ${errorMsg}`, true);
+      closeSettings();
     }
   }
 
   function cancelSettings() {
-    // Не даем закрыть если идет сохранение
-    if (document.body.classList.contains('saving')) return;
-    
     const personaSelect = document.getElementById('personaSel');
     const styleSelect = document.getElementById('styleSel');
     const aiModeSelect = document.getElementById('aiModeSel');
@@ -842,7 +843,6 @@ Response:`;
     if (overlay) {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
-          if (document.body.classList.contains('saving')) return; // Не закрываем при сохранении
           if (hasUnsavedChanges) {
             if (confirm('У вас есть несохраненные изменения. Закрыть без сохранения?')) {
               cancelSettings();
