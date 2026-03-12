@@ -6,13 +6,13 @@ from payments import get_balance
 from bot.menu import (
     main_menu_for_user, tab_kb, stars_kb, mode_settings_kb,
     persona_settings_kb, lang_settings_kb, settings_kb,
-    ai_mode_settings_kb, confirm_ai_mode_kb, TAB_TEXT
+    ai_mode_settings_kb, confirm_ai_mode_kb, TAB_TEXT, style_settings_kb
 )
 from bot.utils import edit_to_menu, send_fresh_menu, set_last_menu, update_user_menu
 from bot.settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from bot.chat import inline_chat_start
 from bot.image import inline_image_start
-from .state import navigation_stack  # ← импорт из state.py
+from .state import navigation_stack
 from .navigation import back_to_previous, back_to_menu, ignore
 from .tabs.profile import show_profile
 from .tabs.help import show_help
@@ -20,6 +20,7 @@ from .tabs.status import show_status
 from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
+from .tabs.style import show_style_settings, set_style
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -54,7 +55,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         current_tab = context.user_data.get('current_tab')
         parent_tabs = ['settings', 'profile', 'help', 'status', 'ref', 'support', 'buy_stars', 'balance']
-        child_tabs = ['ai_mode_settings', 'mode_settings', 'persona_settings', 'lang_settings']
+        child_tabs = ['ai_mode_settings', 'mode_settings', 'persona_settings', 'lang_settings', 'style_settings']
         
         if current_tab in parent_tabs and key in child_tabs:
             navigation_stack[uid] = current_tab
@@ -69,20 +70,28 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await buy_stars_package(update, context, query, uid, package_id)
         return
     
-    # НАСТРОЙКИ
+    # НАСТРОЙКИ - ЯЗЫК
     if data.startswith("set_lang:"):
         lang = data.split("set_lang:", 1)[1].strip()
         await handle_set_lang(update, context, query, uid, lang)
         await open_tab(context, query, uid, "settings")
         return
     
+    # НАСТРОЙКИ - ХАРАКТЕР
     if data.startswith("set_persona:"):
         persona = data.split("set_persona:", 1)[1].strip()
         await handle_set_persona(update, context, query, uid, persona)
         await open_tab(context, query, uid, "settings")
         return
     
-    # РЕЖИМ ИИ
+    # НАСТРОЙКИ - СТИЛЬ
+    if data.startswith("set_style:"):
+        style = data.split("set_style:", 1)[1].strip()
+        await set_style(update, context, query, uid, style)
+        await open_tab(context, query, uid, "settings")
+        return
+    
+    # РЕЖИМ ИИ - ПОДТВЕРЖДЕНИЕ
     if data.startswith("confirm_ai_mode:"):
         new_mode = data.split("confirm_ai_mode:", 1)[1].strip()
         current_mode = get_ai_mode(uid) or "fast"
@@ -100,6 +109,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await send_fresh_menu(context.bot, uid)
         return
     
+    # РЕЖИМ ИИ - ВЫПОЛНЕНИЕ
     if data.startswith("execute_ai_mode:"):
         new_mode = data.split("execute_ai_mode:", 1)[1].strip()
         
@@ -172,6 +182,9 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
     
     elif tab_key == "buy_stars":
         await show_buy_stars(context, query, user_id)
+    
+    elif tab_key == "style_settings":
+        await show_style_settings(context, query, user_id)
     
     elif tab_key == "settings":
         text = "⚙️ Настройки\n\nВыбери раздел:"
