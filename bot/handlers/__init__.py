@@ -9,6 +9,7 @@ from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
 from .tabs.style import show_style_settings, set_style
+from .tabs.ai_lang import show_ai_lang_settings, set_ai_lang
 
 # Импортируем handle_message из переименованного файла
 from bot.old_handlers import handle_message
@@ -30,5 +31,7 @@ __all__ = [
     'buy_stars_package',
     'show_style_settings',
     'set_style',
+    'show_ai_lang_settings',
+    'set_ai_lang',
     'handle_message',
 ]
