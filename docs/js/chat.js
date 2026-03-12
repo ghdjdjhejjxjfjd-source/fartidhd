@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ РАБОЧАЯ ВЕРСИЯ
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -457,16 +457,13 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateUnsavedIndicator();
   }
 
-  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ ==========
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
-    // Сохраняем исходные значения на случай отката
     const originalMode = getAiModeFromStorage();
     const originalStyle = getStyle();
     const originalPersona = getPersona();
     
-    // Если меняется режим ИИ - спрашиваем подтверждение
     if (tempAiMode) {
       const confirmMsg = "⚠️ Смена режима ИИ очистит историю чата. Продолжить?";
       let confirmed;
@@ -478,7 +475,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
       
       if (!confirmed) {
-        // Отменяем изменения - возвращаем select к исходному значению
         document.getElementById('aiModeSel').value = originalMode;
         tempAiMode = null;
         hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
@@ -494,18 +490,14 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     let success = true;
     let errorMsg = "";
     
-    // ⚠️ ВАЖНО: МЕНЯЕМ РЕЖИМ В ПЕРВУЮ ОЧЕРЕДЬ
     if (tempAiMode) {
       const result = await changeAiMode(tempAiMode);
       if (result && result.success) {
-        // ✅ Только после успеха на сервере меняем localStorage
         localStorage.setItem("ai_mode", tempAiMode);
         currentAiMode = tempAiMode;
         
-        // ✅ Очищаем память на сервере при смене режима
         try {
           await clearAIMemory();
-          // ✅ Очищаем локальную историю
           history = [];
           saveHistory(history);
           chatEl.innerHTML = "";
@@ -516,12 +508,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       } else {
         success = false;
         errorMsg = result?.message || "Ошибка смены режима";
-        // Возвращаем select к исходному значению
         document.getElementById('aiModeSel').value = originalMode;
       }
     }
     
-    // Меняем стиль только если предыдущие операции успешны
     if (tempStyle && success) {
       const result = await changeStyle(tempStyle);
       if (result && result.success) {
@@ -529,12 +519,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       } else {
         success = false;
         errorMsg = result?.message || "Ошибка смены стиля";
-        // Возвращаем select к исходному значению
         document.getElementById('styleSel').value = originalStyle;
       }
     }
     
-    // Меняем характер только если предыдущие операции успешны
     if (tempPersona && currentAiMode === 'fast' && success) {
       const result = await changePersona(tempPersona);
       if (result && result.success) {
@@ -542,7 +530,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       } else {
         success = false;
         errorMsg = result?.message || "Ошибка смены характера";
-        // Возвращаем select к исходному значению
         document.getElementById('personaSel').value = originalPersona;
       }
     }
@@ -550,23 +537,16 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     setButtonLoading(saveBtn, false);
     
     if (success) {
-      // Очищаем временные переменные
       tempStyle = null;
       tempPersona = null;
       tempAiMode = null;
       hasUnsavedChanges = false;
       
-      await fetchLimits(); // Обновляем лимиты
+      await fetchLimits();
       updateSaveButton();
       updateUnsavedIndicator();
       closeSettings();
-      
-      // ✅ ПОКАЗЫВАЕМ СООБЩЕНИЕ ОБ УСПЕХЕ В ЧАТЕ (только для смены режима)
-      if (tempAiMode) {
-        // Сообщение уже добавлено выше при очистке
-      }
     } else {
-      // При ошибке показываем сообщение
       add("bot", `❌ ${errorMsg}`, true);
       closeSettings();
     }
@@ -678,17 +658,24 @@ Response:`;
   }
 
   // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ ==========
-  async function send(){
+  async function send() {
     const t = inputEl.value.trim();
-    if(!t || sending || isReloading) return;
+    if (!t || sending || isReloading) return;
 
-    if (!navigator.onLine) {
-      add("bot", "📡 Нет интернет-соединения. Проверьте подключение.", true);
-      return;
-    }
-
+    // ✅ БЛОКИРУЕМ КНОПКУ СРАЗУ
     sending = true;
     sendBtnEl.disabled = true;
+
+    // ✅ ПРОВЕРКА ИНТЕРНЕТА
+    if (!navigator.onLine) {
+      // Показываем сообщение ТОЛЬКО ОДИН РАЗ
+      add("bot", "📡 Нет интернет-соединения. Проверьте подключение.", true);
+      
+      // Разблокируем кнопку
+      sending = false;
+      sendBtnEl.disabled = false;
+      return;
+    }
 
     add("user", t, true);
     inputEl.value = "";
@@ -712,10 +699,11 @@ Response:`;
         success = true;
         break;
         
-      } catch(e) {
+      } catch (e) {
         lastError = e;
         console.log(`Attempt ${attempt} failed:`, e);
         
+        // Если интернет пропал во время отправки
         if (!navigator.onLine || e.message === "no_internet") {
           removeTyping();
           add("bot", "📡 Интернет пропал. Проверьте подключение.", true);
@@ -734,9 +722,10 @@ Response:`;
     removeTyping();
     
     if (!success) {
+      // ✅ ПРАВИЛЬНАЯ ОБРАБОТКА ОШИБОК
       if (lastError?.message?.includes("insufficient_stars")) {
-        add("bot", "❌ Недостаточно звезд. Купите в меню.", true);
-      } else if (lastError?.message?.includes("network")) {
+        add("bot", "❌ Недостаточно звезд. Купите в меню: ⭐ Купить звезды", true);
+      } else if (lastError?.message?.includes("Failed to fetch") || lastError?.message?.includes("network")) {
         add("bot", "📡 Проблема с сетью. Проверьте интернет.", true);
       } else {
         add("bot", "❌ Ошибка сервера. Попробуйте позже.", true);
@@ -756,7 +745,6 @@ Response:`;
     }
   }
 
-  // ========== НОВАЯ ФУНКЦИЯ СИНХРОНИЗАЦИИ РЕЖИМА ==========
   async function syncModeWithServer() {
     if (!currentUserId) return;
     
@@ -771,11 +759,9 @@ Response:`;
         localStorage.setItem("ai_mode", serverMode);
         currentAiMode = serverMode;
         
-        // Обновляем UI если открыты настройки
         const aiModeSelect = document.getElementById('aiModeSel');
         if (aiModeSelect) aiModeSelect.value = serverMode;
         
-        // Показываем сообщение пользователю
         add("bot", `🔄 Режим ИИ синхронизирован: ${serverMode === 'fast' ? '🚀 Быстрый' : '💎 Качественный'}`, true);
       }
     } catch (err) {
@@ -821,7 +807,22 @@ Response:`;
     }
   }
 
-  function bindUI(){
+  // ✅ ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА - слушаем изменения интернета
+  function setupNetworkListeners() {
+    window.addEventListener('online', () => {
+      // Можно добавить уведомление
+      add("bot", "📡 Интернет соединение восстановлено!", true);
+    });
+    
+    window.addEventListener('offline', () => {
+      // При пропадании интернета блокируем кнопку
+      if (sendBtnEl) {
+        sendBtnEl.disabled = true;
+      }
+    });
+  }
+
+  function bindUI() {
     sendBtnEl.addEventListener("click", send);
     if (inputEl.tagName === 'TEXTAREA') {
       inputEl.addEventListener('input', autoResizeTextarea);
@@ -894,21 +895,19 @@ Response:`;
       });
     }
     
-    window.addEventListener('online', () => {
-      add("bot", "📡 Интернет соединение восстановлено!", true);
-    });
+    // ✅ Добавляем слушатели сети
+    setupNetworkListeners();
     
-    window.addEventListener('offline', () => {
-      add("bot", "📡 Интернет пропал. Ответы временно недоступны.", true);
-    });
+    // ✅ При загрузке проверяем интернет
+    if (!navigator.onLine) {
+      sendBtnEl.disabled = true;
+    }
     
-    // Синхронизируем режим при загрузке
     syncModeWithServer();
-    
     renderFromHistory();
   }
 
-  async function confirmClear(){
+  async function confirmClear() {
     const msg = "Вы уверены, что хотите очистить чат?";
     if (tg && typeof tg.showConfirm === "function") {
       return await new Promise((resolve) => tg.showConfirm(msg, (ok) => resolve(Boolean(ok))));
@@ -922,6 +921,6 @@ Response:`;
     send,
     clearHistory,
     confirmClear,
-    syncModeWithServer, // Экспортируем новую функцию
+    syncModeWithServer,
   };
 }
