@@ -460,19 +460,39 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
+    // Если меняется режим ИИ - спрашиваем подтверждение
+    if (tempAiMode) {
+      const confirmMsg = "⚠️ Смена режима ИИ очистит историю чата. Продолжить?";
+      let confirmed;
+      
+      if (tg && typeof tg.showConfirm === "function") {
+        confirmed = await new Promise((resolve) => tg.showConfirm(confirmMsg, (ok) => resolve(ok)));
+      } else {
+        confirmed = window.confirm(confirmMsg);
+      }
+      
+      if (!confirmed) {
+        // Отменяем изменения - возвращаем select к исходному значению
+        document.getElementById('aiModeSel').value = getAiModeFromStorage();
+        tempAiMode = null;
+        hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
+        updateSaveButton();
+        updateUnsavedIndicator();
+        return;
+      }
+    }
+    
     const saveBtn = document.getElementById('saveSettingsBtn');
     setButtonLoading(saveBtn, true);
     
     let success = true;
     let errorMsg = "";
-    let modeChanged = false;
     
     if (tempAiMode) {
       const result = await changeAiMode(tempAiMode);
       if (result && result.success) {
         localStorage.setItem("ai_mode", tempAiMode);
         currentAiMode = tempAiMode;
-        modeChanged = true;
         
         // Очищаем память на сервере при смене режима
         try {
@@ -481,7 +501,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
           history = [];
           saveHistory(history);
           chatEl.innerHTML = "";
-          add("bot", helloText(), true);
+          add("bot", helloText(), false); // false = не сохранять в историю
         } catch (e) {
           console.error("Failed to clear memory:", e);
         }
@@ -491,7 +511,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
-    if (tempStyle && success && !modeChanged) {
+    if (tempStyle && success) {
       const result = await changeStyle(tempStyle);
       if (result && result.success) {
         localStorage.setItem("ai_style", tempStyle);
@@ -501,7 +521,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
-    if (tempPersona && currentAiMode === 'fast' && success && !modeChanged) {
+    if (tempPersona && currentAiMode === 'fast' && success) {
       const result = await changePersona(tempPersona);
       if (result && result.success) {
         localStorage.setItem("ai_persona", tempPersona);
@@ -519,17 +539,14 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       tempAiMode = null;
       hasUnsavedChanges = false;
       
-      await fetchLimits();
+      await fetchLimits(); // Обновляем лимиты
       updateSaveButton();
       updateUnsavedIndicator();
       closeSettings();
       
-      if (modeChanged) {
-        add("bot", "✅ Режим ИИ изменен. История чата очищена.", true);
-      } else {
-        add("bot", "✅ Настройки сохранены", true);
-      }
+      // НИКАКИХ СООБЩЕНИЙ В ЧАТЕ
     } else {
+      // Только при ошибке показываем сообщение
       add("bot", `❌ ${errorMsg}`, true);
       closeSettings();
     }
