@@ -9,7 +9,7 @@ from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
 
-# Импортируем handle_message из оригинального handlers.py
+# Импортируем handle_message из оригинального файла handlers.py (который в папке bot)
 from bot.handlers import handle_message
 
 __all__ = [
@@ -27,5 +27,5 @@ __all__ = [
     'show_support',
     'show_buy_stars',
     'buy_stars_package',
-    'handle_message',  # ← добавили
+    'handle_message',
 ]
