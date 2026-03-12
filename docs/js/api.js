@@ -8,7 +8,6 @@ const API_LIMITS = API_BASE + "/api/user/limits";
 const API_STYLE_CHANGE = API_BASE + "/api/user/style/change";
 const API_PERSONA = API_BASE + "/api/user/persona";
 const API_AI_MODE = API_BASE + "/api/user/ai_mode";
-const API_AI_MODE_CHANGE = API_BASE + "/api/user/ai_mode";  // POST для смены режима
 
 function getLang(){
   return localStorage.getItem("miniapp_lang_v1") || "ru";
@@ -47,7 +46,7 @@ export async function askAI(promptText) {
     lang: getLang(),
     style: getStyle(),
     persona: getPersona(),
-    ai_mode: aiMode,  // Добавляем режим ИИ в запрос
+    ai_mode: aiMode,
     tg_user_id: user.tg_user_id,
     tg_username: user.tg_username,
     tg_first_name: user.tg_first_name,
@@ -107,10 +106,6 @@ export async function getStarsBalance() {
   return 0;
 }
 
-// =========================
-// ФУНКЦИИ ДЛЯ ЛИМИТОВ
-// =========================
-
 export async function getUserLimits() {
   const user = getTelegramUser();
   if (!user.tg_user_id) return null;
@@ -129,7 +124,7 @@ export async function getUserLimits() {
 
 export async function changeStyle(newStyle) {
   const user = getTelegramUser();
-  if (!user.tg_user_id) return { success: false, error: "no_user" };
+  if (!user.tg_user_id) return { success: false, message: "no_user" };
   
   try {
     const r = await fetch(API_STYLE_CHANGE, {
@@ -145,25 +140,23 @@ export async function changeStyle(newStyle) {
     
     if (!r.ok) {
       if (data.error === "limit_exceeded") {
-        return { success: false, error: "limit_exceeded", message: data.message };
+        return { success: false, message: data.message || "Лимит изменений исчерпан" };
       }
-      return { success: false, error: "unknown", message: data.error };
+      return { success: false, message: data.error || "Ошибка сервера" };
     }
     
-    // Если успешно, сохраняем в localStorage
     localStorage.setItem("ai_style", newStyle);
-    
-    return { success: true, data };
+    return { success: true };
     
   } catch (e) {
     console.error("Change style error:", e);
-    return { success: false, error: "network", message: e.message };
+    return { success: false, message: "Ошибка сети" };
   }
 }
 
 export async function changePersona(newPersona) {
   const user = getTelegramUser();
-  if (!user.tg_user_id) return { success: false, error: "no_user" };
+  if (!user.tg_user_id) return { success: false, message: "no_user" };
   
   try {
     const r = await fetch(API_PERSONA, {
@@ -179,37 +172,30 @@ export async function changePersona(newPersona) {
     
     if (!r.ok) {
       if (data.error === "limit_exceeded") {
-        return { success: false, error: "limit_exceeded", message: data.message };
+        return { success: false, message: data.message || "Лимит изменений исчерпан" };
       }
-      return { success: false, error: "unknown", message: data.error };
+      return { success: false, message: data.error || "Ошибка сервера" };
     }
     
-    // Если успешно, сохраняем в localStorage
     localStorage.setItem("ai_persona", newPersona);
-    
-    return { success: true, data };
+    return { success: true };
     
   } catch (e) {
     console.error("Change persona error:", e);
-    return { success: false, error: "network", message: e.message };
+    return { success: false, message: "Ошибка сети" };
   }
 }
 
-// =========================
-// НОВАЯ ФУНКЦИЯ ДЛЯ СМЕНЫ РЕЖИМА ИИ
-// =========================
-
 export async function changeAiMode(newMode) {
   const user = getTelegramUser();
-  if (!user.tg_user_id) return { success: false, error: "no_user" };
+  if (!user.tg_user_id) return { success: false, message: "no_user" };
   
-  // Проверяем что режим валидный
   if (newMode !== "fast" && newMode !== "quality") {
-    return { success: false, error: "invalid_mode", message: "Неверный режим" };
+    return { success: false, message: "Неверный режим" };
   }
   
   try {
-    const r = await fetch(API_AI_MODE_CHANGE, {
+    const r = await fetch(API_AI_MODE, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -222,22 +208,17 @@ export async function changeAiMode(newMode) {
     
     if (!r.ok) {
       if (data.error === "limit_exceeded") {
-        return { success: false, error: "limit_exceeded", message: data.message };
+        return { success: false, message: data.message || "Лимит смен режима исчерпан" };
       }
-      if (data.error === "no_changes_left") {
-        return { success: false, error: "no_changes_left", message: "Лимит смен режима на сегодня исчерпан" };
-      }
-      return { success: false, error: "unknown", message: data.error || "Ошибка при смене режима" };
+      return { success: false, message: data.error || "Ошибка сервера" };
     }
     
-    // Если успешно, сохраняем в localStorage
     localStorage.setItem("ai_mode", newMode);
-    
-    return { success: true, data };
+    return { success: true };
     
   } catch (e) {
     console.error("Change AI mode error:", e);
-    return { success: false, error: "network", message: e.message };
+    return { success: false, message: "Ошибка сети" };
   }
 }
 
@@ -249,7 +230,6 @@ export async function getCurrentMode() {
     const r = await fetch(`${API_AI_MODE}/${user.tg_user_id}`);
     if (r.ok) {
       const data = await r.json();
-      // Сохраняем в localStorage
       if (data.ai_mode) {
         localStorage.setItem("ai_mode", data.ai_mode);
       }
