@@ -1,5 +1,5 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_style, get_ai_mode
+from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_ai_lang, get_user_style, get_ai_mode
 from payments import get_balance
 from .config import MINIAPP_URL, is_valid_https_url
 
@@ -26,7 +26,8 @@ TAB_TEXT = {
                "⚙️ ТЕКУЩЕЕ\n"
                "🎭 Характер: {persona}\n"
                "📝 Стиль: {style}\n"
-               "🌐 Язык: {lang}\n"
+               "🌐 Язык интерфейса: {lang}\n"
+               "🌐 Язык ответов: {ai_lang}\n"
                "🔄 Режим работы: {mode}\n"
                "⚡ Режим ИИ: {ai_mode}\n"
                "💳 FREE: {free}\n"
@@ -41,7 +42,8 @@ TAB_TEXT = {
     "mode_settings": "🔄 Режим работы\n\nВыбери как пользоваться ботом:",
     "persona_settings": "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:",
     "style_settings": "📝 Стиль ответа\n\nВыбери стиль ответов ИИ:",
-    "lang_settings": "🌐 Язык\n\nВыбери язык интерфейса:",
+    "lang_settings": "🌐 Язык интерфейса\n\nВыбери язык меню и кнопок:",
+    "ai_lang_settings": "🌐 Язык ответов ИИ\n\nВыбери на каком языке будет отвечать ИИ:",
     "ai_mode_settings": "⚡ Режим ИИ\n\n━━━━━━━━━━━━━━━━━━━━━━\n"
                         "🚀 БЫСТРЫЙ (0.3 ⭐)\n"
                         "• Groq AI\n"
@@ -71,17 +73,21 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
     
     keyboard = []
     
-    # Кнопка характера ТОЛЬКО если режим Встроенный И режим Быстрый
-    if not use_mini_app and ai_mode == "fast":
-        keyboard.append([InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")])
-    
-    # Кнопка стиля ТОЛЬКО если режим Встроенный
+    # Кнопки ТОЛЬКО для встроенного режима
     if not use_mini_app:
+        # Язык ответов ИИ - доступен всегда во встроенном режиме
+        keyboard.append([InlineKeyboardButton("🌐 Язык ответов ИИ", callback_data="tab:ai_lang_settings")])
+        
+        # Характер - только для быстрого режима (Groq)
+        if ai_mode == "fast":
+            keyboard.append([InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")])
+        
+        # Стиль - доступен всегда
         keyboard.append([InlineKeyboardButton("📝 Стиль ответа", callback_data="tab:style_settings")])
     
     # Остальные кнопки всегда
     keyboard.append([InlineKeyboardButton("🔄 Режим работы", callback_data="tab:mode_settings")])
-    keyboard.append([InlineKeyboardButton("🌐 Язык", callback_data="tab:lang_settings")])
+    keyboard.append([InlineKeyboardButton("🌐 Язык интерфейса", callback_data="tab:lang_settings")])
     keyboard.append([InlineKeyboardButton("⚡ Режим ИИ", callback_data="tab:ai_mode_settings")])
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     
@@ -170,8 +176,34 @@ def style_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
+def ai_lang_settings_kb(user_id: int) -> InlineKeyboardMarkup:
+    """Клавиатура выбора языка ответов ИИ"""
+    current = get_user_ai_lang(user_id) or "ru"
+    
+    languages = [
+        ("ru", "🇷🇺 Русский"),
+        ("en", "🇬🇧 English"),
+        ("kk", "🇰🇿 Қазақша"),
+        ("tr", "🇹🇷 Türkçe"),
+        ("uk", "🇺🇦 Українська"),
+        ("fr", "🇫🇷 Français")
+    ]
+    
+    keyboard = []
+    row = []
+    for i, (lang_id, lang_name) in enumerate(languages):
+        mark = " ✅" if lang_id == current else ""
+        row.append(InlineKeyboardButton(f"{lang_name}{mark}", callback_data=f"set_ai_lang:{lang_id}"))
+        if len(row) == 2 or i == len(languages) - 1:
+            keyboard.append(row)
+            row = []
+    
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
+    return InlineKeyboardMarkup(keyboard)
+
+
 def lang_settings_kb(user_id: int) -> InlineKeyboardMarkup:
-    """Клавиатура выбора языка"""
+    """Клавиатура выбора языка интерфейса"""
     current = get_user_lang(user_id) or "ru"
     
     languages = [
