@@ -465,19 +465,33 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     
     let success = true;
     let errorMsg = "";
+    let modeChanged = false;
     
     if (tempAiMode) {
       const result = await changeAiMode(tempAiMode);
       if (result && result.success) {
         localStorage.setItem("ai_mode", tempAiMode);
         currentAiMode = tempAiMode;
+        modeChanged = true;
+        
+        // Очищаем память на сервере при смене режима
+        try {
+          await clearAIMemory();
+          // Очищаем локальную историю
+          history = [];
+          saveHistory(history);
+          chatEl.innerHTML = "";
+          add("bot", helloText(), true);
+        } catch (e) {
+          console.error("Failed to clear memory:", e);
+        }
       } else {
         success = false;
         errorMsg = result?.message || "Ошибка смены режима";
       }
     }
     
-    if (tempStyle && success) {
+    if (tempStyle && success && !modeChanged) {
       const result = await changeStyle(tempStyle);
       if (result && result.success) {
         localStorage.setItem("ai_style", tempStyle);
@@ -487,7 +501,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
-    if (tempPersona && currentAiMode === 'fast' && success) {
+    if (tempPersona && currentAiMode === 'fast' && success && !modeChanged) {
       const result = await changePersona(tempPersona);
       if (result && result.success) {
         localStorage.setItem("ai_persona", tempPersona);
@@ -510,10 +524,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       updateUnsavedIndicator();
       closeSettings();
       
-      // Вместо alert показываем сообщение в чате
-      add("bot", "✅ Настройки сохранены", true);
+      if (modeChanged) {
+        add("bot", "✅ Режим ИИ изменен. История чата очищена.", true);
+      } else {
+        add("bot", "✅ Настройки сохранены", true);
+      }
     } else {
-      // Вместо alert показываем сообщение в чате
       add("bot", `❌ ${errorMsg}`, true);
       closeSettings();
     }
