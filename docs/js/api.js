@@ -131,6 +131,8 @@ export async function getUserLimits() {
         ai_mode_changes: data.limits.ai_mode_changes || 0
       };
       
+      console.log("Получены лимиты:", limits); // Для отладки
+      
       return {
         ai_mode: data.ai_mode || 'fast',
         limits: limits
