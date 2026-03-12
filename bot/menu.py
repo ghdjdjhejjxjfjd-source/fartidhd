@@ -66,13 +66,18 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура настроек"""
     use_mini_app = get_use_mini_app(user_id)
     
-    keyboard = [
-        [InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")],
-        [InlineKeyboardButton("🔄 Режим работы", callback_data="tab:mode_settings")],
-        [InlineKeyboardButton("🌐 Язык", callback_data="tab:lang_settings")],
-        [InlineKeyboardButton("⚡ Режим ИИ", callback_data="tab:ai_mode_settings")],
-        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")]
-    ]
+    keyboard = []
+    
+    # Кнопка характера ТОЛЬКО если режим Встроенный
+    if not use_mini_app:
+        keyboard.append([InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")])
+    
+    # Остальные кнопки всегда
+    keyboard.append([InlineKeyboardButton("🔄 Режим работы", callback_data="tab:mode_settings")])
+    keyboard.append([InlineKeyboardButton("🌐 Язык", callback_data="tab:lang_settings")])
+    keyboard.append([InlineKeyboardButton("⚡ Режим ИИ", callback_data="tab:ai_mode_settings")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
+    
     return InlineKeyboardMarkup(keyboard)
 
 
