@@ -44,7 +44,7 @@
   --sheet-text: #f7fbff;
 }
 
-/* Светлая тема */
+/* Светлая тема - ТОЛЬКО СЕРАЯ ОБВОДКА */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
@@ -56,11 +56,12 @@
   
   /* Светлые панели с блюром */
   --sheet-bg: rgba(255, 255, 255, 0.85);
-  --sheet-border: rgba(0, 0, 0, 0.1);
+  --sheet-border: #c0c0c0; /* СЕРАЯ ОБВОДКА */
   --sheet-text: #1a2634;
   
   /* Серая обводка для кнопок */
-  --btn-border: rgba(0, 0, 0, 0.15);
+  --btn-border: #c0c0c0; /* СЕРАЯ ОБВОДКА */
+  --btn-border-width: 1.5px;
   --btn-bg: rgba(255, 255, 255, 0.4);
   --btn-blur: blur(12px);
 }
@@ -93,7 +94,7 @@ html.android-mode[data-theme="light"] .tool-item,
 html.android-mode[data-theme="light"] .langPill,
 html.android-mode[data-theme="light"] .themePill,
 html.android-mode[data-theme="light"] .platformPill {
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border: var(--btn-border-width) solid var(--btn-border) !important;
   background: rgba(255, 255, 255, 0.8) !important;
 }
 
@@ -218,7 +219,7 @@ body > * {
 }
 
 /* ========================= */
-/* КНОПКИ */
+/* КНОПКИ - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
 /* ========================= */
 .btn {
   display: block;
@@ -246,12 +247,12 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - кнопки с блюром и серой обводкой */
+/* Светлая тема - кнопки с СЕРОЙ ОБВОДКОЙ */
 :root[data-theme="light"] .btn {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: 1.5px solid var(--btn-border);
+  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
   color: var(--text);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -294,12 +295,12 @@ body > * {
   background: rgba(255,255,255,0.15) !important;
 }
 
-/* Светлая тема - кнопка инструментов */
+/* Светлая тема - кнопка инструментов с СЕРОЙ ОБВОДКОЙ */
 :root[data-theme="light"] .tools-btn {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: 1.5px solid var(--btn-border);
+  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
 }
 
 :root[data-theme="light"] .tools-btn.active {
@@ -323,7 +324,7 @@ body > * {
   margin: 12px 0 8px 0;
 }
 
-/* Элементы инструментов */
+/* Элементы инструментов - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
 .tool-item {
   display: flex;
   align-items: center;
@@ -342,12 +343,12 @@ body > * {
   box-shadow: 0 10px 22px rgba(0,0,0,.14);
 }
 
-/* Светлая тема - элементы инструментов с блюром и серой обводкой */
+/* Светлая тема - элементы инструментов с СЕРОЙ ОБВОДКОЙ */
 :root[data-theme="light"] .tool-item {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: 1.5px solid var(--btn-border);
+  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -412,7 +413,7 @@ body > * {
 }
 
 /* ========================= */
-/* БЛОК ЯЗЫКА */
+/* БЛОК ЯЗЫКА - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
 /* ========================= */
 .langBlock {
   margin-top: 22px;
@@ -453,12 +454,12 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - кнопка языка с блюром и серой обводкой */
+/* Светлая тема - кнопка языка с СЕРОЙ ОБВОДКОЙ */
 :root[data-theme="light"] .langPill {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: 1.5px solid var(--btn-border);
+  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
   color: var(--text);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -477,7 +478,7 @@ body > * {
 }
 
 /* ========================= */
-/* БЛОК ПЛАТФОРМЫ (iOS/Android) - НОВЫЙ */
+/* БЛОК ПЛАТФОРМЫ - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
 /* ========================= */
 .platformBlock {
   margin-top: 16px;
@@ -518,12 +519,12 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - кнопка платформы с блюром и серой обводкой */
+/* Светлая тема - кнопка платформы с СЕРОЙ ОБВОДКОЙ */
 :root[data-theme="light"] .platformPill {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: 1.5px solid var(--btn-border);
+  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
   color: var(--text);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -538,7 +539,7 @@ body > * {
 }
 
 /* ========================= */
-/* КНОПКА ТЕМЫ */
+/* КНОПКА ТЕМЫ - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
 /* ========================= */
 .themePill {
   position: fixed;
@@ -569,12 +570,12 @@ body > * {
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - кнопка темы с блюром и серой обводкой */
+/* Светлая тема - кнопка темы с СЕРОЙ ОБВОДКОЙ */
 :root[data-theme="light"] .themePill {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: 1.5px solid var(--btn-border);
+  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
   color: var(--text);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -594,7 +595,7 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS - ЯЗЫК, ЦВЕТ, ПЛАТФОРМА */
+/* BOTTOM SHEETS - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
 /* ========================= */
 .langOverlay, .themeOverlay, .platformOverlay {
   position: fixed;
@@ -709,7 +710,7 @@ body > * {
 }
 
 /* ========================= */
-/* TOAST УВЕДОМЛЕНИЯ */
+/* TOAST УВЕДОМЛЕНИЯ - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
 /* ========================= */
 .toast-notification {
   position: fixed;
