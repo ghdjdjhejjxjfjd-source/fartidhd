@@ -1,71 +1,72 @@
 :root {
   --vh: 100vh;
 
-  --bgTop: #f0f3f8;
-  --bgMid: #e8ecf3;
-  --bgBot: #e0e5ee;
+  --bgTop: #27384b;
+  --bgMid: #1d2b3a;
+  --bgBot: #16212d;
 
   --accent1: #5aaeff;
   --accent2: #3496ff;
 
-  --text: #1a2634;
-  --subtext: rgba(26, 38, 52, 0.65);
+  --text: #f7fbff;
+  --subtext: rgba(247, 251, 255, 0.68);
   
   /* Панели выбора */
-  --sheet-bg: rgba(255, 255, 255, 0.95);
-  --sheet-border: rgba(0, 0, 0, 0.08);
-  --sheet-text: #1a2634;
+  --sheet-bg: rgba(24, 31, 40, .97);
+  --sheet-border: rgba(255, 255, 255, .10);
+  --sheet-text: #f7fbff;
 }
 
-/* Черная тема - тоже осветляем */
+/* Черная тема */
 :root[data-theme="black"]{
-  --bgTop: #e8ecf3;
-  --bgMid: #e0e5ee;
-  --bgBot: #d8dee9;
-  --accent1: #8bb8ff;
-  --accent2: #5a98ff;
-  --text: #1a2634;
-  --subtext: rgba(26, 38, 52, 0.65);
-  --sheet-bg: rgba(255, 255, 255, 0.95);
-  --sheet-border: rgba(0, 0, 0, 0.08);
-  --sheet-text: #1a2634;
+  --bgTop:#1b2430;
+  --bgMid:#141b24;
+  --bgBot:#0e141c;
+  --accent1:#8bb8ff;
+  --accent2:#5a98ff;
+  --subtext: rgba(247, 251, 255, 0.68);
+  --sheet-bg: rgba(24, 31, 40, .97);
+  --sheet-border: rgba(255, 255, 255, .10);
+  --sheet-text: #f7fbff;
 }
 
-/* Синяя тема - осветляем */
+/* Синяя тема */
 :root[data-theme="blue"]{
-  --bgTop: #f0f3f8;
-  --bgMid: #e8ecf3;
-  --bgBot: #e0e5ee;
-  --accent1: #5aaeff;
-  --accent2: #3496ff;
-  --text: #1a2634;
-  --subtext: rgba(26, 38, 52, 0.65);
-  --sheet-bg: rgba(255, 255, 255, 0.95);
-  --sheet-border: rgba(90, 174, 255, 0.2);
-  --sheet-text: #1a2634;
+  --bgTop:#27384b;
+  --bgMid:#1d2b3a;
+  --bgBot:#16212d;
+  --accent1:#5aaeff;
+  --accent2:#3496ff;
+  --text:#f7fbff;
+  --subtext: rgba(247, 251, 255, 0.68);
+  --sheet-bg: rgba(39, 56, 75, 0.95);
+  --sheet-border: rgba(90, 174, 255, 0.3);
+  --sheet-text: #f7fbff;
 }
 
-/* Светлая тема - чуть светлее */
+/* Светлая тема */
 :root[data-theme="light"]{
-  --bgTop: #f5f8ff;
-  --bgMid: #edf2fa;
-  --bgBot: #e5ecf5;
-  --accent1: #3a8cff;
-  --accent2: #1a6cff;
-  --text: #1a2634;
-  --subtext: rgba(26, 38, 52, 0.65);
+  --bgTop:#e8edf5;
+  --bgMid:#d9e0eb;
+  --bgBot:#cad1de;
+  --accent1:#3a8cff;
+  --accent2:#1a6cff;
+  --text:#1a2634;
+  --subtext: rgba(0, 0, 0, 0.55);
   
-  --sheet-bg: rgba(255, 255, 255, 0.98);
-  --sheet-border: rgba(0, 0, 0, 0.06);
+  /* Светлые панели с блюром */
+  --sheet-bg: rgba(255, 255, 255, 0.85);
+  --sheet-border: rgba(0, 0, 0, 0.1);
   --sheet-text: #1a2634;
   
-  --btn-border: rgba(0, 0, 0, 0.1);
-  --btn-bg: rgba(255, 255, 255, 0.7);
+  /* Серая обводка для кнопок */
+  --btn-border: rgba(0, 0, 0, 0.15);
+  --btn-bg: rgba(255, 255, 255, 0.4);
   --btn-blur: blur(12px);
 }
 
 /* ========================= */
-/* ANDROID MODE */
+/* ANDROID MODE - КУБИКИ И ЭФФЕКТЫ ИСЧЕЗАЮТ */
 /* ========================= */
 html.android-mode .cube {
   display: none !important;
@@ -81,10 +82,19 @@ html.android-mode .platformPill {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   filter: none !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: #1a2634 !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.android-mode[data-theme="light"] .btn,
+html.android-mode[data-theme="light"] .tools-btn,
+html.android-mode[data-theme="light"] .tool-item,
+html.android-mode[data-theme="light"] .langPill,
+html.android-mode[data-theme="light"] .themePill,
+html.android-mode[data-theme="light"] .platformPill {
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
 }
 
 * {
@@ -132,7 +142,7 @@ body > * {
 }
 
 /* ========================= */
-/* КУБИКИ - делаем светлее */
+/* КУБИКИ */
 /* ========================= */
 .cube {
   position: absolute;
@@ -140,29 +150,29 @@ body > * {
   height: 108px;
   border-radius: 18px;
 
-  background: color-mix(in srgb, var(--accent1) 12%, white 88%);
-  border: 1px solid color-mix(in srgb, var(--accent1) 20%, rgba(0,0,0,0.05));
+  background: color-mix(in srgb, var(--accent1) 18%, white 10%);
+  border: 1px solid color-mix(in srgb, var(--accent1) 42%, white 20%);
   backdrop-filter: blur(8px) saturate(120%);
   -webkit-backdrop-filter: blur(8px) saturate(120%);
   box-shadow:
-    0 4px 12px rgba(0,0,0,.02),
-    0 0 18px color-mix(in srgb, var(--accent1) 10%, transparent);
+    0 8px 20px rgba(0,0,0,.08),
+    0 0 18px color-mix(in srgb, var(--accent1) 22%, transparent);
   pointer-events: none;
-  opacity: .6;
+  opacity: .72;
 }
 
 .cube.small {
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  opacity: .45;
+  opacity: .52;
 }
 
 .cube.tiny {
   width: 30px;
   height: 30px;
   border-radius: 10px;
-  opacity: .3;
+  opacity: .38;
 }
 
 /* анимации */
@@ -194,21 +204,21 @@ body > * {
 }
 
 /* ========================= */
-/* КАРТОЧКА МЕНЮ - ОСВЕТЛЕНО */
+/* КАРТОЧКА МЕНЮ */
 /* ========================= */
 .card {
   width: min(520px, 100%);
   padding: 22px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .12);
   backdrop-filter: blur(12px) saturate(118%);
   -webkit-backdrop-filter: blur(12px) saturate(118%);
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  box-shadow: 0 18px 42px rgba(0,0,0,.28);
 }
 
 /* ========================= */
-/* КНОПКИ - ОСВЕТЛЕНО */
+/* КНОПКИ */
 /* ========================= */
 .btn {
   display: block;
@@ -217,30 +227,60 @@ body > * {
   padding: 17px 16px;
   border-radius: 20px;
   font-size: 19px;
-  font-weight: 600;
+  font-weight: 800;
   color: var(--text);
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 18%, white 8%) 0%,
+      rgba(255,255,255,.08) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: 0 4px 12px rgba(0,0,0,.02);
+  box-shadow:
+    0 10px 22px rgba(0,0,0,.14),
+    0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
   margin-bottom: 14px;
   transition: all 0.2s ease;
 }
 
+/* Светлая тема - кнопки с блюром и серой обводкой */
+:root[data-theme="light"] .btn {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: 1.5px solid var(--btn-border);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 .btn:active {
   transform: scale(.995);
-  background: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 12px 24px rgba(0,0,0,.18),
+    0 0 18px color-mix(in srgb, var(--accent1) 20%, transparent);
 }
 
 .btn:hover {
+  border-color: color-mix(in srgb, var(--accent1) 35%, rgba(255,255,255,.18));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 22%, white 10%) 0%,
+      rgba(255,255,255,.10) 100%
+    );
+}
+
+/* Светлая тема - hover для кнопок */
+:root[data-theme="light"] .btn:hover {
   border-color: var(--accent1);
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 /* ========================= */
-/* КНОПКА ИНСТРУМЕНТОВ - ОСВЕТЛЕНО */
+/* КНОПКА ИНСТРУМЕНТОВ */
 /* ========================= */
 .tools-btn {
   display: flex !important;
@@ -251,7 +291,20 @@ body > * {
 
 .tools-btn.active {
   border-color: var(--accent1) !important;
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255,255,255,0.15) !important;
+}
+
+/* Светлая тема - кнопка инструментов */
+:root[data-theme="light"] .tools-btn {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: 1.5px solid var(--btn-border);
+}
+
+:root[data-theme="light"] .tools-btn.active {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: var(--accent1) !important;
 }
 
 /* Выпадающий список */
@@ -270,14 +323,14 @@ body > * {
   margin: 12px 0 8px 0;
 }
 
-/* Элементы инструментов - ОСВЕТЛЕНО */
+/* Элементы инструментов */
 .tool-item {
   display: flex;
   align-items: center;
   padding: 14px 18px;
   margin: 6px 0;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 16px;
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
@@ -286,33 +339,53 @@ body > * {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,.02);
+  box-shadow: 0 10px 22px rgba(0,0,0,.14);
+}
+
+/* Светлая тема - элементы инструментов с блюром и серой обводкой */
+:root[data-theme="light"] .tool-item {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: 1.5px solid var(--btn-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .tool-item:hover {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.15);
   border-color: var(--accent1);
   transform: translateX(6px);
+}
+
+/* Светлая тема - hover для элементов инструментов */
+:root[data-theme="light"] .tool-item:hover {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: var(--accent1);
 }
 
 .tool-icon {
   font-size: 26px;
   min-width: 48px;
   text-align: center;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.02));
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
 .tool-text {
   flex: 1;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
   letter-spacing: 0.3px;
 }
 
 .tool-arrow {
-  color: rgba(26, 38, 52, 0.4);
+  color: rgba(255, 255, 255, 0.4);
   font-size: 14px;
   transition: transform 0.2s ease;
+}
+
+/* Светлая тема - стрелка */
+:root[data-theme="light"] .tool-arrow {
+  color: rgba(0, 0, 0, 0.4);
 }
 
 .tool-item:hover .tool-arrow {
@@ -321,32 +394,35 @@ body > * {
 }
 
 /* ========================= */
-/* ТЕКСТЫ - ОСВЕТЛЕНО */
+/* ТЕКСТЫ */
 /* ========================= */
 .sub {
   margin-top: 22px;
   text-align: center;
   color: var(--subtext);
   font-size: 14px;
-  font-weight: 450;
 }
 
 .ver {
   margin-top: 10px;
   text-align: center;
   font-size: 12px;
-  opacity: 0.6;
+  opacity: 0.5;
   color: var(--subtext);
-  font-weight: 450;
 }
 
 /* ========================= */
-/* БЛОК ЯЗЫКА - ОСВЕТЛЕНО */
+/* БЛОК ЯЗЫКА */
 /* ========================= */
 .langBlock {
   margin-top: 22px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, .10);
   padding-top: 16px;
+}
+
+/* Светлая тема - разделитель */
+:root[data-theme="light"] .langBlock {
+  border-top-color: rgba(0, 0, 0, 0.1);
 }
 
 .langTitle {
@@ -354,22 +430,21 @@ body > * {
   color: var(--subtext);
   margin-bottom: 12px;
   text-align: center;
-  font-weight: 500;
 }
 
 .langPill {
   width: 100%;
   border-radius: 16px;
   padding: 14px 14px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .12);
   color: var(--text);
   outline: none;
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: 0 4px 12px rgba(0,0,0,.02);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -378,9 +453,19 @@ body > * {
   transition: all 0.2s ease;
 }
 
+/* Светлая тема - кнопка языка с блюром и серой обводкой */
+:root[data-theme="light"] .langPill {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: 1.5px solid var(--btn-border);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 .langPill:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: var(--accent1);
+  background: rgba(255, 255, 255, .13);
+  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
 }
 
 .langPill:active {
@@ -388,16 +473,21 @@ body > * {
 }
 
 .chev {
-  opacity: .7;
+  opacity: .8;
 }
 
 /* ========================= */
-/* БЛОК ПЛАТФОРМЫ - ОСВЕТЛЕНО */
+/* БЛОК ПЛАТФОРМЫ (iOS/Android) - НОВЫЙ */
 /* ========================= */
 .platformBlock {
   margin-top: 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, .10);
   padding-top: 16px;
+}
+
+/* Светлая тема - разделитель */
+:root[data-theme="light"] .platformBlock {
+  border-top-color: rgba(0, 0, 0, 0.1);
 }
 
 .platformTitle {
@@ -405,22 +495,21 @@ body > * {
   color: var(--subtext);
   margin-bottom: 12px;
   text-align: center;
-  font-weight: 500;
 }
 
 .platformPill {
   width: 100%;
   border-radius: 16px;
   padding: 14px 14px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .12);
   color: var(--text);
   outline: none;
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: 0 4px 12px rgba(0,0,0,.02);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -429,9 +518,19 @@ body > * {
   transition: all 0.2s ease;
 }
 
+/* Светлая тема - кнопка платформы с блюром и серой обводкой */
+:root[data-theme="light"] .platformPill {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: 1.5px solid var(--btn-border);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 .platformPill:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: var(--accent1);
+  background: rgba(255, 255, 255, .13);
+  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
 }
 
 .platformPill:active {
@@ -439,7 +538,7 @@ body > * {
 }
 
 /* ========================= */
-/* КНОПКА ТЕМЫ - ОСВЕТЛЕНО */
+/* КНОПКА ТЕМЫ */
 /* ========================= */
 .themePill {
   position: fixed;
@@ -448,24 +547,46 @@ body > * {
   z-index: 10000;
   padding: 10px 14px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 16%, white 8%) 0%,
+      rgba(255,255,255,.08) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
   color: var(--text);
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 800;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.02);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.12),
+    0 0 12px color-mix(in srgb, var(--accent1) 14%, transparent);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
+/* Светлая тема - кнопка темы с блюром и серой обводкой */
+:root[data-theme="light"] .themePill {
+  background: var(--btn-bg);
+  backdrop-filter: var(--btn-blur);
+  -webkit-backdrop-filter: var(--btn-blur);
+  border: 1.5px solid var(--btn-border);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 .themePill:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: var(--accent1);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 20%, white 10%) 0%,
+      rgba(255,255,255,.11) 100%
+    );
+  border-color: color-mix(in srgb, var(--accent1) 30%, rgba(255,255,255,.18));
 }
 
 .themePill:active {
@@ -473,13 +594,13 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS - ОСВЕТЛЕНО */
+/* BOTTOM SHEETS - ЯЗЫК, ЦВЕТ, ПЛАТФОРМА */
 /* ========================= */
 .langOverlay, .themeOverlay, .platformOverlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0,0,0,.2);
+  background: rgba(0,0,0,.34);
   display: none;
 }
 
@@ -497,7 +618,7 @@ body > * {
   border: 1.5px solid var(--sheet-border);
   backdrop-filter: blur(16px) saturate(118%);
   -webkit-backdrop-filter: blur(16px) saturate(118%);
-  box-shadow: 0 10px 30px rgba(0,0,0,.1);
+  box-shadow: 0 20px 44px rgba(0,0,0,.32);
   overflow: hidden;
   transform: translateY(110%);
   opacity: 0;
@@ -520,24 +641,24 @@ body > * {
 }
 
 .langSheetTitle, .themeSheetTitle, .platformSheetTitle {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--sheet-text);
 }
 
 .langClose, .themeClose, .platformClose {
   border: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, .08);
   color: var(--sheet-text);
   border: 1.5px solid var(--sheet-border);
   border-radius: 12px;
   padding: 8px 10px;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .langClose:hover, .themeClose:hover, .platformClose:hover {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, .11);
   border-color: var(--accent1);
 }
 
@@ -556,7 +677,7 @@ body > * {
   background: transparent;
   color: var(--sheet-text);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -570,7 +691,7 @@ body > * {
 }
 
 .langItem:hover, .themeItem:hover, .platformItem:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, .06);
 }
 
 .langItem .check, .themeItem .check, .platformItem .check {
@@ -588,22 +709,22 @@ body > * {
 }
 
 /* ========================= */
-/* TOAST УВЕДОМЛЕНИЯ - ОСВЕТЛЕНО */
+/* TOAST УВЕДОМЛЕНИЯ */
 /* ========================= */
 .toast-notification {
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.95);
-  border: 1.5px solid rgba(0, 0, 0, 0.06);
+  background: var(--sheet-bg);
+  border: 1.5px solid var(--sheet-border);
   border-radius: 24px;
   padding: 12px 20px;
-  color: #1a2634;
+  color: var(--sheet-text);
   font-weight: 600;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.26);
   z-index: 100000;
   animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   pointer-events: none;
