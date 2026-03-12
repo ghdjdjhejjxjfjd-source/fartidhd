@@ -13,7 +13,7 @@ from .db import (
     get_ai_mode, set_ai_mode,
     increment_messages, increment_images, add_stars_spent,
     get_user_limits, increment_groq_persona, increment_groq_style, increment_openai_style,
-    mem_clear_last
+    mem_clear_last, get_ai_mode_changes_sync
 )
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
 from groq_client import ask_groq
@@ -448,10 +448,22 @@ def api_user_limits(user_id: int):
     limits = get_user_limits(user_id)
     ai_mode = get_ai_mode(user_id)
     
+    # Получаем количество использованных смен режима
+    remaining_changes = get_ai_mode_changes_sync(user_id)
+    used_changes = 8 - remaining_changes
+    
     return jsonify({
         "user_id": user_id,
         "ai_mode": ai_mode,
-        "limits": limits
+        "limits": {
+            "groq_persona": limits["groq_persona"],
+            "groq_style": limits["groq_style"],
+            "openai_style": limits["openai_style"],
+            "groq_persona_max": limits["groq_persona_max"],
+            "groq_style_max": limits["groq_style_max"],
+            "openai_style_max": limits["openai_style_max"],
+            "ai_mode_changes": used_changes  # использовано = 8 - осталось
+        }
     })
 
 @api.post("/api/user/style/change")
