@@ -7,8 +7,7 @@ const API_BALANCE = API_BASE + "/api/stars/balance";
 const API_LIMITS = API_BASE + "/api/user/limits";
 const API_STYLE_CHANGE = API_BASE + "/api/user/style/change";
 const API_PERSONA = API_BASE + "/api/user/persona";
-const API_AI_MODE_GET = API_BASE + "/api/user/ai_mode";      // для GET
-const API_AI_MODE_SET = API_BASE + "/api/user/ai_mode";      // для POST (тот же URL, но метод POST)
+const API_AI_MODE = API_BASE + "/api/user/ai_mode";
 
 function getLang(){
   return localStorage.getItem("miniapp_lang_v1") || "ru";
@@ -115,6 +114,10 @@ export async function getUserLimits() {
     const r = await fetch(`${API_LIMITS}/${user.tg_user_id}`);
     if (r.ok) {
       const data = await r.json();
+      // Добавляем ai_mode_changes если его нет
+      if (!data.limits.ai_mode_changes) {
+        data.limits.ai_mode_changes = 0;
+      }
       return data;
     }
   } catch (e) {
@@ -196,8 +199,8 @@ export async function changeAiMode(newMode) {
   }
   
   try {
-    const r = await fetch(API_AI_MODE_SET, {
-      method: "POST",  // ← ВАЖНО: POST
+    const r = await fetch(API_AI_MODE, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         user_id: user.tg_user_id,
@@ -228,7 +231,7 @@ export async function getCurrentMode() {
   if (!user.tg_user_id) return null;
   
   try {
-    const r = await fetch(`${API_AI_MODE_GET}/${user.tg_user_id}`);
+    const r = await fetch(`${API_AI_MODE}/${user.tg_user_id}`);
     if (r.ok) {
       const data = await r.json();
       if (data.ai_mode) {
