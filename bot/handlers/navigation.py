@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from bot.utils import edit_to_menu
-from .router import navigation_stack  # импортируем стек из router.py
+from .state import navigation_stack  # ← импорт из state.py
 
 async def back_to_previous(update: Update, context: ContextTypes.DEFAULT_TYPE, query, uid: int):
     """Вернуться на предыдущий уровень"""
