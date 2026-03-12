@@ -123,6 +123,43 @@
       margin-left: 8px;
     }
 
+    /* Стили для загрузки */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent1);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      font-size: 16px;
+      color: white;
+      font-weight: 600;
+    }
+
     /* Стили для светлой темы */
     :root[data-theme="light"] .settings-row select {
       background: rgba(255, 255, 255, 0.9);
@@ -145,6 +182,12 @@
     :root[data-theme="light"] .pill {
       background: rgba(255, 255, 255, 0.9);
       border-color: rgba(0, 0, 0, 0.1);
+      color: #1a2634;
+    }
+    :root[data-theme="light"] .loading-overlay {
+      background: rgba(255,255,255,0.9);
+    }
+    :root[data-theme="light"] .loading-text {
       color: #1a2634;
     }
   </style>
@@ -173,9 +216,25 @@
     <button id="sendBtn">▶</button>
   </div>
 
+  <!-- Индикатор загрузки -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">Сохранение...</div>
+  </div>
+
   <div class="overlay" id="overlay">
     <div class="sheet">
       <h3 id="settingsTitle">⚙️ Настройки</h3>
+
+      <!-- Режим ИИ (НОВОЕ) -->
+      <div class="settings-row">
+        <div id="aiModeLabel">Режим ИИ</div>
+        <select id="aiModeSel">
+          <option value="fast" id="optFast">🚀 Быстрый (0.3 ⭐)</option>
+          <option value="quality" id="optQuality">💎 Качественный (1 ⭐)</option>
+        </select>
+      </div>
+      <div id="aiMode-limit" class="limit-hint"></div>
 
       <!-- Стиль ответа с отображением лимита -->
       <div class="settings-row">
@@ -223,6 +282,7 @@
 
   <script>
     const STORAGE_LANG = "miniapp_lang_v1";
+    const STORAGE_AI_MODE = "ai_mode_v1";
 
     function getLang(){
       const url = new URL(window.location.href);
@@ -236,6 +296,9 @@
         title:"AI Chat",
         placeholder:"Напиши сообщение…",
         settings:"⚙️ Настройки",
+        aiMode:"Режим ИИ",
+        fast:"🚀 Быстрый (0.3 ⭐)",
+        quality:"💎 Качественный (1 ⭐)",
         style:"Стиль ответа",
         short:"Коротко",
         steps:"По шагам",
@@ -250,11 +313,16 @@
         close:"Закрыть",
         save:"💾 Сохранить",
         cancel:"✖ Отмена",
+        saving:"Сохранение...",
+        aiModeLimit:"Осталось смен режима: {remaining}/8"
       },
       kk: {
         title:"AI чат",
         placeholder:"Хабарлама жаз…",
         settings:"⚙️ Баптаулар",
+        aiMode:"AI режимі",
+        fast:"🚀 Жылдам (0.3 ⭐)",
+        quality:"💎 Сапалы (1 ⭐)",
         style:"Жауап стилі",
         short:"Қысқа",
         steps:"Қадаммен",
@@ -269,11 +337,16 @@
         close:"Жабу",
         save:"💾 Сақтау",
         cancel:"✖ Болдырмау",
+        saving:"Сақтау...",
+        aiModeLimit:"Режим ауыстыру қалды: {remaining}/8"
       },
       en: {
         title:"AI Chat",
         placeholder:"Type a message…",
         settings:"⚙️ Settings",
+        aiMode:"AI Mode",
+        fast:"🚀 Fast (0.3 ⭐)",
+        quality:"💎 Quality (1 ⭐)",
         style:"Answer style",
         short:"Short",
         steps:"Step-by-step",
@@ -288,11 +361,16 @@
         close:"Close",
         save:"💾 Save",
         cancel:"✖ Cancel",
+        saving:"Saving...",
+        aiModeLimit:"Mode changes left: {remaining}/8"
       },
       tr: {
         title:"Yapay Zekâ Sohbet",
         placeholder:"Mesaj yaz…",
         settings:"⚙️ Ayarlar",
+        aiMode:"AI Modu",
+        fast:"🚀 Hızlı (0.3 ⭐)",
+        quality:"💎 Kaliteli (1 ⭐)",
         style:"Yanıt stili",
         short:"Kısa",
         steps:"Adım adım",
@@ -307,11 +385,16 @@
         close:"Kapat",
         save:"💾 Kaydet",
         cancel:"✖ İptal",
+        saving:"Kaydediliyor...",
+        aiModeLimit:"Kalan mod değişikliği: {remaining}/8"
       },
       uk: {
         title:"AI чат",
         placeholder:"Напишіть повідомлення…",
         settings:"⚙️ Налаштування",
+        aiMode:"Режим AI",
+        fast:"🚀 Швидкий (0.3 ⭐)",
+        quality:"💎 Якісний (1 ⭐)",
         style:"Стиль відповіді",
         short:"Коротко",
         steps:"Кроками",
@@ -326,11 +409,16 @@
         close:"Закрити",
         save:"💾 Зберегти",
         cancel:"✖ Скасувати",
+        saving:"Збереження...",
+        aiModeLimit:"Залишилось змін режиму: {remaining}/8"
       },
       fr: {
         title:"Chat IA",
         placeholder:"Écrire un message…",
         settings:"⚙️ Réglages",
+        aiMode:"Mode IA",
+        fast:"🚀 Rapide (0.3 ⭐)",
+        quality:"💎 Qualité (1 ⭐)",
         style:"Style",
         short:"Court",
         steps:"Par étapes",
@@ -345,6 +433,8 @@
         close:"Fermer",
         save:"💾 Enregistrer",
         cancel:"✖ Annuler",
+        saving:"Enregistrement...",
+        aiModeLimit:"Changements de mode restants: {remaining}/8"
       },
     };
 
@@ -356,11 +446,19 @@
     if (input) input.placeholder = t.placeholder;
 
     document.getElementById("settingsTitle").textContent = t.settings;
+    
+    // Режим ИИ
+    document.getElementById("aiModeLabel").textContent = t.aiMode;
+    document.getElementById("optFast").textContent = t.fast;
+    document.getElementById("optQuality").textContent = t.quality;
+    
+    // Стиль
     document.getElementById("styleLabel").textContent = t.style;
     document.getElementById("optShort").textContent = t.short;
     document.getElementById("optSteps").textContent = t.steps;
     document.getElementById("optDetail").textContent = t.detail;
 
+    // Характер
     document.getElementById("personaLabel").textContent = t.persona;
     document.getElementById("optFriendly").textContent = t.friendly;
     document.getElementById("optFun").textContent = t.fun;
@@ -370,11 +468,15 @@
     document.getElementById("chatLabel").textContent = t.chat;
     document.getElementById("clearBtn").textContent = t.clear;
     
-    // Обновляем текст новых кнопок
+    // Кнопки
     const saveBtn = document.getElementById("saveSettingsBtn");
     const cancelBtn = document.getElementById("cancelSettingsBtn");
     if (saveBtn) saveBtn.textContent = t.save;
     if (cancelBtn) cancelBtn.textContent = t.cancel;
+
+    // Текст загрузки
+    const loadingText = document.getElementById("loadingText");
+    if (loadingText) loadingText.textContent = t.saving;
 
     try{ localStorage.setItem(STORAGE_LANG, lang); }catch(e){}
   </script>
