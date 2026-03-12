@@ -1,5 +1,5 @@
 // docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
-import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits } from "./api.js";
+import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
 export const STORAGE_KEY = "chat_history_v1";
@@ -64,6 +64,23 @@ async function waitForInternet(retries = MAX_RETRIES) {
   return false;
 }
 
+// Функция для показа индикатора загрузки
+function showLoading(message = "Сохранение...") {
+  const overlay = document.getElementById('loadingOverlay');
+  const text = document.getElementById('loadingText');
+  if (overlay) {
+    if (text) text.textContent = message;
+    overlay.style.display = 'flex';
+  }
+}
+
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+  }
+}
+
 export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let history = loadHistory();
   
@@ -83,6 +100,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   
   let tempStyle = null;
   let tempPersona = null;
+  let tempAiMode = null;  // НОВОЕ: временный режим ИИ
   let hasUnsavedChanges = false;
   let currentAiMode = 'fast';
   let isLoadingLimits = false;
@@ -267,6 +285,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     return localStorage.getItem("ai_style") || "steps";
   }
 
+  function getAiModeFromStorage() {
+    return localStorage.getItem("ai_mode") || "fast";
+  }
+
   function renderFromHistory(){
     chatEl.innerHTML = "";
     
@@ -363,6 +385,15 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       styleLimitSpan.textContent = `📊 Осталось изменений стиля: ${remaining}/${max}`;
       styleLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
     }
+
+    // НОВОЕ: отображение лимита для режима ИИ
+    const aiModeLimitSpan = document.getElementById('aiMode-limit');
+    if (aiModeLimitSpan) {
+      const t = window.I18N?.[getLang()] || window.I18N?.ru;
+      const remaining = 8 - (currentLimits.ai_mode_changes || 0);
+      aiModeLimitSpan.textContent = (t?.aiModeLimit || 'Осталось смен режима: {remaining}/8').replace('{remaining}', remaining);
+      aiModeLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
+    }
   }
 
   function updateSaveButton() {
@@ -408,7 +439,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       tempStyle = newStyle;
     }
     
-    hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
+    hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null) || (tempAiMode !== null);
     
     updateSaveButton();
     updateUnsavedIndicator();
@@ -429,7 +460,23 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       tempPersona = newPersona;
     }
     
-    hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
+    hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null) || (tempAiMode !== null);
+    
+    updateSaveButton();
+    updateUnsavedIndicator();
+  }
+
+  // НОВОЕ: обработка изменения режима ИИ
+  function handleAiModeChange(newMode) {
+    const originalMode = getAiModeFromStorage();
+    
+    if (newMode === originalMode && !tempAiMode) {
+      tempAiMode = null;
+    } else {
+      tempAiMode = newMode;
+    }
+    
+    hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null) || (tempAiMode !== null);
     
     updateSaveButton();
     updateUnsavedIndicator();
@@ -438,14 +485,30 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
+    showLoading(window.t?.saving || "Сохранение...");
+    
     let success = true;
     let errorMessage = '';
     
-    if (tempStyle) {
+    // Сохраняем режим ИИ
+    if (tempAiMode) {
+      const result = await changeAiMode(tempAiMode);
+      if (!result.success) {
+        success = false;
+        errorMessage = result.message || 'Ошибка при смене режима ИИ';
+      } else {
+        localStorage.setItem("ai_mode", tempAiMode);
+        currentAiMode = tempAiMode;
+      }
+    }
+    
+    if (tempStyle && success) {
       const result = await changeStyle(tempStyle);
       if (!result.success) {
         success = false;
         errorMessage = result.message || 'Ошибка при смене стиля';
+      } else {
+        localStorage.setItem("ai_style", tempStyle);
       }
     }
     
@@ -454,19 +517,17 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       if (!result.success) {
         success = false;
         errorMessage = result.message || 'Ошибка при смене характера';
+      } else {
+        localStorage.setItem("ai_persona", tempPersona);
       }
     }
     
+    hideLoading();
+    
     if (success) {
-      if (tempStyle) {
-        localStorage.setItem("ai_style", tempStyle);
-      }
-      if (tempPersona && currentAiMode === 'fast') {
-        localStorage.setItem("ai_persona", tempPersona);
-      }
-      
       tempStyle = null;
       tempPersona = null;
+      tempAiMode = null;
       hasUnsavedChanges = false;
       
       await fetchLimits();
@@ -474,6 +535,13 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       updateSaveButton();
       updateUnsavedIndicator();
       closeSettings();
+      
+      // Если сменился режим ИИ, перезагружаем через 2 секунды
+      if (tempAiMode) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
     } else {
       alert(`❌ ${errorMessage}`);
     }
@@ -482,6 +550,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   function cancelSettings() {
     const personaSelect = document.getElementById('personaSel');
     const styleSelect = document.getElementById('styleSel');
+    const aiModeSelect = document.getElementById('aiModeSel');
     
     if (personaSelect) {
       personaSelect.value = getPersona();
@@ -489,9 +558,13 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     if (styleSelect) {
       styleSelect.value = getStyle();
     }
+    if (aiModeSelect) {
+      aiModeSelect.value = getAiModeFromStorage();
+    }
     
     tempStyle = null;
     tempPersona = null;
+    tempAiMode = null;
     hasUnsavedChanges = false;
     
     updateSaveButton();
@@ -515,6 +588,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       
       const personaSelect = document.getElementById('personaSel');
       const styleSelect = document.getElementById('styleSel');
+      const aiModeSelect = document.getElementById('aiModeSel');
       
       if (personaSelect) {
         personaSelect.value = getPersona();
@@ -522,9 +596,13 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       if (styleSelect) {
         styleSelect.value = getStyle();
       }
+      if (aiModeSelect) {
+        aiModeSelect.value = getAiModeFromStorage();
+      }
       
       tempStyle = null;
       tempPersona = null;
+      tempAiMode = null;
       hasUnsavedChanges = false;
       
       fetchLimits().then(() => {
@@ -541,6 +619,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const lang = getLang();
     const persona = tempPersona || getPersona();
     const style = tempStyle || getStyle();
+    const aiMode = tempAiMode || getAiModeFromStorage();
     
     const maxHistory = 20;
     const recentHistory = history.slice(-maxHistory);
@@ -815,6 +894,14 @@ Response:`;
     if (styleSelect) {
       styleSelect.addEventListener('change', (e) => {
         handleStyleChange(e.target.value);
+      });
+    }
+    
+    // НОВОЕ: обработчик для режима ИИ
+    const aiModeSelect = document.getElementById('aiModeSel');
+    if (aiModeSelect) {
+      aiModeSelect.addEventListener('change', (e) => {
+        handleAiModeChange(e.target.value);
       });
     }
     
