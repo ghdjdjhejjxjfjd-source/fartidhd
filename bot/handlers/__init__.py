@@ -8,6 +8,7 @@ from .tabs.status import show_status
 from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
+from .tabs.style import show_style_settings, set_style
 
 # Импортируем handle_message из переименованного файла
 from bot.old_handlers import handle_message
@@ -27,5 +28,7 @@ __all__ = [
     'show_support',
     'show_buy_stars',
     'buy_stars_package',
+    'show_style_settings',
+    'set_style',
     'handle_message',
 ]
