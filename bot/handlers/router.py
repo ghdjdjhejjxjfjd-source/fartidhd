@@ -5,7 +5,7 @@ from api import get_ai_mode, get_ai_mode_changes, mem_clear, set_ai_mode
 from payments import get_balance
 from bot.menu import (
     main_menu_for_user, tab_kb, stars_kb, mode_settings_kb,
-    persona_settings_kb, lang_settings_kb, settings_kb,
+    persona_settings_kb, lang_settings_kb, settings_kb, ai_lang_settings_kb,
     ai_mode_settings_kb, confirm_ai_mode_kb, TAB_TEXT, style_settings_kb
 )
 from bot.utils import edit_to_menu, send_fresh_menu, set_last_menu, update_user_menu
@@ -21,6 +21,7 @@ from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
 from .tabs.style import show_style_settings, set_style
+from .tabs.ai_lang import show_ai_lang_settings, set_ai_lang
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -55,7 +56,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         current_tab = context.user_data.get('current_tab')
         parent_tabs = ['settings', 'profile', 'help', 'status', 'ref', 'support', 'buy_stars', 'balance']
-        child_tabs = ['ai_mode_settings', 'mode_settings', 'persona_settings', 'lang_settings', 'style_settings']
+        child_tabs = ['ai_mode_settings', 'mode_settings', 'persona_settings', 'lang_settings', 'style_settings', 'ai_lang_settings']
         
         if current_tab in parent_tabs and key in child_tabs:
             navigation_stack[uid] = current_tab
@@ -70,10 +71,17 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await buy_stars_package(update, context, query, uid, package_id)
         return
     
-    # НАСТРОЙКИ - ЯЗЫК
+    # НАСТРОЙКИ - ЯЗЫК ИНТЕРФЕЙСА
     if data.startswith("set_lang:"):
         lang = data.split("set_lang:", 1)[1].strip()
         await handle_set_lang(update, context, query, uid, lang)
+        await open_tab(context, query, uid, "settings")
+        return
+    
+    # НАСТРОЙКИ - ЯЗЫК ОТВЕТОВ ИИ
+    if data.startswith("set_ai_lang:"):
+        lang = data.split("set_ai_lang:", 1)[1].strip()
+        await set_ai_lang(update, context, query, uid, lang)
         await open_tab(context, query, uid, "settings")
         return
     
@@ -186,6 +194,9 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
     elif tab_key == "style_settings":
         await show_style_settings(context, query, user_id)
     
+    elif tab_key == "ai_lang_settings":
+        await show_ai_lang_settings(context, query, user_id)
+    
     elif tab_key == "settings":
         text = "⚙️ Настройки\n\nВыбери раздел:"
         try:
@@ -220,7 +231,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
     
     elif tab_key == "lang_settings":
-        text = TAB_TEXT.get(tab_key, "🌐 Язык\n\nВыбери язык интерфейса:")
+        text = TAB_TEXT.get(tab_key, "🌐 Язык интерфейса\n\nВыбери язык меню и кнопок:")
         try:
             await query.message.edit_text(text, reply_markup=lang_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
