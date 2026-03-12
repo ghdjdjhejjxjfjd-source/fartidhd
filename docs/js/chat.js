@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (звезды + зум)
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -662,16 +662,13 @@ Response:`;
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
 
-    // ✅ БЛОКИРУЕМ КНОПКУ СРАЗУ
+    // БЛОКИРУЕМ КНОПКУ
     sending = true;
     sendBtnEl.disabled = true;
 
-    // ✅ ПРОВЕРКА ИНТЕРНЕТА
+    // ПРОВЕРКА ИНТЕРНЕТА
     if (!navigator.onLine) {
-      // Показываем сообщение ТОЛЬКО ОДИН РАЗ
       add("bot", "📡 Нет интернет-соединения. Проверьте подключение.", true);
-      
-      // Разблокируем кнопку
       sending = false;
       sendBtnEl.disabled = false;
       return;
@@ -703,7 +700,6 @@ Response:`;
         lastError = e;
         console.log(`Attempt ${attempt} failed:`, e);
         
-        // Если интернет пропал во время отправки
         if (!navigator.onLine || e.message === "no_internet") {
           removeTyping();
           add("bot", "📡 Интернет пропал. Проверьте подключение.", true);
@@ -723,9 +719,11 @@ Response:`;
     
     if (!success) {
       // ✅ ПРАВИЛЬНАЯ ОБРАБОТКА ОШИБОК
-      if (lastError?.message?.includes("insufficient_stars")) {
+      const errorMessage = lastError?.message || "";
+      
+      if (errorMessage.includes("insufficient_stars") || errorMessage.includes("402")) {
         add("bot", "❌ Недостаточно звезд. Купите в меню: ⭐ Купить звезды", true);
-      } else if (lastError?.message?.includes("Failed to fetch") || lastError?.message?.includes("network")) {
+      } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
         add("bot", "📡 Проблема с сетью. Проверьте интернет.", true);
       } else {
         add("bot", "❌ Ошибка сервера. Попробуйте позже.", true);
@@ -807,15 +805,12 @@ Response:`;
     }
   }
 
-  // ✅ ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА - слушаем изменения интернета
   function setupNetworkListeners() {
     window.addEventListener('online', () => {
-      // Можно добавить уведомление
       add("bot", "📡 Интернет соединение восстановлено!", true);
     });
     
     window.addEventListener('offline', () => {
-      // При пропадании интернета блокируем кнопку
       if (sendBtnEl) {
         sendBtnEl.disabled = true;
       }
@@ -835,10 +830,41 @@ Response:`;
       }
     });
 
-    chatEl.addEventListener("pointerdown", () => {
-      if (document.activeElement === inputEl) inputEl.blur();
-    });
-    
+    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ ТАП (ЗУМ)
+    chatEl.addEventListener("touchstart", (e) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // ✅ ЗАПРЕЩАЕМ ЖЕСТЫ МАСШТАБИРОВАНИЯ
+    document.addEventListener('gesturestart', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('gesturechange', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('gestureend', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ ТАП НА ВСЕЙ СТРАНИЦЕ
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, { passive: false });
+
+    // ✅ ЗАПРЕЩАЕМ ДВОЙНОЙ КЛИК
+    document.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
     const gearBtn = document.getElementById('gearBtn');
     if (gearBtn) gearBtn.addEventListener('click', openSettings);
     
@@ -895,10 +921,8 @@ Response:`;
       });
     }
     
-    // ✅ Добавляем слушатели сети
     setupNetworkListeners();
     
-    // ✅ При загрузке проверяем интернет
     if (!navigator.onLine) {
       sendBtnEl.disabled = true;
     }
