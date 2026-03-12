@@ -2,6 +2,8 @@
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
+const API_BASE = "https://fayrat-production.up.railway.app";  // ← ДОБАВЛЕНО!
+
 export const STORAGE_KEY = "chat_history_v1";
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
