@@ -388,7 +388,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       styleLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
     }
 
-    // Отображение лимита для режима ИИ
     const aiModeLimitSpan = document.getElementById('aiMode-limit');
     if (aiModeLimitSpan) {
       const remaining = 8 - (currentLimits.ai_mode_changes || 0);
@@ -518,10 +517,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       closeSettings();
       
       if (modeChanged) {
-        alert("✅ Режим ИИ изменен");
+        add("bot", "✅ Режим ИИ изменен", true);
       }
     } else {
-      alert(`❌ ${errorMessage}`);
+      add("bot", `❌ ${errorMessage}`, true);
     }
   }
 
@@ -806,7 +805,7 @@ Response:`;
           await clearAIMemory();
         } catch (e) {}
         
-        alert("🔄 Режим изменен. Страница обновится...");
+        add("bot", "🔄 Режим изменен. Страница обновится...", true);
         
         reloadTimer = setTimeout(() => {
           window.location.reload();
