@@ -404,105 +404,102 @@ html.android-mode .msg.bot.typing {
   --user-border: rgba(139, 184, 255, 0.30);
 }
 
+/* ===== СВЕТЛАЯ ТЕМА - ИСПРАВЛЕНО ===== */
 :root[data-theme="light"] {
   --accent1: #3a8cff;
   --accent2: #1a6cff;
   --user-bg: rgba(58, 140, 255, 0.12);
   --user-border: rgba(58, 140, 255, 0.20);
-  --text: #1a2634;
   
-  /* Полупрозрачные кнопки и панели с размытием */
+  /* 📝 ТЕКСТ - СВЕТЛЕЕ */
+  --text-primary: #2c3e50;      /* Основной текст (темно-серый) */
+  --text-secondary: #4a5a6a;     /* Второстепенный текст (серый) */
+  
+  /* Панели */
   --btn-bg: rgba(255, 255, 255, 0.4);
-  --btn-border: #c0c0c0; /* СЕРАЯ ОБВОДКА */
-  --btn-border-width: 1.5px;
   --panel-bg: rgba(255, 255, 255, 0.25);
   --blur-amount: blur(12px);
+  
+  /* 🔘 СЕРАЯ ОБВОДКА ТОЛЬКО ДЛЯ КНОПОК */
+  --btn-border: #c0c0c0;
+  --btn-border-width: 1.5px;
 }
 
-/* Светлая тема - стили для чата */
+/* Светлая тема - пузыри БЕЗ обводки */
 :root[data-theme="light"] .bot .msg {
   background: var(--btn-bg);
   backdrop-filter: var(--blur-amount);
   -webkit-backdrop-filter: var(--blur-amount);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
-  color: var(--text);
+  border: none;  /* УБРАЛ ОБВОДКУ */
+  color: var(--text-primary);  /* Текст светлее */
   box-shadow: none;
 }
 
 :root[data-theme="light"] .user .msg {
-  color: var(--text);
+  color: var(--text-primary);  /* Текст светлее */
   background: var(--user-bg);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
+  border: none;  /* УБРАЛ ОБВОДКУ */
   box-shadow: none;
 }
 
-:root[data-theme="light"] .input {
-  background: var(--panel-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border-top: 1px solid var(--btn-border);
-}
-
+/* Светлая тема - поле ввода (оставил обводку) */
 :root[data-theme="light"] .input textarea {
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--text);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-primary);  /* Текст светлее */
+  border: var(--btn-border-width) solid var(--btn-border); /* ОБВОДКА ЕСТЬ */
   box-shadow: none;
 }
 
 :root[data-theme="light"] .input textarea::placeholder {
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--text-secondary);
 }
 
-:root[data-theme="light"] .input button {
-  color: white;
-  border: none;
-  box-shadow: none;
-}
-
+/* Светлая тема - верхняя панель БЕЗ обводки */
 :root[data-theme="light"] .top a,
 :root[data-theme="light"] .title,
 :root[data-theme="light"] .gear {
   background: var(--btn-bg);
   backdrop-filter: var(--blur-amount);
   -webkit-backdrop-filter: var(--blur-amount);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
-  color: var(--text);
+  border: none;  /* УБРАЛ ОБВОДКУ */
+  color: var(--text-primary);  /* Текст светлее */
 }
 
+/* Светлая тема - иконки */
 :root[data-theme="light"] .action-btn svg {
-  fill: rgba(0, 0, 0, 0.5);
+  fill: var(--text-secondary);
 }
 
 :root[data-theme="light"] .action-btn:hover svg {
   fill: var(--accent1);
 }
 
+/* Светлая тема - пузырь "печатает" БЕЗ обводки */
 :root[data-theme="light"] .msg.bot.typing {
   background: var(--btn-bg);
   backdrop-filter: var(--blur-amount);
   -webkit-backdrop-filter: var(--blur-amount);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
+  border: none;  /* УБРАЛ ОБВОДКУ */
   box-shadow: none;
 }
 
 :root[data-theme="light"] .typing .dot {
-  background: var(--text);
+  background: var(--text-secondary);
 }
 
 /* Светлая тема для Android */
 html.android-mode[data-theme="light"] .bot .msg {
   background: #e8ecf3;
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
-  color: #1a2634;
+  border: none;  /* УБРАЛ ОБВОДКУ */
+  color: var(--text-primary);
   backdrop-filter: none;
   box-shadow: none;
 }
 
 html.android-mode[data-theme="light"] .user .msg {
   background: rgba(58, 140, 255, 0.15);
-  color: #1a2634;
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
+  color: var(--text-primary);
+  border: none;  /* УБРАЛ ОБВОДКУ */
   box-shadow: none;
 }
 
@@ -512,8 +509,8 @@ html.android-mode[data-theme="light"] .input {
 
 html.android-mode[data-theme="light"] .input textarea {
   background: white;
-  color: #1a2634;
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
+  color: var(--text-primary);
+  border: var(--btn-border-width) solid var(--btn-border); /* ОБВОДКА ЕСТЬ */
   box-shadow: none;
 }
 
@@ -559,7 +556,15 @@ html.android-mode .sheet {
   background: var(--panel-bg);
   backdrop-filter: var(--blur-amount);
   -webkit-backdrop-filter: var(--blur-amount);
-  border: var(--btn-border-width) solid var(--btn-border); /* СЕРАЯ ОБВОДКА */
+  border: var(--btn-border-width) solid var(--btn-border); /* ОБВОДКА ЕСТЬ */
+}
+
+:root[data-theme="light"] .sheet h3,
+:root[data-theme="light"] .sheet div,
+:root[data-theme="light"] .settings-row,
+:root[data-theme="light"] .row,
+:root[data-theme="light"] .limit-hint {
+  color: var(--text-primary);
 }
 
 .sheet h3{
