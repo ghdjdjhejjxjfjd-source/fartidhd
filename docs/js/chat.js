@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (с проверкой лимитов)
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (с таймаутом для анимации)
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -753,7 +753,7 @@ IMPORTANT INSTRUCTIONS:
 Response:`;
   }
 
-  // ========== ФУНКЦИЯ ОТПРАВКИ ==========
+  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ (с таймаутом) ==========
   async function send() {
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
@@ -762,12 +762,28 @@ Response:`;
     sending = true;
     sendBtnEl.disabled = true;
 
+    // ПРОВЕРКА ИНТЕРНЕТА ПЕРЕД ОТПРАВКОЙ
+    if (!navigator.onLine) {
+      add("bot", "📡 Нет интернет-соединения. Проверьте подключение.", true);
+      sending = false;
+      sendBtnEl.disabled = false;
+      return;
+    }
+
     // Добавляем сообщение пользователя
     add("user", t, true);
     inputEl.value = "";
     if (inputEl.tagName === 'TEXTAREA') inputEl.style.height = 'auto';
     
     addTyping();
+
+    // ТАЙМАУТ ДЛЯ АНИМАЦИИ ПЕЧАТАНИЯ (15 секунд)
+    const typingTimeout = setTimeout(() => {
+      removeTyping();
+      add("bot", "⏱️ Превышено время ожидания. Проверьте интернет и попробуйте снова.", true);
+      sending = false;
+      sendBtnEl.disabled = false;
+    }, 15000);
 
     let lastError = null;
     let success = false;
@@ -779,6 +795,7 @@ Response:`;
 
         const answer = await askAI(t);
         
+        clearTimeout(typingTimeout); // Очищаем таймаут
         removeTyping();
         add("bot", answer || "…", true);
         await updateMenuBalance();
@@ -790,22 +807,24 @@ Response:`;
         console.log(`Attempt ${attempt} failed:`, e);
         
         if (!navigator.onLine || e.message === "no_internet") {
+          clearTimeout(typingTimeout);
           removeTyping();
           add("bot", "📡 Интернет пропал. Проверьте подключение.", true);
-          
-          // ⚠️ ВАЖНО: НЕ разблокируем кнопку!
-          // sending остается true, кнопка disabled
-          
-          return; // Выходим, не разблокируя кнопку
+          sending = false;
+          sendBtnEl.disabled = false;
+          return;
         }
         
         if (attempt < MAX_RETRIES) {
+          // Пересоздаем анимацию если нужно
+          removeTyping();
           addTyping();
           await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
         }
       }
     }
 
+    clearTimeout(typingTimeout); // Очищаем таймаут
     removeTyping();
     
     if (!success) {
@@ -817,27 +836,15 @@ Response:`;
           errorMessage.includes("Insufficient stars") ||
           errorStatus === 402) {
         add("bot", "❌ Недостаточно звезд. Купите в меню: ⭐ Купить звезды", true);
-        
-        // Разблокируем кнопку только при ошибке звезд
-        sending = false;
-        sendBtnEl.disabled = false;
       } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
         add("bot", "📡 Проблема с сетью. Проверьте интернет.", true);
-        
-        // ⚠️ При сетевой ошибке НЕ разблокируем кнопку
-        // sending остается true, кнопка disabled
       } else {
         add("bot", "❌ Ошибка сервера. Попробуйте позже.", true);
-        
-        // Разблокируем при других ошибках
-        sending = false;
-        sendBtnEl.disabled = false;
       }
-    } else {
-      // Успешно отправили - разблокируем
-      sending = false;
-      sendBtnEl.disabled = false;
     }
+
+    sending = false;
+    sendBtnEl.disabled = false;
   }
 
   async function updateMenuBalance() {
