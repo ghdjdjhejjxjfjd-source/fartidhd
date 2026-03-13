@@ -395,7 +395,6 @@ html.android-mode .msg.bot.typing {
   --accent2: #3496ff;
   --user-bg: rgba(90, 174, 255, 0.28);
   --user-border: rgba(90, 174, 255, 0.34);
-  --text-limit: #ffffff; /* Белый текст для лимитов */
 }
 
 :root[data-theme="black"] {
@@ -403,64 +402,66 @@ html.android-mode .msg.bot.typing {
   --accent2: #5a98ff;
   --user-bg: rgba(139, 184, 255, 0.25);
   --user-border: rgba(139, 184, 255, 0.30);
-  --text-limit: #ffffff; /* Белый текст для лимитов */
 }
 
-/* ===== СВЕТЛАЯ ТЕМА - без изменений ===== */
+/* ===== СВЕТЛАЯ ТЕМА ===== */
 :root[data-theme="light"] {
   --accent1: #3a8cff;
   --accent2: #1a6cff;
   --user-bg: rgba(58, 140, 255, 0.12);
   --user-border: rgba(58, 140, 255, 0.20);
   
-  /* 📝 ТЕКСТ - СВЕТЛЕЕ */
-  --text-primary: #2c3e50;      /* Основной текст (темно-серый) */
-  --text-secondary: #4a5a6a;     /* Второстепенный текст (серый) */
-  --text-limit: #4a5a6a;         /* Серый для лимитов (как было) */
+  /* 📝 ТЕКСТ */
+  --text-primary: #2c3e50;
+  --text-secondary: #4a5a6a;
   
   /* Панели */
   --btn-bg: rgba(255, 255, 255, 0.4);
   --panel-bg: rgba(255, 255, 255, 0.25);
   --blur-amount: blur(12px);
   
-  /* 🔘 СЕРАЯ ОБВОДКА ТОЛЬКО ДЛЯ КНОПОК */
+  /* 🔘 СЕРАЯ ОБВОДКА */
   --btn-border: #c0c0c0;
   --btn-border-width: 1.5px;
 }
 
-/* Синяя тема - текст лимитов белый */
-:root[data-theme="blue"] .limit-hint {
-  color: var(--text-limit);
-}
+/* ============================= */
+/* ЛИМИТЫ - БЕЛЫЕ ДЛЯ СИНЕЙ И ЧЕРНОЙ ТЕМЫ */
+/* ============================= */
 
-:root[data-theme="blue"] .settings-row .limit-hint {
-  color: var(--text-limit);
-}
-
+/* Синяя тема - все лимиты белые */
+:root[data-theme="blue"] .limit-hint,
 :root[data-theme="blue"] #aiMode-limit,
 :root[data-theme="blue"] #style-limit,
-:root[data-theme="blue"] #persona-limit {
-  color: var(--text-limit);
+:root[data-theme="blue"] #persona-limit,
+:root[data-theme="blue"] .settings-row .limit-hint {
+  color: #ffffff !important;
 }
 
-/* Черная тема - текст лимитов белый */
-:root[data-theme="black"] .limit-hint {
-  color: var(--text-limit);
-}
-
-:root[data-theme="black"] .settings-row .limit-hint {
-  color: var(--text-limit);
-}
-
+/* Черная тема - все лимиты белые */
+:root[data-theme="black"] .limit-hint,
 :root[data-theme="black"] #aiMode-limit,
 :root[data-theme="black"] #style-limit,
-:root[data-theme="black"] #persona-limit {
-  color: var(--text-limit);
+:root[data-theme="black"] #persona-limit,
+:root[data-theme="black"] .settings-row .limit-hint {
+  color: #ffffff !important;
 }
 
-/* Светлая тема - оставляем как есть */
-:root[data-theme="light"] .limit-hint {
-  color: var(--text-limit);
+/* Светлая тема - лимиты серые */
+:root[data-theme="light"] .limit-hint,
+:root[data-theme="light"] #aiMode-limit,
+:root[data-theme="light"] #style-limit,
+:root[data-theme="light"] #persona-limit,
+:root[data-theme="light"] .settings-row .limit-hint {
+  color: var(--text-secondary);
+}
+
+/* Красный цвет для предупреждения (лимит исчерпан) - для всех тем */
+.limit-hint.warning,
+#aiMode-limit.warning,
+#style-limit.warning,
+#persona-limit.warning {
+  color: #ff4444 !important;
 }
 
 /* Светлая тема - пузыри БЕЗ обводки */
@@ -660,10 +661,6 @@ html.android-mode .sheet {
   padding-left: 8px;
   text-align: left;
   width: 100%;
-}
-
-.limit-hint.warning {
-  color: #ff4444 !important; /* Красный для предупреждения всегда */
 }
 
 /* Кнопки */
