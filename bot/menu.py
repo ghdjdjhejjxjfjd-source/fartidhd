@@ -1,5 +1,5 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_ai_lang, get_user_style, get_ai_mode
+from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_ai_lang, get_user_style
 from payments import get_balance
 from .config import MINIAPP_URL, is_valid_https_url
 
@@ -29,7 +29,6 @@ TAB_TEXT = {
                "🌐 Язык интерфейса: {lang}\n"
                "🌐 Язык ответов: {ai_lang}\n"
                "🔄 Режим работы: {mode}\n"
-               "⚡ Режим ИИ: {ai_mode}\n"
                "💳 FREE: {free}\n"
                "⛔ Блок: {blocked}",
     "status": "📌 Статус\n\nРаздел в разработке.",
@@ -44,17 +43,6 @@ TAB_TEXT = {
     "style_settings": "📝 Стиль ответа\n\nВыбери стиль ответов ИИ:",
     "lang_settings": "🌐 Язык интерфейса\n\nВыбери язык меню и кнопок:",
     "ai_lang_settings": "🌐 Язык ответов ИИ\n\nВыбери на каком языке будет отвечать ИИ:",
-    "ai_mode_settings": "⚡ Режим ИИ\n\n━━━━━━━━━━━━━━━━━━━━━━\n"
-                        "🚀 БЫСТРЫЙ (0.3 ⭐)\n"
-                        "• Groq AI\n"
-                        "• Можно менять характер и стиль\n\n"
-                        "💎 КАЧЕСТВЕННЫЙ (1 ⭐)\n"
-                        "• OpenAI\n"
-                        "• Можно менять только стиль\n"
-                        "━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                        "📊 Сегодня осталось смен режима: {changes_left}/8\n"
-                        "⏰ Сброс в 00:00 (GMT+6)",
-    "confirm_ai_mode_change": "⚠️ ПОДТВЕРЖДЕНИЕ\n\nВы выбрали режим: {new_mode}\n\nТекущий режим: {current_mode}\n\nПри смене режима:\n• История чата будет полностью очищена\n• Все предыдущие сообщения удалятся\n\nПродолжить?",
 }
 
 
@@ -69,7 +57,6 @@ def tab_kb(user_id: int) -> InlineKeyboardMarkup:
 def settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура настроек"""
     use_mini_app = get_use_mini_app(user_id)
-    ai_mode = get_ai_mode(user_id)
     
     keyboard = []
     
@@ -78,9 +65,8 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
         # Язык ответов ИИ - доступен всегда во встроенном режиме
         keyboard.append([InlineKeyboardButton("🌐 Язык ответов ИИ", callback_data="tab:ai_lang_settings")])
         
-        # Характер - только для быстрого режима (Groq)
-        if ai_mode == "fast":
-            keyboard.append([InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")])
+        # Характер - доступен всегда (режим ИИ теперь только в мини-приложении)
+        keyboard.append([InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")])
         
         # Стиль - доступен всегда
         keyboard.append([InlineKeyboardButton("📝 Стиль ответа", callback_data="tab:style_settings")])
@@ -88,7 +74,6 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
     # Остальные кнопки всегда
     keyboard.append([InlineKeyboardButton("🔄 Режим работы", callback_data="tab:mode_settings")])
     keyboard.append([InlineKeyboardButton("🌐 Язык интерфейса", callback_data="tab:lang_settings")])
-    keyboard.append([InlineKeyboardButton("⚡ Режим ИИ", callback_data="tab:ai_mode_settings")])
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     
     return InlineKeyboardMarkup(keyboard)
@@ -107,33 +92,6 @@ def mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
         keyboard.append([InlineKeyboardButton("✅ Встроенный", callback_data="ignore")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
-    return InlineKeyboardMarkup(keyboard)
-
-
-def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
-    """Клавиатура выбора режима ИИ (Быстрый / Качественный)"""
-    current = get_ai_mode(user_id) or "fast"
-    
-    keyboard = []
-    
-    if current == "fast":
-        keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый", callback_data="ignore")])
-        keyboard.append([InlineKeyboardButton("💎 Качественный", callback_data="confirm_ai_mode:quality")])
-    else:
-        keyboard.append([InlineKeyboardButton("🚀 Быстрый", callback_data="confirm_ai_mode:fast")])
-        keyboard.append([InlineKeyboardButton("✅ 💎 Качественный", callback_data="ignore")])
-    
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
-    
-    return InlineKeyboardMarkup(keyboard)
-
-
-def confirm_ai_mode_kb(user_id: int, new_mode: str) -> InlineKeyboardMarkup:
-    """Клавиатура подтверждения смены режима"""
-    keyboard = [
-        [InlineKeyboardButton("✅ Да, сменить", callback_data=f"execute_ai_mode:{new_mode}")],
-        [InlineKeyboardButton("❌ Нет, отмена", callback_data="back_to_previous")]
-    ]
     return InlineKeyboardMarkup(keyboard)
 
 
