@@ -1,5 +1,4 @@
-// docs/js/api.js
-
+// docs/js/api.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 const API_BASE = "https://fayrat-production.up.railway.app";
 const API_CHAT = API_BASE + "/api/chat";
 const API_CLEAR_MEMORY = API_BASE + "/api/memory/clear";
@@ -114,10 +113,6 @@ export async function getUserLimits() {
     const r = await fetch(`${API_LIMITS}/${user.tg_user_id}`);
     if (r.ok) {
       const data = await r.json();
-      // Добавляем ai_mode_changes если его нет
-      if (!data.limits.ai_mode_changes) {
-        data.limits.ai_mode_changes = 0;
-      }
       return data;
     }
   } catch (e) {
@@ -190,6 +185,7 @@ export async function changePersona(newPersona) {
   }
 }
 
+// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ changeAiMode ==========
 export async function changeAiMode(newMode) {
   const user = getTelegramUser();
   if (!user.tg_user_id) return { success: false, message: "no_user" };
@@ -211,14 +207,29 @@ export async function changeAiMode(newMode) {
     const data = await r.json();
     
     if (!r.ok) {
+      // Проверяем разные типы ошибок
       if (data.error === "limit_exceeded") {
-        return { success: false, message: data.message || "Лимит смен режима исчерпан" };
+        return { 
+          success: false, 
+          message: data.message || "Лимит смен режима исчерпан (0/8)"
+        };
       }
+      
+      // Если сервер вернул сообщение об ошибке
+      if (data.message) {
+        return { success: false, message: data.message };
+      }
+      
       return { success: false, message: data.error || "Ошибка сервера" };
     }
     
-    localStorage.setItem("ai_mode", newMode);
-    return { success: true };
+    // Успешно - сохраняем в localStorage
+    if (data.success) {
+      localStorage.setItem("ai_mode", newMode);
+      return { success: true };
+    }
+    
+    return { success: false, message: "Неизвестная ошибка" };
     
   } catch (e) {
     console.error("Change AI mode error:", e);
