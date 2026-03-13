@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (блокировка кнопки после ошибки интернета)
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (с проверкой лимитов)
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -399,7 +399,28 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   function updateSaveButton() {
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (!saveBtn) return;
-    saveBtn.disabled = !hasUnsavedChanges;
+    
+    // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА - если лимиты исчерпаны, кнопка не активна
+    let canSave = hasUnsavedChanges;
+    
+    if (tempAiMode && currentLimits.ai_mode_changes >= 8) {
+      canSave = false;
+    }
+    
+    if (tempStyle) {
+      if (currentAiMode === 'fast' && currentLimits.groq_style >= 5) {
+        canSave = false;
+      }
+      if (currentAiMode === 'quality' && currentLimits.openai_style >= 7) {
+        canSave = false;
+      }
+    }
+    
+    if (tempPersona && currentAiMode === 'fast' && currentLimits.groq_persona >= 5) {
+      canSave = false;
+    }
+    
+    saveBtn.disabled = !canSave;
   }
 
   function updateUnsavedIndicator() {
@@ -457,6 +478,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateUnsavedIndicator();
   }
 
+  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ ==========
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
@@ -464,6 +486,58 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const originalStyle = getStyle();
     const originalPersona = getPersona();
     
+    // ✅ ПРОВЕРКА ЛИМИТОВ ПЕРЕД СОХРАНЕНИЕМ
+    if (tempAiMode) {
+      const modeChanges = currentLimits.ai_mode_changes || 0;
+      if (modeChanges >= 8) {
+        add("bot", "❌ Лимит смен режима исчерпан (0/8). Попробуйте завтра.", true);
+        document.getElementById('aiModeSel').value = originalMode;
+        tempAiMode = null;
+        hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
+        updateSaveButton();
+        updateUnsavedIndicator();
+        closeSettings();
+        return;
+      }
+    }
+    
+    if (tempStyle) {
+      let styleChanges, styleMax;
+      if (currentAiMode === 'fast') {
+        styleChanges = currentLimits.groq_style || 0;
+        styleMax = 5;
+      } else {
+        styleChanges = currentLimits.openai_style || 0;
+        styleMax = 7;
+      }
+      
+      if (styleChanges >= styleMax) {
+        add("bot", `❌ Лимит изменений стиля исчерпан (0/${styleMax}). Попробуйте завтра.`, true);
+        document.getElementById('styleSel').value = originalStyle;
+        tempStyle = null;
+        hasUnsavedChanges = (tempAiMode !== null) || (tempPersona !== null);
+        updateSaveButton();
+        updateUnsavedIndicator();
+        closeSettings();
+        return;
+      }
+    }
+    
+    if (tempPersona && currentAiMode === 'fast') {
+      const personaChanges = currentLimits.groq_persona || 0;
+      if (personaChanges >= 5) {
+        add("bot", "❌ Лимит изменений характера исчерпан (0/5). Попробуйте завтра.", true);
+        document.getElementById('personaSel').value = originalPersona;
+        tempPersona = null;
+        hasUnsavedChanges = (tempAiMode !== null) || (tempStyle !== null);
+        updateSaveButton();
+        updateUnsavedIndicator();
+        closeSettings();
+        return;
+      }
+    }
+    
+    // Если дошли до сюда - лимиты не превышены, можно сохранять
     if (tempAiMode) {
       const confirmMsg = "⚠️ Смена режима ИИ очистит историю чата. Продолжить?";
       let confirmed;
@@ -490,9 +564,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     let success = true;
     let errorMsg = "";
     
+    // Сначала пробуем сменить режим ИИ
     if (tempAiMode) {
       const result = await changeAiMode(tempAiMode);
+      
       if (result && result.success) {
+        // Успешно - сохраняем и очищаем
         localStorage.setItem("ai_mode", tempAiMode);
         currentAiMode = tempAiMode;
         
@@ -506,12 +583,28 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
           console.error("Failed to clear memory:", e);
         }
       } else {
+        // Ошибка - лимит исчерпан или другая проблема
         success = false;
         errorMsg = result?.message || "Ошибка смены режима";
+        
+        // Возвращаем select к исходному значению
         document.getElementById('aiModeSel').value = originalMode;
+        tempAiMode = null;
+        
+        // Показываем сообщение об ошибке
+        add("bot", `❌ ${errorMsg}`, true);
+        
+        // Закрываем настройки и выходим
+        setButtonLoading(saveBtn, false);
+        hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
+        updateSaveButton();
+        updateUnsavedIndicator();
+        closeSettings();
+        return;
       }
     }
     
+    // Если режим сменился успешно (или не менялся), пробуем сменить стиль
     if (tempStyle && success) {
       const result = await changeStyle(tempStyle);
       if (result && result.success) {
@@ -523,6 +616,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
+    // Если стиль сменился успешно (или не менялся), пробуем сменить характер
     if (tempPersona && currentAiMode === 'fast' && success) {
       const result = await changePersona(tempPersona);
       if (result && result.success) {
@@ -537,6 +631,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     setButtonLoading(saveBtn, false);
     
     if (success) {
+      // Все изменения успешны
       tempStyle = null;
       tempPersona = null;
       tempAiMode = null;
@@ -547,6 +642,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       updateUnsavedIndicator();
       closeSettings();
     } else {
+      // Если была ошибка, показываем её
       add("bot", `❌ ${errorMsg}`, true);
       closeSettings();
     }
@@ -657,7 +753,7 @@ IMPORTANT INSTRUCTIONS:
 Response:`;
   }
 
-  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ ==========
+  // ========== ФУНКЦИЯ ОТПРАВКИ ==========
   async function send() {
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
