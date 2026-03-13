@@ -569,7 +569,7 @@ async def get_ai_mode_changes(user_id: int) -> int:
     return max(0, remaining)
 
 # =========================
-# ФУНКЦИИ ДЛЯ ЛИМИТОВ
+# ФУНКЦИИ ДЛЯ ЛИМИТОВ - ИСПРАВЛЕНО
 # =========================
 def check_and_reset_limits(user_id: int) -> None:
     with db_connection() as conn:
@@ -610,6 +610,7 @@ def get_user_limits(user_id: int) -> Dict[str, Any]:
     with db_connection() as conn:
         cur = conn.cursor()
         
+        # Получаем лимиты из user_limits
         cur.execute(
             """
             SELECT groq_persona_changes, groq_style_changes, openai_style_changes
@@ -617,26 +618,43 @@ def get_user_limits(user_id: int) -> Dict[str, Any]:
             """,
             (user_id,)
         )
-        row = cur.fetchone()
+        limits_row = cur.fetchone()
+        
+        # Получаем ai_mode_changes из access
+        cur.execute(
+            """
+            SELECT ai_mode_changes, last_ai_mode_change
+            FROM access WHERE user_id = ?
+            """,
+            (user_id,)
+        )
+        access_row = cur.fetchone()
     
-    if not row:
-        return {
-            "groq_persona": 0,
-            "groq_style": 0,
-            "openai_style": 0,
-            "groq_persona_max": 5,
-            "groq_style_max": 5,
-            "openai_style_max": 7
-        }
-    
-    return {
-        "groq_persona": row[0] or 0,
-        "groq_style": row[1] or 0,
-        "openai_style": row[2] or 0,
+    # Базовая структура с максимальными значениями
+    result = {
+        "groq_persona": 0,
+        "groq_style": 0,
+        "openai_style": 0,
+        "ai_mode_changes": 0,
+        "last_ai_mode_change": None,
         "groq_persona_max": 5,
         "groq_style_max": 5,
-        "openai_style_max": 7
+        "openai_style_max": 7,
+        "ai_mode_changes_max": 8  # Максимум смен режима в день
     }
+    
+    # Заполняем из user_limits если есть
+    if limits_row:
+        result["groq_persona"] = limits_row[0] or 0
+        result["groq_style"] = limits_row[1] or 0
+        result["openai_style"] = limits_row[2] or 0
+    
+    # Заполняем из access если есть
+    if access_row:
+        result["ai_mode_changes"] = access_row[0] or 0
+        result["last_ai_mode_change"] = access_row[1]
+    
+    return result
 
 def increment_groq_persona(user_id: int) -> bool:
     with db_connection() as conn:
