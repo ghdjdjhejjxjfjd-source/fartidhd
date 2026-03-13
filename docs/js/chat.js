@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (кнопка блокируется + защита от зума)
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (кнопка блокируется при ошибках интернета)
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -753,7 +753,7 @@ IMPORTANT INSTRUCTIONS:
 Response:`;
   }
 
-  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ (кнопка блокируется) ==========
+  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ (кнопка блокируется при ошибках интернета) ==========
   async function send() {
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
@@ -781,8 +781,8 @@ Response:`;
     const typingTimeout = setTimeout(() => {
       removeTyping();
       add("bot", "⏱️ Превышено время ожидания. Проверьте интернет и попробуйте снова.", true);
-      sending = false;
-      sendBtnEl.disabled = false;
+      // ⚠️ НЕ РАЗБЛОКИРУЕМ КНОПКУ ПРИ ТАЙМАУТЕ
+      // sending остается true, кнопка disabled
     }, 15000);
 
     let lastError = null;
@@ -810,8 +810,8 @@ Response:`;
           clearTimeout(typingTimeout);
           removeTyping();
           add("bot", "📡 Интернет пропал. Проверьте подключение.", true);
-          sending = false;
-          sendBtnEl.disabled = false;
+          // ⚠️ НЕ РАЗБЛОКИРУЕМ КНОПКУ ПРИ ПОТЕРЕ ИНТЕРНЕТА
+          // sending остается true, кнопка disabled
           return;
         }
         
@@ -836,15 +836,19 @@ Response:`;
           errorMessage.includes("Insufficient stars") ||
           errorStatus === 402) {
         add("bot", "❌ Недостаточно звезд. Купите в меню: ⭐ Купить звезды", true);
+        // Разблокируем при ошибке звезд
+        sending = false;
+        sendBtnEl.disabled = false;
       } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
         add("bot", "📡 Проблема с сетью. Проверьте интернет.", true);
+        // ⚠️ НЕ РАЗБЛОКИРУЕМ ПРИ СЕТЕВЫХ ОШИБКАХ
+        // sending остается true, кнопка disabled
       } else {
         add("bot", "❌ Ошибка сервера. Попробуйте позже.", true);
+        // Разблокируем при других ошибках
+        sending = false;
+        sendBtnEl.disabled = false;
       }
-      
-      // РАЗБЛОКИРУЕМ КНОПКУ ПРИ ЛЮБОЙ ОШИБКЕ
-      sending = false;
-      sendBtnEl.disabled = false;
     } else {
       // Успешно отправили - разблокируем
       sending = false;
