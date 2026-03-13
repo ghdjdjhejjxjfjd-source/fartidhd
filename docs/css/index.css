@@ -30,13 +30,13 @@
   --sheet-text: #f7fbff;
 }
 
-/* Синяя тема */
+/* Синяя тема - кнопки стали светлее */
 :root[data-theme="blue"]{
   --bgTop:#27384b;
   --bgMid:#1d2b3a;
   --bgBot:#16212d;
-  --accent1:#5aaeff;
-  --accent2:#3496ff;
+  --accent1: #6bb5ff;  /* Светлее (было #5aaeff) */
+  --accent2: #4aa3ff;  /* Светлее (было #3496ff) */
   --text:#f7fbff;
   --subtext: rgba(247, 251, 255, 0.68);
   --sheet-bg: rgba(39, 56, 75, 0.95);
@@ -201,12 +201,12 @@ body > * {
   position: relative;
   height: 100%;
   display: flex;
-  align-items: flex-start; /* Было center, стало flex-start */
+  align-items: flex-start;
   justify-content: center;
-  padding: 16px 24px; /* Уменьшил вертикальные отступы */
-  padding-top: calc(70px + env(safe-area-inset-top)); /* Отступ для кнопки темы */
+  padding: 16px 24px;
+  padding-top: calc(70px + env(safe-area-inset-top));
   z-index: 10;
-  overflow-y: auto; /* Добавил скролл если контент не помещается */
+  overflow-y: auto;
 }
 
 /* ========================= */
@@ -214,14 +214,14 @@ body > * {
 /* ========================= */
 .card {
   width: min(520px, 100%);
-  padding: 20px 22px; /* Уменьшил вертикальные отступы */
+  padding: 20px 22px;
   border-radius: 24px;
   background: rgba(255, 255, 255, .10);
   border: 1px solid rgba(255, 255, 255, .12);
   backdrop-filter: blur(12px) saturate(118%);
   -webkit-backdrop-filter: blur(12px) saturate(118%);
   box-shadow: 0 18px 42px rgba(0,0,0,.28);
-  margin-bottom: 20px; /* Добавил отступ снизу */
+  margin-bottom: 20px;
 }
 
 /* ========================= */
@@ -231,7 +231,7 @@ body > * {
   display: block;
   width: 100%;
   text-align: center;
-  padding: 16px 16px; /* Чуть уменьшил высоту кнопок */
+  padding: 16px 16px;
   border-radius: 20px;
   font-size: 19px;
   font-weight: 800;
@@ -249,7 +249,7 @@ body > * {
   box-shadow:
     0 10px 22px rgba(0,0,0,.14),
     0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
-  margin-bottom: 12px; /* Уменьшил отступ между кнопками */
+  margin-bottom: 12px;
   transition: all 0.2s ease;
 }
 
@@ -406,7 +406,7 @@ body > * {
 /* ТЕКСТЫ */
 /* ========================= */
 .sub {
-  margin-top: 16px; /* Уменьшил отступ */
+  margin-top: 16px;
   text-align: center;
   color: var(--subtext);
   font-size: 14px;
@@ -418,7 +418,7 @@ body > * {
 }
 
 .ver {
-  margin-top: 8px; /* Уменьшил отступ */
+  margin-top: 8px;
   text-align: center;
   font-size: 12px;
   opacity: 0.5;
@@ -433,9 +433,9 @@ body > * {
 /* БЛОК ЯЗЫКА */
 /* ========================= */
 .langBlock {
-  margin-top: 16px; /* Уменьшил отступ */
+  margin-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, .10);
-  padding-top: 12px; /* Уменьшил отступ */
+  padding-top: 12px;
 }
 
 /* Светлая тема - разделитель */
@@ -446,7 +446,7 @@ body > * {
 .langTitle {
   font-size: 13px;
   color: var(--subtext);
-  margin-bottom: 8px; /* Уменьшил отступ */
+  margin-bottom: 8px;
   text-align: center;
 }
 
@@ -457,7 +457,7 @@ body > * {
 .langPill {
   width: 100%;
   border-radius: 16px;
-  padding: 12px 14px; /* Уменьшил высоту */
+  padding: 12px 14px;
   background: rgba(255, 255, 255, .10);
   border: 1px solid rgba(255, 255, 255, .12);
   color: var(--text);
@@ -502,9 +502,9 @@ body > * {
 /* БЛОК ПЛАТФОРМЫ */
 /* ========================= */
 .platformBlock {
-  margin-top: 12px; /* Уменьшил отступ */
+  margin-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, .10);
-  padding-top: 12px; /* Уменьшил отступ */
+  padding-top: 12px;
 }
 
 /* Светлая тема - разделитель */
@@ -515,7 +515,7 @@ body > * {
 .platformTitle {
   font-size: 13px;
   color: var(--subtext);
-  margin-bottom: 8px; /* Уменьшил отступ */
+  margin-bottom: 8px;
   text-align: center;
 }
 
@@ -526,7 +526,7 @@ body > * {
 .platformPill {
   width: 100%;
   border-radius: 16px;
-  padding: 12px 14px; /* Уменьшил высоту */
+  padding: 12px 14px;
   background: rgba(255, 255, 255, .10);
   border: 1px solid rgba(255, 255, 255, .12);
   color: var(--text);
@@ -620,7 +620,7 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS - ИСПРАВЛЕНО (убрал лишнее пространство) */
+/* BOTTOM SHEETS - ИСПРАВЛЕНО */
 /* ========================= */
 .langOverlay, .themeOverlay, .platformOverlay {
   position: fixed;
@@ -689,7 +689,7 @@ body > * {
 }
 
 .langList, .themeList, .platformList {
-  max-height: 40vh; /* Было height, стало max-height */
+  max-height: 40vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
