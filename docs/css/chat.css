@@ -67,31 +67,37 @@
   }
 }
 
-/* bot bubble */
+/* bot bubble - ЧЕТКИЙ ТЕКСТ */
 .bot .msg{
   align-self:flex-start;
   background: rgba(66, 78, 92, 0.94);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color:#ffffff;
+  color: #ffffff; /* Ярко-белый */
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
   border-top-left-radius:8px;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  text-shadow: none; /* УБРАНА ТЕНЬ */
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
 }
 
-/* user bubble */
+/* user bubble - ЧЕТКИЙ ТЕКСТ */
 .user .msg{
   align-self:flex-end;
   background: var(--user-bg);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color:#ffffff;
+  color: #ffffff; /* Ярко-белый */
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
   text-align:left;
   border-bottom-right-radius:8px;
   width: fit-content;
   display: inline-block;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  text-shadow: none; /* УБРАНА ТЕНЬ */
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
 }
 
 /* ============================= */
@@ -114,10 +120,14 @@ html.android-mode .msg {
 
 html.android-mode .bot .msg {
   background: #2a3644;
+  color: #ffffff;
+  text-shadow: none;
 }
 
 html.android-mode .user .msg {
   background: rgba(90, 174, 255, 0.35);
+  color: #ffffff;
+  text-shadow: none;
 }
 
 html.android-mode .msg {
@@ -464,7 +474,7 @@ html.android-mode .msg.bot.typing {
   color: #ff4444 !important;
 }
 
-/* Светлая тема - пузыри БЕЗ обводки */
+/* Светлая тема - пузыри */
 :root[data-theme="light"] .bot .msg {
   background: var(--btn-bg);
   backdrop-filter: var(--blur-amount);
@@ -472,6 +482,7 @@ html.android-mode .msg.bot.typing {
   border: none;
   color: var(--text-primary);
   box-shadow: none;
+  text-shadow: none;
 }
 
 :root[data-theme="light"] .user .msg {
@@ -479,6 +490,7 @@ html.android-mode .msg.bot.typing {
   background: var(--user-bg);
   border: none;
   box-shadow: none;
+  text-shadow: none;
 }
 
 :root[data-theme="light"] .input textarea {
@@ -529,6 +541,7 @@ html.android-mode[data-theme="light"] .bot .msg {
   color: var(--text-primary);
   backdrop-filter: none;
   box-shadow: none;
+  text-shadow: none;
 }
 
 html.android-mode[data-theme="light"] .user .msg {
@@ -536,6 +549,7 @@ html.android-mode[data-theme="light"] .user .msg {
   color: var(--text-primary);
   border: none;
   box-shadow: none;
+  text-shadow: none;
 }
 
 html.android-mode[data-theme="light"] .input {
