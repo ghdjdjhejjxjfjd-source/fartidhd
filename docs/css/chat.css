@@ -277,7 +277,7 @@ html.android-mode .input textarea {
 }
 
 /* ============================= */
-/* ВЕРХНЯЯ ПАНЕЛЬ - AI CHat СЕРЫМ */
+/* ВЕРХНЯЯ ПАНЕЛЬ - ИСПРАВЛЕНО */
 /* ============================= */
 .top{
   position: fixed;
@@ -304,8 +304,22 @@ html.android-mode .gear {
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+/* Синяя тема - БЕЛЫЙ текст */
+:root[data-theme="blue"] .top a,
+:root[data-theme="blue"] .title,
+:root[data-theme="blue"] .gear {
+  color: #ffffff !important;
+}
+
+/* Черная тема - БЕЛЫЙ текст */
+:root[data-theme="black"] .top a,
+:root[data-theme="black"] .title,
+:root[data-theme="black"] .gear {
+  color: #ffffff !important;
+}
+
 .top a{
-  color: #a0b0c0; /* СЕРЫЙ */
+  color: #a0b0c0; /* СЕРЫЙ (по умолчанию) */
   text-decoration:none;
   font-size:15px;
   background: rgba(255,255,255,.08);
@@ -319,7 +333,7 @@ html.android-mode .gear {
 .title{
   font-weight:600;
   font-size:16px;
-  color: #a0b0c0; /* СЕРЫЙ */
+  color: #a0b0c0; /* СЕРЫЙ (по умолчанию) */
   background: rgba(255,255,255,.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -339,7 +353,7 @@ html.android-mode .gear {
   background: rgba(255,255,255,.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  color: #a0b0c0; /* СЕРЫЙ */
+  color: #a0b0c0; /* СЕРЫЙ (по умолчанию) */
   font-size:17px;
   display:flex;
   align-items:center;
