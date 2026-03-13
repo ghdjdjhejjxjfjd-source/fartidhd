@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (с таймаутом для анимации)
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (кнопка блокируется + защита от зума)
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -753,7 +753,7 @@ IMPORTANT INSTRUCTIONS:
 Response:`;
   }
 
-  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ (с таймаутом) ==========
+  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ (кнопка блокируется) ==========
   async function send() {
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
@@ -841,10 +841,15 @@ Response:`;
       } else {
         add("bot", "❌ Ошибка сервера. Попробуйте позже.", true);
       }
+      
+      // РАЗБЛОКИРУЕМ КНОПКУ ПРИ ЛЮБОЙ ОШИБКЕ
+      sending = false;
+      sendBtnEl.disabled = false;
+    } else {
+      // Успешно отправили - разблокируем
+      sending = false;
+      sendBtnEl.disabled = false;
     }
-
-    sending = false;
-    sendBtnEl.disabled = false;
   }
 
   async function updateMenuBalance() {
@@ -946,7 +951,7 @@ Response:`;
       }
     });
 
-    // Запрещаем мультитач
+    // Запрещаем мультитач (2+ пальца)
     chatEl.addEventListener("touchstart", (e) => {
       if (e.touches.length > 1) {
         e.preventDefault();
@@ -966,21 +971,22 @@ Response:`;
       e.preventDefault();
     }, { passive: false });
 
-    // Запрещаем двойной тап
+    // Запрещаем двойной тап (быстро 2 касания)
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
-      if (now - lastTouchEnd <= 300 && e.touches.length === 0) {
+      if (now - lastTouchEnd <= 300) {
         e.preventDefault();
       }
       lastTouchEnd = now;
     }, { passive: false });
 
+    // Запрещаем двойной клик мышью
     document.addEventListener('dblclick', (e) => {
       e.preventDefault();
     }, { passive: false });
 
-    // Один тап для закрытия клавиатуры
+    // Один тап для закрытия клавиатуры (НЕ ломает скролл)
     chatEl.addEventListener("pointerdown", () => {
       if (document.activeElement === inputEl) {
         inputEl.blur();
