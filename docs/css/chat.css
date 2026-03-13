@@ -191,7 +191,7 @@ html.android-mode .msg {
 }
 
 /* ============================= */
-/* НИЖНЯЯ ПАНЕЛЬ - КАК ФОН ЧАТА */
+/* НИЖНЯЯ ПАНЕЛЬ - ПОЛНОСТЬЮ ПРОЗРАЧНАЯ */
 /* ============================= */
 .input{
   flex:0 0 auto;
@@ -200,18 +200,17 @@ html.android-mode .msg {
   gap: 10px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: var(--bg-bot); /* Используем переменную фона */
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent !important; /* ПОЛНОСТЬЮ ПРОЗРАЧНО */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: none !important;
   min-height: 60px;
 }
 
 html.android-mode .input {
-  background: var(--bg-bot-solid); /* Для Android без размытия */
+  background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .input textarea {
@@ -222,8 +221,8 @@ html.android-mode .input {
   outline: none;
   font-size: 15px;
   font-weight: 400;
-  color: #ffffff;
-  background: rgba(55, 67, 82, 0.9); /* Светлее */
+  color: #f7fbff;
+  background: #25303c;
   caret-color: var(--accent2);
   resize: none;
   max-height: 120px;
@@ -236,33 +235,32 @@ html.android-mode .input {
 }
 
 .input textarea::placeholder{
-  color: rgba(220, 230, 245, 0.6);
+  color: rgba(247,251,255,.58);
 }
 
 .input textarea:focus{
-  background: rgba(65, 77, 94, 0.95);
+  background: #2a3644;
   border-color: rgba(255, 255, 255, 0.15);
 }
 
 html.android-mode .input textarea {
-  background: #3e4c5e; /* Светлее */
+  background: #2a3644;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
 }
 
 .input button{
-  padding:0 20px;
-  border-radius:18px;
+  padding:0 16px;
+  border-radius:16px;
   border: none;
   font-size:16px;
-  font-weight:700;
+  font-weight:800;
   background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
   color:#fff;
-  height: 44px;
+  height: 42px;
   align-self: flex-end;
   cursor: pointer;
   transition: all 0.18s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: none;
 }
 
 .input button:hover{
@@ -279,7 +277,7 @@ html.android-mode .input textarea {
 }
 
 /* ============================= */
-/* ВЕРХНЯЯ ПАНЕЛЬ */
+/* ВЕРХНЯЯ ПАНЕЛЬ - AI CHat СЕРЫМ */
 /* ============================= */
 .top{
   position: fixed;
@@ -300,14 +298,14 @@ html.android-mode .input textarea {
 html.android-mode .top a,
 html.android-mode .title,
 html.android-mode .gear {
-  background: #2a3440 !important;
+  background: #1a2634 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .top a{
-  color:#f7fbff;
+  color: #a0b0c0; /* СЕРЫЙ */
   text-decoration:none;
   font-size:15px;
   background: rgba(255,255,255,.08);
@@ -321,7 +319,7 @@ html.android-mode .gear {
 .title{
   font-weight:600;
   font-size:16px;
-  color: #f7fbff;
+  color: #a0b0c0; /* СЕРЫЙ */
   background: rgba(255,255,255,.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -341,7 +339,7 @@ html.android-mode .gear {
   background: rgba(255,255,255,.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  color:#fff;
+  color: #a0b0c0; /* СЕРЫЙ */
   font-size:17px;
   display:flex;
   align-items:center;
@@ -407,8 +405,6 @@ html.android-mode .msg.bot.typing {
   --accent2: #3496ff;
   --user-bg: rgba(90, 174, 255, 0.28);
   --user-border: rgba(90, 174, 255, 0.34);
-  --bg-bot: rgba(18,24,32,.90);
-  --bg-bot-solid: #1a2634;
 }
 
 :root[data-theme="black"] {
@@ -416,8 +412,6 @@ html.android-mode .msg.bot.typing {
   --accent2: #5a98ff;
   --user-bg: rgba(139, 184, 255, 0.25);
   --user-border: rgba(139, 184, 255, 0.30);
-  --bg-bot: rgba(18,24,32,.90);
-  --bg-bot-solid: #1a2634;
 }
 
 /* ===== СВЕТЛАЯ ТЕМА ===== */
@@ -426,8 +420,6 @@ html.android-mode .msg.bot.typing {
   --accent2: #1a6cff;
   --user-bg: rgba(58, 140, 255, 0.12);
   --user-border: rgba(58, 140, 255, 0.20);
-  --bg-bot: rgba(240, 245, 255, 0.7); /* Светлый фон с прозрачностью */
-  --bg-bot-solid: #e8ecf3; /* Для Android */
   
   /* 📝 ТЕКСТ */
   --text-primary: #2c3e50;
@@ -441,48 +433,6 @@ html.android-mode .msg.bot.typing {
   /* 🔘 СЕРАЯ ОБВОДКА */
   --btn-border: #c0c0c0;
   --btn-border-width: 1.5px;
-}
-
-/* Светлая тема - нижняя панель как фон чата */
-:root[data-theme="light"] .input {
-  background: var(--bg-bot);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-:root[data-theme="light"] .input textarea {
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--text-primary);
-  border: var(--btn-border-width) solid var(--btn-border);
-}
-
-:root[data-theme="light"] .input textarea::placeholder {
-  color: var(--text-secondary);
-}
-
-:root[data-theme="light"] .input button {
-  background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
-  color: white;
-}
-
-/* Светлая тема - пузыри */
-:root[data-theme="light"] .bot .msg {
-  background: var(--btn-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border: none;
-  color: var(--text-primary);
-  box-shadow: none;
-  text-shadow: none;
-}
-
-:root[data-theme="light"] .user .msg {
-  color: var(--text-primary);
-  background: var(--user-bg);
-  border: none;
-  box-shadow: none;
-  text-shadow: none;
 }
 
 /* ============================= */
@@ -522,6 +472,95 @@ html.android-mode .msg.bot.typing {
 #style-limit.warning,
 #persona-limit.warning {
   color: #ff4444 !important;
+}
+
+/* Светлая тема - пузыри */
+:root[data-theme="light"] .bot .msg {
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: none;
+  color: var(--text-primary);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+:root[data-theme="light"] .user .msg {
+  color: var(--text-primary);
+  background: var(--user-bg);
+  border: none;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+:root[data-theme="light"] .input textarea {
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-primary);
+  border: var(--btn-border-width) solid var(--btn-border);
+  box-shadow: none;
+}
+
+:root[data-theme="light"] .input textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="light"] .top a,
+:root[data-theme="light"] .title,
+:root[data-theme="light"] .gear {
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: none;
+  color: var(--text-primary);
+}
+
+:root[data-theme="light"] .action-btn svg {
+  fill: var(--text-secondary);
+}
+
+:root[data-theme="light"] .action-btn:hover svg {
+  fill: var(--accent1);
+}
+
+:root[data-theme="light"] .msg.bot.typing {
+  background: var(--btn-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: none;
+  box-shadow: none;
+}
+
+:root[data-theme="light"] .typing .dot {
+  background: var(--text-secondary);
+}
+
+/* Светлая тема для Android */
+html.android-mode[data-theme="light"] .bot .msg {
+  background: #e8ecf3;
+  border: none;
+  color: var(--text-primary);
+  backdrop-filter: none;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+html.android-mode[data-theme="light"] .user .msg {
+  background: rgba(58, 140, 255, 0.15);
+  color: var(--text-primary);
+  border: none;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+html.android-mode[data-theme="light"] .input {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+html.android-mode[data-theme="light"] .input textarea {
+  background: white;
+  color: var(--text-primary);
+  border: var(--btn-border-width) solid var(--btn-border);
+  box-shadow: none;
 }
 
 /* ============================= */
