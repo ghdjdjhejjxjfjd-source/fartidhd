@@ -44,7 +44,7 @@
   --sheet-text: #f7fbff;
 }
 
-/* ===== СВЕТЛАЯ ТЕМА - ИСПРАВЛЕНО ===== */
+/* ===== СВЕТЛАЯ ТЕМА ===== */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
@@ -52,16 +52,16 @@
   --accent1:#3a8cff;
   --accent2:#1a6cff;
   
-  /* 📝 ТЕКСТ - СВЕТЛЕЕ */
-  --text-primary: #2c3e50;      /* Основной текст */
-  --text-secondary: #4a5a6a;     /* Второстепенный текст */
+  /* 📝 ТЕКСТ */
+  --text-primary: #2c3e50;
+  --text-secondary: #4a5a6a;
   
   /* Панели */
   --sheet-bg: rgba(255, 255, 255, 0.85);
   --sheet-border: rgba(0, 0, 0, 0.1);
   --sheet-text: var(--text-primary);
   
-  /* 🔘 СЕРАЯ ОБВОДКА ДЛЯ КНОПОК */
+  /* 🔘 СЕРАЯ ОБВОДКА */
   --btn-border: #c0c0c0;
   --btn-border-width: 1.5px;
   --btn-bg: rgba(255, 255, 255, 0.4);
@@ -195,40 +195,43 @@ body > * {
 @keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-8px,10px)} }
 
 /* ========================= */
-/* ОСНОВНОЙ КОНТЕЙНЕР */
+/* ОСНОВНОЙ КОНТЕЙНЕР - ИСПРАВЛЕНО */
 /* ========================= */
 .wrap {
   position: relative;
   height: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Было center, стало flex-start */
   justify-content: center;
-  padding: 24px;
+  padding: 16px 24px; /* Уменьшил вертикальные отступы */
+  padding-top: calc(70px + env(safe-area-inset-top)); /* Отступ для кнопки темы */
   z-index: 10;
+  overflow-y: auto; /* Добавил скролл если контент не помещается */
 }
 
 /* ========================= */
-/* КАРТОЧКА МЕНЮ */
+/* КАРТОЧКА МЕНЮ - ИСПРАВЛЕНО */
 /* ========================= */
 .card {
   width: min(520px, 100%);
-  padding: 22px;
+  padding: 20px 22px; /* Уменьшил вертикальные отступы */
   border-radius: 24px;
   background: rgba(255, 255, 255, .10);
   border: 1px solid rgba(255, 255, 255, .12);
   backdrop-filter: blur(12px) saturate(118%);
   -webkit-backdrop-filter: blur(12px) saturate(118%);
   box-shadow: 0 18px 42px rgba(0,0,0,.28);
+  margin-bottom: 20px; /* Добавил отступ снизу */
 }
 
 /* ========================= */
-/* КНОПКИ - СЕРАЯ ОБВОДКА ДЛЯ СВЕТЛОЙ ТЕМЫ */
+/* КНОПКИ */
 /* ========================= */
 .btn {
   display: block;
   width: 100%;
   text-align: center;
-  padding: 17px 16px;
+  padding: 16px 16px; /* Чуть уменьшил высоту кнопок */
   border-radius: 20px;
   font-size: 19px;
   font-weight: 800;
@@ -246,17 +249,17 @@ body > * {
   box-shadow:
     0 10px 22px rgba(0,0,0,.14),
     0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
-  margin-bottom: 14px;
+  margin-bottom: 12px; /* Уменьшил отступ между кнопками */
   transition: all 0.2s ease;
 }
 
-/* Светлая тема - кнопки с СЕРОЙ ОБВОДКОЙ и светлым текстом */
+/* Светлая тема - кнопки */
 :root[data-theme="light"] .btn {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
   border: var(--btn-border-width) solid var(--btn-border);
-  color: var(--text-primary);  /* Текст светлее */
+  color: var(--text-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -403,7 +406,7 @@ body > * {
 /* ТЕКСТЫ */
 /* ========================= */
 .sub {
-  margin-top: 22px;
+  margin-top: 16px; /* Уменьшил отступ */
   text-align: center;
   color: var(--subtext);
   font-size: 14px;
@@ -415,7 +418,7 @@ body > * {
 }
 
 .ver {
-  margin-top: 10px;
+  margin-top: 8px; /* Уменьшил отступ */
   text-align: center;
   font-size: 12px;
   opacity: 0.5;
@@ -430,9 +433,9 @@ body > * {
 /* БЛОК ЯЗЫКА */
 /* ========================= */
 .langBlock {
-  margin-top: 22px;
+  margin-top: 16px; /* Уменьшил отступ */
   border-top: 1px solid rgba(255, 255, 255, .10);
-  padding-top: 16px;
+  padding-top: 12px; /* Уменьшил отступ */
 }
 
 /* Светлая тема - разделитель */
@@ -443,7 +446,7 @@ body > * {
 .langTitle {
   font-size: 13px;
   color: var(--subtext);
-  margin-bottom: 12px;
+  margin-bottom: 8px; /* Уменьшил отступ */
   text-align: center;
 }
 
@@ -454,7 +457,7 @@ body > * {
 .langPill {
   width: 100%;
   border-radius: 16px;
-  padding: 14px 14px;
+  padding: 12px 14px; /* Уменьшил высоту */
   background: rgba(255, 255, 255, .10);
   border: 1px solid rgba(255, 255, 255, .12);
   color: var(--text);
@@ -499,9 +502,9 @@ body > * {
 /* БЛОК ПЛАТФОРМЫ */
 /* ========================= */
 .platformBlock {
-  margin-top: 16px;
+  margin-top: 12px; /* Уменьшил отступ */
   border-top: 1px solid rgba(255, 255, 255, .10);
-  padding-top: 16px;
+  padding-top: 12px; /* Уменьшил отступ */
 }
 
 /* Светлая тема - разделитель */
@@ -512,7 +515,7 @@ body > * {
 .platformTitle {
   font-size: 13px;
   color: var(--subtext);
-  margin-bottom: 12px;
+  margin-bottom: 8px; /* Уменьшил отступ */
   text-align: center;
 }
 
@@ -523,7 +526,7 @@ body > * {
 .platformPill {
   width: 100%;
   border-radius: 16px;
-  padding: 14px 14px;
+  padding: 12px 14px; /* Уменьшил высоту */
   background: rgba(255, 255, 255, .10);
   border: 1px solid rgba(255, 255, 255, .12);
   color: var(--text);
@@ -617,7 +620,7 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS */
+/* BOTTOM SHEETS - ИСПРАВЛЕНО (убрал лишнее пространство) */
 /* ========================= */
 .langOverlay, .themeOverlay, .platformOverlay {
   position: fixed;
@@ -686,7 +689,7 @@ body > * {
 }
 
 .langList, .themeList, .platformList {
-  height: 40vh;
+  max-height: 40vh; /* Было height, стало max-height */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
