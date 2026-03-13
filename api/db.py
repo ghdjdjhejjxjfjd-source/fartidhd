@@ -1,4 +1,4 @@
-# api/db.py - ПОЛНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ
+# api/db.py - ПОЛНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ (с блокировкой при 0/8)
 import sqlite3
 import time
 import threading
@@ -480,13 +480,14 @@ def set_user_ai_lang(user_id: int, lang: str) -> None:
             )
 
 # =========================
-# ФУНКЦИИ ДЛЯ РЕЖИМА ИИ - ИСПРАВЛЕНО
+# ФУНКЦИИ ДЛЯ РЕЖИМА ИИ - ИСПРАВЛЕНО (с проверкой лимита)
 # =========================
 def get_ai_mode(user_id: int) -> str:
     a = get_access(user_id)
     return a.get("ai_mode", "fast")
 
-def set_ai_mode(user_id: int, mode: str) -> None:
+def set_ai_mode(user_id: int, mode: str) -> bool:
+    """Возвращает True если режим успешно изменен, False если лимит исчерпан"""
     if mode not in ["fast", "quality"]:
         mode = "fast"
     
@@ -499,6 +500,31 @@ def set_ai_mode(user_id: int, mode: str) -> None:
         exists = cur.fetchone()
         
         if exists:
+            # Получаем текущее количество изменений
+            cur.execute(
+                "SELECT ai_mode_changes, last_ai_mode_change FROM access WHERE user_id = ?",
+                (user_id,)
+            )
+            row = cur.fetchone()
+            changes = row[0] or 0
+            last_change = row[1]
+            
+            # Проверяем не прошли ли сутки
+            if last_change:
+                try:
+                    last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
+                    now_date = datetime.now()
+                    delta = now_date - last_date
+                    if delta.days >= 1:
+                        # Сбрасываем счетчик
+                        changes = 0
+                except:
+                    pass
+            
+            # Проверяем лимит
+            if changes >= 8:
+                return False  # Лимит исчерпан
+            
             # Обновляем существующего пользователя
             cur.execute(
                 """
@@ -532,6 +558,8 @@ def set_ai_mode(user_id: int, mode: str) -> None:
                 """,
                 (user_id, now[:10])
             )
+    
+    return True  # Успешно изменено
 
 async def get_ai_mode_changes(user_id: int) -> int:
     with db_connection() as conn:
@@ -549,12 +577,14 @@ async def get_ai_mode_changes(user_id: int) -> int:
     changes = row[0] or 0
     last_change = row[1]
     
+    # Проверяем не прошли ли сутки
     if last_change:
         try:
             last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
             now = datetime.now()
             delta = now - last_date
             if delta.days >= 1:
+                # Сбрасываем счетчик
                 with db_connection() as conn:
                     cur = conn.cursor()
                     cur.execute(
@@ -651,8 +681,22 @@ def get_user_limits(user_id: int) -> Dict[str, Any]:
     
     # Заполняем из access если есть
     if access_row:
-        result["ai_mode_changes"] = access_row[0] or 0
-        result["last_ai_mode_change"] = access_row[1]
+        # Проверяем не прошли ли сутки
+        changes = access_row[0] or 0
+        last_change = access_row[1]
+        
+        if last_change:
+            try:
+                last_date = datetime.strptime(last_change, "%Y-%m-%d %H:%M:%S")
+                now = datetime.now()
+                delta = now - last_date
+                if delta.days >= 1:
+                    changes = 0  # Сбрасываем для отображения
+            except:
+                pass
+        
+        result["ai_mode_changes"] = changes
+        result["last_ai_mode_change"] = last_change
     
     return result
 
