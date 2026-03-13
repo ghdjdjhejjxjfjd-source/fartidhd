@@ -47,10 +47,11 @@ TAB_TEXT = {
     "ai_mode_settings": "⚡ Режим ИИ\n\n━━━━━━━━━━━━━━━━━━━━━━\n"
                         "🚀 БЫСТРЫЙ (0.3 ⭐)\n"
                         "• Groq AI\n"
-                        "• Можно менять характер и стиль\n\n"
+                        "• Можно менять характер, стиль и язык ответов\n\n"
                         "💎 КАЧЕСТВЕННЫЙ (1 ⭐)\n"
                         "• OpenAI\n"
                         "• Можно менять только стиль\n"
+                        "• Язык определяется автоматически\n"
                         "━━━━━━━━━━━━━━━━━━━━━━\n\n"
                         "📊 Сегодня осталось смен режима: {changes_left}/8\n"
                         "⏰ Сброс в 00:00 (GMT+6)",
@@ -75,8 +76,9 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
     
     # Кнопки ТОЛЬКО для встроенного режима
     if not use_mini_app:
-        # Язык ответов ИИ - доступен всегда во встроенном режиме
-        keyboard.append([InlineKeyboardButton("🌐 Язык ответов ИИ", callback_data="tab:ai_lang_settings")])
+        # Язык ответов ИИ - только для быстрого режима (Groq)
+        if ai_mode == "fast":
+            keyboard.append([InlineKeyboardButton("🌐 Язык ответов ИИ", callback_data="tab:ai_lang_settings")])
         
         # Характер - только для быстрого режима (Groq)
         if ai_mode == "fast":
