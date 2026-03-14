@@ -1,7 +1,11 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-from api import get_access, get_user_persona, get_user_lang, get_user_ai_lang, get_user_style, get_ai_mode, increment_messages, add_stars_spent
+from api import (
+    get_access, get_user_persona, get_user_lang, get_user_ai_lang, 
+    get_user_style, get_ai_mode, increment_messages, add_stars_spent,
+    mem_get, mem_add, build_memory_prompt  # 👈 ИМПОРТИРУЕМ ФУНКЦИИ ПАМЯТИ
+)
 from payments import get_balance, spend_stars
 from groq_client import ask_groq
 from openai_client import ask_openai
@@ -93,25 +97,36 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
         return
     
+    # ✅ СОХРАНЯЕМ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ В ПАМЯТЬ
+    mem_add(uid, "user", text)
+    
     typing_msg = await update.message.reply_text("⏳ Печатает...")
     
     try:
+        # ✅ ПОЛУЧАЕМ ИСТОРИЮ ИЗ ПАМЯТИ
+        history = mem_get(uid, limit=20)
+        prompt_with_memory = build_memory_prompt(history, text)
+        
         if ai_mode == "fast":
             reply = ask_groq(
-                user_text=text,
+                prompt_with_memory,  # 👈 Передаем с историей!
                 lang=ai_lang,
                 persona=persona,
                 style=style
             )
         else:
             reply = ask_openai(
-                user_text=text,
+                prompt_with_memory,  # 👈 Передаем с историей!
                 lang=ai_lang,
+                persona=persona,
                 style=style
             )
         
         if reply:
             await typing_msg.delete()
+            
+            # ✅ СОХРАНЯЕМ ОТВЕТ В ПАМЯТЬ
+            mem_add(uid, "assistant", reply)
             
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("❌ Выйти из чата", callback_data="exit_chat")]
