@@ -19,6 +19,8 @@ from .chat import inline_chat_start
 from .image import inline_image_start
 from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, send_block_notice
 
+import requests
+
 # =========================
 # НАВИГАЦИЯ
 # =========================
@@ -60,11 +62,11 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Отправляем НОВОЕ сообщение с меню
         await context.bot.send_message(
             chat_id=uid,
-            text="✅ Вы вышли из чата",
+            text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
             reply_markup=main_menu_for_user(uid)
         )
         
-        # НИЧЕГО НЕ РЕДАКТИРУЕМ - просто выходим
+        # НИЧЕГО НЕ РЕДАКТИРУЕМ
         return
     
     # ===== КНОПКА НАЗАД =====
@@ -101,7 +103,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await open_tab(context, query, uid, key)
         return
     
-    # ===== ПОКУПКА ЗВЕЗД =====
     if data.startswith("buy_stars:"):
         package_id = data.split("buy_stars:", 1)[1].strip()
         package = get_package(package_id)
@@ -118,7 +119,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.edit_text("❌ Пакет не найден", reply_markup=tab_kb(uid))
         return
     
-    # ===== НАСТРОЙКИ =====
     if data.startswith("set_lang:"):
         lang = data.split("set_lang:", 1)[1].strip()
         await handle_set_lang(update, context, query, uid, lang)
@@ -131,7 +131,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await open_tab(context, query, uid, "settings")
         return
     
-    # ===== РЕЖИМ ИИ =====
     if data.startswith("confirm_ai_mode:"):
         new_mode = data.split("confirm_ai_mode:", 1)[1].strip()
         current_mode = get_ai_mode(uid) or "fast"
@@ -173,7 +172,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update_user_menu(context.bot, uid)
         return
     
-    # ===== ПЕРЕКЛЮЧЕНИЕ РЕЖИМА РАБОТЫ =====
     if data == "switch_to_miniapp":
         await handle_switch_mode(update, context, query, uid, "miniapp")
         await open_tab(context, query, uid, "settings")
@@ -184,7 +182,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await open_tab(context, query, uid, "settings")
         return
     
-    # ===== ЧАТ И КАРТИНКИ =====
     if data == "inline_chat":
         await inline_chat_start(update, context)
         return
@@ -224,9 +221,31 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
-    else:
+    elif tab_key == "mode_settings":
+        text = TAB_TEXT.get(tab_key, "🔄 Режим работы")
         try:
-            await query.message.edit_text(TAB_TEXT.get(tab_key, "Раздел в разработке."), reply_markup=tab_kb(user_id))
+            await query.message.edit_text(text, reply_markup=mode_settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "persona_settings":
+        text = TAB_TEXT.get(tab_key, "🎭 Характер ИИ")
+        try:
+            await query.message.edit_text(text, reply_markup=persona_settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    elif tab_key == "lang_settings":
+        text = TAB_TEXT.get(tab_key, "🌐 Язык интерфейса")
+        try:
+            await query.message.edit_text(text, reply_markup=lang_settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    else:
+        text = TAB_TEXT.get(tab_key, "Раздел в разработке.")
+        try:
+            await query.message.edit_text(text, reply_markup=tab_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
@@ -244,11 +263,44 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     ai_mode = get_ai_mode(user_id)
     changes_left = await get_ai_mode_changes(user_id)
     
-    persona_names = {"friendly": "😊", "fun": "😂", "smart": "🧐", "strict": "😐"}
-    lang_names = {"ru": "🇷🇺", "en": "🇬🇧", "kk": "🇰🇿", "tr": "🇹🇷", "uk": "🇺🇦", "fr": "🇫🇷"}
-    ai_mode_names = {"fast": "🚀", "quality": "💎"}
+    persona_names = {
+        "friendly": "😊 Общительный",
+        "fun": "😂 Весёлый",
+        "smart": "🧐 Умный",
+        "strict": "😐 Строгий"
+    }
     
-    text = f"👤 Профиль\nID: {user_id}\nБаланс: {balance}⭐\n{persona_names.get(persona, persona)} {lang_names.get(lang, lang)}\nРежим: {ai_mode_names.get(ai_mode)}"
+    lang_names = {
+        "ru": "🇷🇺 Русский",
+        "en": "🇬🇧 English",
+        "kk": "🇰🇿 Қазақша",
+        "tr": "🇹🇷 Türkçe",
+        "uk": "🇺🇦 Українська",
+        "fr": "🇫🇷 Français"
+    }
+    
+    registered = "неизвестно"
+    if a.get("registered_at"):
+        try:
+            reg_date = datetime.strptime(a["registered_at"], "%Y-%m-%d %H:%M:%S")
+            registered = reg_date.strftime("%d.%m.%Y")
+        except:
+            registered = a["registered_at"][:10]
+    
+    text = TAB_TEXT["profile"].format(
+        user_id=user_id,
+        registered=registered,
+        messages=a.get("total_messages", 0),
+        images=a.get("total_images", 0),
+        spent=a.get("total_stars_spent", 0),
+        balance=balance,
+        persona=persona_names.get(persona, persona),
+        lang=lang_names.get(lang, lang),
+        mode="📱 Mini App" if use_mini_app else "💬 Встроенный",
+        ai_mode=ai_mode,
+        free="✅ Да" if a.get("is_free") else "❌ Нет",
+        blocked="✅ Нет" if not a.get("is_blocked") else "❌ Да"
+    )
     
     try:
         await query.message.edit_text(text, reply_markup=tab_kb(user_id))
@@ -284,4 +336,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await handle_chat_message(update, context, uid, text)
 
 
-__all__ = ['start', 'on_button', 'handle_message', 'send_block_notice']
+__all__ = [
+    'start',
+    'on_button',
+    'handle_message',
+    'send_block_notice'
+]
