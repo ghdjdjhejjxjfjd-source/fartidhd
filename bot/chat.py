@@ -1,4 +1,3 @@
-# bot/chat.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
@@ -51,27 +50,26 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
         f"Стоимость: {cost}⭐ за сообщение\n\n"
         f"Отправляй сообщения, я буду отвечать.\n"
-        f"Для выхода из чата напиши /cancel (без пробела!)"
+        f"Для выхода из чата напиши /cancel"
     )
     
+    # Включаем режим чата
     context.user_data["in_chat_mode"] = True
     context.user_data["chat_active"] = True
+
 
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     global last_bot_message
     
-    # ===== ИСПРАВЛЕННАЯ ПРОВЕРКА ВЫХОДА =====
-    # Убираем пробелы и приводим к нижнему регистру
-    clean_text = text.lower().strip()
-    
-    # Проверяем разные варианты
-    if clean_text in ["/cancel", "/cancel ", "cancel", "выход", "exit"]:
+    # Проверка на выход из чата
+    if text.lower() == "/cancel":
         await update.message.reply_text(
             "✅ Чат завершен. Возвращаю в меню...",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🏠 В меню", callback_data="back_to_menu")]
             ])
         )
+        # Выключаем режим чата
         context.user_data["in_chat_mode"] = False
         context.user_data["chat_active"] = False
         return
@@ -100,13 +98,11 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["chat_active"] = False
         return
     
-    # Отправляем ОДНО сообщение с анимацией
+    # Отправляем сообщение с анимацией
     sent_msg = await update.message.reply_text("⏳ Печатает...")
     
     try:
-        # Выбираем AI в зависимости от режима
         if ai_mode == "fast":
-            # Groq - используем язык ИИ, характер и стиль
             reply = ask_groq(
                 user_text=text,
                 lang=ai_lang,
@@ -114,7 +110,6 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 style=style
             )
         else:
-            # OpenAI - используем язык ИИ и стиль
             reply = ask_openai(
                 user_text=text,
                 lang=ai_lang,
@@ -122,7 +117,6 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
         
         if reply:
-            # Удаляем кнопку под предыдущим сообщением бота
             if uid in last_bot_message:
                 try:
                     await context.bot.edit_message_reply_markup(
@@ -133,17 +127,13 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except:
                     pass
             
-            # Отправляем ответ ТОЛЬКО с кнопкой выхода
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("❌ Выйти из чата", callback_data="exit_chat")]
             ])
             
             await sent_msg.edit_text(reply, reply_markup=keyboard)
-            
-            # Сохраняем ID этого сообщения
             last_bot_message[uid] = sent_msg.message_id
             
-            # Списываем звезды
             if not a.get("is_free"):
                 spend_stars(uid, cost)
                 add_stars_spent(uid, cost)
