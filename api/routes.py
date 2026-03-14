@@ -209,9 +209,15 @@ def api_chat():
         if ai_mode == "fast":
             reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
         else:
-            reply = ask_openai(prompt_with_memory, lang=lang, persona=persona, style=style)
+            # ⚠️ ВАЖНО: Для OpenAI передаем ПОЛНУЮ историю, а не только последнее сообщение!
+            reply = ask_openai(
+                prompt_with_memory,  # Передаем весь промпт с историей
+                lang=lang,
+                persona=persona,
+                style=style
+            )
         
-        # ✅ ТОЛЬКО ЗДЕСЬ списываем звезды
+        # Списываем звезды
         if not a["is_free"]:
             spend_stars(tg_user_id_int, COST_PER_MESSAGE)
             add_stars_spent(tg_user_id_int, COST_PER_MESSAGE)
@@ -222,7 +228,7 @@ def api_chat():
         # Получаем новый баланс после списания
         new_balance = get_balance(tg_user_id_int)
         
-        # 🟢 ПОЛНЫЙ ЛОГ как раньше + баланс
+        # Лог
         time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_text = (
             f"🕒 {time_str}\n"
