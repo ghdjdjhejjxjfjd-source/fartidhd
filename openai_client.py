@@ -66,14 +66,17 @@ def extract_user_message(full_text: str) -> str:
     return full_text
 
 def ask_openai(
-    user_text: str,  # Это может быть prompt_with_memory или просто текст
+    user_text: str,
     *,
-    lang: str = "ru",
+    lang: str = "ru",  # Этот параметр больше не используется для языка!
     persona: str = "friendly",
     style: str = "steps",
 ) -> str:
     """
     Отправка запроса в OpenAI
+    
+    OpenAI автоматически определяет язык пользователя и отвечает на том же языке.
+    Если язык неизвестен - отвечает на английском.
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -84,8 +87,9 @@ def ask_openai(
     # Если передан prompt_with_memory, используем его как контекст
     if "Conversation:" in user_text or "User:" in user_text:
         # Передаём всю историю как контекст
+        # 👇 УБИРАЕМ УКАЗАНИЕ ЯЗЫКА - пусть OpenAI сам определяет!
         messages = [
-            {"role": "system", "content": f"Ты {persona} собеседник. {STYLES.get(style)} Отвечай на {lang} языке."},
+            {"role": "system", "content": f"Ты {persona} собеседник. {STYLES.get(style)}"},
             {"role": "user", "content": user_text}
         ]
     else:
@@ -93,13 +97,8 @@ def ask_openai(
         persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
         style_desc = STYLES.get(style, STYLES["steps"])
         
-        lang_names = {
-            "ru": "русском", "kk": "казахском", "en": "английском",
-            "tr": "турецком", "uk": "украинском", "fr": "французском"
-        }
-        target_lang = lang_names.get(lang, "русском")
-        
-        system_prompt = f"""Ты {persona} собеседник. Говоришь на {target_lang} языке.
+        # 👇 УБИРАЕМ "Говоришь на русском языке" - пусть OpenAI сам определяет!
+        system_prompt = f"""Ты {persona} собеседник.
 
 ТВОЙ ХАРАКТЕР:
 {persona_desc}
@@ -108,6 +107,7 @@ def ask_openai(
 {style_desc}
 
 ВАЖНО:
+- Отвечай на том языке, на котором написал пользователь
 - Не повторяйся
 - Будь естественным"""
         
@@ -136,8 +136,17 @@ def ask_openai(
         
     except Exception as e:
         print(f"OpenAI error: {e}")
-        return "Извините, ошибка. Попробуйте позже."
-
+        
+        # Сообщения об ошибках на разных языках
+        error_messages = {
+            "ru": "Извините, ошибка. Попробуйте позже.",
+            "en": "Sorry, error. Try again.",
+            "kk": "Кешіріңіз, қате. Қайталаңыз.",
+            "tr": "Üzgünüm, hata. Tekrar deneyin.",
+            "uk": "Вибачте, помилка. Спробуйте ще.",
+            "fr": "Désolé, erreur. Réessayez."
+        }
+        return error_messages.get(lang, error_messages["en"])
 
 def is_openai_available() -> bool:
     return bool(OPENAI_API_KEY)
