@@ -1,4 +1,3 @@
-# bot/chat.py
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
@@ -50,14 +49,25 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Язык ответов: {lang_names.get(current_ai_lang, 'Русский')}\n"
         f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
         f"Стоимость: {cost}⭐ за сообщение\n\n"
-        f"Отправь текст, и я отвечу.\n"
-        f"Для отмены напиши /cancel"
+        f"Отправляй сообщения, я буду отвечать.\n"
+        f"Для выхода из чата напиши /cancel"
     )
     
     context.user_data["in_chat_mode"] = True
 
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     global last_bot_message
+    
+    # Проверка на выход из чата
+    if text.lower() == "/cancel":
+        await update.message.reply_text(
+            "✅ Чат завершен. Возвращаю в меню...",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_to_menu")]
+            ])
+        )
+        context.user_data["in_chat_mode"] = False
+        return
     
     a = get_access(uid)
     interface_lang = get_user_lang(uid)  # язык интерфейса
@@ -69,6 +79,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     if a.get("is_blocked"):
         await update.message.reply_text("⛔ Доступ заблокирован.")
+        context.user_data["in_chat_mode"] = False
         return
     
     balance = get_balance(uid)
@@ -77,6 +88,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             f"❌ Недостаточно звезд (нужно {cost}⭐).\n"
             "Купи звезды в меню: ⭐ Купить звезды"
         )
+        context.user_data["in_chat_mode"] = False
         return
     
     await update.message.reply_text("🤔 Думаю...")
@@ -111,8 +123,9 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except:
                     pass
             
-            # Отправляем новое сообщение с кнопкой назад
+            # Отправляем новое сообщение с кнопкой выхода из чата
             keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton("❌ Выйти из чата", callback_data="exit_chat")],
                 [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_to_menu")]
             ])
             
@@ -128,6 +141,10 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             
             increment_messages(uid)
             send_log_http(f"💬 Чат в боте ({ai_mode}): {uid} -> {text[:50]}...")
+            
+            # ⚠️ НЕ ВЫКЛЮЧАЕМ РЕЖИМ ЧАТА - пользователь может продолжать
+            # context.user_data["in_chat_mode"] остается True
+            
         else:
             await update.message.reply_text("❌ Ошибка получения ответа")
             
@@ -135,7 +152,11 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         error_msg = str(e)
         if "insufficient_stars" in error_msg:
             await update.message.reply_text("❌ Недостаточно звезд. Купите в меню.")
+            context.user_data["in_chat_mode"] = False
         elif "network" in error_msg.lower():
             await update.message.reply_text("📡 Проблема с интернетом. Попробуйте позже.")
+            # При сетевых ошибках тоже выходим из чата
+            context.user_data["in_chat_mode"] = False
         else:
             await update.message.reply_text(f"❌ Ошибка: {error_msg[:100]}")
+            context.user_data["in_chat_mode"] = False
