@@ -57,14 +57,15 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Выключаем режим чата
         context.user_data["in_chat_mode"] = False
         
-        # Отправляем НОВОЕ сообщение с меню (НЕ РЕДАКТИРУЕМ старое)
+        # Отправляем НОВОЕ сообщение с меню
         await context.bot.send_message(
             chat_id=uid,
             text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
             reply_markup=main_menu_for_user(uid)
         )
         
-        # НИЧЕГО НЕ РЕДАКТИРУЕМ - просто выходим
+        # ВАЖНО: НЕ РЕДАКТИРУЕМ СТАРОЕ СООБЩЕНИЕ!
+        # Просто выходим
         return
     
     # ===== КНОПКА НАЗАД =====
@@ -221,41 +222,6 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         text = f"⭐ Ваш баланс: {balance} звезд"
         try:
             await query.message.edit_text(text, reply_markup=tab_kb(user_id))
-            set_last_menu(user_id, user_id, query.message.message_id)
-        except Exception:
-            await send_fresh_menu(context.bot, user_id)
-    elif tab_key == "mode_settings":
-        text = TAB_TEXT.get(tab_key, "🔄 Режим работы")
-        try:
-            await query.message.edit_text(text, reply_markup=mode_settings_kb(user_id))
-            set_last_menu(user_id, user_id, query.message.message_id)
-        except Exception:
-            await send_fresh_menu(context.bot, user_id)
-    elif tab_key == "persona_settings":
-        text = TAB_TEXT.get(tab_key, "🎭 Характер ИИ")
-        try:
-            await query.message.edit_text(text, reply_markup=persona_settings_kb(user_id))
-            set_last_menu(user_id, user_id, query.message.message_id)
-        except Exception:
-            await send_fresh_menu(context.bot, user_id)
-    elif tab_key == "lang_settings":
-        text = TAB_TEXT.get(tab_key, "🌐 Язык интерфейса")
-        try:
-            await query.message.edit_text(text, reply_markup=lang_settings_kb(user_id))
-            set_last_menu(user_id, user_id, query.message.message_id)
-        except Exception:
-            await send_fresh_menu(context.bot, user_id)
-    elif tab_key == "style_settings":
-        text = TAB_TEXT.get(tab_key, "📝 Стиль ответа")
-        try:
-            await query.message.edit_text(text, reply_markup=style_settings_kb(user_id))
-            set_last_menu(user_id, user_id, query.message.message_id)
-        except Exception:
-            await send_fresh_menu(context.bot, user_id)
-    elif tab_key == "ai_lang_settings":
-        text = TAB_TEXT.get(tab_key, "🌐 Язык ответов ИИ")
-        try:
-            await query.message.edit_text(text, reply_markup=ai_lang_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
