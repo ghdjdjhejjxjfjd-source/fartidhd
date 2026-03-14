@@ -91,7 +91,8 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
         return
     
-    await update.message.reply_text("🤔 Думаю...")
+    # Отправляем сообщение с анимацией печатания
+    typing_msg = await update.message.reply_text("✍️ Печатает...")
     
     try:
         # Выбираем AI в зависимости от режима
@@ -112,6 +113,9 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
         
         if reply:
+            # Удаляем сообщение с анимацией
+            await typing_msg.delete()
+            
             # Сначала удаляем кнопку под предыдущим сообщением бота
             if uid in last_bot_message:
                 try:
@@ -123,7 +127,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except:
                     pass
             
-            # Отправляем новое сообщение с кнопкой выхода из чата
+            # Отправляем ответ с кнопкой выхода из чата
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("❌ Выйти из чата", callback_data="exit_chat")],
                 [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_to_menu")]
@@ -142,21 +146,17 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             increment_messages(uid)
             send_log_http(f"💬 Чат в боте ({ai_mode}): {uid} -> {text[:50]}...")
             
-            # ⚠️ НЕ ВЫКЛЮЧАЕМ РЕЖИМ ЧАТА - пользователь может продолжать
-            # context.user_data["in_chat_mode"] остается True
-            
         else:
-            await update.message.reply_text("❌ Ошибка получения ответа")
+            await typing_msg.edit_text("❌ Ошибка получения ответа")
             
     except Exception as e:
         error_msg = str(e)
         if "insufficient_stars" in error_msg:
-            await update.message.reply_text("❌ Недостаточно звезд. Купите в меню.")
+            await typing_msg.edit_text("❌ Недостаточно звезд. Купите в меню.")
             context.user_data["in_chat_mode"] = False
         elif "network" in error_msg.lower():
-            await update.message.reply_text("📡 Проблема с интернетом. Попробуйте позже.")
-            # При сетевых ошибках тоже выходим из чата
+            await typing_msg.edit_text("📡 Проблема с интернетом. Попробуйте позже.")
             context.user_data["in_chat_mode"] = False
         else:
-            await update.message.reply_text(f"❌ Ошибка: {error_msg[:100]}")
+            await typing_msg.edit_text(f"❌ Ошибка: {error_msg[:100]}")
             context.user_data["in_chat_mode"] = False
