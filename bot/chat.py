@@ -6,10 +6,7 @@ from payments import get_balance, spend_stars
 from groq_client import ask_groq
 from openai_client import ask_openai
 from .config import send_log_http
-from .menu import main_menu_for_user  # 👈 ИМПОРТ ДОБАВЛЕН!
-
-# Храним ID последнего сообщения бота для каждого пользователя
-last_bot_message = {}
+from .menu import main_menu_for_user
 
 async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -57,31 +54,25 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["in_chat_mode"] = True
 
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
-    global last_bot_message
     
-    # ========== ИСПРАВЛЕННЫЙ ВЫХОД ИЗ ЧАТА ==========
+    # ===== ВЫХОД ИЗ ЧАТА =====
     if text.lower() == "/cancel":
-        # Выключаем режим чата
         context.user_data["in_chat_mode"] = False
         
-        # ✅ ОТПРАВЛЯЕМ НОВОЕ СООБЩЕНИЕ С МЕНЮ
-        await context.bot.send_message(
-            chat_id=uid,
-            text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
-            reply_markup=main_menu_for_user(uid)
-        )
-        
-        # ✅ Удаляем сообщение пользователя "/cancel" (чтоб не засорять)
         try:
             await update.message.delete()
         except:
             pass
         
-        # ✅ НИЧЕГО НЕ РЕДАКТИРУЕМ - просто выходим
+        await context.bot.send_message(
+            chat_id=uid,
+            text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
+            reply_markup=main_menu_for_user(uid)
+        )
         return
     
+    # ===== ОБЫЧНОЕ СООБЩЕНИЕ =====
     a = get_access(uid)
-    interface_lang = get_user_lang(uid)
     ai_lang = get_user_ai_lang(uid)
     persona = get_user_persona(uid)
     style = get_user_style(uid)
@@ -102,11 +93,9 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
         return
     
-    # Отправляем ОДНО сообщение с анимацией
-    sent_msg = await update.message.reply_text("⏳ Печатает...")
+    typing_msg = await update.message.reply_text("⏳ Печатает...")
     
     try:
-        # Выбираем AI в зависимости от режима
         if ai_mode == "fast":
             reply = ask_groq(
                 user_text=text,
@@ -122,28 +111,18 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
         
         if reply:
-            # Удаляем кнопку под предыдущим сообщением бота
-            if uid in last_bot_message:
-                try:
-                    await context.bot.edit_message_reply_markup(
-                        chat_id=uid,
-                        message_id=last_bot_message[uid],
-                        reply_markup=None
-                    )
-                except:
-                    pass
+            await typing_msg.delete()
             
-            # Отправляем ответ ТОЛЬКО с кнопкой выхода
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("❌ Выйти из чата", callback_data="exit_chat")]
             ])
             
-            await sent_msg.edit_text(reply, reply_markup=keyboard)
+            await context.bot.send_message(
+                chat_id=uid,
+                text=reply,
+                reply_markup=keyboard
+            )
             
-            # Сохраняем ID этого сообщения
-            last_bot_message[uid] = sent_msg.message_id
-            
-            # Списываем звезды
             if not a.get("is_free"):
                 spend_stars(uid, cost)
                 add_stars_spent(uid, cost)
@@ -152,16 +131,15 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             send_log_http(f"💬 Чат в боте ({ai_mode}): {uid} -> {text[:50]}...")
             
         else:
-            await sent_msg.edit_text("❌ Ошибка получения ответа")
+            await typing_msg.edit_text("❌ Ошибка получения ответа")
             
     except Exception as e:
         error_msg = str(e)
         if "insufficient_stars" in error_msg:
-            await sent_msg.edit_text("❌ Недостаточно звезд. Купите в меню.")
-            context.user_data["in_chat_mode"] = False
+            await typing_msg.edit_text("❌ Недостаточно звезд. Купите в меню.")
         elif "network" in error_msg.lower():
-            await sent_msg.edit_text("📡 Проблема с интернетом. Попробуйте позже.")
-            context.user_data["in_chat_mode"] = False
+            await typing_msg.edit_text("📡 Проблема с интернетом. Попробуйте позже.")
         else:
-            await sent_msg.edit_text(f"❌ Ошибка: {error_msg[:100]}")
-            context.user_data["in_chat_mode"] = False
+            await typing_msg.edit_text(f"❌ Ошибка: {error_msg[:100]}")
+        
+        context.user_data["in_chat_mode"] = False
