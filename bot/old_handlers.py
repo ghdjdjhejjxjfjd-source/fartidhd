@@ -1,3 +1,4 @@
+# bot/old_handlers.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -32,6 +33,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
+    # При старте гарантированно выключаем режим чата
+    context.user_data["in_chat_mode"] = False
+    context.user_data["chat_active"] = False
+    
     if uid in navigation_stack:
         del navigation_stack[uid]
     
@@ -52,19 +57,20 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
-    # ===== ВЫХОД ИЗ ЧАТА =====
+    # ===== ВЫХОД ИЗ ЧАТА - ИСПРАВЛЕНО =====
     if data == "exit_chat":
         # Выключаем режим чата
         context.user_data["in_chat_mode"] = False
+        context.user_data["chat_active"] = False
         
-        # Отправляем НОВОЕ сообщение с меню
+        # Отправляем НОВОЕ сообщение с меню (НЕ РЕДАКТИРУЕМ СТАРОЕ)
         await context.bot.send_message(
             chat_id=uid,
             text="✅ Вы вышли из чата",
             reply_markup=main_menu_for_user(uid)
         )
         
-        # НИЧЕГО НЕ РЕДАКТИРУЕМ - просто выходим
+        # НИЧЕГО НЕ РЕДАКТИРУЕМ - старое сообщение остается
         return
     
     # ===== КНОПКА НАЗАД =====
@@ -186,10 +192,14 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ===== ЧАТ И КАРТИНКИ =====
     if data == "inline_chat":
+        # Включаем режим чата
+        context.user_data["in_chat_mode"] = True
+        context.user_data["chat_active"] = True
         await inline_chat_start(update, context)
         return
     
     if data == "inline_image":
+        context.user_data["in_image_mode"] = True
         await inline_image_start(update, context)
         return
     
@@ -258,18 +268,19 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка сообщений"""
+    """Обработка сообщений - ИСПРАВЛЕНО"""
     if not update.message or not update.message.text:
         return
     
     user = update.effective_user
     uid = user.id
     
-    # Проверяем режим чата
+    # ===== ПРОВЕРЯЕМ РЕЖИМ ЧАТА =====
     in_chat_mode = context.user_data.get("in_chat_mode", False)
+    chat_active = context.user_data.get("chat_active", False)
     
-    # Если не в режиме чата - игнорируем
-    if not in_chat_mode:
+    # Если не в режиме чата - игнорируем все сообщения!
+    if not in_chat_mode or not chat_active:
         return
     
     a = get_access(uid)
