@@ -19,9 +19,6 @@ from .chat import inline_chat_start
 from .image import inline_image_start
 from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, send_block_notice
 
-# =========================
-# НАВИГАЦИЯ
-# =========================
 navigation_stack = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -36,7 +33,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         del navigation_stack[uid]
     
     await send_fresh_menu(context.bot, uid)
-
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -54,18 +50,13 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ===== ВЫХОД ИЗ ЧАТА =====
     if data == "exit_chat":
-        # Выключаем режим чата
         context.user_data["in_chat_mode"] = False
         
-        # Отправляем НОВОЕ сообщение с меню
         await context.bot.send_message(
             chat_id=uid,
             text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
             reply_markup=main_menu_for_user(uid)
         )
-        
-        # ВАЖНО: НЕ РЕДАКТИРУЕМ СТАРОЕ СООБЩЕНИЕ!
-        # Просто выходим
         return
     
     # ===== КНОПКА НАЗАД =====
@@ -196,10 +187,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await edit_to_menu(context, query, uid)
 
-
 async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
-    """Открыть вкладку"""
-    
     if tab_key == "profile":
         await show_profile(context, query, user_id)
     elif tab_key == "settings":
@@ -233,9 +221,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         except Exception:
             await send_fresh_menu(context.bot, user_id)
 
-
 async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
-    """Показать профиль"""
     from datetime import datetime
     
     a = get_access(user_id)
@@ -296,19 +282,15 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     except Exception:
         await send_fresh_menu(context.bot, user_id)
 
-
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка сообщений"""
     if not update.message or not update.message.text:
         return
     
     user = update.effective_user
     uid = user.id
     
-    # Проверяем режим чата
     in_chat_mode = context.user_data.get("in_chat_mode", False)
     
-    # Если не в режиме чата - игнорируем
     if not in_chat_mode:
         return
     
@@ -322,7 +304,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     from .chat import handle_chat_message
     await handle_chat_message(update, context, uid, text)
-
 
 __all__ = [
     'start',
