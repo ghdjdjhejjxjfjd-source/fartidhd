@@ -6,6 +6,7 @@ from payments import get_balance, spend_stars
 from groq_client import ask_groq
 from openai_client import ask_openai
 from .config import send_log_http
+from .menu import main_menu_for_user  # 👈 ИМПОРТ ДОБАВЛЕН!
 
 # Храним ID последнего сообщения бота для каждого пользователя
 last_bot_message = {}
@@ -58,20 +59,30 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     global last_bot_message
     
-    # Проверка на выход из чата
+    # ========== ИСПРАВЛЕННЫЙ ВЫХОД ИЗ ЧАТА ==========
     if text.lower() == "/cancel":
-        await update.message.reply_text(
-            "✅ Чат завершен. Возвращаю в меню...",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🏠 В меню", callback_data="back_to_menu")]
-            ])
-        )
+        # Выключаем режим чата
         context.user_data["in_chat_mode"] = False
+        
+        # ✅ ОТПРАВЛЯЕМ НОВОЕ СООБЩЕНИЕ С МЕНЮ
+        await context.bot.send_message(
+            chat_id=uid,
+            text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
+            reply_markup=main_menu_for_user(uid)
+        )
+        
+        # ✅ Удаляем сообщение пользователя "/cancel" (чтоб не засорять)
+        try:
+            await update.message.delete()
+        except:
+            pass
+        
+        # ✅ НИЧЕГО НЕ РЕДАКТИРУЕМ - просто выходим
         return
     
     a = get_access(uid)
-    interface_lang = get_user_lang(uid)  # язык интерфейса
-    ai_lang = get_user_ai_lang(uid)      # язык ответов ИИ
+    interface_lang = get_user_lang(uid)
+    ai_lang = get_user_ai_lang(uid)
     persona = get_user_persona(uid)
     style = get_user_style(uid)
     ai_mode = get_ai_mode(uid)
@@ -97,18 +108,16 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     try:
         # Выбираем AI в зависимости от режима
         if ai_mode == "fast":
-            # Groq - используем язык ИИ, характер и стиль
             reply = ask_groq(
                 user_text=text,
-                lang=ai_lang,  # язык ответов ИИ
+                lang=ai_lang,
                 persona=persona,
                 style=style
             )
         else:
-            # OpenAI - используем язык ИИ и стиль (характер не используется)
             reply = ask_openai(
                 user_text=text,
-                lang=ai_lang,  # язык ответов ИИ
+                lang=ai_lang,
                 style=style
             )
         
