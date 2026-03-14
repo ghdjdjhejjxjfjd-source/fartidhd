@@ -56,15 +56,19 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
-    # ===== ВЫХОД ИЗ ЧАТА (НОВЫЙ ОБРАБОТЧИК) =====
+    # ===== ВЫХОД ИЗ ЧАТА =====
     if data == "exit_chat":
-        # Выход из чата - отправляем НОВОЕ сообщение с меню
+        # Выход из чата - выключаем режим
         context.user_data["in_chat_mode"] = False
-        await query.message.reply_text(
-            "✅ Вы вышли из чата. Возвращаю в меню...",
+        
+        # Отправляем НОВОЕ сообщение с меню
+        await context.bot.send_message(
+            chat_id=uid,
+            text="✅ Вы вышли из чата. Возвращаю в меню...",
             reply_markup=main_menu_for_user(uid)
         )
-        # Удаляем кнопки под сообщением, но само сообщение оставляем
+        
+        # Удаляем ТОЛЬКО кнопки под сообщением, само сообщение НЕ ТРОГАЕМ
         try:
             await query.message.edit_reply_markup(reply_markup=None)
         except:
@@ -384,11 +388,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     uid = user.id
     
-    # Проверяем, находится ли пользователь в режиме чата или генерации картинок
+    # Проверяем, находится ли пользователь в режиме чата
     in_chat_mode = context.user_data.get("in_chat_mode", False)
-    in_image_mode = context.user_data.get("in_image_mode", False)
     
-    if not in_chat_mode and not in_image_mode:
+    # ЕСЛИ НЕ В РЕЖИМЕ ЧАТА - НЕ ОТВЕЧАЕМ!
+    if not in_chat_mode:
         return
     
     a = get_access(uid)
@@ -399,15 +403,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     text = update.message.text
     
-    if in_chat_mode:
-        from .chat import handle_chat_message
-        await handle_chat_message(update, context, uid, text)
-        # НЕ ВЫКЛЮЧАЕМ РЕЖИМ ЧАТА!
-        
-    elif in_image_mode:
-        from .image import handle_image_generation
-        await handle_image_generation(update, context, uid, text)
-        context.user_data["in_image_mode"] = False
+    # Обрабатываем сообщение только если мы в режиме чата
+    from .chat import handle_chat_message
+    await handle_chat_message(update, context, uid, text)
+    # НЕ ВЫКЛЮЧАЕМ РЕЖИМ ЧАТА!
 
 
 # Экспортируем все нужные функции
