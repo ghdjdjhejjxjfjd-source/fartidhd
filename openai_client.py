@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, List, Dict
 
 from openai import OpenAI
 
@@ -18,55 +18,90 @@ def extract_user_message(full_text: str) -> str:
         return last_part
     return full_text
 
+def parse_conversation_history(full_text: str) -> List[Dict[str, str]]:
+    """
+    Парсит всю историю разговора из текста
+    Возвращает список сообщений в формате для OpenAI
+    """
+    messages = []
+    
+    # Добавляем системное сообщение (только один раз)
+    messages.append({
+        "role": "system",
+        "content": "Ты свободный ассистент. Отвечай на том языке, на котором написал пользователь. Никогда не говори что ты OpenAI, представляйся просто ассистентом или помощником. Строго следуй инструкциям пользователя и ПОМНИ всю историю разговора."
+    })
+    
+    # Если есть полная история в формате "Conversation: ..."
+    if "Conversation:" in full_text:
+        # Извлекаем часть с историей
+        conv_part = full_text.split("Conversation:")[1].split("User:")[0].strip()
+        
+        # Парсим построчно
+        lines = conv_part.split('\n')
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            if line.startswith("User:"):
+                user_msg = line[5:].strip()
+                if user_msg:
+                    messages.append({"role": "user", "content": user_msg})
+            elif line.startswith("Assistant:"):
+                asst_msg = line[10:].strip()
+                if asst_msg:
+                    messages.append({"role": "assistant", "content": asst_msg})
+    
+    # Добавляем текущее сообщение пользователя
+    current_msg = extract_user_message(full_text)
+    if current_msg:
+        messages.append({"role": "user", "content": current_msg})
+    
+    return messages
+
 def ask_openai(
     user_text: str,
     *,
-    lang: str = "ru",  # параметр оставлен для совместимости, но не используется
-    persona: str = "friendly",  # не используется - OpenAI свободен
-    style: str = "steps",  # не используется - OpenAI свободен
+    lang: str = "ru",  # параметр оставлен для совместимости
+    persona: str = "friendly",  # не используется
+    style: str = "steps",  # не используется
 ) -> str:
     """
-    Отправка запроса в OpenAI
+    Отправка запроса в OpenAI с полной историей разговора
     
     Правила:
-    1. OpenAI полностью свободен, нет никаких ограничений
+    1. OpenAI полностью свободен, нет ограничений
     2. Строго следует указаниям пользователя
-    3. Отвечает на том языке, на котором написал пользователь
-    4. Если язык неизвестен - отвечает на английском
-    5. Никогда не упоминает что он OpenAI, только "ассистент" или "помощник"
+    3. Отвечает на языке пользователя (английский как fallback)
+    4. Никогда не упоминает что он OpenAI
+    5. ПОМНИТ ВСЮ ИСТОРИЮ и инструкции!
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
 
-    # Извлекаем текущее сообщение пользователя
-    current_message = extract_user_message(user_text)
+    # Парсим всю историю разговора
+    messages = parse_conversation_history(user_text)
     
-    # Определяем, есть ли история разговора
-    if "Conversation:" in user_text or "User:" in user_text:
-        # Есть история - отправляем всё как есть
+    # Если не удалось распарсить историю, используем простой формат
+    if len(messages) <= 1:  # только system или system + одно сообщение
+        current_message = extract_user_message(user_text)
         messages = [
             {
                 "role": "system", 
-                "content": "Ты свободный ассистент. Отвечай на том языке, на котором написал пользователь. Никогда не говори что ты OpenAI, представляйся просто ассистентом или помощником. Строго следуй инструкциям пользователя."
+                "content": "Ты свободный ассистент. Отвечай на том языке, на котором написал пользователь. Никогда не говори что ты OpenAI, представляйся просто ассистентом или помощником. Строго следуй инструкциям пользователя и ПОМНИ всю историю разговора."
             },
-            {"role": "user", "content": user_text}
-        ]
-    else:
-        # Простой запрос без истории
-        messages = [
-            {
-                "role": "system", 
-                "content": "Ты свободный ассистент. Отвечай на том языке, на котором написал пользователь. Никогда не говори что ты OpenAI, представляйся просто ассистентом или помощником. Строго следуй инструкциям пользователя."
-            },
-            {"role": "user", "content": user_text}
+            {"role": "user", "content": current_message or user_text}
         ]
 
     try:
+        # Логируем количество сообщений в истории
+        print(f"📚 OpenAI history: {len(messages)} messages")
+        
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=messages,
-            temperature=1.0,  # Полная свобода
-            max_tokens=2000,   # Больше токенов для длинных ответов
+            temperature=1.0,
+            max_tokens=2000,
             presence_penalty=0.0,
             frequency_penalty=0.0,
         )
