@@ -63,7 +63,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.message.reply_text(
             "✅ Чат завершен. Возвращаю в меню...",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_to_menu")]
+                [InlineKeyboardButton("🏠 В меню", callback_data="back_to_menu")]
             ])
         )
         context.user_data["in_chat_mode"] = False
@@ -113,7 +113,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
         
         if reply:
-            # Сначала удаляем кнопку под предыдущим сообщением бота
+            # Удаляем кнопку под предыдущим сообщением бота
             if uid in last_bot_message:
                 try:
                     await context.bot.edit_message_reply_markup(
@@ -124,10 +124,9 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except:
                     pass
             
-            # РЕДАКТИРУЕМ то же самое сообщение - заменяем анимацию на ответ
+            # Отправляем ответ ТОЛЬКО с кнопкой выхода
             keyboard = InlineKeyboardMarkup([
-                [InlineKeyboardButton("❌ Выйти из чата", callback_data="exit_chat")],
-                [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_to_menu")]
+                [InlineKeyboardButton("❌ Выйти из чата", callback_data="exit_chat")]
             ])
             
             await sent_msg.edit_text(reply, reply_markup=keyboard)
