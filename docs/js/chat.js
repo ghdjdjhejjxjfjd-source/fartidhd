@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ (кнопка блокируется при ошибках интернета)
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -10,7 +10,6 @@ const RETRY_DELAY = 1000;
 const MAX_HISTORY = 100;
 const MAX_STORAGE_SIZE = 4 * 1024 * 1024;
 
-// Функция для показа загрузки на кнопке
 function setButtonLoading(button, isLoading) {
   if (!button) return;
   
@@ -400,7 +399,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (!saveBtn) return;
     
-    // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА - если лимиты исчерпаны, кнопка не активна
     let canSave = hasUnsavedChanges;
     
     if (tempAiMode && currentLimits.ai_mode_changes >= 8) {
@@ -478,7 +476,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateUnsavedIndicator();
   }
 
-  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ ==========
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
@@ -486,7 +483,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const originalStyle = getStyle();
     const originalPersona = getPersona();
     
-    // ✅ ПРОВЕРКА ЛИМИТОВ ПЕРЕД СОХРАНЕНИЕМ
     if (tempAiMode) {
       const modeChanges = currentLimits.ai_mode_changes || 0;
       if (modeChanges >= 8) {
@@ -537,7 +533,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
-    // Если дошли до сюда - лимиты не превышены, можно сохранять
     if (tempAiMode) {
       const confirmMsg = "⚠️ Смена режима ИИ очистит историю чата. Продолжить?";
       let confirmed;
@@ -564,12 +559,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     let success = true;
     let errorMsg = "";
     
-    // Сначала пробуем сменить режим ИИ
     if (tempAiMode) {
       const result = await changeAiMode(tempAiMode);
       
       if (result && result.success) {
-        // Успешно - сохраняем и очищаем
         localStorage.setItem("ai_mode", tempAiMode);
         currentAiMode = tempAiMode;
         
@@ -583,18 +576,13 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
           console.error("Failed to clear memory:", e);
         }
       } else {
-        // Ошибка - лимит исчерпан или другая проблема
         success = false;
         errorMsg = result?.message || "Ошибка смены режима";
-        
-        // Возвращаем select к исходному значению
         document.getElementById('aiModeSel').value = originalMode;
         tempAiMode = null;
         
-        // Показываем сообщение об ошибке
         add("bot", `❌ ${errorMsg}`, true);
         
-        // Закрываем настройки и выходим
         setButtonLoading(saveBtn, false);
         hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
         updateSaveButton();
@@ -604,7 +592,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
-    // Если режим сменился успешно (или не менялся), пробуем сменить стиль
     if (tempStyle && success) {
       const result = await changeStyle(tempStyle);
       if (result && result.success) {
@@ -616,7 +603,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
-    // Если стиль сменился успешно (или не менялся), пробуем сменить характер
     if (tempPersona && currentAiMode === 'fast' && success) {
       const result = await changePersona(tempPersona);
       if (result && result.success) {
@@ -631,7 +617,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     setButtonLoading(saveBtn, false);
     
     if (success) {
-      // Все изменения успешны
       tempStyle = null;
       tempPersona = null;
       tempAiMode = null;
@@ -642,7 +627,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       updateUnsavedIndicator();
       closeSettings();
     } else {
-      // Если была ошибка, показываем её
       add("bot", `❌ ${errorMsg}`, true);
       closeSettings();
     }
@@ -708,12 +692,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const persona = tempPersona || getPersona();
     const style = tempStyle || getStyle();
     
-    const maxHistory = 20;
-    const recentHistory = history.slice(-maxHistory);
+    // ✅ Берем ВСЮ историю из localStorage
+    const recentHistory = history.slice(-20); // Последние 20 сообщений
     
     let conversationHistory = "";
     if (recentHistory.length > 0) {
-      conversationHistory = "Previous conversation:\n";
+      conversationHistory = "Conversation:\n";
       recentHistory.forEach(msg => {
         const role = msg.role === "user" ? "User" : "Assistant";
         conversationHistory += `${role}: ${msg.text}\n`;
@@ -741,6 +725,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       "smart": "You are SMART and THOUGHTFUL. Use smart emojis 🧐 🤔 in EVERY message."
     }[persona] || "You are friendly and warm.";
 
+    // ✅ ВОЗВРАЩАЕМ ПОЛНЫЙ ПРОМПТ С ИСТОРИЕЙ
     return `${conversationHistory}
 Current user message: ${userText}
 
@@ -753,16 +738,13 @@ IMPORTANT INSTRUCTIONS:
 Response:`;
   }
 
-  // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ (кнопка блокируется при ошибках интернета) ==========
   async function send() {
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
 
-    // БЛОКИРУЕМ КНОПКУ СРАЗУ
     sending = true;
     sendBtnEl.disabled = true;
 
-    // ПРОВЕРКА ИНТЕРНЕТА ПЕРЕД ОТПРАВКОЙ
     if (!navigator.onLine) {
       add("bot", "📡 Нет интернет-соединения. Проверьте подключение.", true);
       sending = false;
@@ -777,12 +759,9 @@ Response:`;
     
     addTyping();
 
-    // ТАЙМАУТ ДЛЯ АНИМАЦИИ ПЕЧАТАНИЯ (15 секунд)
     const typingTimeout = setTimeout(() => {
       removeTyping();
       add("bot", "⏱️ Превышено время ожидания. Проверьте интернет и попробуйте снова.", true);
-      // ⚠️ НЕ РАЗБЛОКИРУЕМ КНОПКУ ПРИ ТАЙМАУТЕ
-      // sending остается true, кнопка disabled
     }, 15000);
 
     let lastError = null;
@@ -793,9 +772,11 @@ Response:`;
         const hasInternet = await waitForInternet(1);
         if (!hasInternet) throw new Error("no_internet");
 
-        const answer = await askAI(t);
+        // ✅ ОТПРАВЛЯЕМ ПОЛНЫЙ ПРОМПТ С ИСТОРИЕЙ
+        const fullPrompt = buildPrompt(t);
+        const answer = await askAI(fullPrompt); // Отправляем историю!
         
-        clearTimeout(typingTimeout); // Очищаем таймаут
+        clearTimeout(typingTimeout);
         removeTyping();
         add("bot", answer || "…", true);
         await updateMenuBalance();
@@ -810,13 +791,10 @@ Response:`;
           clearTimeout(typingTimeout);
           removeTyping();
           add("bot", "📡 Интернет пропал. Проверьте подключение.", true);
-          // ⚠️ НЕ РАЗБЛОКИРУЕМ КНОПКУ ПРИ ПОТЕРЕ ИНТЕРНЕТА
-          // sending остается true, кнопка disabled
           return;
         }
         
         if (attempt < MAX_RETRIES) {
-          // Пересоздаем анимацию если нужно
           removeTyping();
           addTyping();
           await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
@@ -824,33 +802,22 @@ Response:`;
       }
     }
 
-    clearTimeout(typingTimeout); // Очищаем таймаут
+    clearTimeout(typingTimeout);
     removeTyping();
     
     if (!success) {
       const errorMessage = lastError?.message || "";
-      const errorStatus = lastError?.status || "";
       
-      if (errorMessage.includes("insufficient_stars") || 
-          errorMessage.includes("402") || 
-          errorMessage.includes("Insufficient stars") ||
-          errorStatus === 402) {
+      if (errorMessage.includes("insufficient_stars") || errorMessage.includes("402")) {
         add("bot", "❌ Недостаточно звезд. Купите в меню: ⭐ Купить звезды", true);
-        // Разблокируем при ошибке звезд
         sending = false;
         sendBtnEl.disabled = false;
-      } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
-        add("bot", "📡 Проблема с сетью. Проверьте интернет.", true);
-        // ⚠️ НЕ РАЗБЛОКИРУЕМ ПРИ СЕТЕВЫХ ОШИБКАХ
-        // sending остается true, кнопка disabled
       } else {
         add("bot", "❌ Ошибка сервера. Попробуйте позже.", true);
-        // Разблокируем при других ошибках
         sending = false;
         sendBtnEl.disabled = false;
       }
     } else {
-      // Успешно отправили - разблокируем
       sending = false;
       sendBtnEl.disabled = false;
     }
@@ -889,55 +856,15 @@ Response:`;
     }
   }
 
-  async function updatePersonaLock() {
-    if (!currentUserId) return;
-    
-    try {
-      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
-      if (!res.ok) return;
-      
-      const data = await res.json();
-      currentAiMode = data.ai_mode;
-      
-      const personaSelect = document.getElementById('personaSel');
-      if (!personaSelect) return;
-      
-      const oldLock = document.getElementById('persona-lock-icon');
-      if (oldLock) oldLock.remove();
-      
-      if (data.ai_mode === "quality") {
-        personaSelect.disabled = true;
-        personaSelect.style.opacity = '0.6';
-        
-        const lockSpan = document.createElement('span');
-        lockSpan.id = 'persona-lock-icon';
-        lockSpan.innerHTML = '🔒';
-        lockSpan.style.marginRight = '8px';
-        lockSpan.style.fontSize = '18px';
-        personaSelect.parentNode.insertBefore(lockSpan, personaSelect);
-      } else {
-        personaSelect.disabled = false;
-        personaSelect.style.opacity = '1';
-      }
-      
-      if (settingsOpen) await fetchLimits();
-      
-    } catch (err) {
-      console.log("Persona lock update error:", err);
-    }
-  }
-
   function setupNetworkListeners() {
     window.addEventListener('online', () => {
       add("bot", "📡 Интернет соединение восстановлено!", true);
-      // При восстановлении интернета разблокируем кнопку, если не идет отправка
       if (!sending) {
         sendBtnEl.disabled = false;
       }
     });
     
     window.addEventListener('offline', () => {
-      // При пропадании интернета блокируем кнопку
       sendBtnEl.disabled = true;
     });
   }
@@ -955,14 +882,12 @@ Response:`;
       }
     });
 
-    // Запрещаем мультитач (2+ пальца)
     chatEl.addEventListener("touchstart", (e) => {
       if (e.touches.length > 1) {
         e.preventDefault();
       }
     }, { passive: false });
 
-    // Запрещаем жесты масштабирования
     document.addEventListener('gesturestart', (e) => {
       e.preventDefault();
     }, { passive: false });
@@ -975,7 +900,6 @@ Response:`;
       e.preventDefault();
     }, { passive: false });
 
-    // Запрещаем двойной тап (быстро 2 касания)
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
@@ -985,12 +909,10 @@ Response:`;
       lastTouchEnd = now;
     }, { passive: false });
 
-    // Запрещаем двойной клик мышью
     document.addEventListener('dblclick', (e) => {
       e.preventDefault();
     }, { passive: false });
 
-    // Один тап для закрытия клавиатуры (НЕ ломает скролл)
     chatEl.addEventListener("pointerdown", () => {
       if (document.activeElement === inputEl) {
         inputEl.blur();
