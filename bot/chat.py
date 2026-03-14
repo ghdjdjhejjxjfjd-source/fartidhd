@@ -10,7 +10,7 @@ from .config import send_log_http
 # Храним ID последнего сообщения бота для каждого пользователя
 last_bot_message = {}
 
-async function inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
@@ -55,7 +55,7 @@ async function inline_chat_start(update: Update, context: ContextTypes.DEFAULT_T
     
     context.user_data["in_chat_mode"] = True
 
-async function handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
+async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     global last_bot_message
     
     # Проверка на выход из чата
