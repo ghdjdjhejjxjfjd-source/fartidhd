@@ -3,8 +3,8 @@ import time
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from telegram import Update
 
-from bot.handlers import start, on_button  # импорт из новой структуры
-from bot.handlers import handle_message  # handle_message пока еще в handlers.py
+from bot.handlers import start, on_button
+from bot.old_handlers import handle_message  # ← ИСПРАВЛЕНО: явно берем из old_handlers
 from bot_admin import (
     cmd_whoami,
     cmd_free,
@@ -71,6 +71,7 @@ def start_bot():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(on_button))
+    # ТЕПЕРЬ ТОЛЬКО ОДИН ОБРАБОТЧИК - правильный, с проверкой флага
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     app.add_handler(CommandHandler("whoami", cmd_whoami))
