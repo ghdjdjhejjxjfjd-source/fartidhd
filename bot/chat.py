@@ -10,7 +10,7 @@ from .config import send_log_http
 # Храним ID последнего сообщения бота для каждого пользователя
 last_bot_message = {}
 
-async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async function inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
@@ -55,7 +55,7 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     context.user_data["in_chat_mode"] = True
 
-async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
+async function handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     global last_bot_message
     
     # Проверка на выход из чата
@@ -91,8 +91,8 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
         return
     
-    # Отправляем сообщение с анимацией печатания
-    typing_msg = await update.message.reply_text("✍️ Печатает...")
+    # Отправляем ОДНО сообщение с анимацией
+    sent_msg = await update.message.reply_text("⏳ Печатает...")
     
     try:
         # Выбираем AI в зависимости от режима
@@ -113,9 +113,6 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             )
         
         if reply:
-            # Удаляем сообщение с анимацией
-            await typing_msg.delete()
-            
             # Сначала удаляем кнопку под предыдущим сообщением бота
             if uid in last_bot_message:
                 try:
@@ -127,15 +124,15 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except:
                     pass
             
-            # Отправляем ответ с кнопкой выхода из чата
+            # РЕДАКТИРУЕМ то же самое сообщение - заменяем анимацию на ответ
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("❌ Выйти из чата", callback_data="exit_chat")],
                 [InlineKeyboardButton("⬅️ Назад в меню", callback_data="back_to_menu")]
             ])
             
-            sent_msg = await update.message.reply_text(reply, reply_markup=keyboard)
+            await sent_msg.edit_text(reply, reply_markup=keyboard)
             
-            # Сохраняем ID нового сообщения
+            # Сохраняем ID этого сообщения
             last_bot_message[uid] = sent_msg.message_id
             
             # Списываем звезды
@@ -147,16 +144,16 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             send_log_http(f"💬 Чат в боте ({ai_mode}): {uid} -> {text[:50]}...")
             
         else:
-            await typing_msg.edit_text("❌ Ошибка получения ответа")
+            await sent_msg.edit_text("❌ Ошибка получения ответа")
             
     except Exception as e:
         error_msg = str(e)
         if "insufficient_stars" in error_msg:
-            await typing_msg.edit_text("❌ Недостаточно звезд. Купите в меню.")
+            await sent_msg.edit_text("❌ Недостаточно звезд. Купите в меню.")
             context.user_data["in_chat_mode"] = False
         elif "network" in error_msg.lower():
-            await typing_msg.edit_text("📡 Проблема с интернетом. Попробуйте позже.")
+            await sent_msg.edit_text("📡 Проблема с интернетом. Попробуйте позже.")
             context.user_data["in_chat_mode"] = False
         else:
-            await typing_msg.edit_text(f"❌ Ошибка: {error_msg[:100]}")
+            await sent_msg.edit_text(f"❌ Ошибка: {error_msg[:100]}")
             context.user_data["in_chat_mode"] = False
