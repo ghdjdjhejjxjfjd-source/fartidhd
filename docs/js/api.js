@@ -41,7 +41,7 @@ export async function askAI(promptText) {
   const aiMode = getAiMode();
 
   const payload = {
-    text: promptText,
+    text: promptText,  // 👈 Отправляем полный промпт с историей!
     lang: getLang(),
     style: getStyle(),
     persona: getPersona(),
@@ -185,7 +185,6 @@ export async function changePersona(newPersona) {
   }
 }
 
-// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ changeAiMode ==========
 export async function changeAiMode(newMode) {
   const user = getTelegramUser();
   if (!user.tg_user_id) return { success: false, message: "no_user" };
@@ -207,7 +206,6 @@ export async function changeAiMode(newMode) {
     const data = await r.json();
     
     if (!r.ok) {
-      // Проверяем разные типы ошибок
       if (data.error === "limit_exceeded") {
         return { 
           success: false, 
@@ -215,7 +213,6 @@ export async function changeAiMode(newMode) {
         };
       }
       
-      // Если сервер вернул сообщение об ошибке
       if (data.message) {
         return { success: false, message: data.message };
       }
@@ -223,7 +220,6 @@ export async function changeAiMode(newMode) {
       return { success: false, message: data.error || "Ошибка сервера" };
     }
     
-    // Успешно - сохраняем в localStorage
     if (data.success) {
       localStorage.setItem("ai_mode", newMode);
       return { success: true };
