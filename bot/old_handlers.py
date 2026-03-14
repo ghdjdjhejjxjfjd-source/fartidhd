@@ -56,6 +56,21 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
+    # ===== ВЫХОД ИЗ ЧАТА (НОВЫЙ ОБРАБОТЧИК) =====
+    if data == "exit_chat":
+        # Выход из чата - отправляем НОВОЕ сообщение с меню
+        context.user_data["in_chat_mode"] = False
+        await query.message.reply_text(
+            "✅ Вы вышли из чата. Возвращаю в меню...",
+            reply_markup=main_menu_for_user(uid)
+        )
+        # Удаляем кнопки под сообщением, но само сообщение оставляем
+        try:
+            await query.message.edit_reply_markup(reply_markup=None)
+        except:
+            pass
+        return
+    
     # ===== КНОПКА НАЗАД =====
     if data == "back_to_previous":
         if uid in navigation_stack:
@@ -387,8 +402,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if in_chat_mode:
         from .chat import handle_chat_message
         await handle_chat_message(update, context, uid, text)
-        # ⚠️ НЕ ВЫКЛЮЧАЕМ РЕЖИМ ЧАТА!
-        # context.user_data["in_chat_mode"] = False  # Эту строку УДАЛЯЕМ
+        # НЕ ВЫКЛЮЧАЕМ РЕЖИМ ЧАТА!
         
     elif in_image_mode:
         from .image import handle_image_generation
