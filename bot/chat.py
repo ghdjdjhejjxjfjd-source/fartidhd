@@ -1,3 +1,4 @@
+# bot/chat.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
@@ -50,16 +51,21 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
         f"Стоимость: {cost}⭐ за сообщение\n\n"
         f"Отправляй сообщения, я буду отвечать.\n"
-        f"Для выхода из чата напиши /cancel"
+        f"Для выхода из чата напиши /cancel (без пробела!)"
     )
     
     context.user_data["in_chat_mode"] = True
+    context.user_data["chat_active"] = True
 
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     global last_bot_message
     
-    # Проверка на выход из чата
-    if text.lower() == "/cancel":
+    # ===== ИСПРАВЛЕННАЯ ПРОВЕРКА ВЫХОДА =====
+    # Убираем пробелы и приводим к нижнему регистру
+    clean_text = text.lower().strip()
+    
+    # Проверяем разные варианты
+    if clean_text in ["/cancel", "/cancel ", "cancel", "выход", "exit"]:
         await update.message.reply_text(
             "✅ Чат завершен. Возвращаю в меню...",
             reply_markup=InlineKeyboardMarkup([
@@ -67,11 +73,12 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             ])
         )
         context.user_data["in_chat_mode"] = False
+        context.user_data["chat_active"] = False
         return
     
     a = get_access(uid)
-    interface_lang = get_user_lang(uid)  # язык интерфейса
-    ai_lang = get_user_ai_lang(uid)      # язык ответов ИИ
+    interface_lang = get_user_lang(uid)
+    ai_lang = get_user_ai_lang(uid)
     persona = get_user_persona(uid)
     style = get_user_style(uid)
     ai_mode = get_ai_mode(uid)
@@ -80,6 +87,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     if a.get("is_blocked"):
         await update.message.reply_text("⛔ Доступ заблокирован.")
         context.user_data["in_chat_mode"] = False
+        context.user_data["chat_active"] = False
         return
     
     balance = get_balance(uid)
@@ -89,6 +97,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             "Купи звезды в меню: ⭐ Купить звезды"
         )
         context.user_data["in_chat_mode"] = False
+        context.user_data["chat_active"] = False
         return
     
     # Отправляем ОДНО сообщение с анимацией
@@ -100,15 +109,15 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             # Groq - используем язык ИИ, характер и стиль
             reply = ask_groq(
                 user_text=text,
-                lang=ai_lang,  # язык ответов ИИ
+                lang=ai_lang,
                 persona=persona,
                 style=style
             )
         else:
-            # OpenAI - используем язык ИИ и стиль (характер не используется)
+            # OpenAI - используем язык ИИ и стиль
             reply = ask_openai(
                 user_text=text,
-                lang=ai_lang,  # язык ответов ИИ
+                lang=ai_lang,
                 style=style
             )
         
@@ -150,9 +159,12 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         if "insufficient_stars" in error_msg:
             await sent_msg.edit_text("❌ Недостаточно звезд. Купите в меню.")
             context.user_data["in_chat_mode"] = False
+            context.user_data["chat_active"] = False
         elif "network" in error_msg.lower():
             await sent_msg.edit_text("📡 Проблема с интернетом. Попробуйте позже.")
             context.user_data["in_chat_mode"] = False
+            context.user_data["chat_active"] = False
         else:
             await sent_msg.edit_text(f"❌ Ошибка: {error_msg[:100]}")
             context.user_data["in_chat_mode"] = False
+            context.user_data["chat_active"] = False
