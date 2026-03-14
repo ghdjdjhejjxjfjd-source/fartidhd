@@ -14,6 +14,9 @@ from .tabs.ai_lang import show_ai_lang_settings, set_ai_lang
 # Импортируем handle_message из переименованного файла
 from bot.old_handlers import handle_message
 
+# 👇 ЭТО НУЖНО ДОБАВИТЬ
+from bot.menu import main_menu_for_user  # Импорт функции меню
+
 __all__ = [
     'start',
     'on_button',
@@ -34,4 +37,5 @@ __all__ = [
     'show_ai_lang_settings',
     'set_ai_lang',
     'handle_message',
+    'main_menu_for_user',  # 👇 И СЮДА ТОЖЕ
 ]
