@@ -369,7 +369,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     uid = user.id
     
-    if not context.user_data.get("in_chat_mode") and not context.user_data.get("in_image_mode"):
+    # Проверяем, находится ли пользователь в режиме чата или генерации картинок
+    in_chat_mode = context.user_data.get("in_chat_mode", False)
+    in_image_mode = context.user_data.get("in_image_mode", False)
+    
+    if not in_chat_mode and not in_image_mode:
         return
     
     a = get_access(uid)
@@ -380,12 +384,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     text = update.message.text
     
-    if context.user_data.get("in_chat_mode"):
+    if in_chat_mode:
         from .chat import handle_chat_message
         await handle_chat_message(update, context, uid, text)
-        context.user_data["in_chat_mode"] = False
+        # ⚠️ НЕ ВЫКЛЮЧАЕМ РЕЖИМ ЧАТА!
+        # context.user_data["in_chat_mode"] = False  # Эту строку УДАЛЯЕМ
         
-    elif context.user_data.get("in_image_mode"):
+    elif in_image_mode:
         from .image import handle_image_generation
         await handle_image_generation(update, context, uid, text)
         context.user_data["in_image_mode"] = False
