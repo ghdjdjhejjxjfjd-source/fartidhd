@@ -11,9 +11,6 @@ from .tabs.buy_stars import show_buy_stars, buy_stars_package
 from .tabs.style import show_style_settings, set_style
 from .tabs.ai_lang import show_ai_lang_settings, set_ai_lang
 
-# Импортируем handle_message из переименованного файла
-from bot.old_handlers import handle_message
-
 __all__ = [
     'start',
     'on_button',
@@ -33,5 +30,4 @@ __all__ = [
     'set_style',
     'show_ai_lang_settings',
     'set_ai_lang',
-    'handle_message',
 ]
