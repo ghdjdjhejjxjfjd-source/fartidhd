@@ -89,7 +89,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let reloadTimer = null;
   
   // ===== ПЕРЕМЕННЫЕ ДЛЯ ПОИСКА =====
-  let searchMode = false;
+  let searchMode = false;  // Состояние поиска (включен/выключен)
   const searchToggleBtn = document.getElementById('searchToggleBtn');
   const searchModal = document.getElementById('searchModal');
   const confirmSearchBtn = document.getElementById('confirmSearchBtn');
@@ -129,6 +129,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     } else {
       // Режим OpenAI - показываем кнопку
       searchToggleBtn.style.display = 'flex';
+      // При заходе или смене режима - кнопка серая (выключена)
       searchMode = false;
       searchToggleBtn.classList.remove('active');
       searchToggleBtn.classList.add('inactive');
@@ -508,7 +509,6 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateUnsavedIndicator();
   }
 
-  // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ =====
   function handleAiModeChange(newMode) {
     const originalMode = getAiModeFromStorage();
     
@@ -522,11 +522,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateSaveButton();
     updateUnsavedIndicator();
     
-    // 👇 ТОЛЬКО обновляем видимость кнопки, БЕЗ перезагрузки!
+    // Обновляем видимость кнопки без перезагрузки
     updateSearchButtonVisibility();
   }
 
-  // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ =====
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
@@ -609,6 +608,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const saveBtn = document.getElementById('saveSettingsBtn');
     setButtonLoading(saveBtn, true);
     
+    // БЛОКИРУЕМ КНОПКУ ОТПРАВКИ
+    sendBtnEl.disabled = true;
+    
     let success = true;
     let errorMsg = "";
     
@@ -630,7 +632,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
           console.error("Failed to clear memory:", e);
         }
         
-        // 👇 ТОЛЬКО ЗДЕСЬ перезагрузка после успешного сохранения!
+        // Перезагрузка через 2 секунды
         setTimeout(() => {
           window.location.reload();
         }, 2000);
@@ -644,6 +646,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         add("bot", `❌ ${errorMsg}`, true);
         
         setButtonLoading(saveBtn, false);
+        // РАЗБЛОКИРОВЫВАЕМ КНОПКУ ПРИ ОШИБКЕ
+        sendBtnEl.disabled = false;
         hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null);
         updateSaveButton();
         updateUnsavedIndicator();
@@ -690,6 +694,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       closeSettings();
     } else {
       add("bot", `❌ ${errorMsg}`, true);
+      // РАЗБЛОКИРОВЫВАЕМ КНОПКУ ПРИ ОШИБКЕ
+      sendBtnEl.disabled = false;
       closeSettings();
     }
   }
@@ -803,12 +809,13 @@ Response:`;
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
 
+    // Если поиск включен - показываем предупреждение
     if (searchMode) {
-      showSearchModal();
-      return;
+      // Не показываем предупреждение, просто отправляем с поиском
+      await sendMessage(t, true);
+    } else {
+      await sendMessage(t, false);
     }
-
-    await sendMessage(t, false);
   }
 
   async function sendMessage(text, useSearch) {
@@ -884,27 +891,18 @@ Response:`;
           errorMessage.includes("Insufficient stars") ||
           errorStatus === 402) {
         add("bot", "❌ Недостаточно звезд. Купите в меню: ⭐ Купить звезды", true);
-        sending = false;
-        sendBtnEl.disabled = false;
       } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
         add("bot", "📡 Проблема с сетью. Проверьте интернет.", true);
       } else {
         add("bot", "❌ Ошибка сервера. Попробуйте позже.", true);
-        sending = false;
-        sendBtnEl.disabled = false;
       }
-    } else {
-      sending = false;
-      sendBtnEl.disabled = false;
     }
 
-    if (searchMode) {
-      searchMode = false;
-      if (searchToggleBtn) {
-        searchToggleBtn.classList.remove('active');
-        searchToggleBtn.classList.add('inactive');
-      }
-    }
+    sending = false;
+    sendBtnEl.disabled = false;
+    
+    // НЕ ВЫКЛЮЧАЕМ ПОИСК ПОСЛЕ ОТПРАВКИ!
+    // searchMode остается как есть
   }
 
   async function updateMenuBalance() {
@@ -956,6 +954,7 @@ Response:`;
   }
 
   function bindUI() {
+    // При входе обновляем видимость и состояние кнопки
     updateSearchButtonVisibility();
 
     if (searchToggleBtn) {
@@ -965,7 +964,15 @@ Response:`;
           return;
         }
         
-        showSearchModal();
+        if (searchMode) {
+          // Если режим включен - выключаем БЕЗ предупреждения
+          searchMode = false;
+          searchToggleBtn.classList.remove('active');
+          searchToggleBtn.classList.add('inactive');
+        } else {
+          // Если режим выключен - показываем предупреждение
+          showSearchModal();
+        }
       });
     }
 
@@ -983,11 +990,7 @@ Response:`;
     if (cancelSearchBtn) {
       cancelSearchBtn.addEventListener('click', () => {
         hideSearchModal();
-        searchMode = false;
-        if (searchToggleBtn) {
-          searchToggleBtn.classList.remove('active');
-          searchToggleBtn.classList.add('inactive');
-        }
+        // При отмене ничего не меняем
       });
     }
 
@@ -995,11 +998,6 @@ Response:`;
       searchModal.addEventListener('click', (e) => {
         if (e.target === searchModal) {
           hideSearchModal();
-          searchMode = false;
-          if (searchToggleBtn) {
-            searchToggleBtn.classList.remove('active');
-            searchToggleBtn.classList.add('inactive');
-          }
         }
       });
     }
