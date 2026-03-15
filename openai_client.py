@@ -8,6 +8,70 @@ OPENAI_MODEL = (os.getenv("OPENAI_MODEL") or "gpt-3.5-turbo").strip()
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
+# ===== АНАЛИЗ НЕОБХОДИМОСТИ ПОИСКА =====
+SEARCH_ANALYSIS_PROMPT = """
+Ты - анализатор запросов. Твоя задача - определить, нужен ли поиск в интернете для ответа на вопрос пользователя.
+
+Правила:
+- Если вопрос требует СВЕЖИХ или АКТУАЛЬНЫХ данных → ответь "search"
+- Если вопрос можно ответить из общих знаний → ответь "no_search"
+
+Примеры когда НУЖЕН поиск (search):
+- Вопросы про погоду, курс валют, цены
+- Новости, события, что случилось сегодня/вчера
+- Спортивные результаты, матчи, счета
+- Расписание, время работы, билеты
+- Актуальные данные, статистика
+
+Примеры когда НЕ НУЖЕН поиск (no_search):
+- Общие вопросы (что такое, кто такой, как работает)
+- Творчество (напиши стих, придумай историю)
+- Математика, логика, решение задач
+- Советы, рекомендации, мнения
+- Исторические факты (не меняются)
+
+Отвечай ТОЛЬКО одним словом: "search" или "no_search"
+"""
+
+def analyze_need_search(question):
+    """
+    Анализирует вопрос и определяет, нужен ли поиск в интернете
+    
+    Args:
+        question: вопрос пользователя
+    
+    Returns:
+        True - если нужен поиск
+        False - если не нужен
+        None - если не удалось определить
+    """
+    if not client:
+        return None
+    
+    try:
+        response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {"role": "system", "content": SEARCH_ANALYSIS_PROMPT},
+                {"role": "user", "content": question}
+            ],
+            temperature=0.1,
+            max_tokens=10
+        )
+        
+        result = response.choices[0].message.content.strip().lower()
+        
+        if result == "search":
+            return True
+        elif result == "no_search":
+            return False
+        else:
+            return None
+            
+    except Exception as e:
+        print(f"❌ OpenAI analysis error: {e}")
+        return None
+
 # ХАРАКТЕРЫ
 PERSONAS = {
     "friendly": """
