@@ -9,6 +9,70 @@ GROQ_MODEL = (os.getenv("GROQ_MODEL") or "llama-3.1-8b-instant").strip()
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
+# ===== АНАЛИЗ НЕОБХОДИМОСТИ ПОИСКА =====
+SEARCH_ANALYSIS_PROMPT = """
+Ты - анализатор запросов. Твоя задача - определить, нужен ли поиск в интернете для ответа на вопрос пользователя.
+
+Правила:
+- Если вопрос требует СВЕЖИХ или АКТУАЛЬНЫХ данных → ответь "search"
+- Если вопрос можно ответить из общих знаний → ответь "no_search"
+
+Примеры когда НУЖЕН поиск (search):
+- Вопросы про погоду, курс валют, цены
+- Новости, события, что случилось сегодня/вчера
+- Спортивные результаты, матчи, счета
+- Расписание, время работы, билеты
+- Актуальные данные, статистика
+
+Примеры когда НЕ НУЖЕН поиск (no_search):
+- Общие вопросы (что такое, кто такой, как работает)
+- Творчество (напиши стих, придумай историю)
+- Математика, логика, решение задач
+- Советы, рекомендации, мнения
+- Исторические факты (не меняются)
+
+Отвечай ТОЛЬКО одним словом: "search" или "no_search"
+"""
+
+def analyze_need_search(question):
+    """
+    Анализирует вопрос и определяет, нужен ли поиск в интернете
+    
+    Args:
+        question: вопрос пользователя
+    
+    Returns:
+        True - если нужен поиск
+        False - если не нужен
+        None - если не удалось определить
+    """
+    if not groq_client:
+        return None
+    
+    try:
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": SEARCH_ANALYSIS_PROMPT},
+                {"role": "user", "content": question}
+            ],
+            temperature=0.1,
+            max_tokens=10
+        )
+        
+        result = response.choices[0].message.content.strip().lower()
+        
+        if result == "search":
+            return True
+        elif result == "no_search":
+            return False
+        else:
+            return None
+            
+    except Exception as e:
+        print(f"❌ Groq analysis error: {e}")
+        return None
+
 # Языки
 LANGUAGES = {
     "ru": { "name": "русском", "code": "ru" },
