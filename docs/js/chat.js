@@ -94,8 +94,23 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   const confirmSearchBtn = document.getElementById('confirmSearchBtn');
   const cancelSearchBtn = document.getElementById('cancelSearchBtn');
   
-  // ===== СОСТОЯНИЕ ПОИСКА =====
-  let searchMode = false; // Всегда выключен при загрузке
+  // ===== ЗАГРУЗКА СОСТОЯНИЯ ПОИСКА =====
+  function loadSearchState() {
+    try {
+      const saved = localStorage.getItem('search_mode');
+      return saved === 'true';
+    } catch(e) {
+      return false;
+    }
+  }
+
+  function saveSearchState(state) {
+    try {
+      localStorage.setItem('search_mode', state);
+    } catch(e) {}
+  }
+
+  let searchMode = loadSearchState(); // Загружаем сохраненное состояние
   
   let currentLimits = {
     groq_persona: 0,
@@ -128,6 +143,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       searchMode = false;
       searchToggleBtn.classList.remove('active');
       searchToggleBtn.classList.remove('inactive');
+      saveSearchState(false);
     } else {
       // Режим OpenAI - показываем кнопку
       searchToggleBtn.style.display = 'flex';
@@ -496,11 +512,10 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateUnsavedIndicator();
   }
 
-  // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ =====
   function handlePersonaChange(newPersona) {
     if (currentAiMode !== 'fast') {
       alert('Изменение характера недоступно в этом режиме');
-      document.getElementById('personaSel').value = getPersona(); // УБРАЛ ЛИШНЮЮ СКОБКУ
+      document.getElementById('personaSel').value = getPersona();
       return;
     }
     
@@ -532,6 +547,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     
     // При смене режима сбрасываем поиск
     searchMode = false;
+    saveSearchState(false);
     updateSearchButtonVisibility();
   }
 
@@ -971,6 +987,7 @@ Response:`;
         if (searchMode) {
           // Если режим включен - выключаем БЕЗ предупреждения
           searchMode = false;
+          saveSearchState(false);
           searchToggleBtn.classList.remove('active');
           searchToggleBtn.classList.add('inactive');
         } else {
@@ -984,6 +1001,7 @@ Response:`;
       confirmSearchBtn.addEventListener('click', () => {
         hideSearchModal();
         searchMode = true;
+        saveSearchState(true);
         if (searchToggleBtn) {
           searchToggleBtn.classList.remove('inactive');
           searchToggleBtn.classList.add('active');
