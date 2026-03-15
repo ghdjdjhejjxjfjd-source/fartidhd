@@ -5,4 +5,5 @@ flask-cors
 requests
 Pillow>=9.5.0
 openai>=1.0.0
+tavily-python
 # stability-sdk убрали
