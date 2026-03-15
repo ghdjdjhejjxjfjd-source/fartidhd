@@ -116,6 +116,25 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
 
   const TYPING_ID = "typing-indicator";
 
+  // ===== ФУНКЦИЯ ПРОВЕРКИ РЕЖИМА =====
+  function canUseSearch() {
+    const mode = getAiModeFromStorage();
+    return mode === 'quality'; // Только для качественного режима
+  }
+
+  // ===== ФУНКЦИИ ДЛЯ МОДАЛКИ =====
+  function showSearchModal() {
+    if (searchModal) {
+      searchModal.classList.add('show');
+    }
+  }
+
+  function hideSearchModal() {
+    if (searchModal) {
+      searchModal.classList.remove('show');
+    }
+  }
+
   function helloText(){
     const lang = getLang();
     const hellos = {
@@ -745,20 +764,7 @@ IMPORTANT INSTRUCTIONS:
 Response:`;
   }
 
-  // ===== НОВАЯ ФУНКЦИЯ ДЛЯ ПОКАЗА МОДАЛКИ =====
-  function showSearchModal() {
-    if (searchModal) {
-      searchModal.classList.add('show');
-    }
-  }
-
-  function hideSearchModal() {
-    if (searchModal) {
-      searchModal.classList.remove('show');
-    }
-  }
-
-  // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТПРАВКИ =====
+  // ===== ОСНОВНАЯ ФУНКЦИЯ ОТПРАВКИ =====
   async function send() {
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
@@ -772,7 +778,7 @@ Response:`;
     await sendMessage(t, false);
   }
 
-  // ===== НОВАЯ ФУНКЦИЯ ДЛЯ ОТПРАВКИ С ПОИСКОМ =====
+  // ===== ФУНКЦИЯ ОТПРАВКИ С ПАРАМЕТРОМ ПОИСКА =====
   async function sendMessage(text, useSearch) {
     if (sending || isReloading) return;
 
@@ -806,11 +812,8 @@ Response:`;
         const hasInternet = await waitForInternet(1);
         if (!hasInternet) throw new Error("no_internet");
 
-        // Собираем полный промпт с историей
         const fullPrompt = buildPrompt(text);
-        
-        // Отправляем с флагом поиска
-        const answer = await askAI(fullPrompt, useSearch);
+        const answer = await askAI(fullPrompt, useSearch); // Передаем флаг поиска
         
         clearTimeout(typingTimeout);
         removeTyping();
@@ -864,7 +867,7 @@ Response:`;
       sendBtnEl.disabled = false;
     }
 
-    // Выключаем режим поиска после отправки
+    // ✅ После отправки выключаем поиск
     if (searchMode) {
       searchMode = false;
       if (searchToggleBtn) {
@@ -906,44 +909,6 @@ Response:`;
     }
   }
 
-  async function updatePersonaLock() {
-    if (!currentUserId) return;
-    
-    try {
-      const res = await fetch(`${API_BASE}/api/user/ai_mode/${currentUserId}`);
-      if (!res.ok) return;
-      
-      const data = await res.json();
-      currentAiMode = data.ai_mode;
-      
-      const personaSelect = document.getElementById('personaSel');
-      if (!personaSelect) return;
-      
-      const oldLock = document.getElementById('persona-lock-icon');
-      if (oldLock) oldLock.remove();
-      
-      if (data.ai_mode === "quality") {
-        personaSelect.disabled = true;
-        personaSelect.style.opacity = '0.6';
-        
-        const lockSpan = document.createElement('span');
-        lockSpan.id = 'persona-lock-icon';
-        lockSpan.innerHTML = '🔒';
-        lockSpan.style.marginRight = '8px';
-        lockSpan.style.fontSize = '18px';
-        personaSelect.parentNode.insertBefore(lockSpan, personaSelect);
-      } else {
-        personaSelect.disabled = false;
-        personaSelect.style.opacity = '1';
-      }
-      
-      if (settingsOpen) await fetchLimits();
-      
-    } catch (err) {
-      console.log("Persona lock update error:", err);
-    }
-  }
-
   function setupNetworkListeners() {
     window.addEventListener('online', () => {
       add("bot", "📡 Интернет соединение восстановлено!", true);
@@ -958,31 +923,38 @@ Response:`;
   }
 
   function bindUI() {
-    // ===== НОВЫЕ ОБРАБОТЧИКИ ДЛЯ ПОИСКА =====
+    // ===== ИНИЦИАЛИЗАЦИЯ ГЛОБУСА =====
+    // При входе глобус выключен
+    if (searchToggleBtn) {
+      searchToggleBtn.classList.remove('active');
+    }
+
+    // ===== ОБРАБОТЧИК НАЖАТИЯ НА ГЛОБУС =====
     if (searchToggleBtn) {
       searchToggleBtn.addEventListener('click', () => {
-        if (!searchMode) {
-          // Включаем режим поиска для следующего сообщения
-          searchMode = true;
-          searchToggleBtn.classList.add('active');
-        } else {
-          // Выключаем режим поиска
-          searchMode = false;
-          searchToggleBtn.classList.remove('active');
+        // Проверяем режим
+        if (!canUseSearch()) {
+          alert('🔍 Поиск доступен только в режиме "Качественный" (OpenAI)');
+          return;
         }
+        
+        // Показываем предупреждение КАЖДЫЙ раз
+        showSearchModal();
       });
     }
 
+    // ===== ПОДТВЕРЖДЕНИЕ ПОИСКА =====
     if (confirmSearchBtn) {
       confirmSearchBtn.addEventListener('click', () => {
         hideSearchModal();
-        const text = inputEl.value.trim();
-        if (text) {
-          sendMessage(text, true); // Отправляем с поиском
+        searchMode = true;
+        if (searchToggleBtn) {
+          searchToggleBtn.classList.add('active');
         }
       });
     }
 
+    // ===== ОТМЕНА ПОИСКА =====
     if (cancelSearchBtn) {
       cancelSearchBtn.addEventListener('click', () => {
         hideSearchModal();
@@ -993,7 +965,7 @@ Response:`;
       });
     }
 
-    // Закрытие модалки при клике вне
+    // ===== ЗАКРЫТИЕ МОДАЛКИ ПРИ КЛИКЕ ВНЕ =====
     if (searchModal) {
       searchModal.addEventListener('click', (e) => {
         if (e.target === searchModal) {
