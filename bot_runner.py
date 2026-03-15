@@ -4,6 +4,7 @@ import asyncio
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from telegram import Update
 from telegram.error import Conflict, TimedOut, NetworkError
+from telegram.request import HTTPXRequest
 
 from bot.handlers import start, on_button
 from bot.handlers import handle_message
@@ -22,12 +23,14 @@ from bot_admin import (
 
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
 
-# Увеличиваем таймауты
-CONNECTION_POOL_SIZE = 8
-PROXY_URL = None  # Если используешь прокси - добавь сюда
-READ_TIMEOUT = 30
-CONNECT_TIMEOUT = 30
-POOL_TIMEOUT = 30
+# Создаем кастомный request с увеличенными таймаутами
+request = HTTPXRequest(
+    connection_pool_size=8,
+    connect_timeout=30.0,
+    read_timeout=30.0,
+    write_timeout=30.0,
+    pool_timeout=30.0,
+)
 
 async def post_init(app: Application):
     """Инициализация после запуска"""
@@ -104,22 +107,17 @@ def start_bot():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN is not set")
 
-    # Создаем приложение с увеличенными таймаутами
-    builder = Application.builder().token(BOT_TOKEN)
-    
-    # Настраиваем соединение
-    builder.connect_kwargs = {
-        'connect_timeout': CONNECT_TIMEOUT,
-        'read_timeout': READ_TIMEOUT,
-        'pool_timeout': POOL_TIMEOUT,
-        'concurrent_updates': True,
-    }
-    
-    if PROXY_URL:
-        builder.proxy(PROXY_URL)
-        builder.get_updates_proxy(PROXY_URL)
-    
-    app = builder.post_init(post_init).build()
+    # Создаем приложение с кастомным request
+    app = (
+        Application.builder()
+        .token(BOT_TOKEN)
+        .connect_timeout(30)
+        .read_timeout(30)
+        .write_timeout(30)
+        .pool_timeout(30)
+        .connection_pool_size(8)
+        .build()
+    )
 
     # Добавляем обработчики
     app.add_handler(CommandHandler("start", start))
@@ -151,13 +149,8 @@ def start_bot():
             close_loop=False,
             drop_pending_updates=True,
             allowed_updates=['message', 'callback_query'],
-            poll_interval=0.5,  # Уменьшаем интервал
-            timeout=30,  # Увеличиваем таймаут
-            bootstrap_retries=5,  # Добавляем ретраи при запуске
-            read_timeout=30,
-            write_timeout=30,
-            connect_timeout=30,
-            pool_timeout=30,
+            poll_interval=0.5,
+            timeout=30,
         )
     except Exception as e:
         print(f"❌ Ошибка polling: {e}")
