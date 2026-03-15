@@ -1,4 +1,4 @@
-// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ С ПОИСКОМ
+// docs/js/chat.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
@@ -10,7 +10,6 @@ const RETRY_DELAY = 1000;
 const MAX_HISTORY = 100;
 const MAX_STORAGE_SIZE = 4 * 1024 * 1024;
 
-// Функция для показа загрузки на кнопке
 function setButtonLoading(button, isLoading) {
   if (!button) return;
   
@@ -124,22 +123,24 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     if (mode === 'fast') {
       // Режим Groq - скрываем кнопку
       searchToggleBtn.style.display = 'none';
-      // Сбрасываем режим поиска
       searchMode = false;
       searchToggleBtn.classList.remove('active');
+      // Убираем серый класс если был
+      searchToggleBtn.classList.remove('inactive');
     } else {
       // Режим OpenAI - показываем кнопку
       searchToggleBtn.style.display = 'flex';
-      // При переключении на OpenAI кнопка выключена
       searchMode = false;
       searchToggleBtn.classList.remove('active');
+      // Добавляем серый класс для неактивного состояния
+      searchToggleBtn.classList.add('inactive');
     }
   }
 
   // ===== ФУНКЦИЯ ПРОВЕРКИ РЕЖИМА =====
   function canUseSearch() {
     const mode = getAiModeFromStorage();
-    return mode === 'quality'; // Только для качественного режима
+    return mode === 'quality';
   }
 
   // ===== ФУНКЦИИ ДЛЯ МОДАЛКИ =====
@@ -522,8 +523,13 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateSaveButton();
     updateUnsavedIndicator();
     
-    // При смене режима обновляем видимость кнопки поиска
+    // Обновляем видимость кнопки
     updateSearchButtonVisibility();
+    
+    // Автоматически обновляем страницу через 1 секунду после смены режима
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   }
 
   async function saveSettings() {
@@ -625,6 +631,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         } catch (e) {
           console.error("Failed to clear memory:", e);
         }
+        
+        // Обновляем страницу после успешной смены режима
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        
       } else {
         success = false;
         errorMsg = result?.message || "Ошибка смены режима";
@@ -787,21 +799,18 @@ IMPORTANT INSTRUCTIONS:
 Response:`;
   }
 
-  // ===== ОСНОВНАЯ ФУНКЦИЯ ОТПРАВКИ =====
   async function send() {
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
 
-    // Если поиск включен - показываем предупреждение
     if (searchMode) {
       showSearchModal();
-      return; // Ждем подтверждения
+      return;
     }
 
     await sendMessage(t, false);
   }
 
-  // ===== ФУНКЦИЯ ОТПРАВКИ С ПАРАМЕТРОМ ПОИСКА =====
   async function sendMessage(text, useSearch) {
     if (sending || isReloading) return;
 
@@ -815,7 +824,6 @@ Response:`;
       return;
     }
 
-    // Добавляем сообщение пользователя
     add("user", text, true);
     inputEl.value = "";
     if (inputEl.tagName === 'TEXTAREA') inputEl.style.height = 'auto';
@@ -890,11 +898,11 @@ Response:`;
       sendBtnEl.disabled = false;
     }
 
-    // После отправки выключаем поиск
     if (searchMode) {
       searchMode = false;
       if (searchToggleBtn) {
         searchToggleBtn.classList.remove('active');
+        searchToggleBtn.classList.add('inactive');
       }
     }
   }
@@ -927,7 +935,6 @@ Response:`;
         
         add("bot", `🔄 Режим ИИ синхронизирован: ${serverMode === 'fast' ? '🚀 Быстрый' : '💎 Качественный'}`, true);
         
-        // Обновляем видимость кнопки после синхронизации
         updateSearchButtonVisibility();
       }
     } catch (err) {
@@ -949,46 +956,42 @@ Response:`;
   }
 
   function bindUI() {
-    // При входе обновляем видимость кнопки
+    // При входе обновляем видимость и состояние кнопки
     updateSearchButtonVisibility();
 
-    // ===== ОБРАБОТЧИК НАЖАТИЯ НА ГЛОБУС =====
     if (searchToggleBtn) {
       searchToggleBtn.addEventListener('click', () => {
-        // Проверяем режим
         if (!canUseSearch()) {
           alert('🔍 Поиск доступен только в режиме "Качественный" (OpenAI)');
           return;
         }
         
-        // Показываем предупреждение КАЖДЫЙ раз
         showSearchModal();
       });
     }
 
-    // ===== ПОДТВЕРЖДЕНИЕ ПОИСКА =====
     if (confirmSearchBtn) {
       confirmSearchBtn.addEventListener('click', () => {
         hideSearchModal();
         searchMode = true;
         if (searchToggleBtn) {
+          searchToggleBtn.classList.remove('inactive');
           searchToggleBtn.classList.add('active');
         }
       });
     }
 
-    // ===== ОТМЕНА ПОИСКА =====
     if (cancelSearchBtn) {
       cancelSearchBtn.addEventListener('click', () => {
         hideSearchModal();
         searchMode = false;
         if (searchToggleBtn) {
           searchToggleBtn.classList.remove('active');
+          searchToggleBtn.classList.add('inactive');
         }
       });
     }
 
-    // ===== ЗАКРЫТИЕ МОДАЛКИ ПРИ КЛИКЕ ВНЕ =====
     if (searchModal) {
       searchModal.addEventListener('click', (e) => {
         if (e.target === searchModal) {
@@ -996,6 +999,7 @@ Response:`;
           searchMode = false;
           if (searchToggleBtn) {
             searchToggleBtn.classList.remove('active');
+            searchToggleBtn.classList.add('inactive');
           }
         }
       });
