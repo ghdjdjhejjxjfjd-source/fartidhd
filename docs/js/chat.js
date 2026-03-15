@@ -89,8 +89,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let isReloading = false;
   let reloadTimer = null;
   
-  // ===== НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ПОИСКА =====
-  let searchMode = false;  // Включен ли поиск для следующего сообщения
+  // ===== ПЕРЕМЕННЫЕ ДЛЯ ПОИСКА =====
+  let searchMode = false;
   const searchToggleBtn = document.getElementById('searchToggleBtn');
   const searchModal = document.getElementById('searchModal');
   const confirmSearchBtn = document.getElementById('confirmSearchBtn');
@@ -115,6 +115,26 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let settingsOpen = false;
 
   const TYPING_ID = "typing-indicator";
+
+  // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВИДИМОСТИ ГЛОБУСА =====
+  function updateSearchButtonVisibility() {
+    if (!searchToggleBtn) return;
+    
+    const mode = getAiModeFromStorage();
+    if (mode === 'fast') {
+      // Режим Groq - скрываем кнопку
+      searchToggleBtn.style.display = 'none';
+      // Сбрасываем режим поиска
+      searchMode = false;
+      searchToggleBtn.classList.remove('active');
+    } else {
+      // Режим OpenAI - показываем кнопку
+      searchToggleBtn.style.display = 'flex';
+      // При переключении на OpenAI кнопка выключена
+      searchMode = false;
+      searchToggleBtn.classList.remove('active');
+    }
+  }
 
   // ===== ФУНКЦИЯ ПРОВЕРКИ РЕЖИМА =====
   function canUseSearch() {
@@ -501,6 +521,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     hasUnsavedChanges = (tempStyle !== null) || (tempPersona !== null) || (tempAiMode !== null);
     updateSaveButton();
     updateUnsavedIndicator();
+    
+    // При смене режима обновляем видимость кнопки поиска
+    updateSearchButtonVisibility();
   }
 
   async function saveSettings() {
@@ -813,7 +836,7 @@ Response:`;
         if (!hasInternet) throw new Error("no_internet");
 
         const fullPrompt = buildPrompt(text);
-        const answer = await askAI(fullPrompt, useSearch); // Передаем флаг поиска
+        const answer = await askAI(fullPrompt, useSearch);
         
         clearTimeout(typingTimeout);
         removeTyping();
@@ -867,7 +890,7 @@ Response:`;
       sendBtnEl.disabled = false;
     }
 
-    // ✅ После отправки выключаем поиск
+    // После отправки выключаем поиск
     if (searchMode) {
       searchMode = false;
       if (searchToggleBtn) {
@@ -903,6 +926,9 @@ Response:`;
         if (aiModeSelect) aiModeSelect.value = serverMode;
         
         add("bot", `🔄 Режим ИИ синхронизирован: ${serverMode === 'fast' ? '🚀 Быстрый' : '💎 Качественный'}`, true);
+        
+        // Обновляем видимость кнопки после синхронизации
+        updateSearchButtonVisibility();
       }
     } catch (err) {
       console.error("Failed to sync mode:", err);
@@ -923,11 +949,8 @@ Response:`;
   }
 
   function bindUI() {
-    // ===== ИНИЦИАЛИЗАЦИЯ ГЛОБУСА =====
-    // При входе глобус выключен
-    if (searchToggleBtn) {
-      searchToggleBtn.classList.remove('active');
-    }
+    // При входе обновляем видимость кнопки
+    updateSearchButtonVisibility();
 
     // ===== ОБРАБОТЧИК НАЖАТИЯ НА ГЛОБУС =====
     if (searchToggleBtn) {
