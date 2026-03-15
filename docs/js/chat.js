@@ -125,14 +125,12 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       searchToggleBtn.style.display = 'none';
       searchMode = false;
       searchToggleBtn.classList.remove('active');
-      // Убираем серый класс если был
       searchToggleBtn.classList.remove('inactive');
     } else {
       // Режим OpenAI - показываем кнопку
       searchToggleBtn.style.display = 'flex';
       searchMode = false;
       searchToggleBtn.classList.remove('active');
-      // Добавляем серый класс для неактивного состояния
       searchToggleBtn.classList.add('inactive');
     }
   }
@@ -510,6 +508,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateUnsavedIndicator();
   }
 
+  // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ =====
   function handleAiModeChange(newMode) {
     const originalMode = getAiModeFromStorage();
     
@@ -523,15 +522,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateSaveButton();
     updateUnsavedIndicator();
     
-    // Обновляем видимость кнопки
+    // 👇 ТОЛЬКО обновляем видимость кнопки, БЕЗ перезагрузки!
     updateSearchButtonVisibility();
-    
-    // Автоматически обновляем страницу через 1 секунду после смены режима
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
   }
 
+  // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ =====
   async function saveSettings() {
     if (!hasUnsavedChanges) return;
     
@@ -539,6 +534,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const originalStyle = getStyle();
     const originalPersona = getPersona();
     
+    // Проверка лимитов
     if (tempAiMode) {
       const modeChanges = currentLimits.ai_mode_changes || 0;
       if (modeChanges >= 8) {
@@ -589,6 +585,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
+    // Подтверждение для смены режима
     if (tempAiMode) {
       const confirmMsg = "⚠️ Смена режима ИИ очистит историю чата. Продолжить?";
       let confirmed;
@@ -615,6 +612,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     let success = true;
     let errorMsg = "";
     
+    // Смена режима ИИ
     if (tempAiMode) {
       const result = await changeAiMode(tempAiMode);
       
@@ -632,7 +630,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
           console.error("Failed to clear memory:", e);
         }
         
-        // Обновляем страницу после успешной смены режима
+        // 👇 ТОЛЬКО ЗДЕСЬ перезагрузка после успешного сохранения!
         setTimeout(() => {
           window.location.reload();
         }, 2000);
@@ -654,6 +652,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
+    // Смена стиля
     if (tempStyle && success) {
       const result = await changeStyle(tempStyle);
       if (result && result.success) {
@@ -665,6 +664,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       }
     }
     
+    // Смена характера
     if (tempPersona && currentAiMode === 'fast' && success) {
       const result = await changePersona(tempPersona);
       if (result && result.success) {
@@ -956,7 +956,6 @@ Response:`;
   }
 
   function bindUI() {
-    // При входе обновляем видимость и состояние кнопки
     updateSearchButtonVisibility();
 
     if (searchToggleBtn) {
