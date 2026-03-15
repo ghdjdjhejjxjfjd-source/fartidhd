@@ -8,14 +8,6 @@ OPENAI_MODEL = (os.getenv("OPENAI_MODEL") or "gpt-3.5-turbo").strip()
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-# ХАРАКТЕРЫ (оставим для совместимости, но они не используются)
-PERSONAS = {
-    "friendly": "",
-    "fun": "",
-    "smart": "",
-    "strict": "",
-}
-
 # Стили ответов
 STYLES = {
     "short": "Keep answers VERY short (1-2 sentences). Just the point.",
@@ -33,10 +25,33 @@ def extract_user_message(full_text: str) -> str:
         return last_part
     return full_text
 
+def detect_user_language(text: str) -> str:
+    """
+    Простое определение языка по тексту
+    Возвращает "ru", "en" и т.д.
+    """
+    # Русские буквы
+    if any('а' <= c.lower() <= 'я' for c in text):
+        return "ru"
+    # Казахские буквы (специфические)
+    if any(c in 'әіңғүұқөһ' for c in text.lower()):
+        return "kk"
+    # Турецкие буквы
+    if any(c in 'çğıöşü' for c in text.lower()):
+        return "tr"
+    # Украинские буквы
+    if any(c in 'їєіґ' for c in text.lower()):
+        return "uk"
+    # Французские буквы
+    if any(c in 'éèêëàâçîïôûù' for c in text.lower()):
+        return "fr"
+    # По умолчанию - английский
+    return "en"
+
 def ask_openai(
     user_text: str,
     *,
-    lang: str = "ru",  # Параметр больше не используется для языка!
+    lang: str = "ru",  # Этот параметр больше не используется!
     persona: str = "friendly",
     style: str = "steps",
 ) -> str:
@@ -44,62 +59,57 @@ def ask_openai(
     Отправка запроса в OpenAI
     
     Правила:
-    1. OpenAI полностью свободен - нет ограничений на характер
-    2. Отвечает на том языке, на котором написал пользователь
-    3. Если язык неизвестен - отвечает на английском
+    1. OpenAI полностью свободен
+    2. Отвечает НА ЯЗЫКЕ ПОЛЬЗОВАТЕЛЯ (определяет автоматически)
+    3. Если не может определить - отвечает на английском
     4. Следует только стилю ответа (short/steps/detail)
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
 
-    # Извлекаем текущее сообщение пользователя
-    current_message = extract_user_message(user_text)
+    # Определяем язык последнего сообщения пользователя
+    last_message = extract_user_message(user_text)
+    detected_lang = detect_user_language(last_message)
     
     # Получаем описание стиля
     style_desc = STYLES.get(style, STYLES["steps"])
     
-    # Если передан prompt_with_memory, используем его как контекст
-    if "Conversation:" in user_text or "User:" in user_text:
-        # Передаём всю историю как контекст
-        messages = [
-            {
-                "role": "system", 
-                "content": f"""You are a free AI assistant. No restrictions on personality.
+    # Создаем system prompt
+    system_prompt = f"""You are a free AI assistant. No restrictions on personality.
 
 Your only rule: {style_desc}
 
-Important:
-- Respond in the SAME language the user wrote in
-- If you don't know the language, respond in English
-- Be natural and helpful"""
-            },
+LANGUAGE INSTRUCTION (VERY IMPORTANT):
+- Look at the user's message and identify its language
+- Respond in EXACTLY the SAME language as the user's message
+- If the user writes in Russian, answer in Russian
+- If the user writes in English, answer in English
+- If the user writes in Kazakh, answer in Kazakh
+- If the user writes in Turkish, answer in Turkish
+- If the user writes in Ukrainian, answer in Ukrainian
+- If the user writes in French, answer in French
+- If you cannot determine the language, respond in English
+
+This is CRITICAL: Always match the user's language!"""
+    
+    # Формируем сообщения
+    if "Conversation:" in user_text or "User:" in user_text:
+        messages = [
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_text}
         ]
     else:
-        # Простой запрос без истории
-        system_prompt = f"""You are a free AI assistant. No restrictions on personality.
-
-Your only rule: {style_desc}
-
-Important:
-- Respond in the SAME language the user wrote in
-- If you don't know the language, respond in English
-- Be natural and helpful"""
-        
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_text}
         ]
 
-    # Единая температура для всех (средняя)
-    temperature = 0.8
-
     try:
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=messages,
-            temperature=temperature,
-            max_tokens=800,  # Увеличил для подробных ответов
+            temperature=0.8,
+            max_tokens=800,
             presence_penalty=0.3,
             frequency_penalty=0.3,
         )
@@ -110,8 +120,16 @@ Important:
     except Exception as e:
         print(f"OpenAI error: {e}")
         
-        # Простое сообщение об ошибке на английском
-        return "Sorry, an error occurred. Please try again later."
+        # Сообщение об ошибке на определенном языке
+        error_msgs = {
+            "ru": "Извините, ошибка. Попробуйте позже.",
+            "kk": "Кешіріңіз, қате. Қайталаңыз.",
+            "en": "Sorry, error. Try again.",
+            "tr": "Üzgünüm, hata. Tekrar deneyin.",
+            "uk": "Вибачте, помилка. Спробуйте ще.",
+            "fr": "Désolé, erreur. Réessayez."
+        }
+        return error_msgs.get(detected_lang, error_msgs["en"])
 
 def is_openai_available() -> bool:
     return bool(OPENAI_API_KEY)
