@@ -5,8 +5,15 @@ from tavily import TavilyClient
 # Получаем API ключ из переменных окружения
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
+print(f"🔑 TAVILY_API_KEY loaded: {'YES' if TAVILY_API_KEY else 'NO'}")
+
 # Инициализируем клиент
-tavily = TavilyClient(api_key=TAVILY_API_KEY) if TAVILY_API_KEY else None
+if TAVILY_API_KEY:
+    tavily = TavilyClient(api_key=TAVILY_API_KEY)
+    print("✅ Tavily client initialized")
+else:
+    tavily = None
+    print("❌ Tavily client NOT initialized - missing API key")
 
 def search_web(query, max_results=5):
     """
@@ -20,10 +27,11 @@ def search_web(query, max_results=5):
         Словарь с результатами поиска или None
     """
     if not tavily:
-        print("❌ Tavily API key not set")
+        print("❌ Tavily client not available")
         return None
     
     try:
+        print(f"🌐 Searching Tavily for: {query[:50]}...")
         # Выполняем поиск
         response = tavily.search(
             query=query,
@@ -33,6 +41,7 @@ def search_web(query, max_results=5):
             include_raw_content=False
         )
         
+        print(f"✅ Tavily search completed")
         return response
         
     except Exception as e:
@@ -55,21 +64,25 @@ def get_search_summary(query, max_results=3):
     if not results:
         return None
     
-    summary = f"Результаты поиска по запросу '{query}':\n\n"
+    summary = f"📱 РЕЗУЛЬТАТЫ ПОИСКА В ИНТЕРНЕТЕ:\n\n"
     
     # Добавляем готовый ответ если есть
     if results.get('answer'):
-        summary += f"Краткий ответ: {results['answer']}\n\n"
+        summary += f"📌 Краткий ответ: {results['answer']}\n\n"
     
     # Добавляем результаты
-    for i, result in enumerate(results.get('results', []), 1):
-        title = result.get('title', 'Без заголовка')
-        content = result.get('content', '')
-        url = result.get('url', '')
-        
-        summary += f"{i}. {title}\n"
-        summary += f"   {content[:200]}...\n"
-        summary += f"   Источник: {url}\n\n"
+    if results.get('results'):
+        summary += f"📊 Найдено {len(results['results'])} результатов:\n\n"
+        for i, result in enumerate(results['results'], 1):
+            title = result.get('title', 'Без заголовка')
+            content = result.get('content', '')
+            url = result.get('url', '')
+            
+            summary += f"{i}. {title}\n"
+            summary += f"   {content[:200]}...\n"
+            summary += f"   Источник: {url}\n\n"
+    else:
+        summary += "❌ Результаты не найдены\n"
     
     return summary
 
