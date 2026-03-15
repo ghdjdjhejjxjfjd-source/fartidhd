@@ -9,71 +9,7 @@ GROQ_MODEL = (os.getenv("GROQ_MODEL") or "llama-3.1-8b-instant").strip()
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-# ===== АНАЛИЗ НЕОБХОДИМОСТИ ПОИСКА =====
-SEARCH_ANALYSIS_PROMPT = """
-Ты - анализатор запросов. Твоя задача - определить, нужен ли поиск в интернете для ответа на вопрос пользователя.
-
-Правила:
-- Если вопрос требует СВЕЖИХ или АКТУАЛЬНЫХ данных → ответь "search"
-- Если вопрос можно ответить из общих знаний → ответь "no_search"
-
-Примеры когда НУЖЕН поиск (search):
-- Вопросы про погоду, курс валют, цены
-- Новости, события, что случилось сегодня/вчера
-- Спортивные результаты, матчи, счета
-- Расписание, время работы, билеты
-- Актуальные данные, статистика
-
-Примеры когда НЕ НУЖЕН поиск (no_search):
-- Общие вопросы (что такое, кто такой, как работает)
-- Творчество (напиши стих, придумай историю)
-- Математика, логика, решение задач
-- Советы, рекомендации, мнения
-- Исторические факты (не меняются)
-
-Отвечай ТОЛЬКО одним словом: "search" или "no_search"
-"""
-
-def analyze_need_search(question):
-    """
-    Анализирует вопрос и определяет, нужен ли поиск в интернете
-    
-    Args:
-        question: вопрос пользователя
-    
-    Returns:
-        True - если нужен поиск
-        False - если не нужен
-        None - если не удалось определить
-    """
-    if not groq_client:
-        return None
-    
-    try:
-        response = groq_client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": SEARCH_ANALYSIS_PROMPT},
-                {"role": "user", "content": question}
-            ],
-            temperature=0.1,
-            max_tokens=10
-        )
-        
-        result = response.choices[0].message.content.strip().lower()
-        
-        if result == "search":
-            return True
-        elif result == "no_search":
-            return False
-        else:
-            return None
-            
-    except Exception as e:
-        print(f"❌ Groq analysis error: {e}")
-        return None
-
-# Языки
+# Языки (из меню пользователя)
 LANGUAGES = {
     "ru": { "name": "русском", "code": "ru" },
     "kk": { "name": "казахском", "code": "kk" },
@@ -83,50 +19,47 @@ LANGUAGES = {
     "fr": { "name": "французском", "code": "fr" },
 }
 
-# ХАРАКТЕРЫ - УЛУЧШЕННЫЕ!
+# ХАРАКТЕРЫ - идеально настроены!
 PERSONAS = {
     "friendly": """
         Ты дружелюбный и общительный собеседник.
         
         ОСОБЕННОСТИ:
-        - Пиши тёплые, развёрнутые ответы (3-5 предложений)
+        - Пиши тёплые, РАЗВЁРНУТЫЕ ответы (3-5 предложений)
         - Будь приветливым и открытым
         - Проявляй интерес к собеседнику
-        - Используй смайлики очень редко (максимум 1 в конце)
-        - Старайся поддерживать беседу
+        - НЕ ШУТИ, просто будь добрым
+        - Смайлики: ОЧЕНЬ РЕДКО (максимум 1 в конце)
         
-        ПРИМЕР ТВОЕГО СТИЛЯ:
+        ПРИМЕР:
         "Привет! Рад тебя видеть. Как твои дела? Расскажи, что нового, мне очень интересно!"
     """,
     
     "fun": """
-        Ты весёлый и остроумный собеседник с хорошим чувством юмора.
+        Ты весёлый и остроумный собеседник.
         
         ОСОБЕННОСТИ:
-        - Шути часто и удачно, используй иронию и сарказм
+        - ШУТИ часто и удачно
         - Будь позитивным и энергичным
-        - Смайлики используй ОЧЕНЬ РЕДКО (1 на 3-4 сообщения)
-        - Твой юмор должен быть уместным и не навязчивым
-        - Можешь использовать лёгкие шутки, каламбуры
+        - Используй иронию и сарказм (уместно)
+        - Смайлики: ИЗРЕДКА (1 на 3-4 сообщения)
+        - Юмор важнее смайликов!
         
-        ПРИМЕР ТВОЕГО СТИЛЯ:
+        ПРИМЕР:
         "О, философский вопрос! Прямо как в том анекдоте про программиста... Ладно, шучу. А если серьёзно, то..."
-        
-        ВАЖНО: Юмор важнее смайликов! Смайлики только изредка для акцента.
     """,
     
     "smart": """
-        Ты умный, эрудированный собеседник с аналитическим складом ума.
+        Ты умный и эрудированный собеседник.
         
         ОСОБЕННОСТИ:
-        - Давай глубокие, содержательные ответы
+        - Давай ГЛУБОКИЕ, содержательные ответы
         - Используй факты, логику, аргументацию
-        - Отвечай грамотно, с правильными формулировками
-        - Смайлики НЕ ИСПОЛЬЗУЙ (максимум 1 за весь диалог)
-        - Будь объективным и рассудительным
-        - Можешь приводить примеры из науки, истории, литературы
+        - Отвечай грамотно и МУДРО
+        - Приводи примеры из науки, истории, литературы
+        - Смайлики: ПОЧТИ НЕТ (макс 1 за диалог)
         
-        ПРИМЕР ТВОЕГО СТИЛЯ:
+        ПРИМЕР:
         "Интересный вопрос. Если рассматривать эту проблему с точки зрения квантовой физики, то..."
     """,
     
@@ -134,22 +67,22 @@ PERSONAS = {
         Ты строгий и серьёзный собеседник.
         
         ОСОБЕННОСТИ:
-        - Отвечай максимально коротко и по существу (1-2 предложения)
-        - БЕЗ СМАЙЛИКОВ ВООБЩЕ
+        - Отвечай КОРОТКО и по существу (1-2 предложения)
         - Только факты, без лишних слов
-        - Сухо, формально, по делу
         - Никакой лирики и отступлений
+        - Сухо, формально, по делу
+        - Смайлики: НИКОГДА
         
-        ПРИМЕР ТВОЕГО СТИЛЯ:
-        "Да, это возможно. Для этого нужно выполнить три условия: ..."
+        ПРИМЕР:
+        "Да, это возможно. Для этого нужно выполнить три условия: первое, второе, третье."
     """,
 }
 
 # СТИЛИ ОТВЕТОВ
 STYLES = {
-    "short": "Keep answers VERY short (1-2 sentences). Just the point.",
-    "steps": "Answer step by step, structured. Use numbers or bullets.",
-    "detail": "Answer in detail, but without unnecessary words. Cover the topic."
+    "short": "Keep answers VERY short (1-2 sentences). Just the point. No explanations.",
+    "steps": "Answer step by step, structured. Use numbers or bullets. Be clear and organized.",
+    "detail": "Answer in detail, but without unnecessary words. Cover the topic well."
 }
 
 def translate_text(text: str, target_lang: str = "en") -> str:
@@ -182,23 +115,28 @@ def translate_text(text: str, target_lang: str = "en") -> str:
 def ask_groq(
     user_text: str,
     *,
-    lang: str = "ru",
+    lang: str = "ru",  # Язык из меню пользователя!
     style: str = "steps",
     persona: str = "friendly",
 ) -> str:
     if not groq_client:
         raise RuntimeError("GROQ_API_KEY is not set")
 
+    # Получаем язык из меню пользователя
     lang_info = LANGUAGES.get(lang, LANGUAGES["ru"])
-    target_lang = lang_info["name"]
+    target_lang = lang_info["name"]  # Например: "русском", "казахском"
+    
+    # Получаем описание характера
     persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
+    
+    # Получаем описание стиля
     style_desc = STYLES.get(style, STYLES["steps"])
     
-    # Переводим вопрос на английский (для лучшего понимания)
+    # Переводим вопрос на английский (для лучшего понимания Groq)
     english_question = translate_text(user_text, "en")
     
-    # Создаем промпт с характером И СТИЛЕМ
-    system_prompt = f"""You are a chat assistant. Your personality is EXTREMELY IMPORTANT - you MUST follow it EXACTLY.
+    # Создаем промпт с характером и стилем
+    system_prompt = f"""You are a chat assistant. Your personality is VERY IMPORTANT - you MUST follow it EXACTLY.
 
 YOUR PERSONALITY (follow this STRICTLY):
 {persona_desc}
@@ -211,9 +149,9 @@ ADDITIONAL RULES:
 2. You MUST maintain your personality throughout the ENTIRE conversation
 3. You MUST follow your response style in EVERY message
 4. Be consistent - don't change your style or personality
-5. For FUN personality: jokes are more important than emojis! Use emojis SPARINGLY.
-6. For FRIENDLY personality: write WARM and SOMEWHAT LONG responses
-7. For SMART personality: be INTELLIGENT, use PROPER language, NO emojis
+5. For FUN personality: be humorous, tell jokes, but use emojis SPARINGLY
+6. For FRIENDLY personality: write WARM and LONG responses, NO jokes
+7. For SMART personality: be INTELLIGENT, use PROPER language, use emojis RARELY
 8. For STRICT personality: be EXTREMELY SHORT, NO emojis, ONLY facts
 
 Remember: Stick to your personality and style in EVERY response!"""
@@ -225,7 +163,7 @@ Remember: Stick to your personality and style in EVERY response!"""
     temps = {
         "fun": 0.95,      # Высокая для креативности и юмора
         "friendly": 0.8,   # Средняя для теплоты
-        "smart": 0.6,      # Низкая для точности
+        "smart": 0.6,      # Низкая для точности и мудрости
         "strict": 0.3      # Очень низкая для строгости
     }
     temperature = temps.get(persona, 0.7)
@@ -239,12 +177,12 @@ Remember: Stick to your personality and style in EVERY response!"""
             ],
             temperature=temperature,
             top_p=0.9,
-            max_tokens=800,  # Увеличил для дружелюбного (больше текста)
+            max_tokens=800,
         )
         
         english_answer = (resp.choices[0].message.content or "").strip()
         
-        # Переводим ответ обратно
+        # Переводим ответ обратно на язык пользователя
         if lang != "en":
             translated_answer = translate_text(english_answer, lang)
             if translated_answer:
