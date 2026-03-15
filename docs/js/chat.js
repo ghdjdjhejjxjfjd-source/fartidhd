@@ -793,7 +793,8 @@ Response:`;
         const hasInternet = await waitForInternet(1);
         if (!hasInternet) throw new Error("no_internet");
 
-        const answer = await askAI(t);
+        const fullPrompt = buildPrompt(t);
+const answer = await askAI(fullPrompt, searchMode);  // 👈 С ФЛАГОМ ПОИСКА!
         
         clearTimeout(typingTimeout); // Очищаем таймаут
         removeTyping();
