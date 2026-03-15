@@ -150,11 +150,11 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       
       // Устанавливаем класс в зависимости от searchMode
       if (searchMode) {
-        searchToggleBtn.classList.remove('inactive');
         searchToggleBtn.classList.add('active');
+        searchToggleBtn.classList.remove('inactive');
       } else {
-        searchToggleBtn.classList.remove('active');
         searchToggleBtn.classList.add('inactive');
+        searchToggleBtn.classList.remove('active');
       }
     }
   }
