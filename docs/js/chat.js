@@ -89,11 +89,28 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   let reloadTimer = null;
   
   // ===== ПЕРЕМЕННЫЕ ДЛЯ ПОИСКА =====
-  let searchMode = false;  // Состояние поиска (включен/выключен)
   const searchToggleBtn = document.getElementById('searchToggleBtn');
   const searchModal = document.getElementById('searchModal');
   const confirmSearchBtn = document.getElementById('confirmSearchBtn');
   const cancelSearchBtn = document.getElementById('cancelSearchBtn');
+  
+  // ===== ЗАГРУЗКА СОСТОЯНИЯ ПОИСКА ИЗ LOCALSTORAGE =====
+  function loadSearchState() {
+    try {
+      const saved = localStorage.getItem('search_mode');
+      return saved === 'true';
+    } catch(e) {
+      return false;
+    }
+  }
+
+  function saveSearchState(state) {
+    try {
+      localStorage.setItem('search_mode', state);
+    } catch(e) {}
+  }
+
+  let searchMode = loadSearchState(); // Загружаем сохраненное состояние
   
   let currentLimits = {
     groq_persona: 0,
@@ -126,13 +143,19 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       searchMode = false;
       searchToggleBtn.classList.remove('active');
       searchToggleBtn.classList.remove('inactive');
+      saveSearchState(false);
     } else {
       // Режим OpenAI - показываем кнопку
       searchToggleBtn.style.display = 'flex';
-      // При заходе или смене режима - кнопка серая (выключена)
-      searchMode = false;
-      searchToggleBtn.classList.remove('active');
-      searchToggleBtn.classList.add('inactive');
+      
+      // Устанавливаем класс в зависимости от searchMode
+      if (searchMode) {
+        searchToggleBtn.classList.remove('inactive');
+        searchToggleBtn.classList.add('active');
+      } else {
+        searchToggleBtn.classList.remove('active');
+        searchToggleBtn.classList.add('inactive');
+      }
     }
   }
 
@@ -492,7 +515,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   function handlePersonaChange(newPersona) {
     if (currentAiMode !== 'fast') {
       alert('Изменение характера недоступно в этом режиме');
-      document.getElementById('personaSel').value = getPersona();
+      document.getElementById('personaSel').value = getPersona());
       return;
     }
     
@@ -522,7 +545,9 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateSaveButton();
     updateUnsavedIndicator();
     
-    // Обновляем видимость кнопки без перезагрузки
+    // При смене режима сбрасываем поиск
+    searchMode = false;
+    saveSearchState(false);
     updateSearchButtonVisibility();
   }
 
@@ -809,13 +834,8 @@ Response:`;
     const t = inputEl.value.trim();
     if (!t || sending || isReloading) return;
 
-    // Если поиск включен - показываем предупреждение
-    if (searchMode) {
-      // Не показываем предупреждение, просто отправляем с поиском
-      await sendMessage(t, true);
-    } else {
-      await sendMessage(t, false);
-    }
+    // Если поиск включен - отправляем с поиском
+    await sendMessage(t, searchMode);
   }
 
   async function sendMessage(text, useSearch) {
@@ -901,7 +921,7 @@ Response:`;
     sending = false;
     sendBtnEl.disabled = false;
     
-    // НЕ ВЫКЛЮЧАЕМ ПОИСК ПОСЛЕ ОТПРАВКИ!
+    // НЕ ВЫКЛЮЧАЕМ ПОИСК ПОСЛЕ ОТПРАВКИ
     // searchMode остается как есть
   }
 
@@ -967,6 +987,7 @@ Response:`;
         if (searchMode) {
           // Если режим включен - выключаем БЕЗ предупреждения
           searchMode = false;
+          saveSearchState(false);
           searchToggleBtn.classList.remove('active');
           searchToggleBtn.classList.add('inactive');
         } else {
@@ -980,6 +1001,7 @@ Response:`;
       confirmSearchBtn.addEventListener('click', () => {
         hideSearchModal();
         searchMode = true;
+        saveSearchState(true);
         if (searchToggleBtn) {
           searchToggleBtn.classList.remove('inactive');
           searchToggleBtn.classList.add('active');
