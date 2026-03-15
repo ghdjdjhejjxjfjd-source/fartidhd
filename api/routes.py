@@ -1,4 +1,4 @@
-# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
+# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С ПОИСКОМ
 from flask import request, jsonify
 from datetime import datetime
 import re
@@ -16,9 +16,10 @@ from .db import (
     mem_clear_last
 )
 from .memory import mem_get, mem_add, mem_clear, build_memory_prompt
-from groq_client import ask_groq
-from openai_client import ask_openai
+from groq_client import ask_groq, analyze_need_search as groq_analyze
+from openai_client import ask_openai, analyze_need_search as openai_analyze
 from payments import get_balance, spend_stars
+from tavily_client import get_search_summary, is_tavily_available
 
 import requests
 
@@ -143,7 +144,7 @@ def api_add_spent():
     return jsonify({"success": True})
 
 # =========================
-# CHAT ENDPOINT - С ПОЛНЫМИ ЛОГАМИ
+# CHAT ENDPOINT - С ПОЛНЫМИ ЛОГАМИ И ПОИСКОМ
 # =========================
 def extract_last_user_message(raw: str) -> str:
     s = (raw or "").strip()
@@ -172,6 +173,9 @@ def api_chat():
     raw_text = (data.get("text") or "").strip()
     if not raw_text:
         return jsonify({"error": "empty"}), 400
+    
+    # Получаем флаг поиска из запроса (от Mini App)
+    use_search = data.get("use_search", False)
     
     text = extract_last_user_message(raw_text)
     tg_user_id_int = int(tg_user_id)
@@ -205,13 +209,54 @@ def api_chat():
     history = mem_get(tg_user_id_int, limit=24)
     prompt_with_memory = build_memory_prompt(history, text)
     
+    # ===== НОВАЯ ЛОГИКА ПОИСКА =====
+    search_results = None
+    should_search = False
+    
+    # Проверяем, хочет ли пользователь использовать поиск
+    if use_search and is_tavily_available():
+        print(f"🔍 Анализ необходимости поиска для пользователя {tg_user_id_int}")
+        
+        # Анализируем вопрос через соответствующий ИИ
+        if ai_mode == "fast":
+            need_search = groq_analyze(text)
+        else:
+            need_search = openai_analyze(text)
+        
+        if need_search is True:
+            print(f"✅ ИИ решил: поиск нужен")
+            should_search = True
+        elif need_search is False:
+            print(f"❌ ИИ решил: поиск не нужен")
+            should_search = False
+        else:
+            # Если анализ не удался, по умолчанию не ищем
+            print(f"⚠️ Анализ не удался, поиск отключен")
+            should_search = False
+        
+        # Если нужно искать - выполняем поиск
+        if should_search:
+            print(f"🌐 Выполняю поиск в Tavily: {text[:50]}...")
+            search_results = get_search_summary(text)
+            
+            if search_results:
+                print(f"✅ Найдены результаты поиска")
+                # Добавляем результаты в промпт
+                enhanced_prompt = f"{search_results}\n\nВопрос пользователя: {text}\n\nОтветь на вопрос, используя информацию из интернета выше."
+                prompt_with_memory = enhanced_prompt
+            else:
+                print(f"❌ Поиск не дал результатов")
+    else:
+        if not is_tavily_available():
+            print(f"⚠️ Tavily не доступен (нет API ключа)")
+    
     try:
         if ai_mode == "fast":
             reply = ask_groq(prompt_with_memory, lang=lang, style=style, persona=persona)
         else:
             reply = ask_openai(prompt_with_memory, lang=lang, persona=persona, style=style)
         
-        # ✅ ТОЛЬКО ЗДЕСЬ списываем звезды
+        # Списываем звезды
         if not a["is_free"]:
             spend_stars(tg_user_id_int, COST_PER_MESSAGE)
             add_stars_spent(tg_user_id_int, COST_PER_MESSAGE)
@@ -222,14 +267,16 @@ def api_chat():
         # Получаем новый баланс после списания
         new_balance = get_balance(tg_user_id_int)
         
-        # 🟢 ПОЛНЫЙ ЛОГ как раньше + баланс
+        # Лог с информацией о поиске
         time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        search_status = "✅ с поиском" if should_search else "❌ без поиска"
         log_text = (
             f"🕒 {time_str}\n"
             f"👤 {tg_first_name} (@{tg_username})\n"
             f"🆔 {tg_user_id_int}\n"
             f"💰 Баланс: {new_balance} ⭐\n"
-            f"💬 Запрос: {text[:100]}\n\n"
+            f"💬 Запрос: {text[:100]}\n"
+            f"🔍 Поиск: {search_status}\n\n"
             f"🤖 Ответ: {reply[:200]}\n"
             f"⚡ Режим: {ai_mode}, стоимость: {COST_PER_MESSAGE} ⭐\n"
             f"🎭 Характер: {persona}, 📝 Стиль: {style}"
@@ -240,7 +287,8 @@ def api_chat():
         return jsonify({
             "reply": reply,
             "balance": new_balance,
-            "cost": COST_PER_MESSAGE
+            "cost": COST_PER_MESSAGE,
+            "search_used": should_search  # Информируем клиента использовался ли поиск
         })
         
     except Exception as e:
