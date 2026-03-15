@@ -2,9 +2,10 @@ import os
 import time
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from telegram import Update
+from telegram.error import Conflict
 
-from bot.handlers import start, on_button  # импорт из новой структуры
-from bot.handlers import handle_message  # handle_message пока еще в handlers.py
+from bot.handlers import start, on_button
+from bot.handlers import handle_message
 from bot_admin import (
     cmd_whoami,
     cmd_free,
@@ -55,9 +56,9 @@ async def error_handler(update: Update, context):
             print(f"❌ Ошибка для пользователя {user_id}: {context.error}")
             
             if "Conflict" in str(context.error):
-                print("🔄 Конфликт, перезапуск...")
+                print("🔄 Обнаружен конфликт, но игнорируем...")
             elif "Timed out" in str(context.error):
-                print("🔄 Таймаут, переподключение...")
+                print("🔄 Таймаут, но продолжаем работу...")
         else:
             print(f"❌ Ошибка: {context.error}")
     except Exception as e:
@@ -90,20 +91,17 @@ def start_bot():
     print("✅ В личке: только /start")
     print("✅ В админ-группе: все команды")
 
-    while True:
-        try:
-            print("🔄 Запуск polling...")
-            app.run_polling(
-                stop_signals=None, 
-                close_loop=False,
-                drop_pending_updates=True,
-                allowed_updates=['message', 'callback_query'],
-                poll_interval=1.0,
-                timeout=30
-            )
-            break
-        except Exception as e:
-            print(f"❌ Ошибка polling: {e}")
-            print("🔄 Перезапуск через 5 секунд...")
-            time.sleep(5)
-            continue
+    # ⚠️ ВАЖНО: Убираем while True и просто запускаем один раз
+    try:
+        print("🔄 Запуск polling...")
+        app.run_polling(
+            stop_signals=None,
+            close_loop=False,
+            drop_pending_updates=True,
+            allowed_updates=['message', 'callback_query'],
+            poll_interval=1.0,
+            timeout=30
+        )
+    except Exception as e:
+        print(f"❌ Ошибка polling: {e}")
+        # Не перезапускаем, просто логируем
