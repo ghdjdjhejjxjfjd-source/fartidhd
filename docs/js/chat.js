@@ -94,23 +94,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   const confirmSearchBtn = document.getElementById('confirmSearchBtn');
   const cancelSearchBtn = document.getElementById('cancelSearchBtn');
   
-  // ===== ЗАГРУЗКА СОСТОЯНИЯ ПОИСКА =====
-  function loadSearchState() {
-    try {
-      const saved = localStorage.getItem('search_mode');
-      return saved === 'true';
-    } catch(e) {
-      return false;
-    }
-  }
-
-  function saveSearchState(state) {
-    try {
-      localStorage.setItem('search_mode', state);
-    } catch(e) {}
-  }
-
-  let searchMode = loadSearchState(); // Загружаем сохраненное состояние
+  // ===== СОСТОЯНИЕ ПОИСКА =====
+  let searchMode = false; // Всегда выключен при загрузке
   
   let currentLimits = {
     groq_persona: 0,
@@ -143,19 +128,14 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       searchMode = false;
       searchToggleBtn.classList.remove('active');
       searchToggleBtn.classList.remove('inactive');
-      saveSearchState(false);
     } else {
       // Режим OpenAI - показываем кнопку
       searchToggleBtn.style.display = 'flex';
       
-      // Устанавливаем класс в зависимости от searchMode
-      if (searchMode) {
-        searchToggleBtn.classList.add('active');
-        searchToggleBtn.classList.remove('inactive');
-      } else {
-        searchToggleBtn.classList.add('inactive');
-        searchToggleBtn.classList.remove('active');
-      }
+      // Всегда показываем серой при загрузке
+      searchMode = false;
+      searchToggleBtn.classList.add('inactive');
+      searchToggleBtn.classList.remove('active');
     }
   }
 
@@ -545,9 +525,8 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     updateSaveButton();
     updateUnsavedIndicator();
     
-    // При смене режима сбрасываем поиск
+    // При смене режима сбрасываем поиск в ВЫКЛ
     searchMode = false;
-    saveSearchState(false);
     updateSearchButtonVisibility();
   }
 
@@ -772,7 +751,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
       
       fetchLimits().then(() => {
         updateSaveButton();
-        updateUnsavedIndicator();
+        updateUnsavedIndicator());
       });
       
       overlay.style.display = 'flex';
@@ -985,9 +964,8 @@ Response:`;
         }
         
         if (searchMode) {
-          // Если режим включен - выключаем БЕЗ предупреждения
+          // Если режим включен - выключаем
           searchMode = false;
-          saveSearchState(false);
           searchToggleBtn.classList.remove('active');
           searchToggleBtn.classList.add('inactive');
         } else {
@@ -1001,7 +979,6 @@ Response:`;
       confirmSearchBtn.addEventListener('click', () => {
         hideSearchModal();
         searchMode = true;
-        saveSearchState(true);
         if (searchToggleBtn) {
           searchToggleBtn.classList.remove('inactive');
           searchToggleBtn.classList.add('active');
