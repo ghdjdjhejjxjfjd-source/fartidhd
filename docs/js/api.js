@@ -1,4 +1,4 @@
-// docs/js/api.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// docs/js/api.js - ИСПРАВЛЕННАЯ ВЕРСИЯ С ПОИСКОМ
 const API_BASE = "https://fayrat-production.up.railway.app";
 const API_CHAT = API_BASE + "/api/chat";
 const API_CLEAR_MEMORY = API_BASE + "/api/memory/clear";
@@ -36,7 +36,8 @@ function getTelegramUser(){
   };
 }
 
-export async function askAI(promptText) {
+// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ С ПАРАМЕТРОМ ПОИСКА =====
+export async function askAI(promptText, useSearch = false) {
   const user = getTelegramUser();
   const aiMode = getAiMode();
 
@@ -49,6 +50,7 @@ export async function askAI(promptText) {
     tg_user_id: user.tg_user_id,
     tg_username: user.tg_username,
     tg_first_name: user.tg_first_name,
+    use_search: useSearch  // 👈 ВОТ ЭТОТ ФЛАГ!
   };
 
   try {
@@ -185,7 +187,6 @@ export async function changePersona(newPersona) {
   }
 }
 
-// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ changeAiMode ==========
 export async function changeAiMode(newMode) {
   const user = getTelegramUser();
   if (!user.tg_user_id) return { success: false, message: "no_user" };
@@ -207,7 +208,6 @@ export async function changeAiMode(newMode) {
     const data = await r.json();
     
     if (!r.ok) {
-      // Проверяем разные типы ошибок
       if (data.error === "limit_exceeded") {
         return { 
           success: false, 
@@ -215,7 +215,6 @@ export async function changeAiMode(newMode) {
         };
       }
       
-      // Если сервер вернул сообщение об ошибке
       if (data.message) {
         return { success: false, message: data.message };
       }
@@ -223,7 +222,6 @@ export async function changeAiMode(newMode) {
       return { success: false, message: data.error || "Ошибка сервера" };
     }
     
-    // Успешно - сохраняем в localStorage
     if (data.success) {
       localStorage.setItem("ai_mode", newMode);
       return { success: true };
