@@ -1,5 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
+import os
 
 from api import (
     get_access, get_last_menu, set_last_menu, clear_last_menu,
@@ -20,13 +21,21 @@ from .image import inline_image_start
 from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, send_block_notice
 from .support import support_start, forward_to_support
 
+SUPPORT_GROUP_ID = int(os.getenv("SUPPORT_GROUP_ID", "0"))
 navigation_stack = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    send_log_http(build_start_log(update))
-    
+    """Обработчик команды /start"""
     user = update.effective_user
     uid = user.id if user else 0
+    
+    # Если это группа поддержки - игнорируем
+    if update.effective_chat and update.effective_chat.id == SUPPORT_GROUP_ID:
+        print(f"🚫 /start в группе поддержки проигнорирован")
+        return
+    
+    send_log_http(build_start_log(update))
+    
     if not uid:
         return
     
@@ -39,6 +48,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = (query.data or "").strip()
+    
+    # Если это группа поддержки - игнорируем все кнопки
+    if update.effective_chat and update.effective_chat.id == SUPPORT_GROUP_ID:
+        print(f"🚫 Кнопка {data} в группе поддержки проигнорирована")
+        await query.answer("❌ Кнопки не работают в группе поддержки")
+        return
     
     try:
         await query.answer()
@@ -358,6 +373,10 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
+        return
+    
+    # Если это группа поддержки - не обрабатываем как обычные сообщения
+    if update.effective_chat and update.effective_chat.id == SUPPORT_GROUP_ID:
         return
     
     user = update.effective_user
