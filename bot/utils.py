@@ -5,25 +5,59 @@ from telegram.ext import ContextTypes
 async def delete_prev_menu(bot, user_id: int):
     """Удалить предыдущее меню пользователя"""
     chat_id, msg_id = get_last_menu(user_id)
+    
+    print(f"🔍 Пытаюсь удалить меню для {user_id}: chat_id={chat_id}, msg_id={msg_id}")
+    
     if not chat_id or not msg_id:
+        print(f"❌ Нет сохраненного меню для {user_id}")
         return False
     
     try:
         await bot.delete_message(chat_id=chat_id, message_id=msg_id)
-        print(f"🗑️ Удалено старое меню для {user_id}")
+        print(f"✅ Удалено старое меню {msg_id} для {user_id}")
         clear_last_menu(user_id)
         return True
     except Exception as e:
-        print(f"⚠️ Не удалось удалить меню для {user_id}: {e}")
+        print(f"⚠️ Ошибка удаления меню {msg_id} для {user_id}: {e}")
+        # Даже если ошибка - очищаем запись, чтобы не пытаться снова
         clear_last_menu(user_id)
         return False
 
+async def delete_all_menus(bot, user_id: int):
+    """Удалить ВСЕ возможные меню пользователя"""
+    print(f"🧹 Удаляю все меню для {user_id}")
+    
+    deleted_count = 0
+    
+    # 1. Пробуем удалить сохраненное меню
+    await delete_prev_menu(bot, user_id)
+    
+    # 2. Пробуем найти и удалить последние 10 сообщений бота
+    try:
+        updates = await bot.get_updates()
+        for update in updates:
+            if update.message and update.message.chat.id == user_id:
+                try:
+                    await bot.delete_message(
+                        chat_id=user_id, 
+                        message_id=update.message.message_id
+                    )
+                    deleted_count += 1
+                    print(f"✅ Удалено сообщение {update.message.message_id}")
+                except:
+                    pass
+    except Exception as e:
+        print(f"⚠️ Ошибка при массовом удалении: {e}")
+    
+    print(f"✅ Всего удалено сообщений: {deleted_count}")
+    return deleted_count
+
 async def send_fresh_menu(bot, user_id: int, text: str = None):
-    """Отправить новое меню (удалив старое)"""
+    """Отправить новое меню (удалив ВСЕ старые)"""
     from .menu import main_menu_for_user
     
-    # Всегда удаляем старое меню перед отправкой нового
-    await delete_prev_menu(bot, user_id)
+    # ЖЕСТКО: удаляем все старые меню
+    await delete_all_menus(bot, user_id)
     
     if text is None:
         text = "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇"
@@ -34,7 +68,8 @@ async def send_fresh_menu(bot, user_id: int, text: str = None):
         reply_markup=main_menu_for_user(user_id),
     )
     set_last_menu(user_id, user_id, m.message_id)
-    print(f"✅ Отправлено новое меню для {user_id} (ID: {m.message_id})")
+    print(f"✅ Отправлено НОВОЕ меню для {user_id} (ID: {m.message_id})")
+    return m
 
 async def update_user_menu(bot, user_id: int):
     """Обновить меню пользователя"""
@@ -42,7 +77,7 @@ async def update_user_menu(bot, user_id: int):
 
 async def send_block_notice(bot, user_id: int):
     """Отправить уведомление о блокировке"""
-    await delete_prev_menu(bot, user_id)
+    await delete_all_menus(bot, user_id)
     await bot.send_message(chat_id=user_id, text="⛔ Доступ заблокирован.")
 
 async def edit_to_menu(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
