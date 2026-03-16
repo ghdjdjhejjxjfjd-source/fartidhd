@@ -1,12 +1,14 @@
+# bot/handlers/tabs/support.py
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from bot.menu import tab_kb, TAB_TEXT
 from bot.utils import set_last_menu, send_fresh_menu
+from bot.support import support_start
 
 async def show_support(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     """💬 Поддержка"""
-    text = TAB_TEXT.get("support", "💬 Поддержка\n\nРаздел в разработке.")
+    text = TAB_TEXT.get("support", "💬 Поддержка\n\nНапиши свой вопрос.")
     
     try:
         await query.message.edit_text(text, reply_markup=tab_kb(user_id))
