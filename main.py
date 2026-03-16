@@ -50,7 +50,7 @@ def main():
     # Небольшая задержка
     time.sleep(2)
     
-    # Запускаем бота (только если есть токен)
+    # Запускаем бота
     if BOT_TOKEN:
         try:
             bot_running = True
