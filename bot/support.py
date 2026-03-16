@@ -9,6 +9,9 @@ from .config import send_log_http
 # ID группы поддержки (из .env)
 SUPPORT_GROUP_ID = int(os.getenv("SUPPORT_GROUP_ID", "0"))
 
+# Хранилище для связи message_id -> user_id
+support_messages = {}
+
 async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Начало обращения в поддержку"""
     query = update.callback_query
@@ -17,7 +20,7 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     uid = user.id
     
-    # Текст с инструкцией (без Markdown)
+    # Текст с инструкцией
     text = (
         "💬 Поддержка\n\n"
         "Напиши сюда свой вопрос или проблему.\n"
@@ -44,7 +47,7 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"✅ Режим поддержки включен для {uid}")
 
 async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Переслать сообщение пользователя в группу поддержки"""
+    """Переслать сообщение пользователя в группу поддержки (ОДНИМ СООБЩЕНИЕМ)"""
     if not SUPPORT_GROUP_ID:
         print("❌ SUPPORT_GROUP_ID не настроен")
         await update.message.reply_text("❌ Служба поддержки временно недоступна")
@@ -55,57 +58,85 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     username = f"@{user.username}" if user.username else "—"
     first_name = user.first_name or "—"
     
-    # Формируем информационный блок (без Markdown)
-    info_text = (
+    # Формируем шапку с информацией о пользователе
+    header = (
         f"🆔 ID: {uid}\n"
         f"👤 Имя: {first_name}\n"
         f"📱 Юзернейм: {username}\n"
-        f"📅 Дата: {update.message.date.strftime('%d.%m.%Y %H:%M')}\n"
-        f"———————————————"
+        f"📅 {update.message.date.strftime('%d.%m.%Y %H:%M')}\n"
+        f"———————————————\n\n"
     )
     
-    # Отправляем информацию в группу
-    await context.bot.send_message(
-        chat_id=SUPPORT_GROUP_ID,
-        text=info_text
-    )
+    # Кнопки для админа
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Ответить", callback_data=f"support_reply_{uid}"),
+            InlineKeyboardButton("⛔ Заблокировать", callback_data=f"support_block_{uid}")
+        ],
+        [
+            InlineKeyboardButton("⭐ Добавить звёзд", callback_data=f"support_addstars_{uid}")
+        ]
+    ])
     
-    # Пересылаем само сообщение пользователя
+    # Отправляем ВСЁ одним сообщением
     if update.message.text:
-        await context.bot.send_message(
+        full_text = header + update.message.text
+        sent_msg = await context.bot.send_message(
             chat_id=SUPPORT_GROUP_ID,
-            text=update.message.text
+            text=full_text,
+            reply_markup=keyboard
         )
+        support_messages[sent_msg.message_id] = uid
+        
     elif update.message.photo:
         photo = update.message.photo[-1]
-        await context.bot.send_photo(
+        caption = header + (update.message.caption or "")
+        sent_msg = await context.bot.send_photo(
             chat_id=SUPPORT_GROUP_ID,
             photo=photo.file_id,
-            caption=update.message.caption or ""
+            caption=caption,
+            reply_markup=keyboard
         )
+        support_messages[sent_msg.message_id] = uid
+        
     elif update.message.document:
-        await context.bot.send_document(
+        caption = header + (update.message.caption or "")
+        sent_msg = await context.bot.send_document(
             chat_id=SUPPORT_GROUP_ID,
             document=update.message.document.file_id,
-            caption=update.message.caption or ""
+            caption=caption,
+            reply_markup=keyboard
         )
+        support_messages[sent_msg.message_id] = uid
+        
     elif update.message.video:
-        await context.bot.send_video(
+        caption = header + (update.message.caption or "")
+        sent_msg = await context.bot.send_video(
             chat_id=SUPPORT_GROUP_ID,
             video=update.message.video.file_id,
-            caption=update.message.caption or ""
+            caption=caption,
+            reply_markup=keyboard
         )
+        support_messages[sent_msg.message_id] = uid
+        
     elif update.message.voice:
-        await context.bot.send_voice(
+        sent_msg = await context.bot.send_voice(
             chat_id=SUPPORT_GROUP_ID,
-            voice=update.message.voice.file_id
+            voice=update.message.voice.file_id,
+            caption=header,
+            reply_markup=keyboard
         )
+        support_messages[sent_msg.message_id] = uid
+        
     elif update.message.audio:
-        await context.bot.send_audio(
+        caption = header + (update.message.caption or "")
+        sent_msg = await context.bot.send_audio(
             chat_id=SUPPORT_GROUP_ID,
             audio=update.message.audio.file_id,
-            caption=update.message.caption or ""
+            caption=caption,
+            reply_markup=keyboard
         )
+        support_messages[sent_msg.message_id] = uid
     
     # Подтверждение пользователю
     await update.message.reply_text(
@@ -119,69 +150,95 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # Логируем
     send_log_http(f"📨 Поддержка: {uid} -> {update.message.text[:50] if update.message.text else 'медиа'}")
 
+async def handle_support_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработка кнопок в группе поддержки"""
+    query = update.callback_query
+    data = query.data
+    
+    await query.answer()
+    
+    if data.startswith("support_reply_"):
+        user_id = int(data.split("_")[2])
+        context.user_data["replying_to"] = user_id
+        await query.message.reply_text(
+            f"✏️ Режим ответа для пользователя {user_id}\n"
+            f"Просто напиши сообщение — оно уйдёт ему."
+        )
+    
+    elif data.startswith("support_block_"):
+        user_id = int(data.split("_")[2])
+        from api import set_blocked
+        set_blocked(user_id, True)
+        await query.message.reply_text(f"✅ Пользователь {user_id} заблокирован")
+    
+    elif data.startswith("support_addstars_"):
+        user_id = int(data.split("_")[2])
+        from payments import add_stars
+        add_stars(user_id, 100, "support")
+        await query.message.reply_text(f"✅ Пользователю {user_id} добавлено 100 ⭐")
+
 async def handle_support_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка ответа из группы поддержки"""
+    """Обработка ответа админа пользователю"""
     
     # Проверяем что сообщение из группы поддержки
     if not SUPPORT_GROUP_ID or update.effective_chat.id != SUPPORT_GROUP_ID:
         return
     
-    # Проверяем что это ответ на какое-то сообщение
-    if not update.message.reply_to_message:
+    # Если админ в режиме ответа
+    if "replying_to" in context.user_data:
+        user_id = context.user_data["replying_to"]
+        admin = update.effective_user
+        
+        try:
+            if update.message.text:
+                await context.bot.send_message(
+                    chat_id=user_id,
+                    text=f"📨 Ответ от поддержки:\n\n{update.message.text}"
+                )
+            elif update.message.photo:
+                photo = update.message.photo[-1]
+                caption = f"📨 Ответ от поддержки"
+                if update.message.caption:
+                    caption += f"\n\n{update.message.caption}"
+                await context.bot.send_photo(
+                    chat_id=user_id,
+                    photo=photo.file_id,
+                    caption=caption
+                )
+            
+            await update.message.reply_text(f"✅ Ответ отправлен пользователю {user_id}")
+            del context.user_data["replying_to"]
+            
+        except Exception as e:
+            await update.message.reply_text(f"❌ Ошибка: {e}")
+        
         return
     
-    # Пробуем найти ID пользователя в сообщении на которое ответили
-    replied_text = update.message.reply_to_message.text or ""
-    replied_caption = update.message.reply_to_message.caption or ""
-    
-    # Ищем ID в тексте или подписи
-    id_match = None
-    if replied_text:
-        id_match = re.search(r'ID:\s*(\d+)', replied_text)
-    if not id_match and replied_caption:
-        id_match = re.search(r'ID:\s*(\d+)', replied_caption)
-    
-    if not id_match:
-        await update.message.reply_text("❌ Не удалось определить ID пользователя")
-        return
-    
-    user_id = int(id_match.group(1))
-    admin = update.effective_user
-    
-    # Отправляем ответ пользователю
-    try:
-        if update.message.text and not update.message.text.startswith('/'):
-            await context.bot.send_message(
-                chat_id=user_id,
-                text=f"📨 Ответ от поддержки:\n\n{update.message.text}"
-            )
-        elif update.message.photo:
-            photo = update.message.photo[-1]
-            caption = f"📨 Ответ от поддержки"
-            if update.message.caption:
-                caption += f"\n\n{update.message.caption}"
-            await context.bot.send_photo(
-                chat_id=user_id,
-                photo=photo.file_id,
-                caption=caption
-            )
-        elif update.message.document:
-            caption = f"📨 Ответ от поддержки"
-            if update.message.caption:
-                caption += f"\n\n{update.message.caption}"
-            await context.bot.send_document(
-                chat_id=user_id,
-                document=update.message.document.file_id,
-                caption=caption
-            )
-        else:
-            return
+    # Если не в режиме ответа - пробуем найти по reply
+    if update.message.reply_to_message:
+        replied_msg_id = update.message.reply_to_message.message_id
         
-        # Подтверждение админу
-        await update.message.reply_text(f"✅ Ответ отправлен пользователю {user_id}")
-        
-        # Логируем
-        send_log_http(f"📨 Ответ поддержки: {admin.id} -> {user_id}")
-        
-    except Exception as e:
-        await update.message.reply_text(f"❌ Ошибка: {e}")
+        if replied_msg_id in support_messages:
+            user_id = support_messages[replied_msg_id]
+            
+            try:
+                if update.message.text:
+                    await context.bot.send_message(
+                        chat_id=user_id,
+                        text=f"📨 Ответ от поддержки:\n\n{update.message.text}"
+                    )
+                elif update.message.photo:
+                    photo = update.message.photo[-1]
+                    caption = f"📨 Ответ от поддержки"
+                    if update.message.caption:
+                        caption += f"\n\n{update.message.caption}"
+                    await context.bot.send_photo(
+                        chat_id=user_id,
+                        photo=photo.file_id,
+                        caption=caption
+                    )
+                
+                await update.message.reply_text(f"✅ Ответ отправлен пользователю {user_id}")
+                
+            except Exception as e:
+                await update.message.reply_text(f"❌ Ошибка: {e}")
