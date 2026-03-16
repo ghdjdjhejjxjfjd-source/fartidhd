@@ -1,17 +1,21 @@
+# bot/chat.py
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from api import (
     get_access, get_user_persona, get_user_lang, get_user_ai_lang, 
     get_user_style, get_ai_mode, increment_messages, add_stars_spent,
-    mem_get, mem_add, build_memory_prompt
+    mem_get, mem_add, build_memory_prompt, clear_last_menu, set_last_menu
 )
 from payments import get_balance, spend_stars
 from groq_client import ask_groq
 from openai_client import ask_openai
 from .config import send_log_http
 from .menu import main_menu_for_user
-from .utils import send_fresh_menu
+from .utils import send_fresh_menu, delete_prev_menu
+
+# Глобальное хранилище ID последнего сообщения с кнопкой
+last_bot_message_with_button = {}
 
 async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -54,13 +58,7 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     current_style = get_user_style(uid)
     
-    # Запоминаем ID сообщения
     context.user_data["invite_message_id"] = query.message.message_id
-    
-    # Кнопка назад
-    exit_keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("⬅️ Назад", callback_data="exit_chat")]
-    ])
     
     if ai_mode == "fast":
         current_ai_lang = get_user_ai_lang(uid)
@@ -79,12 +77,11 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Стоимость: {cost}⭐"
         )
     
-    await query.message.edit_text(text, reply_markup=exit_keyboard)
+    await query.message.edit_text(text)
     context.user_data["in_chat_mode"] = True
     print(f"✅ Чат режим включен для {uid}")
 
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
-    
     a = get_access(uid)
     ai_lang = get_user_ai_lang(uid)
     persona = get_user_persona(uid)
@@ -122,15 +119,27 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             await typing_msg.delete()
             mem_add(uid, "assistant", reply)
             
+            if uid in last_bot_message_with_button:
+                try:
+                    await context.bot.edit_message_reply_markup(
+                        chat_id=uid,
+                        message_id=last_bot_message_with_button[uid],
+                        reply_markup=None
+                    )
+                except Exception as e:
+                    print(f"⚠️ Не удалось убрать кнопку с прошлого сообщения: {e}")
+            
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("⬅️ Назад", callback_data="exit_chat")]
             ])
             
-            await context.bot.send_message(
+            sent_msg = await context.bot.send_message(
                 chat_id=uid,
                 text=reply,
                 reply_markup=keyboard
             )
+            
+            last_bot_message_with_button[uid] = sent_msg.message_id
             
             if not a.get("is_free"):
                 spend_stars(uid, cost)
@@ -142,3 +151,10 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     except Exception as e:
         await typing_msg.edit_text(f"❌ Ошибка")
         context.user_data["in_chat_mode"] = False
+
+async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
+    if uid in last_bot_message_with_button:
+        del last_bot_message_with_button[uid]
+    
+    context.user_data["in_chat_mode"] = False
+    await send_fresh_menu(context.bot, uid)
