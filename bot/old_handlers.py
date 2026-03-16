@@ -56,14 +56,12 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"🚪 Выход из чата через кнопку для {uid}")
         context.user_data["in_chat_mode"] = False
         
-        # Удаляем сообщение с кнопкой выхода
         try:
             await query.message.delete()
             print(f"🗑️ Удалено сообщение с кнопкой выхода для {uid}")
         except Exception as e:
             print(f"⚠️ Не удалось удалить сообщение: {e}")
         
-        # Отправляем новое меню
         await send_fresh_menu(context.bot, uid)
         return
     
@@ -352,16 +350,25 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     except Exception:
         await send_fresh_menu(context.bot, user_id)
 
+# ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ handle_message =====
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
+        print("⚠️ Нет сообщения или текста")
         return
     
     user = update.effective_user
-    uid = user.id
+    if not user:
+        print("⚠️ Нет пользователя")
+        return
     
-    # ЛОГ: проверяем режим
+    uid = user.id
+    text = update.message.text
+    
+    print(f"📨 handle_message: uid={uid}, text='{text}'")
+    
+    # Проверяем режим чата
     in_chat_mode = context.user_data.get("in_chat_mode", False)
-    print(f"📨 handle_message: uid={uid}, in_chat_mode={in_chat_mode}, text='{update.message.text}'")
+    print(f"🚩 in_chat_mode: {in_chat_mode}")
     
     if not in_chat_mode:
         print(f"⏭️ Пропускаем сообщение от {uid} (не в чате)")
@@ -372,8 +379,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⛔ Доступ заблокирован.")
         context.user_data.clear()
         return
-    
-    text = update.message.text
     
     from .chat import handle_chat_message
     await handle_chat_message(update, context, uid, text)
