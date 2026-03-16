@@ -7,7 +7,7 @@ from telegram.error import Conflict, TimedOut, NetworkError
 
 from bot.handlers import start, on_button
 from bot.handlers import handle_message
-from bot.support import handle_support_reply
+from bot.support import handle_support_command
 from bot_admin import (
     cmd_whoami,
     cmd_free,
@@ -107,11 +107,11 @@ def start_bot():
     app.add_handler(CommandHandler("starstrans", cmd_starstrans))
     app.add_handler(CommandHandler("resetstars", cmd_resetstars))
     
-    # Обработчик для ответов из группы поддержки
+    # Обработчик для команд в группе поддержки
     if SUPPORT_GROUP_ID:
         app.add_handler(MessageHandler(
-            filters.Chat(SUPPORT_GROUP_ID) & filters.REPLY, 
-            handle_support_reply
+            filters.Chat(SUPPORT_GROUP_ID) & filters.COMMAND, 
+            handle_support_command
         ))
         print(f"✅ Поддержка настроена: группа {SUPPORT_GROUP_ID}")
     
