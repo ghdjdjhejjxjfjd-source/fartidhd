@@ -86,9 +86,14 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     
+    # ЛОГ: показываем что пришло
+    print(f"📨 Сообщение от {uid}: '{text}'")
+    print(f"🚩 in_chat_mode: {context.user_data.get('in_chat_mode')}")
+    
     # ===== ВЫХОД ИЗ ЧАТА =====
     if text.lower().strip() == "/cancel":
-        print(f"🚪 Выход из чата для {uid}")
+        print(f"🚪 Обнаружена команда /cancel от {uid}")
+        
         context.user_data["in_chat_mode"] = False
         
         # Удаляем сообщение "/cancel"
@@ -108,10 +113,13 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 print(f"⚠️ Не удалось удалить меню-приглашение: {e}")
         
         # Отправляем новое меню
+        print(f"📤 Отправляем новое меню для {uid}")
         await send_fresh_menu(context.bot, uid)
         return
     
     # ===== ОБЫЧНОЕ СООБЩЕНИЕ =====
+    print(f"💬 Обычное сообщение от {uid}")
+    
     a = get_access(uid)
     ai_lang = get_user_ai_lang(uid)
     persona = get_user_persona(uid)
