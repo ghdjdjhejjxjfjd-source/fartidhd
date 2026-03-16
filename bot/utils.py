@@ -2,58 +2,71 @@
 from api import get_last_menu, set_last_menu, clear_last_menu
 from telegram.ext import ContextTypes
 
-
 async def delete_prev_menu(bot, user_id: int):
+    """Удалить предыдущее меню пользователя"""
     chat_id, msg_id = get_last_menu(user_id)
     if not chat_id or not msg_id:
-        return
+        return False
+    
     try:
         await bot.delete_message(chat_id=chat_id, message_id=msg_id)
         print(f"🗑️ Удалено старое меню для {user_id}")
-    except Exception:
-        pass
-    clear_last_menu(user_id)
-
+        clear_last_menu(user_id)
+        return True
+    except Exception as e:
+        print(f"⚠️ Не удалось удалить меню для {user_id}: {e}")
+        # Даже если не удалось удалить, очищаем запись
+        clear_last_menu(user_id)
+        return False
 
 async def send_fresh_menu(bot, user_id: int, text: str = None):
+    """Отправить новое меню (удалив старое)"""
     from .menu import main_menu_for_user
     
+    # Всегда удаляем старое меню перед отправкой нового
     await delete_prev_menu(bot, user_id)
     
     if text is None:
         text = "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇"
     
+    # Отправляем новое меню
     m = await bot.send_message(
         chat_id=user_id,
         text=text,
         reply_markup=main_menu_for_user(user_id),
     )
+    
+    # Сохраняем ID нового меню
     set_last_menu(user_id, user_id, m.message_id)
-
+    print(f"✅ Отправлено новое меню для {user_id} (ID: {m.message_id})")
 
 async def update_user_menu(bot, user_id: int):
+    """Обновить меню пользователя"""
     await send_fresh_menu(bot, user_id)
-
 
 async def send_block_notice(bot, user_id: int):
     """Отправить уведомление о блокировке"""
     await delete_prev_menu(bot, user_id)
     await bot.send_message(chat_id=user_id, text="⛔ Доступ заблокирован.")
 
-
 async def edit_to_menu(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     """Редактировать текущее сообщение в главное меню"""
     from .menu import main_menu_for_user
+    
+    # Удаляем сохраненное меню (оно сейчас редактируется)
+    clear_last_menu(user_id)
     
     try:
         await query.message.edit_text(
             "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
             reply_markup=main_menu_for_user(user_id)
         )
+        # Сохраняем ID отредактированного сообщения как новое меню
         set_last_menu(user_id, user_id, query.message.message_id)
-    except Exception:
+        print(f"✅ Отредактировано в меню для {user_id}")
+    except Exception as e:
+        print(f"⚠️ Не удалось отредактировать в меню: {e}")
         await send_fresh_menu(context.bot, user_id)
-
 
 async def edit_to_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
     """Редактировать текущее сообщение в указанную вкладку"""
@@ -77,8 +90,14 @@ async def edit_to_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, t
     else:
         reply_markup = tab_kb(user_id)
     
+    # Очищаем запись о старом меню (сейчас редактируется)
+    clear_last_menu(user_id)
+    
     try:
         await query.message.edit_text(text, reply_markup=reply_markup)
+        # Сохраняем отредактированное сообщение как новое меню
         set_last_menu(user_id, user_id, query.message.message_id)
-    except Exception:
+        print(f"✅ Отредактировано во вкладку {tab_key} для {user_id}")
+    except Exception as e:
+        print(f"⚠️ Не удалось отредактировать во вкладку: {e}")
         await send_fresh_menu(context.bot, user_id)
