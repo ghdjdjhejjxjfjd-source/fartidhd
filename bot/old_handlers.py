@@ -56,8 +56,14 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"🚪 Выход из чата через кнопку для {uid}")
         context.user_data["in_chat_mode"] = False
         
-        # ✅ Вместо удаления - просто отправляем новое меню
-        # Старое сообщение останется, но это лучше чем ничего
+        # ✅ Удаляем сообщение с кнопкой (то самое "💬 Напиши сообщение")
+        try:
+            await query.message.delete()
+            print(f"🗑️ Удалено сообщение-приглашение для {uid}")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить сообщение: {e}")
+        
+        # ✅ Отправляем новое меню
         await send_fresh_menu(context.bot, uid)
         return
     
