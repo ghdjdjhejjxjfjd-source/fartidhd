@@ -51,17 +51,19 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     print(f"🖱️ Нажата кнопка: {data} от {uid}")
     
-    # ===== ВЫХОД ИЗ ЧАТА =====
+    # ===== ВЫХОД ИЗ ЧАТА (НОВАЯ КНОПКА) =====
     if data == "exit_chat":
         print(f"🚪 Выход из чата через кнопку для {uid}")
         context.user_data["in_chat_mode"] = False
         
+        # Удаляем сообщение с кнопкой
         try:
             await query.message.delete()
-            print(f"🗑️ Удалено сообщение с кнопкой выхода для {uid}")
+            print(f"🗑️ Удалено сообщение с кнопкой для {uid}")
         except Exception as e:
             print(f"⚠️ Не удалось удалить сообщение: {e}")
         
+        # Отправляем новое меню
         await send_fresh_menu(context.bot, uid)
         return
     
@@ -350,17 +352,11 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     except Exception:
         await send_fresh_menu(context.bot, user_id)
 
-# ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ handle_message =====
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
-        print("⚠️ Нет сообщения или текста")
         return
     
     user = update.effective_user
-    if not user:
-        print("⚠️ Нет пользователя")
-        return
-    
     uid = user.id
     text = update.message.text
     
@@ -368,10 +364,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Проверяем режим чата
     in_chat_mode = context.user_data.get("in_chat_mode", False)
-    print(f"🚩 in_chat_mode: {in_chat_mode}")
     
     if not in_chat_mode:
-        print(f"⏭️ Пропускаем сообщение от {uid} (не в чате)")
         return
     
     a = get_access(uid)
