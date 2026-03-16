@@ -157,21 +157,36 @@ async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int
     
     print(f"🚪 Выход из чата для {uid}")
     
-    # 1. Удаляем кнопку с callback_query (то самое сообщение, на которое нажали)
-    try:
-        if update.callback_query and update.callback_query.message:
+    # 1. Пробуем удалить кнопку с callback_query
+    message_id_to_delete = None
+    if update.callback_query and update.callback_query.message:
+        message_id_to_delete = update.callback_query.message.message_id
+        try:
             await update.callback_query.message.edit_reply_markup(reply_markup=None)
-            print(f"✅ Кнопка удалена с сообщения {update.callback_query.message.message_id}")
-    except Exception as e:
-        print(f"⚠️ Не удалось удалить кнопку через callback: {e}")
+            print(f"✅ Кнопка удалена с сообщения {message_id_to_delete}")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить кнопку через callback: {e}")
+            message_id_to_delete = None
     
-    # 2. Чистим хранилище
+    # 2. Если не получилось, пробуем через хранилище
+    if not message_id_to_delete and uid in last_bot_message_with_button:
+        try:
+            await context.bot.edit_message_reply_markup(
+                chat_id=uid,
+                message_id=last_bot_message_with_button[uid],
+                reply_markup=None
+            )
+            print(f"✅ Кнопка удалена через хранилище: {last_bot_message_with_button[uid]}")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить через хранилище: {e}")
+    
+    # 3. В любом случае чистим хранилище
     if uid in last_bot_message_with_button:
         del last_bot_message_with_button[uid]
     
-    # 3. Выходим из режима чата
+    # 4. Выходим из режима чата
     context.user_data["in_chat_mode"] = False
     
-    # 4. Отправляем НОВОЕ сообщение с главным меню
+    # 5. Отправляем НОВОЕ сообщение с главным меню
     await send_fresh_menu(context.bot, uid)
     print(f"✅ Новое меню отправлено для {uid}")
