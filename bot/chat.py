@@ -12,7 +12,7 @@ from groq_client import ask_groq
 from openai_client import ask_openai
 from .config import send_log_http
 from .menu import main_menu_for_user
-from .utils import send_fresh_menu, delete_prev_menu
+from .utils import send_fresh_menu, delete_prev_menu, delete_all_menus
 
 # Глобальное хранилище ID последнего сообщения с кнопкой
 last_bot_message_with_button = {}
@@ -60,6 +60,7 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     context.user_data["invite_message_id"] = query.message.message_id
     
+    # Текст приглашения
     if ai_mode == "fast":
         current_ai_lang = get_user_ai_lang(uid)
         text = (
@@ -77,7 +78,18 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Стоимость: {cost}⭐"
         )
     
-    await query.message.edit_text(text)
+    # КНОПКА НАЗАД на стартовом экране
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("⬅️ Назад", callback_data="exit_chat_from_start")]
+    ])
+    
+    sent_msg = await query.message.edit_text(
+        text=text,
+        reply_markup=keyboard
+    )
+    
+    # Запоминаем ID стартового сообщения
+    context.user_data["start_message_id"] = sent_msg.message_id
     context.user_data["in_chat_mode"] = True
     print(f"✅ Чат режим включен для {uid}")
 
@@ -103,6 +115,19 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
         return
     
+    # ===== УДАЛЯЕМ КНОПКУ СО СТАРТОВОГО ЭКРАНА =====
+    if "start_message_id" in context.user_data:
+        try:
+            await context.bot.edit_message_reply_markup(
+                chat_id=uid,
+                message_id=context.user_data["start_message_id"],
+                reply_markup=None
+            )
+            print(f"✅ Кнопка удалена со стартового экрана {context.user_data['start_message_id']}")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить кнопку со старта: {e}")
+        # Не удаляем из user_data, чтобы знать что старт был
+    
     mem_add(uid, "user", text)
     typing_msg = await update.message.reply_text("⏳ Печатает...")
     
@@ -119,6 +144,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             await typing_msg.delete()
             mem_add(uid, "assistant", reply)
             
+            # Удаляем кнопку с предыдущего ответа ИИ
             if uid in last_bot_message_with_button:
                 try:
                     await context.bot.edit_message_reply_markup(
@@ -129,6 +155,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except Exception as e:
                     print(f"⚠️ Не удалось убрать кнопку с прошлого сообщения: {e}")
             
+            # Отправляем новый ответ С КНОПКОЙ
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("⬅️ Назад", callback_data="exit_chat")]
             ])
@@ -139,6 +166,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 reply_markup=keyboard
             )
             
+            # Запоминаем это сообщение как последнее с кнопкой
             last_bot_message_with_button[uid] = sent_msg.message_id
             
             if not a.get("is_free"):
@@ -157,7 +185,15 @@ async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int
     
     print(f"🚪 Выход из чата для {uid}")
     
-    # 1. Удаляем кнопку с последнего сообщения
+    # Пытаемся удалить сообщение с которого нажали кнопку
+    if update.callback_query and update.callback_query.message:
+        try:
+            await update.callback_query.message.delete()
+            print(f"✅ Сообщение {update.callback_query.message.message_id} удалено")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить сообщение: {e}")
+    
+    # Удаляем кнопку с последнего ответа ИИ если есть
     if uid in last_bot_message_with_button:
         try:
             await context.bot.edit_message_reply_markup(
@@ -171,12 +207,38 @@ async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int
         
         del last_bot_message_with_button[uid]
     
-    # 2. Выходим из режима чата
+    # Очищаем стартовое сообщение из памяти
+    if "start_message_id" in context.user_data:
+        del context.user_data["start_message_id"]
+    
+    # Выходим из режима чата
     context.user_data["in_chat_mode"] = False
     
-    # 3. Удаляем ВСЕ старые меню пользователя
-    await delete_prev_menu(context.bot, uid)
-    
-    # 4. Отправляем ОДНО новое меню
+    # Удаляем все старые меню и отправляем новое
+    await delete_all_menus(context.bot, uid)
     await send_fresh_menu(context.bot, uid)
-    print(f"✅ Одно новое меню отправлено для {uid}")
+    print(f"✅ Новое меню отправлено для {uid}")
+
+async def exit_chat_from_start(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
+    """Выход из чата со стартового экрана"""
+    
+    print(f"🚪 Выход со стартового экрана для {uid}")
+    
+    # Удаляем стартовое сообщение
+    if update.callback_query and update.callback_query.message:
+        try:
+            await update.callback_query.message.delete()
+            print(f"✅ Стартовое сообщение удалено")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить стартовое сообщение: {e}")
+    
+    # Очищаем данные
+    if "start_message_id" in context.user_data:
+        del context.user_data["start_message_id"]
+    
+    context.user_data["in_chat_mode"] = False
+    
+    # Удаляем все старые меню и отправляем новое
+    await delete_all_menus(context.bot, uid)
+    await send_fresh_menu(context.bot, uid)
+    print(f"✅ Новое меню отправлено для {uid}")
