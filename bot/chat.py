@@ -36,7 +36,7 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
     
-    # Названия режимов (без упоминания конкретных ИИ)
+    # Названия режимов
     mode_names = {
         "fast": "🚀 Быстрый", 
         "quality": "💎 Качественный"
@@ -60,7 +60,6 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Формируем текст в зависимости от режима
     if ai_mode == "fast":
-        # Для быстрого режима (Groq) - показываем язык ответов
         current_ai_lang = get_user_ai_lang(uid)
         text = (
             f"💬 Напиши сообщение.\n\n"
@@ -71,7 +70,6 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Для выхода из чата напиши /cancel"
         )
     else:
-        # Для качественного режима (OpenAI) - без языка ответов
         text = (
             f"💬 Напиши сообщение.\n\n"
             f"Режим: {mode_names[ai_mode]}\n"
@@ -84,18 +82,21 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.message.edit_text(text)
     
     context.user_data["in_chat_mode"] = True
+    print(f"✅ Чат режим включен для {uid}")
 
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     
     # ===== ВЫХОД ИЗ ЧАТА =====
-    if text.lower() == "/cancel":
+    if text.lower().strip() == "/cancel":
+        print(f"🚪 Выход из чата для {uid}")
         context.user_data["in_chat_mode"] = False
         
         # Удаляем сообщение "/cancel"
         try:
             await update.message.delete()
-        except:
-            pass
+            print(f"🗑️ Удалено сообщение /cancel для {uid}")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить /cancel: {e}")
         
         # Удаляем приглашение (бывшее меню)
         menu_msg_id = context.user_data.get("menu_message_id")
