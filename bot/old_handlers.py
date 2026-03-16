@@ -56,9 +56,11 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Удаляем сообщение с кнопкой выхода
         try:
             await query.message.delete()
-        except:
-            pass
+            print(f"🗑️ Удалено сообщение с кнопкой выхода для {uid}")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить сообщение: {e}")
         
+        # Отправляем новое меню (старое удалится автоматически)
         await send_fresh_menu(context.bot, uid)
         return
     
