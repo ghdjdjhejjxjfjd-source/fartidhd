@@ -3,7 +3,7 @@ import time
 import asyncio
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from telegram import Update
-from telegram.error import Conflict
+from telegram.error import Conflict, TimedOut, NetworkError
 
 from bot.handlers import start, on_button
 from bot.handlers import handle_message
@@ -65,19 +65,29 @@ async def error_handler(update: Update, context):
             print(f"❌ Ошибка для пользователя {user_id}: {context.error}")
             
             if "Conflict" in str(context.error):
-                print("🔄 Обнаружен конфликт, но игнорируем...")
+                print("🔄 Обнаружен конфликт, игнорируем...")
+            elif "Timed out" in str(context.error) or "ReadTimeout" in str(context.error):
+                print("🔄 Таймаут, но продолжаем работу...")
         else:
             print(f"❌ Ошибка: {context.error}")
     except Exception as e:
-        print(f"❌ Критическая ошибка: {e}")
+        print(f"❌ Критическая ошибка в обработчике: {e}")
 
 def start_bot():
     """Запуск бота"""
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN is not set")
 
-    # Создаем приложение
-    app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
+    # Создаем приложение с увеличенными таймаутами
+    app = (
+        Application.builder()
+        .token(BOT_TOKEN)
+        .connect_timeout(30)
+        .read_timeout(30)
+        .write_timeout(30)
+        .pool_timeout(30)
+        .build()
+    )
 
     # Добавляем обработчики
     app.add_handler(CommandHandler("start", start))
@@ -101,7 +111,7 @@ def start_bot():
     print("✅ В личке: только /start")
     print("✅ В админ-группе: все команды")
 
-    # Запускаем polling (ОДИН раз!)
+    # Запускаем polling
     try:
         print("🔄 Запуск polling...")
         app.run_polling(
