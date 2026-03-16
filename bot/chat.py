@@ -58,6 +58,11 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Запоминаем ID сообщения-меню
     context.user_data["menu_message_id"] = query.message.message_id
     
+    # Кнопка для выхода из чата
+    exit_keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("⬅️ Назад", callback_data="exit_chat")]
+    ])
+    
     # Формируем текст в зависимости от режима
     if ai_mode == "fast":
         current_ai_lang = get_user_ai_lang(uid)
@@ -66,60 +71,48 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Режим: {mode_names[ai_mode]}\n"
             f"Язык ответов: {lang_names.get(current_ai_lang, 'Русский')}\n"
             f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
-            f"Стоимость: {cost}⭐\n\n"
-            f"Для выхода из чата напиши /cancel"
+            f"Стоимость: {cost}⭐"
         )
     else:
         text = (
             f"💬 Напиши сообщение.\n\n"
             f"Режим: {mode_names[ai_mode]}\n"
             f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
-            f"Стоимость: {cost}⭐\n\n"
-            f"Для выхода из чата напиши /cancel"
+            f"Стоимость: {cost}⭐"
         )
     
-    # Редактируем меню в приглашение
-    await query.message.edit_text(text)
+    # Редактируем меню в приглашение (с кнопкой)
+    await query.message.edit_text(text, reply_markup=exit_keyboard)
     
     context.user_data["in_chat_mode"] = True
     print(f"✅ Чат режим включен для {uid}")
 
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     
-    # ЛОГ: показываем что пришло
-    print(f"📨 Сообщение от {uid}: '{text}'")
-    print(f"🚩 in_chat_mode: {context.user_data.get('in_chat_mode')}")
-    
     # ===== ВЫХОД ИЗ ЧАТА =====
+    # Проверяем на /cancel для обратной совместимости, но больше не показываем
     if text.lower().strip() == "/cancel":
-        print(f"🚪 Обнаружена команда /cancel от {uid}")
-        
+        print(f"🚪 Выход из чата для {uid} (через /cancel)")
         context.user_data["in_chat_mode"] = False
         
         # Удаляем сообщение "/cancel"
         try:
             await update.message.delete()
-            print(f"🗑️ Удалено сообщение /cancel для {uid}")
-        except Exception as e:
-            print(f"⚠️ Не удалось удалить /cancel: {e}")
+        except:
+            pass
         
-        # Удаляем приглашение (бывшее меню)
+        # Удаляем приглашение
         menu_msg_id = context.user_data.get("menu_message_id")
         if menu_msg_id:
             try:
                 await context.bot.delete_message(chat_id=uid, message_id=menu_msg_id)
-                print(f"🗑️ Удалено меню-приглашение для {uid}")
-            except Exception as e:
-                print(f"⚠️ Не удалось удалить меню-приглашение: {e}")
+            except:
+                pass
         
-        # Отправляем новое меню
-        print(f"📤 Отправляем новое меню для {uid}")
         await send_fresh_menu(context.bot, uid)
         return
     
     # ===== ОБЫЧНОЕ СООБЩЕНИЕ =====
-    print(f"💬 Обычное сообщение от {uid}")
-    
     a = get_access(uid)
     ai_lang = get_user_ai_lang(uid)
     persona = get_user_persona(uid)
@@ -170,8 +163,9 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             
             mem_add(uid, "assistant", reply)
             
+            # Кнопка для выхода под каждым ответом
             keyboard = InlineKeyboardMarkup([
-                [InlineKeyboardButton("❌ Выйти из чата", callback_data="exit_chat")]
+                [InlineKeyboardButton("⬅️ Назад", callback_data="exit_chat")]
             ])
             
             await context.bot.send_message(
