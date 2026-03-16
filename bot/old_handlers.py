@@ -33,8 +33,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         del navigation_stack[uid]
     
     print(f"🚀 /start от пользователя {uid}")
-    
-    # ✅ Всегда отправляем свежее меню (старое удалится автоматически)
     await send_fresh_menu(context.bot, uid)
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -55,7 +53,12 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "exit_chat":
         context.user_data["in_chat_mode"] = False
         
-        # При выходе из чата отправляем НОВОЕ меню
+        # Удаляем сообщение с кнопкой выхода
+        try:
+            await query.message.delete()
+        except:
+            pass
+        
         await send_fresh_menu(context.bot, uid)
         return
     
