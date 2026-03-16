@@ -11,7 +11,7 @@ from groq_client import ask_groq
 from openai_client import ask_openai
 from .config import send_log_http
 from .menu import main_menu_for_user
-from .utils import delete_prev_menu, send_fresh_menu  # 👈 ИМПОРТИРУЕМ УТИЛИТЫ
+from .utils import send_fresh_menu  # 👈 Импортируем
 
 async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -46,10 +46,11 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     current_style = get_user_style(uid)
     current_ai_lang = get_user_ai_lang(uid)
     
-    # 👈 Запоминаем ID сообщения-приглашения (оно же было меню)
-    context.user_data["chat_invite_message_id"] = query.message.message_id
+    # 👈 Запоминаем ID сообщения-меню (которое сейчас редактируем)
+    context.user_data["menu_message_id"] = query.message.message_id
     
-    await query.message.reply_text(
+    # Редактируем меню в приглашение
+    await query.message.edit_text(
         f"💬 Напиши сообщение для ИИ.\n"
         f"Режим: {mode_names.get(ai_mode, 'Быстрый')}\n"
         f"Язык ответов: {lang_names.get(current_ai_lang, 'Русский')}\n"
@@ -67,22 +68,22 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     if text.lower() == "/cancel":
         context.user_data["in_chat_mode"] = False
         
-        # ✅ Удаляем сообщение пользователя "/cancel"
+        # Удаляем сообщение "/cancel"
         try:
             await update.message.delete()
         except:
             pass
         
-        # ✅ Удаляем сообщение-приглашение в чат
-        invite_msg_id = context.user_data.get("chat_invite_message_id")
-        if invite_msg_id:
+        # 👈 Удаляем приглашение (бывшее меню)
+        menu_msg_id = context.user_data.get("menu_message_id")
+        if menu_msg_id:
             try:
-                await context.bot.delete_message(chat_id=uid, message_id=invite_msg_id)
-                print(f"🗑️ Удалено приглашение в чат для {uid}")
+                await context.bot.delete_message(chat_id=uid, message_id=menu_msg_id)
+                print(f"🗑️ Удалено меню-приглашение для {uid}")
             except Exception as e:
-                print(f"⚠️ Не удалось удалить приглашение: {e}")
+                print(f"⚠️ Не удалось удалить меню-приглашение: {e}")
         
-        # ✅ Отправляем НОВОЕ меню (старое меню удалится автоматически через send_fresh_menu)
+        # 👈 Отправляем новое меню
         await send_fresh_menu(context.bot, uid)
         return
     
@@ -108,13 +109,12 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
         return
     
-    # СОХРАНЯЕМ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ В ПАМЯТЬ
+    # СОХРАНЯЕМ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ
     mem_add(uid, "user", text)
     
     typing_msg = await update.message.reply_text("⏳ Печатает...")
     
     try:
-        # ПОЛУЧАЕМ ИСТОРИЮ ИЗ ПАМЯТИ
         history = mem_get(uid, limit=20)
         prompt_with_memory = build_memory_prompt(history, text)
         
@@ -136,7 +136,6 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         if reply:
             await typing_msg.delete()
             
-            # СОХРАНЯЕМ ОТВЕТ В ПАМЯТЬ
             mem_add(uid, "assistant", reply)
             
             keyboard = InlineKeyboardMarkup([
