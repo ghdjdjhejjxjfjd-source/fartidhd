@@ -7,6 +7,7 @@ from telegram.error import Conflict, TimedOut, NetworkError
 
 from bot.handlers import start, on_button
 from bot.handlers import handle_message
+from bot.support import handle_support_reply
 from bot_admin import (
     cmd_whoami,
     cmd_free,
@@ -21,6 +22,7 @@ from bot_admin import (
 )
 
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
+SUPPORT_GROUP_ID = int(os.getenv("SUPPORT_GROUP_ID", "0"))
 
 async def post_init(app: Application):
     """Инициализация после запуска"""
@@ -104,6 +106,14 @@ def start_bot():
     app.add_handler(CommandHandler("balance", cmd_balance))
     app.add_handler(CommandHandler("starstrans", cmd_starstrans))
     app.add_handler(CommandHandler("resetstars", cmd_resetstars))
+    
+    # Обработчик для ответов из группы поддержки
+    if SUPPORT_GROUP_ID:
+        app.add_handler(MessageHandler(
+            filters.Chat(SUPPORT_GROUP_ID) & filters.REPLY, 
+            handle_support_reply
+        ))
+        print(f"✅ Поддержка настроена: группа {SUPPORT_GROUP_ID}")
     
     app.add_error_handler(error_handler)
 
