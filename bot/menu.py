@@ -12,6 +12,8 @@ TAB_TEXT = {
     "blocked": "⛔ Доступ заблокирован.\n\nЕсли ты считаешь это ошибкой — напиши админу.",
     "need_pay": "💰 Чтобы открыть Mini App, нужно купить пакет.\n\nОплату подключим позже.",
     "need_stars": "⭐ Для доступа к Mini App нужна хотя бы 1 звезда.\n\nКупите пакет звезд ниже 👇",
+    "need_stars_chat": "⭐ Недостаточно звезд для чата с ИИ.\n\nДля доступа к чату нужна хотя бы 1 звезда.\n\nКупите звезды в меню ниже 👇",
+    "need_stars_miniapp": "⭐ Недостаточно звезд для Mini App.\n\nДля доступа к Mini App нужна хотя бы 1 звезда.\n\nКупите звезды в меню ниже 👇",
     "buy_pack": "💰 Купить пакет\n\nПакеты сообщений (пример):\n• 100 сообщений — 99₽\n• 500 сообщений — 399₽\n• 2000 сообщений — 999₽\n\nОплату подключим позже.",
     "settings": "⚙️ Настройки\n\nВыбери раздел:",
     "help": "❓ Помощь\n\nНажми «Открыть Mini App» или используй встроенный чат.",
@@ -277,7 +279,7 @@ def main_menu_for_user(user_id: int) -> InlineKeyboardMarkup:
             keyboard.append([InlineKeyboardButton("🚀 Открыть Mini App", web_app=WebAppInfo(url=MINIAPP_URL))])
         else:
             if balance < 1:
-                keyboard.append([InlineKeyboardButton("🚀 Открыть Mini App", callback_data="tab:need_stars")])
+                keyboard.append([InlineKeyboardButton("🚀 Открыть Mini App", callback_data="tab:need_stars_miniapp")])
             else:
                 keyboard.append([InlineKeyboardButton("🚀 Открыть Mini App", callback_data="tab:need_pay")])
     else:
@@ -287,8 +289,8 @@ def main_menu_for_user(user_id: int) -> InlineKeyboardMarkup:
             keyboard.append([InlineKeyboardButton("💬 Чат с ИИ", callback_data="inline_chat")])
             keyboard.append([InlineKeyboardButton("🖼 Генерация картинки", callback_data="inline_image")])
         else:
-            keyboard.append([InlineKeyboardButton("💬 Чат с ИИ", callback_data="tab:need_stars")])
-            keyboard.append([InlineKeyboardButton("🖼 Генерация картинки", callback_data="tab:need_stars")])
+            keyboard.append([InlineKeyboardButton("💬 Чат с ИИ", callback_data="tab:need_stars_chat")])
+            keyboard.append([InlineKeyboardButton("🖼 Генерация картинки", callback_data="tab:need_stars_chat")])
 
     # Кнопка покупки звезд
     keyboard.append([InlineKeyboardButton("⭐ Купить звезды", callback_data="tab:buy_stars")])
