@@ -1,16 +1,19 @@
 # bot/support.py
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
 from telegram.ext import ContextTypes
 import os
 import re
+from datetime import datetime, timedelta
 
 from .config import send_log_http
+from api import set_blocked, get_access
+from payments import add_stars
 
 # ID группы поддержки (из .env)
 SUPPORT_GROUP_ID = int(os.getenv("SUPPORT_GROUP_ID", "0"))
 
-# Хранилище для связи message_id -> user_id
-support_messages = {}
+# Хранилище для временных блокировок
+temp_blocks = {}
 
 async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Начало обращения в поддержку"""
@@ -19,6 +22,21 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     user = update.effective_user
     uid = user.id
+    
+    # Проверяем не заблокирован ли пользователь временно
+    if uid in temp_blocks:
+        block_until = temp_blocks[uid]
+        if datetime.now() < block_until:
+            remaining = block_until - datetime.now()
+            hours = remaining.seconds // 3600
+            minutes = (remaining.seconds % 3600) // 60
+            await query.message.edit_text(
+                f"⛔ Вы заблокированы в поддержке.\n"
+                f"Осталось: {hours}ч {minutes}мин"
+            )
+            return
+        else:
+            del temp_blocks[uid]
     
     # Текст с инструкцией
     text = (
@@ -32,22 +50,14 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Они ответят как можно скорее!"
     )
     
-    # Клавиатура с кнопкой назад
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")]
-    ])
-    
-    await query.message.edit_text(
-        text=text,
-        reply_markup=keyboard
-    )
+    await query.message.edit_text(text)
     
     # Запоминаем что пользователь в режиме поддержки
     context.user_data["in_support_mode"] = True
     print(f"✅ Режим поддержки включен для {uid}")
 
 async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Переслать сообщение пользователя в группу поддержки (ОДНИМ СООБЩЕНИЕМ)"""
+    """Переслать сообщение пользователя в группу поддержки"""
     if not SUPPORT_GROUP_ID:
         print("❌ SUPPORT_GROUP_ID не настроен")
         await update.message.reply_text("❌ Служба поддержки временно недоступна")
@@ -55,8 +65,31 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     
     user = update.effective_user
     uid = user.id
+    
+    # Проверяем временную блокировку
+    if uid in temp_blocks:
+        block_until = temp_blocks[uid]
+        if datetime.now() < block_until:
+            remaining = block_until - datetime.now()
+            hours = remaining.seconds // 3600
+            minutes = (remaining.seconds % 3600) // 60
+            await update.message.reply_text(
+                f"⛔ Вы заблокированы в поддержке.\n"
+                f"Осталось: {hours}ч {minutes}мин"
+            )
+            return
+        else:
+            del temp_blocks[uid]
+    
     username = f"@{user.username}" if user.username else "—"
     first_name = user.first_name or "—"
+    
+    # Получаем текст сообщения
+    message_text = ""
+    if update.message.text:
+        message_text = update.message.text
+    elif update.message.caption:
+        message_text = update.message.caption
     
     # Формируем шапку с информацией о пользователе
     header = (
@@ -67,76 +100,60 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
         f"———————————————\n\n"
     )
     
-    # Кнопки для админа
-    keyboard = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("✅ Ответить", callback_data=f"support_reply_{uid}"),
-            InlineKeyboardButton("⛔ Заблокировать", callback_data=f"support_block_{uid}")
-        ],
-        [
-            InlineKeyboardButton("⭐ Добавить звёзд", callback_data=f"support_addstars_{uid}")
-        ]
-    ])
+    # Формируем команды внизу (Telegram сделает их синими автоматически)
+    commands = (
+        f"\n\n———————————————\n"
+        f"/reply {uid}\n"
+        f"/block {uid}"
+    )
     
-    # Отправляем ВСЁ одним сообщением
+    # Отправляем в группу поддержки
     if update.message.text:
-        full_text = header + update.message.text
-        sent_msg = await context.bot.send_message(
+        full_text = header + update.message.text + commands
+        await context.bot.send_message(
             chat_id=SUPPORT_GROUP_ID,
-            text=full_text,
-            reply_markup=keyboard
+            text=full_text
         )
-        support_messages[sent_msg.message_id] = uid
         
     elif update.message.photo:
         photo = update.message.photo[-1]
-        caption = header + (update.message.caption or "")
-        sent_msg = await context.bot.send_photo(
+        caption = header + (update.message.caption or "") + commands
+        await context.bot.send_photo(
             chat_id=SUPPORT_GROUP_ID,
             photo=photo.file_id,
-            caption=caption,
-            reply_markup=keyboard
+            caption=caption
         )
-        support_messages[sent_msg.message_id] = uid
         
     elif update.message.document:
-        caption = header + (update.message.caption or "")
-        sent_msg = await context.bot.send_document(
+        caption = header + (update.message.caption or "") + commands
+        await context.bot.send_document(
             chat_id=SUPPORT_GROUP_ID,
             document=update.message.document.file_id,
-            caption=caption,
-            reply_markup=keyboard
+            caption=caption
         )
-        support_messages[sent_msg.message_id] = uid
         
     elif update.message.video:
-        caption = header + (update.message.caption or "")
-        sent_msg = await context.bot.send_video(
+        caption = header + (update.message.caption or "") + commands
+        await context.bot.send_video(
             chat_id=SUPPORT_GROUP_ID,
             video=update.message.video.file_id,
-            caption=caption,
-            reply_markup=keyboard
+            caption=caption
         )
-        support_messages[sent_msg.message_id] = uid
         
     elif update.message.voice:
-        sent_msg = await context.bot.send_voice(
+        await context.bot.send_voice(
             chat_id=SUPPORT_GROUP_ID,
             voice=update.message.voice.file_id,
-            caption=header,
-            reply_markup=keyboard
+            caption=header + commands
         )
-        support_messages[sent_msg.message_id] = uid
         
     elif update.message.audio:
-        caption = header + (update.message.caption or "")
-        sent_msg = await context.bot.send_audio(
+        caption = header + (update.message.caption or "") + commands
+        await context.bot.send_audio(
             chat_id=SUPPORT_GROUP_ID,
             audio=update.message.audio.file_id,
-            caption=caption,
-            reply_markup=keyboard
+            caption=caption
         )
-        support_messages[sent_msg.message_id] = uid
     
     # Подтверждение пользователю
     await update.message.reply_text(
@@ -148,97 +165,119 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     context.user_data["in_support_mode"] = False
     
     # Логируем
-    send_log_http(f"📨 Поддержка: {uid} -> {update.message.text[:50] if update.message.text else 'медиа'}")
+    send_log_http(f"📨 Поддержка: {uid} -> {message_text[:50] if message_text else 'медиа'}")
 
-async def handle_support_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка кнопок в группе поддержки"""
-    query = update.callback_query
-    data = query.data
-    
-    await query.answer()
-    
-    if data.startswith("support_reply_"):
-        user_id = int(data.split("_")[2])
-        context.user_data["replying_to"] = user_id
-        await query.message.reply_text(
-            f"✏️ Режим ответа для пользователя {user_id}\n"
-            f"Просто напиши сообщение — оно уйдёт ему."
-        )
-    
-    elif data.startswith("support_block_"):
-        user_id = int(data.split("_")[2])
-        from api import set_blocked
-        set_blocked(user_id, True)
-        await query.message.reply_text(f"✅ Пользователь {user_id} заблокирован")
-    
-    elif data.startswith("support_addstars_"):
-        user_id = int(data.split("_")[2])
-        from payments import add_stars
-        add_stars(user_id, 100, "support")
-        await query.message.reply_text(f"✅ Пользователю {user_id} добавлено 100 ⭐")
-
-async def handle_support_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка ответа админа пользователю"""
+async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработка команд в группе поддержки"""
     
     # Проверяем что сообщение из группы поддержки
     if not SUPPORT_GROUP_ID or update.effective_chat.id != SUPPORT_GROUP_ID:
         return
     
-    # Если админ в режиме ответа
-    if "replying_to" in context.user_data:
-        user_id = context.user_data["replying_to"]
-        admin = update.effective_user
-        
-        try:
-            if update.message.text:
-                await context.bot.send_message(
-                    chat_id=user_id,
-                    text=f"📨 Ответ от поддержки:\n\n{update.message.text}"
-                )
-            elif update.message.photo:
-                photo = update.message.photo[-1]
-                caption = f"📨 Ответ от поддержки"
-                if update.message.caption:
-                    caption += f"\n\n{update.message.caption}"
-                await context.bot.send_photo(
-                    chat_id=user_id,
-                    photo=photo.file_id,
-                    caption=caption
-                )
-            
-            await update.message.reply_text(f"✅ Ответ отправлен пользователю {user_id}")
-            del context.user_data["replying_to"]
-            
-        except Exception as e:
-            await update.message.reply_text(f"❌ Ошибка: {e}")
-        
+    if not update.message or not update.message.text:
         return
     
-    # Если не в режиме ответа - пробуем найти по reply
-    if update.message.reply_to_message:
-        replied_msg_id = update.message.reply_to_message.message_id
+    text = update.message.text.strip()
+    admin = update.effective_user
+    
+    # ===== КОМАНДА /reply =====
+    if text.startswith('/reply'):
+        parts = text.split(maxsplit=2)
+        if len(parts) < 3:
+            await update.message.reply_text("❌ Использование: /reply <id> <текст>")
+            return
         
-        if replied_msg_id in support_messages:
-            user_id = support_messages[replied_msg_id]
+        try:
+            user_id = int(parts[1])
+            reply_text = parts[2]
             
+            await context.bot.send_message(
+                chat_id=user_id,
+                text=f"📨 Ответ от поддержки:\n\n{reply_text}"
+            )
+            
+            await update.message.reply_text(f"✅ Ответ отправлен пользователю {user_id}")
+            send_log_http(f"📨 Ответ поддержки: {admin.id} -> {user_id}")
+            
+        except ValueError:
+            await update.message.reply_text("❌ Неверный ID")
+        except Exception as e:
+            await update.message.reply_text(f"❌ Ошибка: {e}")
+    
+    # ===== КОМАНДА /block =====
+    elif text.startswith('/block'):
+        parts = text.split()
+        if len(parts) < 3:
+            await update.message.reply_text("❌ Использование: /block <id> <часы>")
+            return
+        
+        try:
+            user_id = int(parts[1])
+            hours = int(parts[2])
+            
+            if hours <= 0:
+                await update.message.reply_text("❌ Часы должны быть больше 0")
+                return
+            
+            # Устанавливаем временную блокировку
+            block_until = datetime.now() + timedelta(hours=hours)
+            temp_blocks[user_id] = block_until
+            
+            # Также блокируем в основной системе
+            set_blocked(user_id, True)
+            
+            await update.message.reply_text(
+                f"✅ Пользователь {user_id} заблокирован на {hours} часов\n"
+                f"До: {block_until.strftime('%d.%m.%Y %H:%M')}"
+            )
+            
+            # Уведомляем пользователя
             try:
-                if update.message.text:
-                    await context.bot.send_message(
-                        chat_id=user_id,
-                        text=f"📨 Ответ от поддержки:\n\n{update.message.text}"
-                    )
-                elif update.message.photo:
-                    photo = update.message.photo[-1]
-                    caption = f"📨 Ответ от поддержки"
-                    if update.message.caption:
-                        caption += f"\n\n{update.message.caption}"
-                    await context.bot.send_photo(
-                        chat_id=user_id,
-                        photo=photo.file_id,
-                        caption=caption
-                    )
-                
-                await update.message.reply_text(f"✅ Ответ отправлен пользователю {user_id}")
-                
-            except Exception as e:
-                await update.message.reply_text(f"❌ Ошибка: {e}")
+                await context.bot.send_message(
+                    chat_id=user_id,
+                    text=f"⛔ Вы заблокированы в поддержке на {hours} часов."
+                )
+            except:
+                pass
+            
+            send_log_http(f"⛔ Блокировка: {admin.id} -> {user_id} на {hours}ч")
+            
+        except ValueError:
+            await update.message.reply_text("❌ Неверный ID или часы")
+        except Exception as e:
+            await update.message.reply_text(f"❌ Ошибка: {e}")
+    
+    # ===== КОМАНДА /unblock =====
+    elif text.startswith('/unblock'):
+        parts = text.split()
+        if len(parts) < 2:
+            await update.message.reply_text("❌ Использование: /unblock <id>")
+            return
+        
+        try:
+            user_id = int(parts[1])
+            
+            # Убираем временную блокировку
+            if user_id in temp_blocks:
+                del temp_blocks[user_id]
+            
+            # Разблокируем в основной системе
+            set_blocked(user_id, False)
+            
+            await update.message.reply_text(f"✅ Пользователь {user_id} разблокирован")
+            
+            # Уведомляем пользователя
+            try:
+                await context.bot.send_message(
+                    chat_id=user_id,
+                    text="✅ Доступ в поддержку восстановлен."
+                )
+            except:
+                pass
+            
+            send_log_http(f"✅ Разблокировка: {admin.id} -> {user_id}")
+            
+        except ValueError:
+            await update.message.reply_text("❌ Неверный ID")
+        except Exception as e:
+            await update.message.reply_text(f"❌ Ошибка: {e}")
