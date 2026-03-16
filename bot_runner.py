@@ -3,8 +3,7 @@ import time
 import asyncio
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from telegram import Update
-from telegram.error import Conflict, TimedOut, NetworkError
-from telegram.request import HTTPXRequest
+from telegram.error import Conflict
 
 from bot.handlers import start, on_button
 from bot.handlers import handle_message
@@ -23,62 +22,40 @@ from bot_admin import (
 
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
 
-# Создаем кастомный request с увеличенными таймаутами
-request = HTTPXRequest(
-    connection_pool_size=8,
-    connect_timeout=30.0,
-    read_timeout=30.0,
-    write_timeout=30.0,
-    pool_timeout=30.0,
-)
-
 async def post_init(app: Application):
     """Инициализация после запуска"""
-    max_retries = 3
-    retry_delay = 5
-    
-    for attempt in range(max_retries):
-        try:
-            await app.bot.set_my_commands([
-                ("start", "🚀 Запустить бота"),
-            ])
-            break
-        except Exception as e:
-            print(f"⚠️ Ошибка установки команд (попытка {attempt + 1}/{max_retries}): {e}")
-            if attempt < max_retries - 1:
-                await asyncio.sleep(retry_delay)
-            else:
-                print("❌ Не удалось установить команды")
+    try:
+        await app.bot.set_my_commands([
+            ("start", "🚀 Запустить бота"),
+        ])
+    except Exception as e:
+        print(f"⚠️ Ошибка установки команд: {e}")
     
     group_id_raw = (os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or "0").strip()
     try:
         group_id = int(group_id_raw)
         if group_id:
-            for attempt in range(max_retries):
-                try:
-                    await app.bot.set_my_commands(
-                        [
-                            ("whoami", "👤 Проверка админа"),
-                            ("free", "⭐ Сделать бесплатным: /free <id>"),
-                            ("paid", "💰 Сделать платным: /paid <id>"),
-                            ("block", "⛔ Заблокировать: /block <id>"),
-                            ("unblock", "✅ Разблокировать: /unblock <id>"),
-                            ("status", "ℹ️ Статус: /status <id>"),
-                            ("addstars", "✨ Добавить звезды: /addstars <id> <кол-во>"),
-                            ("balance", "💎 Баланс: /balance <id>"),
-                            ("starstrans", "🏆 Топ звезд: /starstrans [лимит]"),
-                            ("resetstars", "🔄 Сбросить баланс: /resetstars <id>"),
-                        ],
-                        scope={"type": "chat", "chat_id": group_id}
-                    )
-                    print(f"✅ Админ-команды установлены для группы {group_id}")
-                    break
-                except Exception as e:
-                    print(f"⚠️ Ошибка установки админ-команд (попытка {attempt + 1}/{max_retries}): {e}")
-                    if attempt < max_retries - 1:
-                        await asyncio.sleep(retry_delay)
+            try:
+                await app.bot.set_my_commands(
+                    [
+                        ("whoami", "👤 Проверка админа"),
+                        ("free", "⭐ Сделать бесплатным: /free <id>"),
+                        ("paid", "💰 Сделать платным: /paid <id>"),
+                        ("block", "⛔ Заблокировать: /block <id>"),
+                        ("unblock", "✅ Разблокировать: /unblock <id>"),
+                        ("status", "ℹ️ Статус: /status <id>"),
+                        ("addstars", "✨ Добавить звезды: /addstars <id> <кол-во>"),
+                        ("balance", "💎 Баланс: /balance <id>"),
+                        ("starstrans", "🏆 Топ звезд: /starstrans [лимит]"),
+                        ("resetstars", "🔄 Сбросить баланс: /resetstars <id>"),
+                    ],
+                    scope={"type": "chat", "chat_id": group_id}
+                )
+                print(f"✅ Админ-команды установлены для группы {group_id}")
+            except Exception as e:
+                print(f"⚠️ Не удалось установить админ-команды: {e}")
     except Exception as e:
-        print(f"⚠️ Не удалось установить админ-команды: {e}")
+        print(f"⚠️ Ошибка: {e}")
 
 async def error_handler(update: Update, context):
     """Обработчик ошибок"""
@@ -87,37 +64,20 @@ async def error_handler(update: Update, context):
             user_id = update.effective_user.id
             print(f"❌ Ошибка для пользователя {user_id}: {context.error}")
             
-            error_str = str(context.error)
-            
-            if "Conflict" in error_str:
-                print("🔄 Конфликт, но игнорируем...")
-            elif "Timed out" in error_str or "Timeout" in error_str:
-                print("🔄 Таймаут, но продолжаем работу...")
-            elif "ConnectTimeout" in error_str:
-                print("🔄 Таймаут соединения, но продолжаем работу...")
-            elif "NetworkError" in error_str:
-                print("🔄 Сетевая ошибка, но продолжаем работу...")
+            if "Conflict" in str(context.error):
+                print("🔄 Обнаружен конфликт, но игнорируем...")
         else:
             print(f"❌ Ошибка: {context.error}")
     except Exception as e:
-        print(f"❌ Критическая ошибка в обработчике: {e}")
+        print(f"❌ Критическая ошибка: {e}")
 
 def start_bot():
-    """Запуск бота с улучшенными настройками соединения"""
+    """Запуск бота"""
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN is not set")
 
-    # Создаем приложение с кастомным request
-    app = (
-        Application.builder()
-        .token(BOT_TOKEN)
-        .connect_timeout(30)
-        .read_timeout(30)
-        .write_timeout(30)
-        .pool_timeout(30)
-        .connection_pool_size(8)
-        .build()
-    )
+    # Создаем приложение
+    app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
     # Добавляем обработчики
     app.add_handler(CommandHandler("start", start))
@@ -141,7 +101,7 @@ def start_bot():
     print("✅ В личке: только /start")
     print("✅ В админ-группе: все команды")
 
-    # Запускаем с увеличенными таймаутами
+    # Запускаем polling (ОДИН раз!)
     try:
         print("🔄 Запуск polling...")
         app.run_polling(
@@ -149,9 +109,9 @@ def start_bot():
             close_loop=False,
             drop_pending_updates=True,
             allowed_updates=['message', 'callback_query'],
-            poll_interval=0.5,
-            timeout=30,
+            poll_interval=1.0,
+            timeout=30
         )
     except Exception as e:
         print(f"❌ Ошибка polling: {e}")
-        # Не перезапускаем, просто логируем
+        print("🔄 Бот остановлен")
