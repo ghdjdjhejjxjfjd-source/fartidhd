@@ -15,9 +15,10 @@ from .menu import (
     ai_mode_settings_kb, confirm_ai_mode_kb, TAB_TEXT
 )
 from .settings import handle_set_lang, handle_set_persona, handle_switch_mode
-from .chat import inline_chat_start
+from .chat import inline_chat_start, exit_chat
 from .image import inline_image_start
 from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, send_block_notice
+from .support import support_start, forward_to_support
 
 navigation_stack = {}
 
@@ -53,28 +54,16 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ===== ВЫХОД ИЗ ЧАТА =====
     if data == "exit_chat":
-        print(f"🚪 Выход из чата для {uid}")
-        context.user_data["in_chat_mode"] = False
-        
-        # Пытаемся удалить сообщение всеми способами
-        try:
-            # Способ 1: через query
-            await query.message.delete()
-            print(f"✅ Сообщение {query.message.message_id} удалено для {uid}")
-        except Exception as e:
-            print(f"⚠️ Не удалось через query: {e}")
-            try:
-                # Способ 2: через bot напрямую
-                await context.bot.delete_message(
-                    chat_id=uid, 
-                    message_id=query.message.message_id
-                )
-                print(f"✅ Сообщение {query.message.message_id} удалено через bot для {uid}")
-            except Exception as e:
-                print(f"❌ Совсем не удалось удалить: {e}")
-        
-        # Отправляем новое меню
-        await send_fresh_menu(context.bot, uid)
+        await exit_chat(update, context, uid)
+        return
+    
+    if data == "exit_chat_from_start":
+        await exit_chat(update, context, uid)
+        return
+    
+    # ===== ПОДДЕРЖКА =====
+    if data == "support_start":
+        await support_start(update, context)
         return
     
     # ===== КНОПКА НАЗАД =====
@@ -108,7 +97,12 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             navigation_stack[uid] = current_tab
         
         context.user_data['current_tab'] = key
-        await open_tab(context, query, uid, key)
+        
+        # Специальная обработка для поддержки
+        if key == "support":
+            await support_start(update, context)
+        else:
+            await open_tab(context, query, uid, key)
         return
     
     # ===== ПОКУПКА ЗВЕЗД =====
@@ -371,6 +365,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     
     print(f"📨 handle_message: uid={uid}, text='{text}'")
+    
+    # ===== ПРОВЕРКА НА РЕЖИМ ПОДДЕРЖКИ =====
+    if context.user_data.get("in_support_mode", False):
+        await forward_to_support(update, context)
+        return
     
     in_chat_mode = context.user_data.get("in_chat_mode", False)
     
