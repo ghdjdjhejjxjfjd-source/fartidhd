@@ -11,7 +11,7 @@ from groq_client import ask_groq
 from openai_client import ask_openai
 from .config import send_log_http
 from .menu import main_menu_for_user
-from .utils import send_fresh_menu  # 👈 Импортируем
+from .utils import send_fresh_menu
 
 async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -36,29 +36,52 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
     
-    mode_names = {"fast": "🚀 Быстрый (Groq)", "quality": "💎 Качественный (OpenAI)"}
-    style_names = {"short": "📏 Коротко", "steps": "📋 По шагам", "detail": "📚 Подробно"}
+    # Названия режимов (без упоминания конкретных ИИ)
+    mode_names = {
+        "fast": "🚀 Быстрый", 
+        "quality": "💎 Качественный"
+    }
+    
+    style_names = {
+        "short": "📏 Коротко", 
+        "steps": "📋 По шагам", 
+        "detail": "📚 Подробно"
+    }
+    
     lang_names = {
         "ru": "🇷🇺 Русский", "en": "🇬🇧 English", "kk": "🇰🇿 Қазақша",
         "tr": "🇹🇷 Türkçe", "uk": "🇺🇦 Українська", "fr": "🇫🇷 Français"
     }
     
     current_style = get_user_style(uid)
-    current_ai_lang = get_user_ai_lang(uid)
     
-    # 👈 Запоминаем ID сообщения-меню (которое сейчас редактируем)
+    # Запоминаем ID сообщения-меню
     context.user_data["menu_message_id"] = query.message.message_id
     
+    # Формируем текст в зависимости от режима
+    if ai_mode == "fast":
+        # Для быстрого режима (Groq) - показываем язык ответов
+        current_ai_lang = get_user_ai_lang(uid)
+        text = (
+            f"💬 Напиши сообщение.\n\n"
+            f"Режим: {mode_names[ai_mode]}\n"
+            f"Язык ответов: {lang_names.get(current_ai_lang, 'Русский')}\n"
+            f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
+            f"Стоимость: {cost}⭐\n\n"
+            f"Для выхода из чата напиши /cancel"
+        )
+    else:
+        # Для качественного режима (OpenAI) - без языка ответов
+        text = (
+            f"💬 Напиши сообщение.\n\n"
+            f"Режим: {mode_names[ai_mode]}\n"
+            f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
+            f"Стоимость: {cost}⭐\n\n"
+            f"Для выхода из чата напиши /cancel"
+        )
+    
     # Редактируем меню в приглашение
-    await query.message.edit_text(
-        f"💬 Напиши сообщение для ИИ.\n"
-        f"Режим: {mode_names.get(ai_mode, 'Быстрый')}\n"
-        f"Язык ответов: {lang_names.get(current_ai_lang, 'Русский')}\n"
-        f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
-        f"Стоимость: {cost}⭐ за сообщение\n\n"
-        f"Отправляй сообщения, я буду отвечать.\n"
-        f"Для выхода из чата напиши /cancel"
-    )
+    await query.message.edit_text(text)
     
     context.user_data["in_chat_mode"] = True
 
@@ -74,7 +97,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         except:
             pass
         
-        # 👈 Удаляем приглашение (бывшее меню)
+        # Удаляем приглашение (бывшее меню)
         menu_msg_id = context.user_data.get("menu_message_id")
         if menu_msg_id:
             try:
@@ -83,7 +106,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             except Exception as e:
                 print(f"⚠️ Не удалось удалить меню-приглашение: {e}")
         
-        # 👈 Отправляем новое меню
+        # Отправляем новое меню
         await send_fresh_menu(context.bot, uid)
         return
     
