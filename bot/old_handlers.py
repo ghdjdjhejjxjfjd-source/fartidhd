@@ -49,8 +49,11 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
+    print(f"🖱️ Нажата кнопка: {data} от {uid}")
+    
     # ===== ВЫХОД ИЗ ЧАТА =====
     if data == "exit_chat":
+        print(f"🚪 Выход из чата через кнопку для {uid}")
         context.user_data["in_chat_mode"] = False
         
         # Удаляем сообщение с кнопкой выхода
@@ -209,6 +212,8 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await edit_to_menu(context, query, uid)
 
 async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
+    print(f"📂 Открываем вкладку: {tab_key} для {user_id}")
+    
     if tab_key == "profile":
         await show_profile(context, query, user_id)
     
@@ -354,9 +359,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     uid = user.id
     
+    # ЛОГ: проверяем режим
     in_chat_mode = context.user_data.get("in_chat_mode", False)
+    print(f"📨 handle_message: uid={uid}, in_chat_mode={in_chat_mode}, text='{update.message.text}'")
     
     if not in_chat_mode:
+        print(f"⏭️ Пропускаем сообщение от {uid} (не в чате)")
         return
     
     a = get_access(uid)
