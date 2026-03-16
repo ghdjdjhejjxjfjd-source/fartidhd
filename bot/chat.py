@@ -4,13 +4,14 @@ from telegram.ext import ContextTypes
 from api import (
     get_access, get_user_persona, get_user_lang, get_user_ai_lang, 
     get_user_style, get_ai_mode, increment_messages, add_stars_spent,
-    mem_get, mem_add, build_memory_prompt  # 👈 ИМПОРТИРУЕМ ФУНКЦИИ ПАМЯТИ
+    mem_get, mem_add, build_memory_prompt
 )
 from payments import get_balance, spend_stars
 from groq_client import ask_groq
 from openai_client import ask_openai
 from .config import send_log_http
 from .menu import main_menu_for_user
+from .utils import delete_prev_menu, send_fresh_menu  # 👈 ИМПОРТИРУЕМ УТИЛИТЫ
 
 async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -45,6 +46,9 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     current_style = get_user_style(uid)
     current_ai_lang = get_user_ai_lang(uid)
     
+    # 👈 Запоминаем ID сообщения-приглашения (оно же было меню)
+    context.user_data["chat_invite_message_id"] = query.message.message_id
+    
     await query.message.reply_text(
         f"💬 Напиши сообщение для ИИ.\n"
         f"Режим: {mode_names.get(ai_mode, 'Быстрый')}\n"
@@ -63,16 +67,23 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     if text.lower() == "/cancel":
         context.user_data["in_chat_mode"] = False
         
+        # ✅ Удаляем сообщение пользователя "/cancel"
         try:
             await update.message.delete()
         except:
             pass
         
-        await context.bot.send_message(
-            chat_id=uid,
-            text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
-            reply_markup=main_menu_for_user(uid)
-        )
+        # ✅ Удаляем сообщение-приглашение в чат
+        invite_msg_id = context.user_data.get("chat_invite_message_id")
+        if invite_msg_id:
+            try:
+                await context.bot.delete_message(chat_id=uid, message_id=invite_msg_id)
+                print(f"🗑️ Удалено приглашение в чат для {uid}")
+            except Exception as e:
+                print(f"⚠️ Не удалось удалить приглашение: {e}")
+        
+        # ✅ Отправляем НОВОЕ меню (старое меню удалится автоматически через send_fresh_menu)
+        await send_fresh_menu(context.bot, uid)
         return
     
     # ===== ОБЫЧНОЕ СООБЩЕНИЕ =====
@@ -97,26 +108,26 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
         return
     
-    # ✅ СОХРАНЯЕМ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ В ПАМЯТЬ
+    # СОХРАНЯЕМ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ В ПАМЯТЬ
     mem_add(uid, "user", text)
     
     typing_msg = await update.message.reply_text("⏳ Печатает...")
     
     try:
-        # ✅ ПОЛУЧАЕМ ИСТОРИЮ ИЗ ПАМЯТИ
+        # ПОЛУЧАЕМ ИСТОРИЮ ИЗ ПАМЯТИ
         history = mem_get(uid, limit=20)
         prompt_with_memory = build_memory_prompt(history, text)
         
         if ai_mode == "fast":
             reply = ask_groq(
-                prompt_with_memory,  # 👈 Передаем с историей!
+                prompt_with_memory,
                 lang=ai_lang,
                 persona=persona,
                 style=style
             )
         else:
             reply = ask_openai(
-                prompt_with_memory,  # 👈 Передаем с историей!
+                prompt_with_memory,
                 lang=ai_lang,
                 persona=persona,
                 style=style
@@ -125,7 +136,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         if reply:
             await typing_msg.delete()
             
-            # ✅ СОХРАНЯЕМ ОТВЕТ В ПАМЯТЬ
+            # СОХРАНЯЕМ ОТВЕТ В ПАМЯТЬ
             mem_add(uid, "assistant", reply)
             
             keyboard = InlineKeyboardMarkup([
