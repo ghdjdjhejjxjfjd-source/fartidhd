@@ -119,6 +119,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             await typing_msg.delete()
             mem_add(uid, "assistant", reply)
             
+            # Удаляем кнопку с предыдущего сообщения, если она есть
             if uid in last_bot_message_with_button:
                 try:
                     await context.bot.edit_message_reply_markup(
@@ -129,6 +130,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except Exception as e:
                     print(f"⚠️ Не удалось убрать кнопку с прошлого сообщения: {e}")
             
+            # Отправляем новое сообщение С кнопкой
             keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("⬅️ Назад", callback_data="exit_chat")]
             ])
@@ -139,6 +141,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 reply_markup=keyboard
             )
             
+            # Запоминаем это сообщение как последнее с кнопкой
             last_bot_message_with_button[uid] = sent_msg.message_id
             
             if not a.get("is_free"):
@@ -157,36 +160,24 @@ async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int
     
     print(f"🚪 Выход из чата для {uid}")
     
-    # 1. Пробуем удалить кнопку с callback_query
-    message_id_to_delete = None
-    if update.callback_query and update.callback_query.message:
-        message_id_to_delete = update.callback_query.message.message_id
-        try:
-            await update.callback_query.message.edit_reply_markup(reply_markup=None)
-            print(f"✅ Кнопка удалена с сообщения {message_id_to_delete}")
-        except Exception as e:
-            print(f"⚠️ Не удалось удалить кнопку через callback: {e}")
-            message_id_to_delete = None
-    
-    # 2. Если не получилось, пробуем через хранилище
-    if not message_id_to_delete and uid in last_bot_message_with_button:
+    # 1. Удаляем кнопку с последнего сообщения, если она ещё есть
+    if uid in last_bot_message_with_button:
         try:
             await context.bot.edit_message_reply_markup(
                 chat_id=uid,
                 message_id=last_bot_message_with_button[uid],
                 reply_markup=None
             )
-            print(f"✅ Кнопка удалена через хранилище: {last_bot_message_with_button[uid]}")
+            print(f"✅ Кнопка удалена с сообщения {last_bot_message_with_button[uid]}")
         except Exception as e:
-            print(f"⚠️ Не удалось удалить через хранилище: {e}")
-    
-    # 3. В любом случае чистим хранилище
-    if uid in last_bot_message_with_button:
+            print(f"⚠️ Кнопки уже не было или ошибка: {e}")
+        
+        # 2. Удаляем из хранилища
         del last_bot_message_with_button[uid]
     
-    # 4. Выходим из режима чата
+    # 3. Выходим из режима чата
     context.user_data["in_chat_mode"] = False
     
-    # 5. Отправляем НОВОЕ сообщение с главным меню
+    # 4. Отправляем НОВОЕ сообщение с главным меню
     await send_fresh_menu(context.bot, uid)
     print(f"✅ Новое меню отправлено для {uid}")
