@@ -9,6 +9,10 @@ from bot_runner import start_bot
 
 # Railway / ENV
 PORT = int(os.getenv("PORT", "8000"))
+BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+
+# Флаг для отслеживания состояния
+bot_running = False
 
 def run_api():
     """Запуск Flask API"""
@@ -22,7 +26,6 @@ def run_api():
         )
     except Exception as e:
         print(f"❌ API error: {e}")
-        time.sleep(5)
 
 def signal_handler(sig, frame):
     """Обработка сигналов завершения"""
@@ -30,6 +33,8 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 def main():
+    global bot_running
+    
     print("🚀 Запуск приложения...")
     print(f"📡 PORT: {PORT}")
     
@@ -42,19 +47,25 @@ def main():
     api_thread.start()
     print("✅ API сервер запущен")
     
-    # Небольшая задержка чтобы API успел запуститься
+    # Небольшая задержка
     time.sleep(2)
-
-    # Запускаем бота
-    try:
-        start_bot()
-    except Exception as e:
-        print(f"❌ Ошибка бота: {e}")
-        print("🔄 Бот упал, но API продолжает работать")
+    
+    # Запускаем бота (только если есть токен)
+    if BOT_TOKEN:
+        try:
+            bot_running = True
+            start_bot()
+        except Exception as e:
+            print(f"❌ Ошибка бота: {e}")
+            bot_running = False
+    else:
+        print("⚠️ BOT_TOKEN не задан, бот не запущен")
     
     # Держим процесс живым
     while True:
         time.sleep(60)
+        if not bot_running:
+            print("⏳ Бот не работает, но API продолжает работу")
 
 if __name__ == "__main__":
     try:
@@ -64,5 +75,4 @@ if __name__ == "__main__":
         sys.exit(0)
     except Exception as e:
         print(f"❌ Фатальная ошибка: {e}")
-        while True:
-            time.sleep(60)
+        time.sleep(60)
