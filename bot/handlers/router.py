@@ -10,9 +10,9 @@ from bot.menu import (
 )
 from bot.utils import edit_to_menu, send_fresh_menu, set_last_menu, update_user_menu
 from bot.settings import handle_set_lang, handle_set_persona, handle_switch_mode
-from bot.chat import inline_chat_start
+from bot.chat import inline_chat_start, exit_chat
 from bot.image import inline_image_start
-from bot.old_handlers import handle_message  # ← это для совместимости
+from bot.support import support_start, forward_to_support, handle_support_reply
 from .state import navigation_stack
 from .navigation import back_to_previous, back_to_menu, ignore
 from .tabs.profile import show_profile
@@ -38,11 +38,18 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not uid:
         return
     
-    # ===== ВЫХОД ИЗ ЧАТА - ПЕРЕНАПРАВЛЯЕМ В old_handlers =====
+    # ===== ВЫХОД ИЗ ЧАТА =====
     if data == "exit_chat":
-        # Импортируем и вызываем функцию из chat.py
-        from bot.chat import exit_chat
         await exit_chat(update, context, uid)
+        return
+    
+    if data == "exit_chat_from_start":
+        await exit_chat(update, context, uid)
+        return
+    
+    # ===== ПОДДЕРЖКА =====
+    if data == "support_start":
+        await support_start(update, context)
         return
     
     # ===== НАВИГАЦИЯ =====
@@ -70,7 +77,12 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             navigation_stack[uid] = current_tab
         
         context.user_data['current_tab'] = key
-        await open_tab(context, query, uid, key)
+        
+        # Специальная обработка для поддержки
+        if key == "support":
+            await support_start(update, context)
+        else:
+            await open_tab(context, query, uid, key)
         return
     
     # ===== ПОКУПКА ЗВЕЗД =====
