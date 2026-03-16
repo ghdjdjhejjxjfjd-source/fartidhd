@@ -126,7 +126,6 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             print(f"✅ Кнопка удалена со стартового экрана {context.user_data['start_message_id']}")
         except Exception as e:
             print(f"⚠️ Не удалось удалить кнопку со старта: {e}")
-        # Не удаляем из user_data, чтобы знать что старт был
     
     mem_add(uid, "user", text)
     typing_msg = await update.message.reply_text("⏳ Печатает...")
@@ -181,19 +180,11 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
 
 async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
-    """Выход из чата в главное меню"""
+    """Выход из чата в главное меню (с последнего ответа ИИ)"""
     
-    print(f"🚪 Выход из чата для {uid}")
+    print(f"🚪 Выход из чата для {uid} (с ответа ИИ)")
     
-    # Пытаемся удалить сообщение с которого нажали кнопку
-    if update.callback_query and update.callback_query.message:
-        try:
-            await update.callback_query.message.delete()
-            print(f"✅ Сообщение {update.callback_query.message.message_id} удалено")
-        except Exception as e:
-            print(f"⚠️ Не удалось удалить сообщение: {e}")
-    
-    # Удаляем кнопку с последнего ответа ИИ если есть
+    # 1. Удаляем кнопку с последнего ответа ИИ (НО НЕ САМО СООБЩЕНИЕ)
     if uid in last_bot_message_with_button:
         try:
             await context.bot.edit_message_reply_markup(
@@ -207,15 +198,17 @@ async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int
         
         del last_bot_message_with_button[uid]
     
-    # Очищаем стартовое сообщение из памяти
+    # 2. Очищаем стартовое сообщение из памяти если есть
     if "start_message_id" in context.user_data:
         del context.user_data["start_message_id"]
     
-    # Выходим из режима чата
+    # 3. Выходим из режима чата
     context.user_data["in_chat_mode"] = False
     
-    # Удаляем все старые меню и отправляем новое
+    # 4. Удаляем все старые меню
     await delete_all_menus(context.bot, uid)
+    
+    # 5. Отправляем НОВОЕ сообщение с главным меню
     await send_fresh_menu(context.bot, uid)
     print(f"✅ Новое меню отправлено для {uid}")
 
