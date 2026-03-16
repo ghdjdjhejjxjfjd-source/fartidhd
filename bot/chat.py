@@ -155,7 +155,17 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """Выход из чата в главное меню"""
     
-    # 1. Удаляем кнопку с последнего сообщения
+    print(f"🚪 Выход из чата для {uid}")
+    
+    # 1. Сначала пытаемся удалить кнопку с callback_query
+    try:
+        if update.callback_query and update.callback_query.message:
+            await update.callback_query.message.edit_reply_markup(reply_markup=None)
+            print(f"✅ Кнопка удалена через callback_query")
+    except Exception as e:
+        print(f"⚠️ Не удалось через callback_query: {e}")
+    
+    # 2. Пытаемся через хранилище (если первый способ не сработал)
     if uid in last_bot_message_with_button:
         try:
             await context.bot.edit_message_reply_markup(
@@ -163,16 +173,16 @@ async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int
                 message_id=last_bot_message_with_button[uid],
                 reply_markup=None
             )
-            print(f"✅ Кнопка удалена с сообщения {last_bot_message_with_button[uid]}")
+            print(f"✅ Кнопка удалена через хранилище")
         except Exception as e:
-            print(f"⚠️ Не удалось удалить кнопку: {e}")
+            print(f"⚠️ Не удалось через хранилище: {e}")
         
-        # 2. Удаляем из хранилища
+        # 3. Удаляем из хранилища в любом случае
         del last_bot_message_with_button[uid]
     
-    # 3. Выходим из режима чата
+    # 4. Выходим из режима чата
     context.user_data["in_chat_mode"] = False
     
-    # 4. Отправляем НОВОЕ сообщение с главным меню
+    # 5. Отправляем НОВОЕ сообщение с главным меню
     await send_fresh_menu(context.bot, uid)
-    print(f"🚪 Выход из чата для {uid}, отправлено новое меню")
+    print(f"✅ Новое меню отправлено для {uid}")
