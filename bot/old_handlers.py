@@ -60,7 +60,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             print(f"⚠️ Не удалось удалить сообщение: {e}")
         
-        # Отправляем новое меню (старое удалится автоматически)
+        # Отправляем новое меню
         await send_fresh_menu(context.bot, uid)
         return
     
@@ -211,6 +211,23 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
     if tab_key == "profile":
         await show_profile(context, query, user_id)
+    
+    elif tab_key == "need_stars_chat":
+        text = TAB_TEXT.get("need_stars_chat", "⭐ Недостаточно звезд для чата")
+        try:
+            await query.message.edit_text(text, reply_markup=tab_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    
+    elif tab_key == "need_stars_miniapp":
+        text = TAB_TEXT.get("need_stars_miniapp", "⭐ Недостаточно звезд для Mini App")
+        try:
+            await query.message.edit_text(text, reply_markup=tab_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    
     elif tab_key == "settings":
         text = "⚙️ Настройки\n\nВыбери раздел:"
         try:
@@ -218,6 +235,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+    
     elif tab_key == "ai_mode_settings":
         changes_left = await get_ai_mode_changes(user_id)
         text = TAB_TEXT["ai_mode_settings"].format(changes_left=changes_left)
@@ -226,6 +244,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+    
     elif tab_key == "balance":
         balance = get_balance(user_id)
         text = f"⭐ Ваш баланс: {balance} звезд"
@@ -234,6 +253,31 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+    
+    elif tab_key == "mode_settings":
+        text = TAB_TEXT.get(tab_key, "🔄 Режим работы\n\nВыбери как пользоваться ботом:")
+        try:
+            await query.message.edit_text(text, reply_markup=mode_settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    
+    elif tab_key == "persona_settings":
+        text = TAB_TEXT.get(tab_key, "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:")
+        try:
+            await query.message.edit_text(text, reply_markup=persona_settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    
+    elif tab_key == "lang_settings":
+        text = TAB_TEXT.get(tab_key, "🌐 Язык интерфейса\n\nВыбери язык меню и кнопок:")
+        try:
+            await query.message.edit_text(text, reply_markup=lang_settings_kb(user_id))
+            set_last_menu(user_id, user_id, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, user_id)
+    
     else:
         text = TAB_TEXT.get(tab_key, "Раздел в разработке.")
         try:
