@@ -55,8 +55,9 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     current_style = get_user_style(uid)
     
-    # Запоминаем ID сообщения-меню
-    context.user_data["menu_message_id"] = query.message.message_id
+    # ✅ Запоминаем ID сообщения-приглашения
+    context.user_data["invite_message_id"] = query.message.message_id
+    print(f"📝 Запомнили ID приглашения: {query.message.message_id} для {uid}")
     
     # Кнопка для выхода из чата
     exit_keyboard = InlineKeyboardMarkup([
@@ -90,7 +91,7 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     
     # ===== ВЫХОД ИЗ ЧАТА =====
-    # Проверяем на /cancel для обратной совместимости, но больше не показываем
+    # Проверяем на /cancel для обратной совместимости
     if text.lower().strip() == "/cancel":
         print(f"🚪 Выход из чата для {uid} (через /cancel)")
         context.user_data["in_chat_mode"] = False
@@ -102,12 +103,13 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             pass
         
         # Удаляем приглашение
-        menu_msg_id = context.user_data.get("menu_message_id")
-        if menu_msg_id:
+        invite_msg_id = context.user_data.get("invite_message_id")
+        if invite_msg_id:
             try:
-                await context.bot.delete_message(chat_id=uid, message_id=menu_msg_id)
-            except:
-                pass
+                await context.bot.delete_message(chat_id=uid, message_id=invite_msg_id)
+                print(f"🗑️ Удалено приглашение {invite_msg_id} для {uid}")
+            except Exception as e:
+                print(f"⚠️ Не удалось удалить приглашение: {e}")
         
         await send_fresh_menu(context.bot, uid)
         return
