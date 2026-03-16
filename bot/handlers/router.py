@@ -12,7 +12,7 @@ from bot.utils import edit_to_menu, send_fresh_menu, set_last_menu, update_user_
 from bot.settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from bot.chat import inline_chat_start, exit_chat
 from bot.image import inline_image_start
-from bot.support import support_start, forward_to_support, handle_support_reply
+from bot.support import support_start, forward_to_support
 from .state import navigation_stack
 from .navigation import back_to_previous, back_to_menu, ignore
 from .tabs.profile import show_profile
@@ -54,15 +54,21 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ===== НАВИГАЦИЯ =====
     if data == "back_to_previous":
-        await back_to_previous(update, context, query, uid)
+        if uid in navigation_stack:
+            prev_tab = navigation_stack[uid]
+            del navigation_stack[uid]
+            await open_tab(context, query, uid, prev_tab)
+        else:
+            await edit_to_menu(context, query, uid)
         return
     
     if data == "back_to_menu":
-        await back_to_menu(update, context, query, uid)
+        if uid in navigation_stack:
+            del navigation_stack[uid]
+        await edit_to_menu(context, query, uid)
         return
     
     if data == "ignore":
-        await ignore(update, context, query, uid)
         return
     
     # ===== ВКЛАДКИ =====
