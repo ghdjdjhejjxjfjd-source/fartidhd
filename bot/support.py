@@ -17,9 +17,9 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     uid = user.id
     
-    # Текст с инструкцией
+    # Текст с инструкцией (без Markdown)
     text = (
-        "💬 **Поддержка**\n\n"
+        "💬 Поддержка\n\n"
         "Напиши сюда свой вопрос или проблему.\n"
         "Можешь отправить:\n"
         "• Текст\n"
@@ -36,12 +36,12 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await query.message.edit_text(
         text=text,
-        reply_markup=keyboard,
-        parse_mode="Markdown"
+        reply_markup=keyboard
     )
     
     # Запоминаем что пользователь в режиме поддержки
     context.user_data["in_support_mode"] = True
+    print(f"✅ Режим поддержки включен для {uid}")
 
 async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Переслать сообщение пользователя в группу поддержки"""
@@ -55,20 +55,19 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     username = f"@{user.username}" if user.username else "—"
     first_name = user.first_name or "—"
     
-    # Формируем информационный блок
+    # Формируем информационный блок (без Markdown)
     info_text = (
-        f"🆔 **ID:** `{uid}`\n"
-        f"👤 **Имя:** {first_name}\n"
-        f"📱 **Юзернейм:** {username}\n"
-        f"📅 **Дата:** {update.message.date.strftime('%d.%m.%Y %H:%M')}\n"
+        f"🆔 ID: {uid}\n"
+        f"👤 Имя: {first_name}\n"
+        f"📱 Юзернейм: {username}\n"
+        f"📅 Дата: {update.message.date.strftime('%d.%m.%Y %H:%M')}\n"
         f"———————————————"
     )
     
     # Отправляем информацию в группу
     await context.bot.send_message(
         chat_id=SUPPORT_GROUP_ID,
-        text=info_text,
-        parse_mode="Markdown"
+        text=info_text
     )
     
     # Пересылаем само сообщение пользователя
@@ -138,12 +137,12 @@ async def handle_support_reply(update: Update, context: ContextTypes.DEFAULT_TYP
     # Ищем ID в тексте или подписи
     id_match = None
     if replied_text:
-        id_match = re.search(r'ID:\s*`(\d+)`', replied_text)
+        id_match = re.search(r'ID:\s*(\d+)', replied_text)
     if not id_match and replied_caption:
-        id_match = re.search(r'ID:\s*`(\d+)`', replied_caption)
+        id_match = re.search(r'ID:\s*(\d+)', replied_caption)
     
     if not id_match:
-        await update.message.reply_text("❌ Не удалось определить ID пользователя. Убедитесь, что вы отвечаете на сообщение с информацией о пользователе.")
+        await update.message.reply_text("❌ Не удалось определить ID пользователя")
         return
     
     user_id = int(id_match.group(1))
@@ -154,32 +153,28 @@ async def handle_support_reply(update: Update, context: ContextTypes.DEFAULT_TYP
         if update.message.text and not update.message.text.startswith('/'):
             await context.bot.send_message(
                 chat_id=user_id,
-                text=f"📨 **Ответ от поддержки:**\n\n{update.message.text}",
-                parse_mode="Markdown"
+                text=f"📨 Ответ от поддержки:\n\n{update.message.text}"
             )
         elif update.message.photo:
             photo = update.message.photo[-1]
-            caption = f"📨 **Ответ от поддержки**"
+            caption = f"📨 Ответ от поддержки"
             if update.message.caption:
                 caption += f"\n\n{update.message.caption}"
             await context.bot.send_photo(
                 chat_id=user_id,
                 photo=photo.file_id,
-                caption=caption,
-                parse_mode="Markdown"
+                caption=caption
             )
         elif update.message.document:
-            caption = f"📨 **Ответ от поддержки**"
+            caption = f"📨 Ответ от поддержки"
             if update.message.caption:
                 caption += f"\n\n{update.message.caption}"
             await context.bot.send_document(
                 chat_id=user_id,
                 document=update.message.document.file_id,
-                caption=caption,
-                parse_mode="Markdown"
+                caption=caption
             )
         else:
-            # Если это команда или другой тип - игнорируем
             return
         
         # Подтверждение админу
