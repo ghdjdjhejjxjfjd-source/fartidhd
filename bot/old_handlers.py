@@ -32,6 +32,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if uid in navigation_stack:
         del navigation_stack[uid]
     
+    print(f"🚀 /start от пользователя {uid}")
+    
+    # ✅ Всегда отправляем свежее меню (старое удалится автоматически)
     await send_fresh_menu(context.bot, uid)
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -52,11 +55,8 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "exit_chat":
         context.user_data["in_chat_mode"] = False
         
-        await context.bot.send_message(
-            chat_id=uid,
-            text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
-            reply_markup=main_menu_for_user(uid)
-        )
+        # При выходе из чата отправляем НОВОЕ меню
+        await send_fresh_menu(context.bot, uid)
         return
     
     # ===== КНОПКА НАЗАД =====
@@ -101,13 +101,21 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if package:
             stars = package["stars"]
             price = package["price_usd"]
-            await query.message.edit_text(
-                f"✅ Вы выбрали пакет {package['name']}\n"
-                f"⭐ {stars} звезд за ${price}",
-                reply_markup=tab_kb(uid)
-            )
+            try:
+                await query.message.edit_text(
+                    f"✅ Вы выбрали пакет {package['name']}\n"
+                    f"⭐ {stars} звезд за ${price}",
+                    reply_markup=tab_kb(uid)
+                )
+                set_last_menu(uid, uid, query.message.message_id)
+            except Exception:
+                await send_fresh_menu(context.bot, uid)
         else:
-            await query.message.edit_text("❌ Пакет не найден", reply_markup=tab_kb(uid))
+            try:
+                await query.message.edit_text("❌ Пакет не найден", reply_markup=tab_kb(uid))
+                set_last_menu(uid, uid, query.message.message_id)
+            except Exception:
+                await send_fresh_menu(context.bot, uid)
         return
     
     # ===== НАСТРОЙКИ =====
@@ -146,10 +154,14 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         changes_left = await get_ai_mode_changes(uid)
         if changes_left <= 0:
-            await query.message.edit_text(
-                "⛔ Лимит смены режима на сегодня исчерпан",
-                reply_markup=tab_kb(uid)
-            )
+            try:
+                await query.message.edit_text(
+                    "⛔ Лимит смены режима на сегодня исчерпан",
+                    reply_markup=tab_kb(uid)
+                )
+                set_last_menu(uid, uid, query.message.message_id)
+            except Exception:
+                await send_fresh_menu(context.bot, uid)
             return
         
         mem_clear(uid)
@@ -157,10 +169,14 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         set_ai_mode(uid, new_mode)
         
         mode_names = {"fast": "🚀 Быстрый", "quality": "💎 Качественный"}
-        await query.message.edit_text(
-            f"✅ Режим изменен на {mode_names.get(new_mode, new_mode)}",
-            reply_markup=tab_kb(uid)
-        )
+        try:
+            await query.message.edit_text(
+                f"✅ Режим изменен на {mode_names.get(new_mode, new_mode)}",
+                reply_markup=tab_kb(uid)
+            )
+            set_last_menu(uid, uid, query.message.message_id)
+        except Exception:
+            await send_fresh_menu(context.bot, uid)
         
         await update_user_menu(context.bot, uid)
         return
