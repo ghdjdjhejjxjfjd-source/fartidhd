@@ -153,8 +153,26 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
 
 async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
+    """Выход из чата в главное меню"""
+    
+    # 1. Удаляем кнопку с последнего сообщения
     if uid in last_bot_message_with_button:
+        try:
+            await context.bot.edit_message_reply_markup(
+                chat_id=uid,
+                message_id=last_bot_message_with_button[uid],
+                reply_markup=None
+            )
+            print(f"✅ Кнопка удалена с сообщения {last_bot_message_with_button[uid]}")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить кнопку: {e}")
+        
+        # 2. Удаляем из хранилища
         del last_bot_message_with_button[uid]
     
+    # 3. Выходим из режима чата
     context.user_data["in_chat_mode"] = False
+    
+    # 4. Отправляем НОВОЕ сообщение с главным меню
     await send_fresh_menu(context.bot, uid)
+    print(f"🚪 Выход из чата для {uid}, отправлено новое меню")
