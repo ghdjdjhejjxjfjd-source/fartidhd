@@ -1,1 +1,1 @@
-# instagroq-ai-bot
+# NextAI Bot
