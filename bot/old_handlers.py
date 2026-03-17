@@ -372,18 +372,44 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         await send_fresh_menu(context.bot, user_id)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.message or not update.message.text:
-        return
-    
     # Если это группа поддержки - не обрабатываем как обычные сообщения
     if update.effective_chat and update.effective_chat.id == SUPPORT_GROUP_ID:
         return
     
+    # Проверяем наличие сообщения (текст или медиа)
+    if not update.message:
+        return
+    
     user = update.effective_user
     uid = user.id
-    text = update.message.text
     
-    print(f"📨 handle_message: uid={uid}, text='{text}'")
+    # Определяем тип сообщения для лога
+    if update.message.text:
+        msg_type = "text"
+        content = update.message.text[:50]
+    elif update.message.photo:
+        msg_type = "photo"
+        content = "📸 фото"
+    elif update.message.video:
+        msg_type = "video"
+        content = "🎥 видео"
+    elif update.message.document:
+        msg_type = "document"
+        content = "📄 файл"
+    elif update.message.voice:
+        msg_type = "voice"
+        content = "🎤 голосовое"
+    elif update.message.audio:
+        msg_type = "audio"
+        content = "🎵 аудио"
+    elif update.message.sticker:
+        msg_type = "sticker"
+        content = "🎨 стикер"
+    else:
+        msg_type = "unknown"
+        content = "❓ неизвестно"
+    
+    print(f"📨 handle_message: uid={uid}, type={msg_type}, content='{content}'")
     
     # ===== ПРОВЕРКА НА РЕЖИМ ПОДДЕРЖКИ =====
     if context.user_data.get("in_support_mode", False):
@@ -401,8 +427,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data.clear()
         return
     
+    # Для чата с ИИ нужен текст
+    if not update.message.text:
+        await update.message.reply_text("❌ В чате можно отправлять только текст")
+        return
+    
     from .chat import handle_chat_message
-    await handle_chat_message(update, context, uid, text)
+    await handle_chat_message(update, context, uid, update.message.text)
 
 __all__ = [
     'start',
