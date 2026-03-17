@@ -885,3 +885,91 @@ def add_stars_spent(user_id: int, amount: int):
                 """,
                 (user_id, now[:10])
             )
+            # =========================
+# ФУНКЦИИ ДЛЯ РЕФЕРАЛОВ
+# =========================
+
+def save_referral(referrer_id: int, referral_id: int, bonus: int = 10) -> bool:
+    """Сохранить информацию о реферале"""
+    try:
+        with db_connection() as conn:
+            cur = conn.cursor()
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            cur.execute(
+                """
+                INSERT INTO referrals (referrer_id, referral_id, created_at, bonus_given)
+                VALUES (?, ?, ?, ?)
+                """,
+                (referrer_id, referral_id, now, bonus)
+            )
+            return True
+    except Exception as e:
+        print(f"❌ Ошибка сохранения реферала: {e}")
+        return False
+
+def get_referral_count(user_id: int) -> int:
+    """Получить количество приглашенных пользователей"""
+    with db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM referrals WHERE referrer_id = ?",
+            (user_id,)
+        )
+        return cur.fetchone()[0] or 0
+
+def get_referral_bonus_total(user_id: int) -> int:
+    """Получить общую сумму бонусов за рефералов"""
+    with db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT SUM(bonus_given) FROM referrals WHERE referrer_id = ?",
+            (user_id,)
+        )
+        return cur.fetchone()[0] or 0
+
+def get_referrals_list(user_id: int, limit: int = 10) -> list:
+    """Получить список приглашенных пользователей"""
+    with db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT referral_id, created_at, bonus_given 
+            FROM referrals 
+            WHERE referrer_id = ? 
+            ORDER BY created_at DESC 
+            LIMIT ?
+            """,
+            (user_id, limit)
+        )
+        rows = cur.fetchall()
+    
+    referrals = []
+    for row in rows:
+        referrals.append({
+            "user_id": row[0],
+            "date": row[1],
+            "bonus": row[2]
+        })
+    return referrals
+
+def check_referral_exists(referral_id: int) -> bool:
+    """Проверить, был ли пользователь уже приглашен"""
+    with db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id FROM referrals WHERE referral_id = ?",
+            (referral_id,)
+        )
+        return cur.fetchone() is not None
+
+def get_referrer_id(referral_id: int) -> Optional[int]:
+    """Получить ID пригласившего пользователя"""
+    with db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT referrer_id FROM referrals WHERE referral_id = ?",
+            (referral_id,)
+        )
+        row = cur.fetchone()
+        return row[0] if row else None
