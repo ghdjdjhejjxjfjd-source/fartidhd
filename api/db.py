@@ -91,6 +91,24 @@ def db_init():
             )
             """
         )
+        
+        # ===== НОВАЯ ТАБЛИЦА ДЛЯ РЕФЕРАЛОВ =====
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS referrals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                referrer_id INTEGER NOT NULL,
+                referral_id INTEGER NOT NULL UNIQUE,
+                created_at TEXT NOT NULL,
+                bonus_given INTEGER DEFAULT 10,
+                FOREIGN KEY (referrer_id) REFERENCES access(user_id),
+                FOREIGN KEY (referral_id) REFERENCES access(user_id)
+            )
+            """
+        )
+        
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_referrals_referral ON referrals(referral_id)")
 
 db_init()
 
