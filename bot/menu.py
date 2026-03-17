@@ -2,6 +2,10 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_ai_lang, get_user_style, get_ai_mode
 from payments import get_balance
 from .config import MINIAPP_URL, is_valid_https_url
+from datetime import datetime
+
+# Импортируем support_blocks для проверки блокировки поддержки
+from bot.support import support_blocks
 
 # =========================
 # ТЕКСТЫ МЕНЮ
@@ -36,7 +40,8 @@ TAB_TEXT = {
                "⛔ Блок: {blocked}",
     "status": "📌 Статус\n\nРаздел в разработке.",
     "ref": "🎁 Рефералы\n\nРаздел в разработке.",
-    "support": "💬 Поддержка\n\nРаздел в разработке.",
+    "support": "💬 Поддержка\n\nНапиши свой вопрос.",
+    "support_blocked": "⛔ Поддержка заблокирована",
     "faq": "📚 FAQ\n\nРаздел в разработке.",
     "about": "ℹ️ О проекте\n\nРаздел в разработке.",
     "buy_stars": "⭐ Пакеты звезд\n\nВыберите пакет для пополнения:",
@@ -296,17 +301,33 @@ def main_menu_for_user(user_id: int) -> InlineKeyboardMarkup:
     keyboard.append([InlineKeyboardButton("⭐ Купить звезды", callback_data="tab:buy_stars")])
 
     # Нижние кнопки
-    keyboard.append([
-        InlineKeyboardButton("⚙️ Настройки", callback_data="tab:settings"),
-        InlineKeyboardButton("❓ Помощь", callback_data="tab:help"),
-    ])
-    keyboard.append([
-        InlineKeyboardButton("👤 Профиль", callback_data="tab:profile"),
-        InlineKeyboardButton("📌 Статус", callback_data="tab:status"),
-    ])
-    keyboard.append([
-        InlineKeyboardButton("🎁 Рефералы", callback_data="tab:ref"),
-        InlineKeyboardButton("💬 Поддержка", callback_data="tab:support"),
-    ])
+    bottom_row1 = []
+    bottom_row1.append(InlineKeyboardButton("⚙️ Настройки", callback_data="tab:settings"))
+    bottom_row1.append(InlineKeyboardButton("❓ Помощь", callback_data="tab:help"))
+    keyboard.append(bottom_row1)
+    
+    bottom_row2 = []
+    bottom_row2.append(InlineKeyboardButton("👤 Профиль", callback_data="tab:profile"))
+    bottom_row2.append(InlineKeyboardButton("📌 Статус", callback_data="tab:status"))
+    keyboard.append(bottom_row2)
+    
+    # Нижние кнопки с проверкой блокировки поддержки
+    bottom_row3 = []
+    bottom_row3.append(InlineKeyboardButton("🎁 Рефералы", callback_data="tab:ref"))
+    
+    # Проверяем блокировку поддержки
+    is_support_blocked = False
+    if user_id in support_blocks:
+        if datetime.now() < support_blocks[user_id]:
+            is_support_blocked = True
+    
+    if is_support_blocked:
+        # Если заблокирован - показываем заглушку
+        bottom_row3.append(InlineKeyboardButton("⛔ Поддержка", callback_data="tab:support_blocked"))
+    else:
+        # Если не заблокирован - показываем обычную кнопку
+        bottom_row3.append(InlineKeyboardButton("💬 Поддержка", callback_data="tab:support"))
+    
+    keyboard.append(bottom_row3)
 
     return InlineKeyboardMarkup(keyboard)
