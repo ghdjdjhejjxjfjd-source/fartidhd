@@ -45,7 +45,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         "fr": "🇫🇷 Français"
     }
     
-    # Названия для режима ИИ (без звезд в тексте)
+    # Названия для режима ИИ
     ai_mode_names = {
         "fast": "🚀 Быстрый",
         "quality": "💎 Качественный"
@@ -60,33 +60,34 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         except:
             registered = a["registered_at"][:16]
     
-    # Формируем текст профиля (БЕЗ Markdown, просто текст)
+    # Формируем текст профиля с красивыми эмодзи
     text = (
-        f"👤 ПРОФИЛЬ\n\n"
-        f"🆔 ID: {user_id}\n"
+        f"👤 **ПРОФИЛЬ**\n\n"
+        f"🆔 ID: `{user_id}`\n"
         f"📱 Юзернейм: {username}\n"
         f"📅 Регистрация: {registered}\n\n"
         
-        f"📊 СТАТИСТИКА\n"
+        f"📊 **СТАТИСТИКА**\n"
         f"💬 Сообщений всего: {a.get('total_messages', 0)}\n"
-        f"🖼 Картинок всего: {a.get('total_images', 0)}\n"
+        f"🎨 Картинок всего: {a.get('total_images', 0)}\n"
         f"⭐ Потрачено звезд: {a.get('total_stars_spent', 0)}\n"
         f"💎 Баланс: {balance} ⭐\n\n"
         
-        f"⚙️ ТЕКУЩЕЕ\n"
+        f"⚙️ **ТЕКУЩЕЕ**\n"
         f"🎭 Характер: {persona_names.get(persona, persona)}\n"
-        f"🌐 Язык: {lang_names.get(lang, lang)}\n"
+        f"🌍 Язык: {lang_names.get(lang, lang)}\n"
         f"🔄 Режим: {'📱 Mini App' if use_mini_app else '💬 Встроенный'}\n"
-        f"⚡ Режим ИИ: {ai_mode_names.get(ai_mode, ai_mode)}\n"
-        f"💳 FREE: {'✅ Да' if a.get('is_free') else '❌ Нет'}\n"
-        f"⛔ Блокировка: {'❌ Да' if a.get('is_blocked') else '✅ Нет'}"
+        f"🤖 Режим ИИ: {ai_mode_names.get(ai_mode, ai_mode)}\n"
+        f"💰 FREE: {'✅ Да' if a.get('is_free') else '❌ Нет'}\n"
+        f"🔒 Блокировка: {'❌ Да' if a.get('is_blocked') else '✅ Нет'}"
     )
     
     try:
-        # Отправляем/обновляем сообщение с профилем (БЕЗ parse_mode)
+        # Отправляем/обновляем сообщение с профилем
         await query.message.edit_text(
             text=text,
-            reply_markup=tab_kb(user_id)
+            reply_markup=tab_kb(user_id),
+            parse_mode="Markdown"
         )
         # Сохраняем ID сообщения для последующего удаления
         set_last_menu(user_id, user_id, query.message.message_id)
