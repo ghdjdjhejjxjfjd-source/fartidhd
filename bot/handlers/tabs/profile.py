@@ -38,17 +38,17 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     
     # Формируем текст профиля
     text = (
-        f"————— 👤 ПРОФИЛЬ —————\n\n"
+        f"        👤 ПРОФИЛЬ\n\n"
         f"Ник: {username}\n"
         f"📅 {registered}\n\n"
         
-        f"————— 📊 СТАТИСТИКА —————\n"
+        f"        📊 СТАТИСТИКА\n"
         f"💬 Сообщений: {a.get('total_messages', 0)}\n"
         f"🎨 Картинок: {a.get('total_images', 0)}\n"
         f"💸 Потрачено: {a.get('total_stars_spent', 0)} ⭐\n"
         f"💰 Баланс: {balance} ⭐\n\n"
         
-        f"————— ⚙️ ТЕКУЩЕЕ —————\n"
+        f"        ⚙️ ТЕКУЩЕЕ\n"
         f"🌐 Язык: {lang}\n"
         f"📱 Режим: {'Mini App' if use_mini_app else 'Встроенный'}\n"
         f"🤖 ИИ: {'Быстрый' if ai_mode == 'fast' else 'Качественный'}"
