@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from api import get_user_style, set_user_style, get_ai_mode
+from api import get_user_style, set_user_style, get_ai_mode, increment_groq_style, increment_openai_style
 from bot.menu import style_settings_kb, tab_kb
 from bot.utils import set_last_menu, send_fresh_menu
 
@@ -20,6 +20,14 @@ async def show_style_settings(context: ContextTypes.DEFAULT_TYPE, query, user_id
 
 async def set_style(update: Update, context: ContextTypes.DEFAULT_TYPE, query, uid: int, style: str):
     """Обработка смены стиля"""
+    ai_mode = get_ai_mode(uid)
+    
+    # Увеличиваем счетчик лимита в зависимости от режима
+    if ai_mode == "fast":
+        increment_groq_style(uid)
+    else:
+        increment_openai_style(uid)
+    
     set_user_style(uid, style)
     
     style_names = {
