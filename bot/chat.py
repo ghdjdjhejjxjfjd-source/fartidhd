@@ -1,7 +1,7 @@
 # bot/chat.py
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from datetime import datetime  # ← ДОБАВИЛ
+from datetime import datetime
 
 from api import (
     get_access, get_user_persona, get_user_lang, get_user_ai_lang, 
@@ -102,6 +102,27 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     ai_mode = get_ai_mode(uid)
     cost = 0.3 if ai_mode == "fast" else 1.0
     
+    # Названия для режима ИИ
+    ai_mode_names = {
+        "fast": "🚀 Быстрый",
+        "quality": "💎 Качественный"
+    }
+    
+    # Названия для характера
+    persona_names = {
+        "friendly": "😊 Общительный",
+        "fun": "😂 Весёлый",
+        "smart": "🧐 Умный",
+        "strict": "😐 Строгий"
+    }
+    
+    # Названия для стиля
+    style_names = {
+        "short": "📏 Коротко",
+        "steps": "📋 По шагам",
+        "detail": "📚 Подробно"
+    }
+    
     if a.get("is_blocked"):
         await update.message.reply_text("⛔ Доступ заблокирован.")
         context.user_data["in_chat_mode"] = False
@@ -175,10 +196,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             
             increment_messages(uid)
             
-            # ===== СТАРЫЙ ЛОГ (ОСТАВИЛ) =====
-            send_log_http(f"💬 Чат: {uid} -> {text[:50]}...")
-            
-            # ===== НОВЫЙ ПОДРОБНЫЙ ЛОГ =====
+            # ===== ПОДРОБНЫЙ ЛОГ НА РУССКОМ =====
             from api.config import send_log_to_group
             
             # Получаем данные пользователя
@@ -189,7 +207,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             # Получаем новый баланс
             new_balance = get_balance(uid)
             
-            # Формируем лог как в Mini App
+            # Формируем лог на русском
             time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             log_text = (
                 f"🕒 {time_str}\n"
@@ -198,8 +216,9 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 f"💰 Баланс: {new_balance} ⭐\n"
                 f"💬 Запрос: {text[:100]}\n\n"
                 f"🤖 Ответ: {reply[:200]}\n"
-                f"⚡ Режим: {ai_mode}, стоимость: {cost} ⭐\n"
-                f"🎭 Характер: {persona}, 📝 Стиль: {style}"
+                f"⚡ Режим: {ai_mode_names.get(ai_mode, ai_mode)}, стоимость: {cost} ⭐\n"
+                f"🎭 Характер: {persona_names.get(persona, persona)}\n"
+                f"📝 Стиль: {style_names.get(style, style)}"
             )
             
             send_log_to_group(log_text)
