@@ -198,6 +198,27 @@ def api_chat():
     style = data.get("style") or get_user_style(tg_user_id_int) or "steps"
     persona = data.get("persona") or get_user_persona(tg_user_id_int) or "friendly"
     
+    # Названия для режима ИИ
+    ai_mode_names = {
+        "fast": "🚀 Быстрый",
+        "quality": "💎 Качественный"
+    }
+    
+    # Названия для характера
+    persona_names = {
+        "friendly": "😊 Общительный",
+        "fun": "😂 Весёлый",
+        "smart": "🧐 Умный",
+        "strict": "😐 Строгий"
+    }
+    
+    # Названия для стиля
+    style_names = {
+        "short": "📏 Коротко",
+        "steps": "📋 По шагам",
+        "detail": "📚 Подробно"
+    }
+    
     # Сохраняем сообщение
     mem_add(tg_user_id_int, "user", text)
     
@@ -222,17 +243,23 @@ def api_chat():
         # Получаем новый баланс после списания
         new_balance = get_balance(tg_user_id_int)
         
-        # 🟢 ПОЛНЫЙ ЛОГ как раньше + баланс
+        # 🟢 ПОЛНЫЙ ЛОГ НА РУССКОМ С ОТСТУПАМИ
         time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_text = (
             f"🕒 {time_str}\n"
             f"👤 {tg_first_name} (@{tg_username})\n"
             f"🆔 {tg_user_id_int}\n"
             f"💰 Баланс: {new_balance} ⭐\n"
-            f"💬 Запрос: {text[:100]}\n\n"
-            f"🤖 Ответ: {reply[:200]}\n"
-            f"⚡ Режим: {ai_mode}, стоимость: {COST_PER_MESSAGE} ⭐\n"
-            f"🎭 Характер: {persona}, 📝 Стиль: {style}"
+            f"\n"
+            f"💬 Запрос:\n"
+            f"{text}\n"
+            f"\n\n\n\n\n"
+            f"🤖 Ответ:\n"
+            f"{reply}\n"
+            f"\n\n\n\n\n"
+            f"⚡ Режим: {ai_mode_names.get(ai_mode, ai_mode)}, стоимость: {COST_PER_MESSAGE} ⭐\n"
+            f"🎭 Характер: {persona_names.get(persona, persona)}\n"
+            f"📝 Стиль: {style_names.get(style, style)}"
         )
         
         send_log_to_group(log_text)
