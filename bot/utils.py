@@ -41,7 +41,7 @@ async def send_fresh_menu(bot, user_id: int, text: str = None):
     chat_id, msg_id = get_last_menu(user_id)
     
     if text is None:
-        text = "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇"
+        text = "💫 NextAI\n\nВыбирай действие кнопками ниже 👇"
     
     # Если есть сохраненное меню - пробуем отредактировать
     if chat_id and msg_id:
