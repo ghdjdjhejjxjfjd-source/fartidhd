@@ -24,7 +24,7 @@ from .tabs.buy_stars import show_buy_stars, buy_stars_package
 from .tabs.style import show_style_settings, set_style
 from .tabs.ai_lang import show_ai_lang_settings, set_ai_lang
 
-BOT_USERNAME = "@NextAIO_Bot"  # ← ДОБАВИЛИ
+BOT_USERNAME = "@NextAIO_Bot"
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -43,13 +43,20 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== КОПИРОВАНИЕ РЕФЕРАЛЬНОЙ ССЫЛКИ =====
     if data.startswith("copy_ref_"):
         user_id = int(data.split("_")[2])
-        ref_link = f"https://t.me/{BOT_USERNAME[1:]}?start=ref_{user_id}"
         
-        await query.message.reply_text(
-            f"📋 Твоя реферальная ссылка:\n`{ref_link}`",
-            parse_mode="Markdown"
-        )
-        await query.answer("✅ Ссылка отправлена в чат")
+        # Берем ссылку из context.user_data (сохранена в show_ref)
+        ref_link = context.user_data.get(f"ref_link_{user_id}")
+        
+        if ref_link:
+            # Отправляем ссылку как отдельное сообщение для копирования
+            await context.bot.send_message(
+                chat_id=user_id,
+                text=f"📋 Твоя реферальная ссылка:\n`{ref_link}`",
+                parse_mode="Markdown"
+            )
+            await query.answer("✅ Ссылка отправлена в чат")
+        else:
+            await query.answer("❌ Ошибка: ссылка не найдена")
         return
     
     # ===== ВЫХОД ИЗ ЧАТА =====
