@@ -168,7 +168,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   }
 
   function shareText(text) {
-    const message = encodeURIComponent(`🤖 InstaGroq AI:\n\n${text}\n\n— via @InstaGroqBot`);
+  const message = encodeURIComponent(`💫 NextAI:\n\n${text}\n\n— via @NextAIO_Bot`);
     
     if (tg && tg.openTelegramLink) {
       tg.openTelegramLink(`https://t.me/share/url?url=&text=${message}`);
