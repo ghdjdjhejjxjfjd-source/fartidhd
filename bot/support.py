@@ -164,15 +164,21 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=full_text
         )
         
-        # ===== УДАЛЯЕМ СТАРОЕ МЕНЮ =====
+        # ===== 1. УДАЛЯЕМ СТАРОЕ МЕНЮ =====
         from .utils import delete_all_menus
         await delete_all_menus(context.bot, uid)
         
-        # ===== ОТПРАВЛЯЕМ НОВОЕ МЕНЮ ПОД СООБЩЕНИЕМ =====
+        # ===== 2. ОТПРАВЛЯЕМ ПОДТВЕРЖДЕНИЕ (ОТДЕЛЬНО) =====
+        await context.bot.send_message(
+            chat_id=uid,
+            text="✅ Сообщение отправлено в поддержку.\nОжидайте ответа."
+        )
+        
+        # ===== 3. ОТПРАВЛЯЕМ НОВОЕ МЕНЮ (ОТДЕЛЬНО) =====
         from .menu import main_menu_for_user
         await context.bot.send_message(
             chat_id=uid,
-            text="✅ Сообщение отправлено в поддержку.\nОжидайте ответа.",
+            text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
             reply_markup=main_menu_for_user(uid)
         )
         
