@@ -1,14 +1,14 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from api import get_ai_mode, get_ai_mode_changes, mem_clear, set_ai_mode
+from api import get_ai_mode, get_ai_mode_changes, mem_clear, set_ai_mode, get_user_limits
 from payments import get_balance
 from bot.menu import (
     main_menu_for_user, tab_kb, stars_kb, mode_settings_kb,
     persona_settings_kb, lang_settings_kb, settings_kb, ai_lang_settings_kb,
     ai_mode_settings_kb, confirm_ai_mode_kb, TAB_TEXT, style_settings_kb
 )
-from bot.utils import edit_to_menu, send_fresh_menu, set_last_menu, update_user_menu
+from bot.utils import edit_to_menu, send_fresh_menu, set_last_menu, update_user_menu, edit_to_tab
 from bot.settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from bot.chat import inline_chat_start, exit_chat
 from bot.image import inline_image_start
@@ -50,6 +50,14 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== ПОДДЕРЖКА =====
     if data == "support_start":
         await support_start(update, context)
+        return
+    
+    # ===== ЛИМИТ ИСЧЕРПАН =====
+    if data == "limit_exceeded":
+        await query.message.edit_text(
+            text=TAB_TEXT["limit_exceeded"],
+            reply_markup=tab_kb(uid)
+        )
         return
     
     # ===== НАВИГАЦИЯ =====
@@ -101,6 +109,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("set_lang:"):
         lang = data.split("set_lang:", 1)[1].strip()
         await handle_set_lang(update, context, query, uid, lang)
+        # Возвращаемся в настройки
         await open_tab(context, query, uid, "settings")
         return
     
@@ -108,20 +117,53 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("set_ai_lang:"):
         lang = data.split("set_ai_lang:", 1)[1].strip()
         await set_ai_lang(update, context, query, uid, lang)
+        # Возвращаемся в настройки
         await open_tab(context, query, uid, "settings")
         return
     
     # ===== НАСТРОЙКИ - ХАРАКТЕР =====
     if data.startswith("set_persona:"):
         persona = data.split("set_persona:", 1)[1].strip()
+        
+        # Проверяем лимит перед сменой
+        limits = get_user_limits(uid)
+        if limits.get("groq_persona", 0) >= 5:
+            await query.message.edit_text(
+                text=TAB_TEXT["limit_exceeded"],
+                reply_markup=tab_kb(uid)
+            )
+            return
+        
         await handle_set_persona(update, context, query, uid, persona)
+        # Возвращаемся в настройки с обновленными лимитами
         await open_tab(context, query, uid, "settings")
         return
     
     # ===== НАСТРОЙКИ - СТИЛЬ =====
     if data.startswith("set_style:"):
         style = data.split("set_style:", 1)[1].strip()
+        
+        # Проверяем лимит перед сменой
+        limits = get_user_limits(uid)
+        ai_mode = get_ai_mode(uid)
+        
+        if ai_mode == "fast":
+            if limits.get("groq_style", 0) >= 5:
+                await query.message.edit_text(
+                    text=TAB_TEXT["limit_exceeded"],
+                    reply_markup=tab_kb(uid)
+                )
+                return
+        else:
+            if limits.get("openai_style", 0) >= 7:
+                await query.message.edit_text(
+                    text=TAB_TEXT["limit_exceeded"],
+                    reply_markup=tab_kb(uid)
+                )
+                return
+        
         await set_style(update, context, query, uid, style)
+        # Возвращаемся в настройки с обновленными лимитами
         await open_tab(context, query, uid, "settings")
         return
     
@@ -150,8 +192,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         changes_left = await get_ai_mode_changes(uid)
         if changes_left <= 0:
             await query.message.edit_text(
-                "⛔ Лимит смены режима на сегодня исчерпан (8/8).\n"
-                "Попробуйте завтра после 00:00.",
+                text=TAB_TEXT["limit_exceeded"],
                 reply_markup=tab_kb(uid)
             )
             return
@@ -165,12 +206,11 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.edit_text(
             f"✅ Режим изменен на {mode_names.get(new_mode, new_mode)}\n\n"
             f"🧹 История чата очищена.\n"
-            f"📊 Сегодня осталось смен режима: {changes_left - 1}/8\n\n"
-            f"При следующем открытии Mini App начнёте с чистого листа.",
+            f"📊 Сегодня осталось смен режима: {changes_left - 1}/8",
             reply_markup=tab_kb(uid)
         )
         
-        await update_user_menu(context.bot, uid)
+        # Не обновляем меню, просто показываем сообщение
         return
     
     # ===== ПЕРЕКЛЮЧЕНИЕ РЕЖИМА РАБОТЫ =====
