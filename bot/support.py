@@ -96,9 +96,11 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "⚠️ Принимаются только текстовые сообщения"
     )
     
-    await query.message.edit_text(text)
+    # Отправляем/редактируем сообщение с инструкцией
+    sent_msg = await query.message.edit_text(text)
     
-    # Запоминаем что пользователь в режиме поддержки
+    # Запоминаем ID сообщения с инструкцией
+    context.user_data["support_message_id"] = sent_msg.message_id
     context.user_data["in_support_mode"] = True
     print(f"✅ Режим поддержки включен для {uid}")
 
@@ -164,17 +166,31 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=full_text
         )
         
-        # ===== 1. УДАЛЯЕМ СТАРОЕ МЕНЮ =====
+        # ===== 1. УДАЛЯЕМ СООБЩЕНИЕ-ИНСТРУКЦИЮ =====
+        if "support_message_id" in context.user_data:
+            try:
+                await context.bot.delete_message(
+                    chat_id=uid,
+                    message_id=context.user_data["support_message_id"]
+                )
+                print(f"✅ Инструкция удалена для {uid}")
+            except Exception as e:
+                print(f"⚠️ Не удалось удалить инструкцию: {e}")
+            finally:
+                # Очищаем ID независимо от результата
+                del context.user_data["support_message_id"]
+        
+        # ===== 2. УДАЛЯЕМ СТАРОЕ МЕНЮ =====
         from .utils import delete_all_menus
         await delete_all_menus(context.bot, uid)
         
-        # ===== 2. ОТПРАВЛЯЕМ ПОДТВЕРЖДЕНИЕ (ОТДЕЛЬНО) =====
+        # ===== 3. ОТПРАВЛЯЕМ ПОДТВЕРЖДЕНИЕ (ОТДЕЛЬНО) =====
         await context.bot.send_message(
             chat_id=uid,
             text="✅ Сообщение отправлено в поддержку.\nОжидайте ответа."
         )
         
-        # ===== 3. ОТПРАВЛЯЕМ НОВОЕ МЕНЮ (ОТДЕЛЬНО) =====
+        # ===== 4. ОТПРАВЛЯЕМ НОВОЕ МЕНЮ (ОТДЕЛЬНО) =====
         from .menu import main_menu_for_user
         await context.bot.send_message(
             chat_id=uid,
