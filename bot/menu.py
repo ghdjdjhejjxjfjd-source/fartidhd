@@ -3,6 +3,7 @@ from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_ai_l
 from payments import get_balance
 from .config import MINIAPP_URL, is_valid_https_url
 from datetime import datetime
+from .helpers import format_balance  # ← ДОБАВИЛИ
 
 # Импортируем support_blocks для проверки блокировки поддержки
 from bot.support import support_blocks
@@ -300,6 +301,7 @@ def main_menu_for_user(user_id: int) -> InlineKeyboardMarkup:
     from api import get_access
     a = get_access(user_id) if user_id else {"is_free": False, "is_blocked": False}
     balance = get_balance(user_id)
+    formatted_balance = format_balance(balance)  # ← ДОБАВИЛИ
     use_mini_app = get_use_mini_app(user_id)
 
     keyboard = []
@@ -309,7 +311,7 @@ def main_menu_for_user(user_id: int) -> InlineKeyboardMarkup:
         return InlineKeyboardMarkup(keyboard)
 
     # Баланс звезд
-    keyboard.append([InlineKeyboardButton(f"⭐ Баланс: {balance} звезд", callback_data="tab:balance")])
+    keyboard.append([InlineKeyboardButton(f"⭐ Баланс: {formatted_balance} звезд", callback_data="tab:balance")])  # ← ИЗМЕНИЛИ
 
     # Кнопки в зависимости от режима
     if use_mini_app:
