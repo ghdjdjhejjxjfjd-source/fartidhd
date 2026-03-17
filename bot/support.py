@@ -166,7 +166,7 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=full_text
         )
         
-        # ===== 1. УДАЛЯЕМ СООБЩЕНИЕ-ИНСТРУКЦИЮ =====
+        # ===== УДАЛЯЕМ ТОЛЬКО ИНСТРУКЦИЮ =====
         if "support_message_id" in context.user_data:
             try:
                 await context.bot.delete_message(
@@ -180,17 +180,17 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 # Очищаем ID независимо от результата
                 del context.user_data["support_message_id"]
         
-        # ===== 2. УДАЛЯЕМ СТАРОЕ МЕНЮ =====
+        # ===== УДАЛЯЕМ СТАРОЕ МЕНЮ =====
         from .utils import delete_all_menus
         await delete_all_menus(context.bot, uid)
         
-        # ===== 3. ОТПРАВЛЯЕМ ПОДТВЕРЖДЕНИЕ (ОТДЕЛЬНО) =====
+        # ===== ОТПРАВЛЯЕМ ПОДТВЕРЖДЕНИЕ =====
         await context.bot.send_message(
             chat_id=uid,
             text="✅ Сообщение отправлено в поддержку.\nОжидайте ответа."
         )
         
-        # ===== 4. ОТПРАВЛЯЕМ НОВОЕ МЕНЮ (ОТДЕЛЬНО) =====
+        # ===== ОТПРАВЛЯЕМ НОВОЕ МЕНЮ =====
         from .menu import main_menu_for_user
         await context.bot.send_message(
             chat_id=uid,
