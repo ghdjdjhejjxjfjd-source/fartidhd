@@ -4,7 +4,7 @@ from typing import Optional
 from openai import OpenAI
 
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
-OPENAI_MODEL = "o1-mini"
+OPENAI_MODEL = "gpt-4o-mini"  # ← новая модель
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
@@ -82,7 +82,7 @@ def ask_openai(
     style: str = "steps",
 ) -> str:
     """
-    Отправка запроса в OpenAI o1-mini
+    Отправка запроса в OpenAI GPT-4o-mini
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -94,48 +94,44 @@ def ask_openai(
     
     detected_lang = detect_language(last_question)
     
+    lang_names = {
+        "ru": "русском",
+        "kk": "казахском",
+        "en": "английском",
+        "tr": "турецком",
+        "uk": "украинском",
+        "fr": "французском"
+    }
+    target_lang = lang_names.get(detected_lang, "русском")
+    
     style_desc = STYLES.get(style, STYLES["steps"])
     
-    # Формируем инструкцию в первом сообщении пользователя (o1-mini не поддерживает system)
-    first_message = f"""Ты полезный помощник. Отвечай на том языке, на котором написан вопрос.
+    # System prompt для GPT-4o-mini
+    system_prompt = f"""Ты полезный помощник. Отвечай на {target_lang} языке.
 
 СТИЛЬ ОТВЕТА:
 {style_desc}
 
 ПРАВИЛА:
 - Отвечай строго по теме
-- Учитывай всю историю разговора ниже
-- Будь полезным
-
-История разговора:"""
+- Учитывай всю историю разговора
+- Будь полезным"""
     
-    # Формируем список сообщений для API (только user и assistant)
-    messages = []
+    messages = [{"role": "system", "content": system_prompt}]
     
-    # Добавляем инструкцию как первое сообщение пользователя
-    if history:
-        messages.append({"role": "user", "content": first_message})
-    else:
-        # Если истории нет, добавляем инструкцию перед вопросом
-        messages.append({"role": "user", "content": f"{first_message}\n\nВопрос: {last_question}"})
-        return _send_request(messages)
-    
-    # Добавляем историю
-    for msg in history:
+    for i, msg in enumerate(history):
+        if i == len(history) - 1 and msg["role"] == "user" and msg["content"] == last_question:
+            continue
         messages.append(msg)
     
-    # Добавляем текущий вопрос
     messages.append({"role": "user", "content": last_question})
     
-    return _send_request(messages)
-
-def _send_request(messages):
-    """Отправка запроса в OpenAI"""
     try:
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=messages,
-            max_completion_tokens=1000,
+            temperature=0.8,
+            max_tokens=1000,
         )
         
         reply = (response.choices[0].message.content or "").strip()
@@ -143,7 +139,16 @@ def _send_request(messages):
         
     except Exception as e:
         print(f"OpenAI error: {e}")
-        return "Ошибка. Попробуйте позже."
+        
+        error_msgs = {
+            "ru": "Ошибка. Попробуйте позже.",
+            "kk": "Қате. Қайталаңыз.",
+            "en": "Error. Try again.",
+            "tr": "Hata. Tekrar deneyin.",
+            "uk": "Помилка. Спробуйте ще.",
+            "fr": "Erreur. Réessayez."
+        }
+        return error_msgs.get(detected_lang, error_msgs["ru"])
 
 def is_openai_available() -> bool:
     return bool(OPENAI_API_KEY)
