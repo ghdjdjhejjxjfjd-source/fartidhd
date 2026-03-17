@@ -1,6 +1,7 @@
 # bot/chat.py
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from datetime import datetime  # ← ДОБАВИЛ
 
 from api import (
     get_access, get_user_persona, get_user_lang, get_user_ai_lang, 
@@ -173,7 +174,35 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
                 add_stars_spent(uid, cost)
             
             increment_messages(uid)
+            
+            # ===== СТАРЫЙ ЛОГ (ОСТАВИЛ) =====
             send_log_http(f"💬 Чат: {uid} -> {text[:50]}...")
+            
+            # ===== НОВЫЙ ПОДРОБНЫЙ ЛОГ =====
+            from api.config import send_log_to_group
+            
+            # Получаем данные пользователя
+            user = update.effective_user
+            username = f"@{user.username}" if user.username else "—"
+            first_name = user.first_name or "—"
+            
+            # Получаем новый баланс
+            new_balance = get_balance(uid)
+            
+            # Формируем лог как в Mini App
+            time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_text = (
+                f"🕒 {time_str}\n"
+                f"👤 {first_name} (@{username})\n"
+                f"🆔 {uid}\n"
+                f"💰 Баланс: {new_balance} ⭐\n"
+                f"💬 Запрос: {text[:100]}\n\n"
+                f"🤖 Ответ: {reply[:200]}\n"
+                f"⚡ Режим: {ai_mode}, стоимость: {cost} ⭐\n"
+                f"🎭 Характер: {persona}, 📝 Стиль: {style}"
+            )
+            
+            send_log_to_group(log_text)
             
     except Exception as e:
         await typing_msg.edit_text(f"❌ Ошибка")
