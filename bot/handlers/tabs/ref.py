@@ -14,24 +14,22 @@ async def show_ref(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     # Получаем статистику рефералов
     stats = get_referral_stats(user_id)
     
-    # Генерируем реферальную ссылку (только для кнопки, в тексте её нет)
+    # Генерируем реферальную ссылку
     ref_link = f"https://t.me/{BOT_USERNAME[1:]}?start=ref_{user_id}"
-    
-    # Сохраняем ссылку в context.user_data для кнопки
-    context.user_data[f"ref_link_{user_id}"] = ref_link
     
     text = (
         f"🎁 **РЕФЕРАЛЫ**\n\n"
         f"📊 **Статистика**\n"
         f"👥 Приглашено друзей: {stats['count']}\n"
         f"⭐ Заработано звезд: {stats['bonus']}\n\n"
-        f"👇 Нажми кнопку чтобы скопировать ссылку"
+        f"🔗 **Твоя реферальная ссылка:**\n"
+        f"{ref_link}\n\n"
+        f"👇 Нажми на ссылку чтобы скопировать"
     )
     
-    # Клавиатура с кнопкой копирования и поделиться
+    # Клавиатура только с кнопкой поделиться и назад
     keyboard = [
-        [InlineKeyboardButton("📋 Копировать ссылку", callback_data=f"copy_ref_{user_id}")],
-        [InlineKeyboardButton("📤 Поделиться", switch_inline_query=f"🎁 Присоединяйся ко мне в NextAI!")],
+        [InlineKeyboardButton("📤 Поделиться", switch_inline_query=f"🎁 Присоединяйся ко мне в NextAI! {ref_link}")],
         [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")]
     ]
     
