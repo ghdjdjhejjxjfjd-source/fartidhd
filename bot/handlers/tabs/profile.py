@@ -12,7 +12,7 @@ from bot.utils import set_last_menu, send_fresh_menu
 
 
 async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
-    """Показать профиль пользователя с реальными данными"""
+    """Показать профиль пользователя"""
     
     # Получаем свежие данные из БД
     a = get_access(user_id)
@@ -27,30 +27,6 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     if query.from_user and query.from_user.username:
         username = f"@{query.from_user.username}"
     
-    # Названия для характера
-    persona_names = {
-        "friendly": "😊 Общительный",
-        "fun": "😂 Весёлый",
-        "smart": "🧐 Умный",
-        "strict": "😐 Строгий"
-    }
-    
-    # Названия для языка
-    lang_names = {
-        "ru": "🇷🇺 Русский",
-        "en": "🇬🇧 English",
-        "kk": "🇰🇿 Қазақша",
-        "tr": "🇹🇷 Türkçe",
-        "uk": "🇺🇦 Українська",
-        "fr": "🇫🇷 Français"
-    }
-    
-    # Названия для режима ИИ
-    ai_mode_names = {
-        "fast": "🚀 Быстрый",
-        "quality": "💎 Качественный"
-    }
-    
     # Форматируем дату регистрации
     registered = "неизвестно"
     if a.get("registered_at"):
@@ -60,30 +36,26 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         except:
             registered = a["registered_at"][:16]
     
-    # Формируем текст профиля (БЕЗ Markdown)
+    # Формируем текст профиля (только нужное)
     text = (
         f"👤 ПРОФИЛЬ\n\n"
-        f"🆔 ID: {user_id}\n"
-        f"📱 Юзернейм: {username}\n"
-        f"📅 Регистрация: {registered}\n\n"
+        f"Ник: {username}\n"
+        f"Дата: {registered}\n\n"
         
         f"📊 СТАТИСТИКА\n"
-        f"💬 Сообщений всего: {a.get('total_messages', 0)}\n"
-        f"🎨 Картинок всего: {a.get('total_images', 0)}\n"
-        f"⭐ Потрачено звезд: {a.get('total_stars_spent', 0)}\n"
-        f"💎 Баланс: {balance} ⭐\n\n"
+        f"Сообщений: {a.get('total_messages', 0)}\n"
+        f"Картинок: {a.get('total_images', 0)}\n"
+        f"Потрачено: {a.get('total_stars_spent', 0)} ⭐\n"
+        f"Баланс: {balance} ⭐\n\n"
         
         f"⚙️ ТЕКУЩЕЕ\n"
-        f"🎭 Характер: {persona_names.get(persona, persona)}\n"
-        f"🌍 Язык: {lang_names.get(lang, lang)}\n"
-        f"🔄 Режим: {'📱 Mini App' if use_mini_app else '💬 Встроенный'}\n"
-        f"🤖 Режим ИИ: {ai_mode_names.get(ai_mode, ai_mode)}\n"
-        f"💰 FREE: {'✅ Да' if a.get('is_free') else '❌ Нет'}\n"
-        f"🔒 Блокировка: {'❌ Да' if a.get('is_blocked') else '✅ Нет'}"
+        f"Язык: {lang}\n"
+        f"Режим: {'Mini App' if use_mini_app else 'Встроенный'}\n"
+        f"ИИ: {'Быстрый' if ai_mode == 'fast' else 'Качественный'}"
     )
     
     try:
-        # Отправляем/обновляем сообщение с профилем (БЕЗ parse_mode)
+        # Отправляем/обновляем сообщение с профилем
         await query.message.edit_text(
             text=text,
             reply_markup=tab_kb(user_id)
