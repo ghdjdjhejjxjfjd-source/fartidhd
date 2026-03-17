@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from api import set_user_lang, set_user_persona, set_use_mini_app, get_ai_mode
+from api import set_user_lang, set_user_persona, set_use_mini_app, get_ai_mode, increment_groq_persona
 from .utils import update_user_menu
 from .menu import tab_kb
 
@@ -27,6 +27,9 @@ async def handle_set_persona(update: Update, context: ContextTypes.DEFAULT_TYPE,
         )
         return
     
+    # Увеличиваем счетчик лимита
+    increment_groq_persona(uid)
+    
     set_user_persona(uid, persona)
     
     persona_names = {
@@ -40,7 +43,7 @@ async def handle_set_persona(update: Update, context: ContextTypes.DEFAULT_TYPE,
         f"✅ Характер изменен на: {persona_names.get(persona, persona)}",
         reply_markup=tab_kb(uid)
     )
-    await update_user_menu(context.bot, uid)
+    # Убираем update_user_menu, чтобы не уходить в меню
 
 async def handle_switch_mode(update: Update, context: ContextTypes.DEFAULT_TYPE, query, uid: int, mode: str):
     """Обработка переключения режима работы (Mini App / Встроенный)"""
