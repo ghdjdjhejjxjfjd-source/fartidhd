@@ -8,53 +8,6 @@ OPENAI_MODEL = (os.getenv("OPENAI_MODEL") or "gpt-3.5-turbo").strip()
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-# ХАРАКТЕРЫ - такие же как в groq_client.py
-PERSONAS = {
-    "friendly": """
-        Ты дружелюбный и общительный собеседник.
-        
-        ОСОБЕННОСТИ:
-        - Пиши тёплые, РАЗВЁРНУТЫЕ ответы (3-5 предложений)
-        - Будь приветливым и открытым
-        - Проявляй интерес к собеседнику
-        - НЕ ШУТИ, просто будь добрым
-        - Смайлики: ОЧЕНЬ РЕДКО (максимум 1 в конце)
-    """,
-    
-    "fun": """
-        Ты весёлый и остроумный собеседник.
-        
-        ОСОБЕННОСТИ:
-        - ШУТИ часто и удачно
-        - Будь позитивным и энергичным
-        - Используй иронию и сарказм (уместно)
-        - Смайлики: ИЗРЕДКА (1 на 3-4 сообщения)
-        - Юмор важнее смайликов!
-    """,
-    
-    "smart": """
-        Ты умный и эрудированный собеседник.
-        
-        ОСОБЕННОСТИ:
-        - Давай ГЛУБОКИЕ, содержательные ответы
-        - Используй факты, логику, аргументацию
-        - Отвечай грамотно и МУДРО
-        - Приводи примеры из науки, истории, литературы
-        - Смайлики: ПОЧТИ НЕТ (макс 1 за диалог)
-    """,
-    
-    "strict": """
-        Ты строгий и серьёзный собеседник.
-        
-        ОСОБЕННОСТИ:
-        - Отвечай КОРОТКО и по существу (1-2 предложения)
-        - Только факты, без лишних слов
-        - Никакой лирики и отступлений
-        - Сухо, формально, по делу
-        - Смайлики: НИКОГДА
-    """,
-}
-
 # Стили ответов
 STYLES = {
     "short": "Keep answers VERY short (1-2 sentences). Just the point. No explanations.",
@@ -104,15 +57,45 @@ def parse_conversation(full_text: str) -> tuple[list[dict[str, str]], str]:
     
     return messages, last_user
 
+def detect_language(text: str) -> str:
+    """
+    Определяет язык текста
+    """
+    if not text:
+        return "ru"
+    
+    text_lower = text.lower()
+    
+    # Русские буквы
+    if any('а' <= c <= 'я' for c in text_lower if 'а' <= c <= 'я'):
+        return "ru"
+    # Казахские буквы
+    if any(c in 'әіңғүұқөһ' for c in text_lower):
+        return "kk"
+    # Турецкие буквы
+    if any(c in 'çğıöşü' for c in text_lower):
+        return "tr"
+    # Украинские буквы
+    if any(c in 'їєіґ' for c in text_lower):
+        return "uk"
+    # Французские буквы
+    if any(c in 'éèêëàâçîïôûù' for c in text_lower):
+        return "fr"
+    # По умолчанию - английский/русский
+    return "en"
+
 def ask_openai(
     user_text: str,
     *,
     lang: str = "ru",
-    persona: str = "friendly",
+    persona: str = "friendly",  # больше не используется
     style: str = "steps",
 ) -> str:
     """
-    Отправка запроса в OpenAI с правильным форматом
+    Отправка запроса в OpenAI
+    - Полная свобода общения
+    - Соблюдает только стиль
+    - Отвечает на языке пользователя
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -124,13 +107,10 @@ def ask_openai(
     if not last_question:
         last_question = user_text
     
-    # Получаем описание характера
-    persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
+    # Определяем язык последнего вопроса
+    detected_lang = detect_language(last_question)
     
-    # Получаем описание стиля
-    style_desc = STYLES.get(style, STYLES["steps"])
-    
-    # Определяем язык для ответа
+    # Названия языков для инструкции
     lang_names = {
         "ru": "русском",
         "kk": "казахском",
@@ -139,25 +119,24 @@ def ask_openai(
         "uk": "украинском",
         "fr": "французском"
     }
-    target_lang = lang_names.get(lang, "русском")
+    target_lang = lang_names.get(detected_lang, "русском")
     
-    # Формируем system prompt
-    system_prompt = f"""Ты AI ассистент. Твой характер ОЧЕНЬ ВАЖЕН - следуй ему строго.
-
-ТВОЙ ХАРАКТЕР (строго следуй этому):
-{persona_desc}
+    # Получаем описание стиля
+    style_desc = STYLES.get(style, STYLES["steps"])
+    
+    # Формируем system prompt - без характера, только язык и стиль
+    system_prompt = f"""Ты свободный AI ассистент. У тебя нет ограничений на личность.
 
 СТИЛЬ ОТВЕТОВ (строго следуй этому):
 {style_desc}
 
 ВАЖНЫЕ ПРАВИЛА:
 1. Отвечай ТОЛЬКО на {target_lang} языке
-2. Сохраняй свой характер на протяжении всего разговора
-3. Следуй стилю ответов в каждом сообщении
-4. Будь последовательным - не меняй стиль и характер
-5. Учитывай всю историю разговора выше
+2. Учитывай всю историю разговора выше
+3. Отвечай естественно, как обычный человек
+4. Никаких ограничений на характер - общайся как хочешь
 
-Запомни: Придерживайся своего характера и стиля в КАЖДОМ ответе!"""
+Запомни: Ты свободный собеседник, единственные правила - стиль и язык ответа."""
     
     # Формируем список сообщений для API
     messages = [{"role": "system", "content": system_prompt}]
@@ -176,11 +155,11 @@ def ask_openai(
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=messages,
-            temperature=0.8,
+            temperature=0.9,  # повысил для разнообразия
             max_tokens=800,
-            presence_penalty=0.3,
-            frequency_penalty=0.3,
-            top_p=0.9,
+            presence_penalty=0.5,  # чтобы не повторялся
+            frequency_penalty=0.5,  # чтобы не повторялся
+            top_p=0.95,
         )
         
         reply = (response.choices[0].message.content or "").strip()
@@ -198,7 +177,7 @@ def ask_openai(
             "uk": "Вибачте, помилка. Спробуйте ще.",
             "fr": "Désolé, erreur. Réessayez."
         }
-        return error_msgs.get(lang, error_msgs["ru"])
+        return error_msgs.get(detected_lang, error_msgs["ru"])
 
 def is_openai_available() -> bool:
     return bool(OPENAI_API_KEY)
