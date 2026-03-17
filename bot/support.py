@@ -202,7 +202,7 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
         from .menu import main_menu_for_user
         await context.bot.send_message(
             chat_id=uid,
-            text="🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
+            text="💫 NextAI\n\nВыбирай действие кнопками ниже 👇",
             reply_markup=main_menu_for_user(uid)
         )
         
