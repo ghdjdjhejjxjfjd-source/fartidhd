@@ -6,14 +6,12 @@ import re
 from datetime import datetime, timedelta
 
 from .config import send_log_http
-from api import set_blocked, get_access
-from payments import add_stars
 
 # ID группы поддержки (из .env)
 SUPPORT_GROUP_ID = int(os.getenv("SUPPORT_GROUP_ID", "0"))
 
-# Хранилище для временных блокировок
-temp_blocks = {}
+# Хранилище для временных блокировок ТОЛЬКО ПОДДЕРЖКИ
+support_blocks = {}
 
 async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Начало обращения в поддержку"""
@@ -23,29 +21,21 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     uid = user.id
     
-    # ==== ПРОВЕРКА БЛОКИРОВКИ ====
-    # Проверяем временную блокировку
-    if uid in temp_blocks:
-        block_until = temp_blocks[uid]
+    # ==== ПРОВЕРКА БЛОКИРОВКИ ТОЛЬКО ДЛЯ ПОДДЕРЖКИ ====
+    if uid in support_blocks:
+        block_until = support_blocks[uid]
         if datetime.now() < block_until:
             remaining = block_until - datetime.now()
             hours = remaining.seconds // 3600
             minutes = (remaining.seconds % 3600) // 60
             await query.message.edit_text(
-                f"⛔ Вы заблокированы в поддержке.\n"
-                f"Осталось: {hours}ч {minutes}мин"
+                f"⛔ Доступ в поддержку заблокирован.\n"
+                f"Осталось: {hours}ч {minutes}мин\n\n"
+                f"Чат с ИИ и другие функции работают."
             )
             return
         else:
-            del temp_blocks[uid]
-    
-    # Проверяем глобальную блокировку
-    access = get_access(uid)
-    if access.get("is_blocked", False):
-        await query.message.edit_text(
-            "⛔ Доступ в поддержку заблокирован."
-        )
-        return
+            del support_blocks[uid]
     
     # Текст с инструкцией
     text = (
@@ -77,9 +67,9 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user = update.effective_user
     uid = user.id
     
-    # ==== ПРОВЕРКА БЛОКИРОВКИ ПЕРЕД ОТПРАВКОЙ ====
-    if uid in temp_blocks:
-        block_until = temp_blocks[uid]
+    # ==== ПРОВЕРКА БЛОКИРОВКИ ТОЛЬКО ДЛЯ ПОДДЕРЖКИ ====
+    if uid in support_blocks:
+        block_until = support_blocks[uid]
         if datetime.now() < block_until:
             remaining = block_until - datetime.now()
             hours = remaining.seconds // 3600
@@ -90,12 +80,7 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             )
             return
         else:
-            del temp_blocks[uid]
-    
-    access = get_access(uid)
-    if access.get("is_blocked", False):
-        await update.message.reply_text("⛔ Доступ в поддержку заблокирован.")
-        return
+            del support_blocks[uid]
     
     username = f"@{user.username}" if user.username else "—"
     first_name = user.first_name or "—"
@@ -266,7 +251,7 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
         except Exception as e:
             await update.message.reply_text(f"❌ Ошибка: {e}")
     
-    # ===== КОМАНДА /block =====
+    # ===== КОМАНДА /block (ТОЛЬКО ДЛЯ ПОДДЕРЖКИ) =====
     elif text.startswith('/block'):
         parts = text.split()
         if len(parts) < 3:
@@ -281,35 +266,34 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
                 await update.message.reply_text("❌ Часы должны быть больше 0")
                 return
             
-            # Устанавливаем временную блокировку
+            # Устанавливаем временную блокировку ТОЛЬКО для поддержки
             block_until = datetime.now() + timedelta(hours=hours)
-            temp_blocks[user_id] = block_until
-            
-            # Также блокируем в основной системе
-            set_blocked(user_id, True)
+            support_blocks[user_id] = block_until
             
             await update.message.reply_text(
-                f"✅ Пользователь {user_id} заблокирован на {hours} часов\n"
-                f"До: {block_until.strftime('%d.%m.%Y %H:%M')}"
+                f"✅ Пользователь {user_id} заблокирован в ПОДДЕРЖКЕ на {hours} часов\n"
+                f"До: {block_until.strftime('%d.%m.%Y %H:%M')}\n"
+                f"Остальные функции бота работают."
             )
             
             # Уведомляем пользователя
             try:
                 await context.bot.send_message(
                     chat_id=user_id,
-                    text=f"⛔ Вы заблокированы в поддержке на {hours} часов."
+                    text=f"⛔ Доступ в поддержку заблокирован на {hours} часов.\n"
+                         f"Чат с ИИ и другие функции работают."
                 )
             except:
                 pass
             
-            send_log_http(f"⛔ Блокировка: {admin.id} -> {user_id} на {hours}ч")
+            send_log_http(f"⛔ Блокировка поддержки: {admin.id} -> {user_id} на {hours}ч")
             
         except ValueError:
             await update.message.reply_text("❌ Неверный ID или часы")
         except Exception as e:
             await update.message.reply_text(f"❌ Ошибка: {e}")
     
-    # ===== КОМАНДА /unblock =====
+    # ===== КОМАНДА /unblock (ТОЛЬКО ДЛЯ ПОДДЕРЖКИ) =====
     elif text.startswith('/unblock'):
         parts = text.split()
         if len(parts) < 2:
@@ -319,25 +303,23 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
         try:
             user_id = int(parts[1])
             
-            # Убираем временную блокировку
-            if user_id in temp_blocks:
-                del temp_blocks[user_id]
+            # Убираем временную блокировку поддержки
+            if user_id in support_blocks:
+                del support_blocks[user_id]
+                await update.message.reply_text(f"✅ Пользователь {user_id} разблокирован в поддержке")
+                
+                # Уведомляем пользователя
+                try:
+                    await context.bot.send_message(
+                        chat_id=user_id,
+                        text="✅ Доступ в поддержку восстановлен."
+                    )
+                except:
+                    pass
+            else:
+                await update.message.reply_text(f"❌ Пользователь {user_id} не заблокирован в поддержке")
             
-            # Разблокируем в основной системе
-            set_blocked(user_id, False)
-            
-            await update.message.reply_text(f"✅ Пользователь {user_id} разблокирован")
-            
-            # Уведомляем пользователя
-            try:
-                await context.bot.send_message(
-                    chat_id=user_id,
-                    text="✅ Доступ в поддержку восстановлен."
-                )
-            except:
-                pass
-            
-            send_log_http(f"✅ Разблокировка: {admin.id} -> {user_id}")
+            send_log_http(f"✅ Разблокировка поддержки: {admin.id} -> {user_id}")
             
         except ValueError:
             await update.message.reply_text("❌ Неверный ID")
