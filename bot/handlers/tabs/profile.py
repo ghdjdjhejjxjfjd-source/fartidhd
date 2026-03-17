@@ -9,6 +9,7 @@ from api import (
 from payments import get_balance
 from bot.menu import tab_kb, TAB_TEXT
 from bot.utils import set_last_menu, send_fresh_menu
+from bot.helpers import format_balance  # ← ДОБАВИЛИ
 
 
 async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
@@ -17,6 +18,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     # Получаем свежие данные из БД
     a = get_access(user_id)
     balance = get_balance(user_id)
+    formatted_balance = format_balance(balance)  # ← ДОБАВИЛИ
     persona = get_user_persona(user_id)
     lang = get_user_lang(user_id)
     use_mini_app = get_use_mini_app(user_id)
@@ -46,7 +48,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         f"💬 Сообщений: {a.get('total_messages', 0)}\n"
         f"🎨 Картинок: {a.get('total_images', 0)}\n"
         f"💸 Потрачено: {a.get('total_stars_spent', 0)} ⭐\n"
-        f"💰 Баланс: {balance} ⭐\n\n"
+        f"💰 Баланс: {formatted_balance} ⭐\n\n"  # ← ИЗМЕНИЛИ
         
         f"        ⚙️ ТЕКУЩЕЕ\n"
         f"🌐 Язык: {lang}\n"
