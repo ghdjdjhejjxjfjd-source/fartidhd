@@ -198,20 +198,28 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
     if tab_key == "profile":
         await show_profile(context, query, user_id)
+        return
     elif tab_key == "help":
         await show_help(context, query, user_id)
+        return
     elif tab_key == "status":
         await show_status(context, query, user_id)
+        return
     elif tab_key == "ref":
         await show_ref(context, query, user_id)
+        return
     elif tab_key == "support":
         await show_support(context, query, user_id)
+        return
     elif tab_key == "buy_stars":
         await show_buy_stars(context, query, user_id)
+        return
     elif tab_key == "style_settings":
         await show_style_settings(context, query, user_id)
+        return
     elif tab_key == "ai_lang_settings":
         await show_ai_lang_settings(context, query, user_id)
+        return
     elif tab_key == "settings":
         text = "⚙️ Настройки\n\nВыбери раздел:"
         try:
@@ -219,6 +227,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+        return
     elif tab_key == "ai_mode_settings":
         changes_left = await get_ai_mode_changes(user_id)
         text = TAB_TEXT["ai_mode_settings"].format(changes_left=changes_left)
@@ -227,6 +236,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+        return
     elif tab_key == "mode_settings":
         text = TAB_TEXT.get(tab_key, "🔄 Режим работы\n\nВыбери как пользоваться ботом:")
         try:
@@ -234,6 +244,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+        return
     elif tab_key == "persona_settings":
         text = TAB_TEXT.get(tab_key, "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:")
         try:
@@ -241,6 +252,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+        return
     elif tab_key == "lang_settings":
         text = TAB_TEXT.get(tab_key, "🌐 Язык интерфейса\n\nВыбери язык меню и кнопок:")
         try:
@@ -248,6 +260,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+        return
     elif tab_key == "balance":
         balance = get_balance(user_id)
         text = f"⭐ Ваш баланс: {balance} звезд"
@@ -256,6 +269,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+        return
     else:
         text = TAB_TEXT.get(tab_key, "Раздел в разработке.")
         try:
@@ -263,3 +277,4 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             set_last_menu(user_id, user_id, query.message.message_id)
         except Exception:
             await send_fresh_menu(context.bot, user_id)
+        return
