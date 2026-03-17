@@ -10,9 +10,9 @@ client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 # Стили ответов
 STYLES = {
-    "short": "Keep answers VERY short (1-2 sentences). Just the point. No explanations.",
-    "steps": "Answer step by step, structured. Use numbers or bullets. Be clear and organized.",
-    "detail": "Answer in detail, but without unnecessary words. Cover the topic well."
+    "short": "Keep answers VERY short (1-2 sentences). Just the point.",
+    "steps": "Answer step by step, structured. Use numbers or bullets.",
+    "detail": "Answer in detail, but without unnecessary words."
 }
 
 def parse_conversation(full_text: str) -> tuple[list[dict[str, str]], str]:
@@ -83,10 +83,9 @@ def ask_openai(
 ) -> str:
     """
     Отправка запроса в OpenAI
-    - Отвечает строго по теме вопроса
-    - Не придумывает лишнего
-    - Соблюдает стиль
-    - Отвечает на языке пользователя
+    - Живое общение как с человеком
+    - Юмор, эмоции, характер
+    - Никаких "я программа"
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -110,21 +109,20 @@ def ask_openai(
     
     style_desc = STYLES.get(style, STYLES["steps"])
     
-    # Новый system prompt - строго по делу
-    system_prompt = f"""Ты AI ассистент. Твоя задача - отвечать на вопросы пользователя.
+    # ЖИВОЙ system prompt
+    system_prompt = f"""Ты - живой собеседник. Общайся с пользователем как с другом.
 
-СТИЛЬ ОТВЕТОВ:
-{style_desc}
+ТВОИ ПРАВИЛА:
+1. Отвечай на {target_lang} языке
+2. Будь естественным, как обычный человек
+3. Если шутят - шути в ответ
+4. Если спрашивают как зовут - придумай имя или отшутись
+5. НИКОГДА не говори "я искусственный интеллект", "я программа", "я нейросеть"
+6. Общайся так, будто ты обычный человек в интернете
+7. Используй эмодзи когда уместно
+8. Стиль ответа: {style_desc}
 
-ПРАВИЛА:
-1. Отвечай ТОЛЬКО на {target_lang} языке
-2. Отвечай строго по существу вопроса
-3. Не придумывай лишнего
-4. Не представляйся, если тебя не просят
-5. Не обращайся по имени, если пользователь сам не представился
-6. Учитывай всю историю разговора
-
-Запомни: Ты здесь чтобы помочь, а не болтать."""
+Запомни: ТЫ ЧЕЛОВЕК для пользователя. Веди себя соответственно."""
     
     messages = [{"role": "system", "content": system_prompt}]
     
@@ -139,11 +137,11 @@ def ask_openai(
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=messages,
-            temperature=0.7,
+            temperature=0.95,  # Высокая температура для живости
             max_tokens=800,
-            presence_penalty=0.3,
-            frequency_penalty=0.3,
-            top_p=0.9,
+            presence_penalty=0.6,  # Чтобы не повторялся
+            frequency_penalty=0.6,  # Чтобы не повторялся
+            top_p=0.95,
         )
         
         reply = (response.choices[0].message.content or "").strip()
@@ -153,12 +151,12 @@ def ask_openai(
         print(f"OpenAI error: {e}")
         
         error_msgs = {
-            "ru": "Извините, ошибка. Попробуйте позже.",
-            "kk": "Кешіріңіз, қате. Қайталаңыз.",
-            "en": "Sorry, error. Try again.",
-            "tr": "Üzgünüm, hata. Tekrar deneyin.",
-            "uk": "Вибачте, помилка. Спробуйте ще.",
-            "fr": "Désolé, erreur. Réessayez."
+            "ru": "Ой, что-то пошло не так. Давай еще раз?",
+            "kk": "Қате кетті. Қайталайық?",
+            "en": "Oops, something went wrong. Try again?",
+            "tr": "Bir hata oldu. Tekrar dener misin?",
+            "uk": "Йой, помилка. Спробуємо ще?",
+            "fr": "Oups, erreur. On réessaie?"
         }
         return error_msgs.get(detected_lang, error_msgs["ru"])
 
