@@ -164,14 +164,16 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=full_text
         )
         
-        # ===== УДАЛЯЕМ ВСЕ СТАРЫЕ МЕНЮ =====
+        # ===== УДАЛЯЕМ СТАРОЕ МЕНЮ =====
         from .utils import delete_all_menus
         await delete_all_menus(context.bot, uid)
         
-        # Подтверждение пользователю (новое сообщение)
-        await update.message.reply_text(
-            "✅ Сообщение отправлено в поддержку.\n"
-            "Ожидайте ответа."
+        # ===== ОТПРАВЛЯЕМ НОВОЕ МЕНЮ ПОД СООБЩЕНИЕМ =====
+        from .menu import main_menu_for_user
+        await context.bot.send_message(
+            chat_id=uid,
+            text="✅ Сообщение отправлено в поддержку.\nОжидайте ответа.",
+            reply_markup=main_menu_for_user(uid)
         )
         
     except Exception as e:
