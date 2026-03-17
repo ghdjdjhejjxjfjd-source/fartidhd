@@ -53,15 +53,32 @@ async def delete_all_menus(bot, user_id: int):
     return deleted_count
 
 async def send_fresh_menu(bot, user_id: int, text: str = None):
-    """Отправить новое меню (удалив ВСЕ старые)"""
+    """Отправить новое меню (отредактировав старое если есть)"""
     from .menu import main_menu_for_user
     
-    # ЖЕСТКО: удаляем все старые меню
-    await delete_all_menus(bot, user_id)
+    chat_id, msg_id = get_last_menu(user_id)
     
     if text is None:
         text = "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇"
     
+    # Если есть сохраненное меню - пробуем отредактировать
+    if chat_id and msg_id:
+        try:
+            await bot.edit_message_text(
+                chat_id=chat_id,
+                message_id=msg_id,
+                text=text,
+                reply_markup=main_menu_for_user(user_id)
+            )
+            print(f"✅ Отредактировано меню для {user_id} (ID: {msg_id})")
+            # ID не меняется, поэтому не обновляем в БД
+            return
+        except Exception as e:
+            print(f"⚠️ Не удалось отредактировать меню {msg_id}: {e}")
+            # Если не получилось - удаляем старое и создаем новое
+            await delete_prev_menu(bot, user_id)
+    
+    # Создаем новое меню
     m = await bot.send_message(
         chat_id=user_id,
         text=text,
