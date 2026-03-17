@@ -8,7 +8,7 @@ OPENAI_MODEL = (os.getenv("OPENAI_MODEL") or "gpt-3.5-turbo").strip()
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-# ХАРАКТЕРЫ (как в groq_client.py)
+# ХАРАКТЕРЫ - такие же как в groq_client.py
 PERSONAS = {
     "friendly": """
         Ты дружелюбный и общительный собеседник.
@@ -62,96 +62,62 @@ STYLES = {
     "detail": "Answer in detail, but without unnecessary words. Cover the topic well."
 }
 
-def extract_conversation(full_text: str) -> tuple[str, str]:
+def parse_conversation(full_text: str) -> tuple[list[dict[str, str]], str]:
     """
-    Извлекает историю разговора и последнее сообщение
-    Возвращает (conversation_history, last_message)
+    Разбирает текст с историей и возвращает список сообщений и последний вопрос
     """
+    messages = []
+    
+    # Ищем блок Conversation:
     if "Conversation:" in full_text:
-        parts = full_text.split("User:", 1)
-        if len(parts) > 1:
-            # Вся история до последнего User:
-            history = parts[0].replace("Conversation:", "").strip()
-            last_part = parts[1].strip()
-            
-            # Обрезаем Assistant: если есть
-            if "Assistant:" in last_part:
-                last_msg = last_part.split("Assistant:")[0].strip()
-            else:
-                last_msg = last_part
+        parts = full_text.split("Conversation:", 1)[1].strip()
+        
+        # Разделяем на строки
+        lines = parts.split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
                 
-            return history, last_msg
+            if line.startswith("User:"):
+                messages.append({"role": "user", "content": line[5:].strip()})
+            elif line.startswith("Assistant:"):
+                messages.append({"role": "assistant", "content": line[10:].strip()})
+            elif line == "(empty)":
+                pass
     
-    # Если нет истории - возвращаем пустую историю и весь текст
-    return "", full_text
-
-def detect_conversation_language(history: str, last_msg: str) -> str:
-    """
-    Определяет язык по всей истории разговора
-    """
-    # Объединяем историю и последнее сообщение
-    full_text = (history + " " + last_msg).lower()
+    # Ищем последний User: в конце
+    last_user = ""
+    if "User:" in full_text:
+        parts = full_text.split("User:")
+        last_part = parts[-1].strip()
+        if "Assistant:" in last_part:
+            last_user = last_part.split("Assistant:")[0].strip()
+        else:
+            last_user = last_part
     
-    # Счетчики для каждого языка
-    counts = {
-        "ru": 0, "kk": 0, "en": 0, "tr": 0, "uk": 0, "fr": 0
-    }
-    
-    # Русские буквы
-    for c in full_text:
-        if 'а' <= c <= 'я':
-            counts["ru"] += 1
-        elif c in 'әіңғүұқөһ':
-            counts["kk"] += 1
-        elif c in 'çğıöşü':
-            counts["tr"] += 1
-        elif c in 'їєіґ':
-            counts["uk"] += 1
-        elif c in 'éèêëàâçîïôûù':
-            counts["fr"] += 1
-    
-    # Если есть английские слова (латиница не из других языков)
-    eng_words = sum(1 for word in full_text.split() if word.isascii() and not any(c in word for c in 'çğıöşüéèêëàâîïôûù'))
-    counts["en"] = eng_words
-    
-    # Выбираем язык с максимальным счетчиком
-    detected = max(counts, key=counts.get)
-    
-    # Если ничего не нашли - английский
-    if sum(counts.values()) == 0:
-        return "en"
-    
-    return detected
+    return messages, last_user
 
 def ask_openai(
     user_text: str,
     *,
-    lang: str = "ru",  # Не используется, оставлен для совместимости
+    lang: str = "ru",
     persona: str = "friendly",
     style: str = "steps",
 ) -> str:
     """
-    Отправка запроса в OpenAI с полной историей
+    Отправка запроса в OpenAI с правильным форматом
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
 
-    # Извлекаем историю и последнее сообщение
-    history, last_message = extract_conversation(user_text)
+    # Разбираем историю и последнее сообщение
+    history, last_question = parse_conversation(user_text)
     
-    # Определяем язык по всей истории
-    detected_lang = detect_conversation_language(history, last_message)
-    
-    # Названия языков для промпта
-    lang_names = {
-        "ru": "Russian",
-        "kk": "Kazakh", 
-        "en": "English",
-        "tr": "Turkish",
-        "uk": "Ukrainian",
-        "fr": "French"
-    }
-    target_lang = lang_names.get(detected_lang, "English")
+    # Если не удалось разобрать, используем весь текст как вопрос
+    if not last_question:
+        last_question = user_text
     
     # Получаем описание характера
     persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
@@ -159,43 +125,38 @@ def ask_openai(
     # Получаем описание стиля
     style_desc = STYLES.get(style, STYLES["steps"])
     
-    # Формируем полный контекст разговора
-    conversation_context = ""
-    if history:
-        conversation_context = f"Previous conversation:\n{history}\n\n"
-    
-    # Создаем system prompt
-    system_prompt = f"""You are a helpful AI assistant.
+    # Формируем system prompt
+    system_prompt = f"""Ты AI ассистент. Твой характер ОЧЕНЬ ВАЖЕН - следуй ему строго.
 
-YOUR PERSONALITY (follow this STRICTLY):
+ТВОЙ ХАРАКТЕР (строго следуй этому):
 {persona_desc}
 
-RESPONSE STYLE (follow this STRICTLY):
+СТИЛЬ ОТВЕТОВ (строго следуй этому):
 {style_desc}
 
-CRITICAL LANGUAGE RULES:
-1. The entire conversation is in {target_lang}
-2. You MUST respond in EXACTLY the SAME language: {target_lang}
-3. Do NOT switch to another language under any circumstances
-4. If you're unsure about a word, use simple words in {target_lang}
-5. Never explain or mention the language you're using
+ВАЖНЫЕ ПРАВИЛА:
+1. Отвечай ТОЛЬКО на том языке, на котором написан последний вопрос
+2. Сохраняй свой характер на протяжении всего разговора
+3. Следуй стилю ответов в каждом сообщении
+4. Будь последовательным - не меняй стиль и характер
 
-Remember: 
-- Stay in character throughout the ENTIRE conversation
-- Follow your response style in EVERY message
-- Be consistent - don't change your personality"""
+Запомни: Придерживайся своего характера и стиля в КАЖДОМ ответе!"""
     
-    # Формируем полный запрос с историей
-    full_prompt = f"{conversation_context}User: {last_message}\n\nAssistant:"
+    # Формируем список сообщений для API
+    messages = [{"role": "system", "content": system_prompt}]
+    
+    # Добавляем историю
+    for msg in history:
+        messages.append(msg)
+    
+    # Добавляем текущий вопрос
+    messages.append({"role": "user", "content": last_question})
     
     try:
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": full_prompt}
-            ],
-            temperature=0.8,  # Увеличил для более естественных ответов
+            messages=messages,
+            temperature=0.8,
             max_tokens=800,
             presence_penalty=0.3,
             frequency_penalty=0.3,
@@ -203,27 +164,12 @@ Remember:
         )
         
         reply = (response.choices[0].message.content or "").strip()
-        
-        # Если ответ слишком короткий - пробуем еще раз (но не меняем температуру)
-        if len(reply) < 10 and "?" in last_message:
-            # Это вопрос, а ответ слишком короткий - пробуем еще раз
-            response = client.chat.completions.create(
-                model=OPENAI_MODEL,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": full_prompt + "\n\nPlease provide a more detailed answer."}
-                ],
-                temperature=0.8,
-                max_tokens=800,
-            )
-            reply = (response.choices[0].message.content or "").strip()
-        
         return reply
         
     except Exception as e:
         print(f"OpenAI error: {e}")
         
-        # Сообщение об ошибке на определенном языке
+        # Сообщение об ошибке
         error_msgs = {
             "ru": "Извините, ошибка. Попробуйте позже.",
             "kk": "Кешіріңіз, қате. Қайталаңыз.",
@@ -232,7 +178,7 @@ Remember:
             "uk": "Вибачте, помилка. Спробуйте ще.",
             "fr": "Désolé, erreur. Réessayez."
         }
-        return error_msgs.get(detected_lang, error_msgs["en"])
+        return error_msgs.get(lang, error_msgs["ru"])
 
 def is_openai_available() -> bool:
     return bool(OPENAI_API_KEY)
