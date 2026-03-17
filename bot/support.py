@@ -1,5 +1,5 @@
 # bot/support.py
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import os
 import re
@@ -96,8 +96,16 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "⚠️ Принимаются только текстовые сообщения"
     )
     
-    # Отправляем/редактируем сообщение с инструкцией
-    sent_msg = await query.message.edit_text(text)
+    # КНОПКА НАЗАД
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("⬅️ Назад", callback_data="exit_support")]
+    ])
+    
+    # Отправляем/редактируем сообщение с инструкцией и кнопкой
+    sent_msg = await query.message.edit_text(
+        text=text,
+        reply_markup=keyboard
+    )
     
     # Запоминаем ID сообщения с инструкцией
     context.user_data["support_message_id"] = sent_msg.message_id
@@ -166,7 +174,7 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=full_text
         )
         
-        # ===== УДАЛЯЕМ ТОЛЬКО ИНСТРУКЦИЮ =====
+        # ===== УДАЛЯЕМ СООБЩЕНИЕ-ИНСТРУКЦИЮ =====
         if "support_message_id" in context.user_data:
             try:
                 await context.bot.delete_message(
