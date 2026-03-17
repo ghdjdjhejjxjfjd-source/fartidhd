@@ -67,35 +67,40 @@ def parse_conversation(full_text: str) -> tuple[list[dict[str, str]], str]:
     Разбирает текст с историей и возвращает список сообщений и последний вопрос
     """
     messages = []
-    
-    # Ищем блок Conversation:
-    if "Conversation:" in full_text:
-        parts = full_text.split("Conversation:", 1)[1].strip()
-        
-        # Разделяем на строки
-        lines = parts.split('\n')
-        
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-                
-            if line.startswith("User:"):
-                messages.append({"role": "user", "content": line[5:].strip()})
-            elif line.startswith("Assistant:"):
-                messages.append({"role": "assistant", "content": line[10:].strip()})
-            elif line == "(empty)":
-                pass
-    
-    # Ищем последний User: в конце
     last_user = ""
-    if "User:" in full_text:
-        parts = full_text.split("User:")
-        last_part = parts[-1].strip()
-        if "Assistant:" in last_part:
-            last_user = last_part.split("Assistant:")[0].strip()
+    
+    # Разбиваем на строки
+    lines = full_text.split('\n')
+    
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        if line.startswith("User:"):
+            # Собираем многострочное сообщение пользователя
+            content = line[5:].strip()
+            i += 1
+            while i < len(lines) and not lines[i].strip().startswith(("User:", "Assistant:")):
+                content += "\n" + lines[i].strip()
+                i += 1
+            messages.append({"role": "user", "content": content})
+            last_user = content
+            
+        elif line.startswith("Assistant:"):
+            # Собираем многострочный ответ ассистента
+            content = line[10:].strip()
+            i += 1
+            while i < len(lines) and not lines[i].strip().startswith(("User:", "Assistant:")):
+                content += "\n" + lines[i].strip()
+                i += 1
+            messages.append({"role": "assistant", "content": content})
+            
         else:
-            last_user = last_part
+            i += 1
+    
+    # Если не нашли историю, возвращаем весь текст как вопрос
+    if not messages:
+        return [], full_text
     
     return messages, last_user
 
@@ -125,6 +130,17 @@ def ask_openai(
     # Получаем описание стиля
     style_desc = STYLES.get(style, STYLES["steps"])
     
+    # Определяем язык для ответа
+    lang_names = {
+        "ru": "русском",
+        "kk": "казахском",
+        "en": "английском",
+        "tr": "турецком",
+        "uk": "украинском",
+        "fr": "французском"
+    }
+    target_lang = lang_names.get(lang, "русском")
+    
     # Формируем system prompt
     system_prompt = f"""Ты AI ассистент. Твой характер ОЧЕНЬ ВАЖЕН - следуй ему строго.
 
@@ -135,18 +151,22 @@ def ask_openai(
 {style_desc}
 
 ВАЖНЫЕ ПРАВИЛА:
-1. Отвечай ТОЛЬКО на том языке, на котором написан последний вопрос
+1. Отвечай ТОЛЬКО на {target_lang} языке
 2. Сохраняй свой характер на протяжении всего разговора
 3. Следуй стилю ответов в каждом сообщении
 4. Будь последовательным - не меняй стиль и характер
+5. Учитывай всю историю разговора выше
 
 Запомни: Придерживайся своего характера и стиля в КАЖДОМ ответе!"""
     
     # Формируем список сообщений для API
     messages = [{"role": "system", "content": system_prompt}]
     
-    # Добавляем историю
-    for msg in history:
+    # Добавляем историю (кроме последнего сообщения, если оно уже есть)
+    for i, msg in enumerate(history):
+        # Не добавляем последнее сообщение пользователя, если оно совпадает с last_question
+        if i == len(history) - 1 and msg["role"] == "user" and msg["content"] == last_question:
+            continue
         messages.append(msg)
     
     # Добавляем текущий вопрос
