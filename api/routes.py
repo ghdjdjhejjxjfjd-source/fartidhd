@@ -202,7 +202,7 @@ def api_chat():
     mem_add(tg_user_id_int, "user", text)
     
     # История
-    history = mem_get(tg_user_id_int, limit=24)
+    history = mem_get(tg_user_id_int, limit=100)
     prompt_with_memory = build_memory_prompt(history, text)
     
     try:
