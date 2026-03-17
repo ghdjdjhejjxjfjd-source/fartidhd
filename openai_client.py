@@ -4,7 +4,7 @@ from typing import Optional
 from openai import OpenAI
 
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
-OPENAI_MODEL = (os.getenv("OPENAI_MODEL") or "gpt-3.5-turbo").strip()
+OPENAI_MODEL = "o1-mini"  # ← последняя модель
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
@@ -82,11 +82,7 @@ def ask_openai(
     style: str = "steps",
 ) -> str:
     """
-    Универсальный помощник
-    - Помогает с программированием
-    - Советы по заработку
-    - Помощь в учебе
-    - Идеи для хобби
+    Отправка запроса в OpenAI o1-mini
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -110,28 +106,16 @@ def ask_openai(
     
     style_desc = STYLES.get(style, STYLES["steps"])
     
-    # Универсальный system prompt
-    system_prompt = f"""Ты — полезный помощник. Твоя задача — помогать людям с любыми вопросами.
-
-ЧЕМ ТЫ МОЖЕШЬ ПОМОЧЬ:
-• Программирование (любые языки, объясни код, найди ошибку)
-• Заработок (идеи, советы, стратегии)
-• Учеба (объясни сложное простыми словами)
-• Хобби (идеи, рекомендации, лайфхаки)
-• Жизненные вопросы (советы, поддержка)
+    # System prompt для o1-mini
+    system_prompt = f"""Ты полезный помощник. Отвечай на {target_lang} языке.
 
 СТИЛЬ ОТВЕТА:
 {style_desc}
 
 ПРАВИЛА:
-1. Отвечай ТОЛЬКО на {target_lang} языке
-2. Будь полезным и конкретным
-3. Если просят код — пиши код с пояснениями
-4. Если просят идеи — предлагай несколько вариантов
-5. Учитывай всю историю разговора
-6. Не говори "я искусственный интеллект", просто помогай
-
-Запомни: Ты здесь чтобы помочь. Любая тема — программирование, деньги, учеба, хобби."""
+- Отвечай строго по теме
+- Учитывай всю историю разговора
+- Будь полезным"""
     
     messages = [{"role": "system", "content": system_prompt}]
     
@@ -146,11 +130,7 @@ def ask_openai(
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=messages,
-            temperature=0.8,
-            max_tokens=1000,
-            presence_penalty=0.3,
-            frequency_penalty=0.3,
-            top_p=0.9,
+            max_completion_tokens=1000,  # для o1-mini
         )
         
         reply = (response.choices[0].message.content or "").strip()
@@ -160,12 +140,12 @@ def ask_openai(
         print(f"OpenAI error: {e}")
         
         error_msgs = {
-            "ru": "Ошибка. Попробуй еще раз.",
-            "kk": "Қате. Қайталап көр.",
+            "ru": "Ошибка. Попробуйте позже.",
+            "kk": "Қате. Қайталаңыз.",
             "en": "Error. Try again.",
-            "tr": "Hata. Tekrar dene.",
-            "uk": "Помилка. Спробуй ще.",
-            "fr": "Erreur. Réessaie."
+            "tr": "Hata. Tekrar deneyin.",
+            "uk": "Помилка. Спробуйте ще.",
+            "fr": "Erreur. Réessayez."
         }
         return error_msgs.get(detected_lang, error_msgs["ru"])
 
