@@ -3,6 +3,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 import os
 import re
+import json
 from datetime import datetime, timedelta
 
 from .config import send_log_http
@@ -13,6 +14,52 @@ SUPPORT_GROUP_ID = int(os.getenv("SUPPORT_GROUP_ID", "0"))
 # Хранилище для временных блокировок ТОЛЬКО ПОДДЕРЖКИ
 support_blocks = {}
 
+# Файл для сохранения блокировок
+BLOCKS_FILE = "support_blocks.json"
+
+def load_blocks():
+    """Загрузить блокировки из файла"""
+    global support_blocks
+    try:
+        if os.path.exists(BLOCKS_FILE):
+            with open(BLOCKS_FILE, 'r') as f:
+                data = json.load(f)
+                # Конвертируем строки обратно в datetime
+                for uid, until_str in data.items():
+                    support_blocks[int(uid)] = datetime.fromisoformat(until_str)
+            print(f"✅ Загружено {len(support_blocks)} блокировок поддержки")
+    except Exception as e:
+        print(f"⚠️ Ошибка загрузки блокировок: {e}")
+
+def save_blocks():
+    """Сохранить блокировки в файл"""
+    try:
+        data = {}
+        for uid, until in support_blocks.items():
+            if datetime.now() < until:  # Сохраняем только активные
+                data[str(uid)] = until.isoformat()
+        
+        with open(BLOCKS_FILE, 'w') as f:
+            json.dump(data, f)
+        print(f"✅ Сохранено {len(data)} блокировок поддержки")
+    except Exception as e:
+        print(f"⚠️ Ошибка сохранения блокировок: {e}")
+
+def cleanup_blocks():
+    """Очистить истекшие блокировки"""
+    global support_blocks
+    now = datetime.now()
+    expired = [uid for uid, until in support_blocks.items() if now >= until]
+    for uid in expired:
+        del support_blocks[uid]
+    if expired:
+        print(f"🧹 Очищено {len(expired)} истекших блокировок")
+        save_blocks()
+
+# Загружаем блокировки при старте
+load_blocks()
+cleanup_blocks()
+
 async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Начало обращения в поддержку"""
     query = update.callback_query
@@ -20,6 +67,9 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     user = update.effective_user
     uid = user.id
+    
+    # Очищаем истекшие
+    cleanup_blocks()
     
     # ==== ПРОВЕРКА БЛОКИРОВКИ ТОЛЬКО ДЛЯ ПОДДЕРЖКИ ====
     if uid in support_blocks:
@@ -36,6 +86,7 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         else:
             del support_blocks[uid]
+            save_blocks()
     
     # Текст с инструкцией
     text = (
@@ -67,6 +118,9 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user = update.effective_user
     uid = user.id
     
+    # Очищаем истекшие
+    cleanup_blocks()
+    
     # ==== ПРОВЕРКА БЛОКИРОВКИ ТОЛЬКО ДЛЯ ПОДДЕРЖКИ ====
     if uid in support_blocks:
         block_until = support_blocks[uid]
@@ -81,6 +135,7 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             return
         else:
             del support_blocks[uid]
+            save_blocks()
     
     username = f"@{user.username}" if user.username else "—"
     first_name = user.first_name or "—"
@@ -269,6 +324,7 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
             # Устанавливаем временную блокировку ТОЛЬКО для поддержки
             block_until = datetime.now() + timedelta(hours=hours)
             support_blocks[user_id] = block_until
+            save_blocks()  # Сохраняем в файл
             
             await update.message.reply_text(
                 f"✅ Пользователь {user_id} заблокирован в ПОДДЕРЖКЕ на {hours} часов\n"
@@ -306,6 +362,7 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
             # Убираем временную блокировку поддержки
             if user_id in support_blocks:
                 del support_blocks[user_id]
+                save_blocks()  # Сохраняем в файл
                 await update.message.reply_text(f"✅ Пользователь {user_id} разблокирован в поддержке")
                 
                 # Уведомляем пользователя
