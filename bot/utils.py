@@ -24,33 +24,15 @@ async def delete_prev_menu(bot, user_id: int):
         return False
 
 async def delete_all_menus(bot, user_id: int):
-    """Удалить ВСЕ возможные меню пользователя"""
-    print(f"🧹 Удаляю все меню для {user_id}")
+    """Удалить ТОЛЬКО меню пользователя (НЕ удаляет сообщения пользователя)"""
+    print(f"🧹 Удаляю меню для {user_id}")
     
-    deleted_count = 0
-    
-    # 1. Пробуем удалить сохраненное меню
+    # Только удаляем сохраненное меню
     await delete_prev_menu(bot, user_id)
     
-    # 2. Пробуем найти и удалить последние 10 сообщений бота
-    try:
-        updates = await bot.get_updates()
-        for update in updates:
-            if update.message and update.message.chat.id == user_id:
-                try:
-                    await bot.delete_message(
-                        chat_id=user_id, 
-                        message_id=update.message.message_id
-                    )
-                    deleted_count += 1
-                    print(f"✅ Удалено сообщение {update.message.message_id}")
-                except:
-                    pass
-    except Exception as e:
-        print(f"⚠️ Ошибка при массовом удалении: {e}")
+    # Убрал массовое удаление!
     
-    print(f"✅ Всего удалено сообщений: {deleted_count}")
-    return deleted_count
+    return True
 
 async def send_fresh_menu(bot, user_id: int, text: str = None):
     """Отправить новое меню (отредактировав старое если есть)"""
@@ -94,7 +76,7 @@ async def update_user_menu(bot, user_id: int):
 
 async def send_block_notice(bot, user_id: int):
     """Отправить уведомление о блокировке"""
-    await delete_all_menus(bot, user_id)
+    await delete_prev_menu(bot, user_id)
     await bot.send_message(chat_id=user_id, text="⛔ Доступ заблокирован.")
 
 async def edit_to_menu(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
