@@ -88,7 +88,7 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             del support_blocks[uid]
             save_blocks()
     
-    # НОВЫЙ ТЕКСТ - только текст, без "я передам"
+    # Текст с инструкцией
     text = (
         "💬 Поддержка\n\n"
         "Опиши свою проблему или вопрос в одном сообщении.\n\n"
@@ -164,7 +164,11 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=full_text
         )
         
-        # Подтверждение пользователю
+        # ===== УДАЛЯЕМ ВСЕ СТАРЫЕ МЕНЮ =====
+        from .utils import delete_all_menus
+        await delete_all_menus(context.bot, uid)
+        
+        # Подтверждение пользователю (новое сообщение)
         await update.message.reply_text(
             "✅ Сообщение отправлено в поддержку.\n"
             "Ожидайте ответа."
