@@ -196,7 +196,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             
             increment_messages(uid)
             
-            # ===== ПОДРОБНЫЙ ЛОГ НА РУССКОМ =====
+            # ===== ПОДРОБНЫЙ ЛОГ НА РУССКОМ С ОТСТУПАМИ =====
             from api.config import send_log_to_group
             
             # Получаем данные пользователя
@@ -207,15 +207,20 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             # Получаем новый баланс
             new_balance = get_balance(uid)
             
-            # Формируем лог на русском
+            # Формируем лог на русском с отступами
             time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             log_text = (
                 f"🕒 {time_str}\n"
                 f"👤 {first_name} (@{username})\n"
                 f"🆔 {uid}\n"
                 f"💰 Баланс: {new_balance} ⭐\n"
-                f"💬 Запрос: {text[:100]}\n\n"
-                f"🤖 Ответ: {reply[:200]}\n"
+                f"\n"
+                f"💬 Запрос:\n"
+                f"{text}\n"
+                f"\n\n\n\n\n"
+                f"🤖 Ответ:\n"
+                f"{reply}\n"
+                f"\n\n\n\n\n"
                 f"⚡ Режим: {ai_mode_names.get(ai_mode, ai_mode)}, стоимость: {cost} ⭐\n"
                 f"🎭 Характер: {persona_names.get(persona, persona)}\n"
                 f"📝 Стиль: {style_names.get(style, style)}"
