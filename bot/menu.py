@@ -1,5 +1,5 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_ai_lang, get_user_style, get_ai_mode
+from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_ai_lang, get_user_style, get_ai_mode, get_user_limits
 from payments import get_balance
 from .config import MINIAPP_URL, is_valid_https_url
 from datetime import datetime
@@ -21,23 +21,7 @@ TAB_TEXT = {
     "buy_pack": "💰 Купить пакет\n\nПакеты сообщений (пример):\n• 100 сообщений — 99₽\n• 500 сообщений — 399₽\n• 2000 сообщений — 999₽\n\nОплату подключим позже.",
     "settings": "⚙️ Настройки\n\nВыбери раздел:",
     "help": "❓ Помощь\n\nНажми «Открыть Mini App» или используй встроенный чат.",
-    "profile": "👤 ПРОФИЛЬ\n\n"
-               "🆔 ID: {user_id}\n"
-               "📅 В боте с: {registered}\n\n"
-               "📊 СТАТИСТИКА\n"
-               "💬 Сообщений: {messages}\n"
-               "🖼 Картинок: {images}\n"
-               "⭐ Потрачено звезд: {spent}\n"
-               "💎 Остаток: {balance}\n\n"
-               "⚙️ ТЕКУЩЕЕ\n"
-               "🎭 Характер: {persona}\n"
-               "📝 Стиль: {style}\n"
-               "🌐 Язык интерфейса: {lang}\n"
-               "🌐 Язык ответов: {ai_lang}\n"
-               "🔄 Режим работы: {mode}\n"
-               "⚡ Режим ИИ: {ai_mode}\n"
-               "💳 FREE: {free}\n"
-               "⛔ Блок: {blocked}",
+    "profile": "        👤 ПРОФИЛЬ\n\nНик: {username}\n📅 {registered}\n\n        📊 СТАТИСТИКА\n💬 Сообщений: {messages}\n🎨 Картинок: {images}\n💸 Потрачено: {spent} ⭐\n💰 Баланс: {balance} ⭐\n\n        ⚙️ ТЕКУЩЕЕ\n🌐 Язык: {lang}\n📱 Режим: {mode}\n🤖 ИИ: {ai_mode}",
     "status": "📌 Статус\n\nРаздел в разработке.",
     "ref": "🎁 Рефералы\n\nРаздел в разработке.",
     "support": "💬 Поддержка\n\nНапиши свой вопрос.",
@@ -63,6 +47,7 @@ TAB_TEXT = {
                         "📊 Сегодня осталось смен режима: {changes_left}/8\n"
                         "⏰ Сброс в 00:00 (GMT+6)",
     "confirm_ai_mode_change": "⚠️ ПОДТВЕРЖДЕНИЕ\n\nВы выбрали режим: {new_mode}\n\nТекущий режим: {current_mode}\n\nПри смене режима:\n• История чата будет полностью очищена\n• Все предыдущие сообщения удалятся\n\nПродолжить?",
+    "limit_exceeded": "⛔ Лимит исчерпан\n\nСегодня больше нельзя менять эту настройку.\nПопробуй завтра после 00:00."
 }
 
 
@@ -78,6 +63,7 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура настроек"""
     use_mini_app = get_use_mini_app(user_id)
     ai_mode = get_ai_mode(user_id)
+    limits = get_user_limits(user_id)
     
     keyboard = []
     
@@ -87,15 +73,31 @@ def settings_kb(user_id: int) -> InlineKeyboardMarkup:
         if ai_mode == "fast":
             keyboard.append([InlineKeyboardButton("🌐 Язык ответов ИИ", callback_data="tab:ai_lang_settings")])
         
-        # Характер - только для быстрого режима (Groq)
+        # Характер - только для быстрого режима (Groq) с лимитом
         if ai_mode == "fast":
-            keyboard.append([InlineKeyboardButton("🎭 Характер ИИ", callback_data="tab:persona_settings")])
+            used = limits.get("groq_persona", 0)
+            max_limit = 5
+            remaining = max_limit - used
+            btn_text = f"🎭 Характер ({remaining}/{max_limit})"
+            keyboard.append([InlineKeyboardButton(btn_text, callback_data="tab:persona_settings")])
         
-        # Стиль - доступен всегда
-        keyboard.append([InlineKeyboardButton("📝 Стиль ответа", callback_data="tab:style_settings")])
+        # Стиль - доступен всегда с лимитом
+        if ai_mode == "fast":
+            used = limits.get("groq_style", 0)
+            max_limit = 5
+        else:
+            used = limits.get("openai_style", 0)
+            max_limit = 7
+        remaining = max_limit - used
+        btn_text = f"📝 Стиль ответа ({remaining}/{max_limit})"
+        keyboard.append([InlineKeyboardButton(btn_text, callback_data="tab:style_settings")])
         
-        # Режим ИИ - только для встроенного режима!
-        keyboard.append([InlineKeyboardButton("⚡ Режим ИИ", callback_data="tab:ai_mode_settings")])
+        # Режим ИИ - только для встроенного режима с лимитом
+        used = limits.get("ai_mode_changes", 0)
+        max_limit = 8
+        remaining = max_limit - used
+        btn_text = f"⚡ Режим ИИ ({remaining}/{max_limit})"
+        keyboard.append([InlineKeyboardButton(btn_text, callback_data="tab:ai_mode_settings")])
     
     # Остальные кнопки всегда
     keyboard.append([InlineKeyboardButton("🔄 Режим работы", callback_data="tab:mode_settings")])
@@ -124,14 +126,22 @@ def mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
 def ai_mode_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура выбора режима ИИ (Быстрый / Качественный)"""
     current = get_ai_mode(user_id) or "fast"
+    limits = get_user_limits(user_id)
+    used = limits.get("ai_mode_changes", 0)
     
     keyboard = []
     
     if current == "fast":
         keyboard.append([InlineKeyboardButton("✅ 🚀 Быстрый", callback_data="ignore")])
-        keyboard.append([InlineKeyboardButton("💎 Качественный", callback_data="confirm_ai_mode:quality")])
+        if used < 8:
+            keyboard.append([InlineKeyboardButton("💎 Качественный", callback_data="confirm_ai_mode:quality")])
+        else:
+            keyboard.append([InlineKeyboardButton("💎 Качественный (лимит)", callback_data="limit_exceeded")])
     else:
-        keyboard.append([InlineKeyboardButton("🚀 Быстрый", callback_data="confirm_ai_mode:fast")])
+        if used < 8:
+            keyboard.append([InlineKeyboardButton("🚀 Быстрый", callback_data="confirm_ai_mode:fast")])
+        else:
+            keyboard.append([InlineKeyboardButton("🚀 Быстрый (лимит)", callback_data="limit_exceeded")])
         keyboard.append([InlineKeyboardButton("✅ 💎 Качественный", callback_data="ignore")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
@@ -151,6 +161,8 @@ def confirm_ai_mode_kb(user_id: int, new_mode: str) -> InlineKeyboardMarkup:
 def persona_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура выбора характера"""
     current = get_user_persona(user_id) or "friendly"
+    limits = get_user_limits(user_id)
+    used = limits.get("groq_persona", 0)
     
     personas = [
         ("friendly", "😊 Общительный"),
@@ -161,8 +173,13 @@ def persona_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     
     keyboard = []
     for p_id, p_name in personas:
-        mark = " ✅" if p_id == current else ""
-        keyboard.append([InlineKeyboardButton(f"{p_name}{mark}", callback_data=f"set_persona:{p_id}")])
+        if p_id == current:
+            keyboard.append([InlineKeyboardButton(f"✅ {p_name}", callback_data="ignore")])
+        else:
+            if used < 5:
+                keyboard.append([InlineKeyboardButton(p_name, callback_data=f"set_persona:{p_id}")])
+            else:
+                keyboard.append([InlineKeyboardButton(f"{p_name} (лимит)", callback_data="limit_exceeded")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     return InlineKeyboardMarkup(keyboard)
@@ -171,6 +188,15 @@ def persona_settings_kb(user_id: int) -> InlineKeyboardMarkup:
 def style_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     """Клавиатура выбора стиля ответа"""
     current = get_user_style(user_id) or "steps"
+    ai_mode = get_ai_mode(user_id)
+    limits = get_user_limits(user_id)
+    
+    if ai_mode == "fast":
+        used = limits.get("groq_style", 0)
+        max_limit = 5
+    else:
+        used = limits.get("openai_style", 0)
+        max_limit = 7
     
     styles = [
         ("short", "📏 Коротко"),
@@ -180,8 +206,13 @@ def style_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     
     keyboard = []
     for s_id, s_name in styles:
-        mark = " ✅" if s_id == current else ""
-        keyboard.append([InlineKeyboardButton(f"{s_name}{mark}", callback_data=f"set_style:{s_id}")])
+        if s_id == current:
+            keyboard.append([InlineKeyboardButton(f"✅ {s_name}", callback_data="ignore")])
+        else:
+            if used < max_limit:
+                keyboard.append([InlineKeyboardButton(s_name, callback_data=f"set_style:{s_id}")])
+            else:
+                keyboard.append([InlineKeyboardButton(f"{s_name} (лимит)", callback_data="limit_exceeded")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")])
     return InlineKeyboardMarkup(keyboard)
@@ -203,8 +234,10 @@ def ai_lang_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     keyboard = []
     row = []
     for i, (lang_id, lang_name) in enumerate(languages):
-        mark = " ✅" if lang_id == current else ""
-        row.append(InlineKeyboardButton(f"{lang_name}{mark}", callback_data=f"set_ai_lang:{lang_id}"))
+        if lang_id == current:
+            row.append(InlineKeyboardButton(f"✅ {lang_name}", callback_data="ignore"))
+        else:
+            row.append(InlineKeyboardButton(lang_name, callback_data=f"set_ai_lang:{lang_id}"))
         if len(row) == 2 or i == len(languages) - 1:
             keyboard.append(row)
             row = []
@@ -229,8 +262,10 @@ def lang_settings_kb(user_id: int) -> InlineKeyboardMarkup:
     keyboard = []
     row = []
     for i, (lang_id, lang_name) in enumerate(languages):
-        mark = " ✅" if lang_id == current else ""
-        row.append(InlineKeyboardButton(f"{lang_name}{mark}", callback_data=f"set_lang:{lang_id}"))
+        if lang_id == current:
+            row.append(InlineKeyboardButton(f"✅ {lang_name}", callback_data="ignore"))
+        else:
+            row.append(InlineKeyboardButton(lang_name, callback_data=f"set_lang:{lang_id}"))
         if len(row) == 2 or i == len(languages) - 1:
             keyboard.append(row)
             row = []
