@@ -23,7 +23,8 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     uid = user.id
     
-    # Проверяем не заблокирован ли пользователь временно
+    # ==== ПРОВЕРКА БЛОКИРОВКИ ====
+    # Проверяем временную блокировку
     if uid in temp_blocks:
         block_until = temp_blocks[uid]
         if datetime.now() < block_until:
@@ -38,6 +39,14 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             del temp_blocks[uid]
     
+    # Проверяем глобальную блокировку
+    access = get_access(uid)
+    if access.get("is_blocked", False):
+        await query.message.edit_text(
+            "⛔ Доступ в поддержку заблокирован."
+        )
+        return
+    
     # Текст с инструкцией
     text = (
         "💬 Поддержка\n\n"
@@ -45,7 +54,9 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Можешь отправить:\n"
         "• Текст\n"
         "• Фото\n"
-        "• Файл\n\n"
+        "• Видео\n"
+        "• Файл\n"
+        "• Голосовое\n\n"
         "Я передам твоё сообщение админам.\n"
         "Они ответят как можно скорее!"
     )
@@ -66,7 +77,7 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user = update.effective_user
     uid = user.id
     
-    # Проверяем временную блокировку
+    # ==== ПРОВЕРКА БЛОКИРОВКИ ПЕРЕД ОТПРАВКОЙ ====
     if uid in temp_blocks:
         block_until = temp_blocks[uid]
         if datetime.now() < block_until:
@@ -81,10 +92,15 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
         else:
             del temp_blocks[uid]
     
+    access = get_access(uid)
+    if access.get("is_blocked", False):
+        await update.message.reply_text("⛔ Доступ в поддержку заблокирован.")
+        return
+    
     username = f"@{user.username}" if user.username else "—"
     first_name = user.first_name or "—"
     
-    # Получаем текст сообщения
+    # Получаем текст сообщения или подпись
     message_text = ""
     if update.message.text:
         message_text = update.message.text
@@ -107,59 +123,105 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
         f"/block {uid}"
     )
     
-    # Отправляем в группу поддержки
-    if update.message.text:
-        full_text = header + update.message.text + commands
-        await context.bot.send_message(
-            chat_id=SUPPORT_GROUP_ID,
-            text=full_text
+    # ==== ОБРАБОТКА РАЗНЫХ ТИПОВ СООБЩЕНИЙ ====
+    try:
+        if update.message.text:
+            full_text = header + update.message.text + commands
+            await context.bot.send_message(
+                chat_id=SUPPORT_GROUP_ID,
+                text=full_text
+            )
+            
+        elif update.message.photo:
+            photo = update.message.photo[-1]
+            caption = header + (update.message.caption or "") + commands
+            await context.bot.send_photo(
+                chat_id=SUPPORT_GROUP_ID,
+                photo=photo.file_id,
+                caption=caption
+            )
+            
+        elif update.message.video:
+            caption = header + (update.message.caption or "") + commands
+            await context.bot.send_video(
+                chat_id=SUPPORT_GROUP_ID,
+                video=update.message.video.file_id,
+                caption=caption
+            )
+            
+        elif update.message.document:
+            caption = header + (update.message.caption or "") + commands
+            await context.bot.send_document(
+                chat_id=SUPPORT_GROUP_ID,
+                document=update.message.document.file_id,
+                caption=caption
+            )
+            
+        elif update.message.voice:
+            # Для голосовых caption идет отдельно
+            await context.bot.send_voice(
+                chat_id=SUPPORT_GROUP_ID,
+                voice=update.message.voice.file_id,
+                caption=header + commands
+            )
+            
+        elif update.message.audio:
+            caption = header + (update.message.caption or "") + commands
+            await context.bot.send_audio(
+                chat_id=SUPPORT_GROUP_ID,
+                audio=update.message.audio.file_id,
+                caption=caption
+            )
+            
+        elif update.message.sticker:
+            # Для стикеров отправляем как есть + информация отдельно
+            await context.bot.send_message(
+                chat_id=SUPPORT_GROUP_ID,
+                text=header + "📦 Стикер" + commands
+            )
+            await context.bot.send_sticker(
+                chat_id=SUPPORT_GROUP_ID,
+                sticker=update.message.sticker.file_id
+            )
+            
+        elif update.message.animation:
+            caption = header + (update.message.caption or "") + commands
+            await context.bot.send_animation(
+                chat_id=SUPPORT_GROUP_ID,
+                animation=update.message.animation.file_id,
+                caption=caption
+            )
+            
+        elif update.message.video_note:
+            # Видеосообщения (кружки)
+            await context.bot.send_message(
+                chat_id=SUPPORT_GROUP_ID,
+                text=header + "📹 Видеосообщение" + commands
+            )
+            await context.bot.send_video_note(
+                chat_id=SUPPORT_GROUP_ID,
+                video_note=update.message.video_note.file_id
+            )
+        
+        else:
+            # Неподдерживаемый тип
+            await context.bot.send_message(
+                chat_id=SUPPORT_GROUP_ID,
+                text=header + "⚠️ Неподдерживаемый тип сообщения" + commands
+            )
+        
+        # Подтверждение пользователю
+        await update.message.reply_text(
+            "✅ Сообщение отправлено в поддержку.\n"
+            "Ожидайте ответа."
         )
         
-    elif update.message.photo:
-        photo = update.message.photo[-1]
-        caption = header + (update.message.caption or "") + commands
-        await context.bot.send_photo(
-            chat_id=SUPPORT_GROUP_ID,
-            photo=photo.file_id,
-            caption=caption
+    except Exception as e:
+        print(f"❌ Ошибка при отправке в поддержку: {e}")
+        await update.message.reply_text(
+            "❌ Ошибка при отправке. Попробуйте позже."
         )
-        
-    elif update.message.document:
-        caption = header + (update.message.caption or "") + commands
-        await context.bot.send_document(
-            chat_id=SUPPORT_GROUP_ID,
-            document=update.message.document.file_id,
-            caption=caption
-        )
-        
-    elif update.message.video:
-        caption = header + (update.message.caption or "") + commands
-        await context.bot.send_video(
-            chat_id=SUPPORT_GROUP_ID,
-            video=update.message.video.file_id,
-            caption=caption
-        )
-        
-    elif update.message.voice:
-        await context.bot.send_voice(
-            chat_id=SUPPORT_GROUP_ID,
-            voice=update.message.voice.file_id,
-            caption=header + commands
-        )
-        
-    elif update.message.audio:
-        caption = header + (update.message.caption or "") + commands
-        await context.bot.send_audio(
-            chat_id=SUPPORT_GROUP_ID,
-            audio=update.message.audio.file_id,
-            caption=caption
-        )
-    
-    # Подтверждение пользователю
-    await update.message.reply_text(
-        "✅ Сообщение отправлено в поддержку.\n"
-        "Ожидайте ответа."
-    )
+        return
     
     # Выходим из режима поддержки после отправки
     context.user_data["in_support_mode"] = False
