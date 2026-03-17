@@ -9,16 +9,6 @@ GROQ_MODEL = (os.getenv("GROQ_MODEL") or "llama-3.1-8b-instant").strip()
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
-# Языки (из меню пользователя)
-LANGUAGES = {
-    "ru": { "name": "русском", "code": "ru" },
-    "kk": { "name": "казахском", "code": "kk" },
-    "en": { "name": "английском", "code": "en" },
-    "tr": { "name": "турецком", "code": "tr" },
-    "uk": { "name": "украинском", "code": "uk" },
-    "fr": { "name": "французском", "code": "fr" },
-}
-
 # ХАРАКТЕРЫ
 PERSONAS = {
     "friendly": """
@@ -113,27 +103,44 @@ def parse_conversation(full_text: str) -> tuple[list[dict[str, str]], str]:
 
 def detect_language(text: str) -> str:
     """
-    Определяет язык текста по наличию символов
+    Определяет язык текста по количеству символов
     """
     if not text:
         return "en"
     
     text_lower = text.lower()
     
-    # Проверяем наличие символов разных языков
-    if any('а' <= c <= 'я' for c in text_lower if 'а' <= c <= 'я'):
-        return "ru"
-    if any(c in 'әіңғүұқөһ' for c in text_lower):
-        return "kk"
-    if any(c in 'çğıöşü' for c in text_lower):
-        return "tr"
-    if any(c in 'їєіґ' for c in text_lower):
-        return "uk"
-    if any(c in 'éèêëàâçîïôûù' for c in text_lower):
-        return "fr"
+    # Счетчики для каждого языка
+    scores = {
+        "ru": 0,
+        "kk": 0,
+        "tr": 0,
+        "uk": 0,
+        "fr": 0,
+        "en": 0
+    }
     
-    # По умолчанию английский
-    return "en"
+    for c in text_lower:
+        if 'а' <= c <= 'я':
+            scores["ru"] += 1
+        elif c in 'әіңғүұқөһ':
+            scores["kk"] += 1
+        elif c in 'çğıöşü':
+            scores["tr"] += 1
+        elif c in 'їєіґ':
+            scores["uk"] += 1
+        elif c in 'éèêëàâçîïôûù':
+            scores["fr"] += 1
+        elif 'a' <= c <= 'z':
+            scores["en"] += 1
+    
+    # Если нет символов ни одного языка
+    if all(v == 0 for v in scores.values()):
+        return "en"
+    
+    # Возвращаем язык с максимальным количеством символов
+    result = max(scores, key=scores.get)
+    return result
 
 def ask_groq(
     user_text: str,
@@ -146,6 +153,7 @@ def ask_groq(
     Отправка запроса в Groq
     - Отвечает на языке пользователя (автоопределение)
     - Без переводов
+    - Учитывает всю историю
     """
     if not groq_client:
         raise RuntimeError("GROQ_API_KEY is not set")
@@ -161,14 +169,14 @@ def ask_groq(
     
     # Названия языков для промпта
     lang_names = {
-        "ru": "русском",
-        "kk": "казахском",
-        "en": "английском",
-        "tr": "турецком",
-        "uk": "украинском",
-        "fr": "французском"
+        "ru": "Russian",
+        "kk": "Kazakh",
+        "en": "English",
+        "tr": "Turkish",
+        "uk": "Ukrainian",
+        "fr": "French"
     }
-    target_lang = lang_names.get(detected_lang, "русском")
+    target_lang = lang_names.get(detected_lang, "English")
     
     # Получаем описание характера
     persona_desc = PERSONAS.get(persona, PERSONAS["friendly"])
@@ -176,7 +184,7 @@ def ask_groq(
     # Получаем описание стиля
     style_desc = STYLES.get(style, STYLES["steps"])
     
-    # Создаем system prompt на английском (Groq лучше понимает английский)
+    # Создаем system prompt
     system_prompt = f"""You are a chat assistant. Your personality is VERY IMPORTANT - you MUST follow it EXACTLY.
 
 YOUR PERSONALITY (follow this STRICTLY):
