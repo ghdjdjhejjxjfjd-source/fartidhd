@@ -14,19 +14,18 @@ async def show_ref(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     # Получаем статистику рефералов
     stats = get_referral_stats(user_id)
     
-    # Генерируем реферальную ссылку
+    # Генерируем реферальную ссылку (только для кнопки, в тексте её нет)
     ref_link = f"https://t.me/{BOT_USERNAME[1:]}?start=ref_{user_id}"
     
-    # Скрытая ссылка (белым текстом на белом фоне)
-    hidden_link = f"‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ {ref_link}"
+    # Сохраняем ссылку в context.user_data для кнопки
+    context.user_data[f"ref_link_{user_id}"] = ref_link
     
     text = (
         f"🎁 **РЕФЕРАЛЫ**\n\n"
         f"📊 **Статистика**\n"
         f"👥 Приглашено друзей: {stats['count']}\n"
         f"⭐ Заработано звезд: {stats['bonus']}\n\n"
-        f"👇 Нажми кнопку чтобы скопировать ссылку\n"
-        f"{hidden_link}"
+        f"👇 Нажми кнопку чтобы скопировать ссылку"
     )
     
     # Клавиатура с кнопкой копирования и поделиться
