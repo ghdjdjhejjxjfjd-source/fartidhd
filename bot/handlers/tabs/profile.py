@@ -45,7 +45,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         "fr": "🇫🇷 Français"
     }
     
-    # Названия для режима ИИ
+    # Названия для режима ИИ (без звезд в тексте)
     ai_mode_names = {
         "fast": "🚀 Быстрый",
         "quality": "💎 Качественный"
@@ -60,20 +60,20 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         except:
             registered = a["registered_at"][:16]
     
-    # Формируем текст профиля
+    # Формируем текст профиля (БЕЗ Markdown, просто текст)
     text = (
-        f"👤 **ПРОФИЛЬ**\n\n"
-        f"🆔 ID: `{user_id}`\n"
+        f"👤 ПРОФИЛЬ\n\n"
+        f"🆔 ID: {user_id}\n"
         f"📱 Юзернейм: {username}\n"
         f"📅 Регистрация: {registered}\n\n"
         
-        f"📊 **СТАТИСТИКА**\n"
+        f"📊 СТАТИСТИКА\n"
         f"💬 Сообщений всего: {a.get('total_messages', 0)}\n"
         f"🖼 Картинок всего: {a.get('total_images', 0)}\n"
         f"⭐ Потрачено звезд: {a.get('total_stars_spent', 0)}\n"
         f"💎 Баланс: {balance} ⭐\n\n"
         
-        f"⚙️ **ТЕКУЩЕЕ**\n"
+        f"⚙️ ТЕКУЩЕЕ\n"
         f"🎭 Характер: {persona_names.get(persona, persona)}\n"
         f"🌐 Язык: {lang_names.get(lang, lang)}\n"
         f"🔄 Режим: {'📱 Mini App' if use_mini_app else '💬 Встроенный'}\n"
@@ -83,11 +83,10 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     )
     
     try:
-        # Отправляем/обновляем сообщение с профилем
+        # Отправляем/обновляем сообщение с профилем (БЕЗ parse_mode)
         await query.message.edit_text(
             text=text,
-            reply_markup=tab_kb(user_id),
-            parse_mode="Markdown"
+            reply_markup=tab_kb(user_id)
         )
         # Сохраняем ID сообщения для последующего удаления
         set_last_menu(user_id, user_id, query.message.message_id)
@@ -95,5 +94,5 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         
     except Exception as e:
         print(f"⚠️ Ошибка при показе профиля: {e}")
-        # Если не получилось отредактировать - отправляем новое
+        # Если не получилось отредактировать - отправляем новое меню
         await send_fresh_menu(context.bot, user_id)
