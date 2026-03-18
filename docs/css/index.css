@@ -52,9 +52,9 @@
   --accent1:#3a8cff;
   --accent2:#1a6cff;
   
-  /* 📝 ТЕКСТ */
-  --text-primary: #2c3e50;
-  --text-secondary: #4a5a6a;
+  /* 📝 ТЕКСТ — сделал чуть светлее (было #2c3e50) */
+  --text-primary: #3a4a5a;      /* ← УМЕНЬШИЛ КОНТРАСТ (было #2c3e50) */
+  --text-secondary: #5a6a7a;     /* ← УМЕНЬШИЛ КОНТРАСТ (было #4a5a6a) */
   
   /* Панели */
   --sheet-bg: rgba(255, 255, 255, 0.85);
