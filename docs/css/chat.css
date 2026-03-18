@@ -41,7 +41,13 @@
   border-radius:18px;
   line-height:1.55;
   font-size:18px;
-  font-weight:500;
+  /* МАКСИМАЛЬНАЯ ЧЕТКОСТЬ ТЕКСТА */
+  font-weight: 700 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  letter-spacing: 0.3px;
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
@@ -67,17 +73,18 @@
   }
 }
 
-/* bot bubble - СДЕЛАЛ СЕРЫМ */
+/* bot bubble - СДЕЛАЛ БОЛЕЕ СЕРЫМ */
 .bot .msg{
   align-self:flex-start;
-  background: rgba(86, 98, 112, 0.94); /* Светлее (было 66,78,92) */
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(96, 108, 122, 0.95); /* Еще светлее и серее */
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #ffffff;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
   border-top-left-radius:8px;
-  text-shadow: none;
-  font-weight: 500;
+  /* Максимальная четкость для текста в пузыре */
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
   -webkit-font-smoothing: antialiased;
   font-smoothing: antialiased;
 }
@@ -94,8 +101,9 @@
   border-bottom-right-radius:8px;
   width: fit-content;
   display: inline-block;
-  text-shadow: none;
-  font-weight: 500;
+  /* Максимальная четкость */
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
   -webkit-font-smoothing: antialiased;
   font-smoothing: antialiased;
 }
@@ -112,22 +120,23 @@ html.android-mode .chat {
 html.android-mode .msg {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   box-shadow: none !important;
+  /* Четкость для Android */
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 html.android-mode .bot .msg {
-  background: #3a4656; /* Светлее чем 2a3644 */
+  background: #4a5666; /* Светлее и серее */
   color: #ffffff;
-  text-shadow: none;
 }
 
 html.android-mode .user .msg {
-  background: rgba(90, 174, 255, 0.35);
+  background: rgba(90, 174, 255, 0.4);
   color: #ffffff;
-  text-shadow: none;
 }
 
 html.android-mode .msg {
@@ -200,7 +209,7 @@ html.android-mode .msg {
   gap: 10px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  background: transparent !important; /* ПОЛНОСТЬЮ ПРОЗРАЧНО */
+  background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-top: none !important;
@@ -220,7 +229,8 @@ html.android-mode .input {
   border: 1px solid rgba(255, 255, 255, 0.08);
   outline: none;
   font-size: 15px;
-  font-weight: 400;
+  /* Четкий текст в поле ввода */
+  font-weight: 600;
   color: #f7fbff;
   background: #25303c;
   caret-color: var(--accent2);
@@ -236,6 +246,7 @@ html.android-mode .input {
 
 .input textarea::placeholder{
   color: rgba(247,251,255,.58);
+  font-weight: 500;
 }
 
 .input textarea:focus{
@@ -309,6 +320,7 @@ html.android-mode .gear {
 :root[data-theme="blue"] .title,
 :root[data-theme="blue"] .gear {
   color: #ffffff !important;
+  font-weight: 700;
 }
 
 /* Черная тема - БЕЛЫЙ текст */
@@ -316,10 +328,11 @@ html.android-mode .gear {
 :root[data-theme="black"] .title,
 :root[data-theme="black"] .gear {
   color: #ffffff !important;
+  font-weight: 700;
 }
 
 .top a{
-  color: #a0b0c0; /* СЕРЫЙ (по умолчанию) */
+  color: #a0b0c0;
   text-decoration:none;
   font-size:15px;
   background: rgba(255,255,255,.08);
@@ -328,12 +341,13 @@ html.android-mode .gear {
   padding: 6px 12px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 600;
 }
 
 .title{
-  font-weight:600;
+  font-weight:700;
   font-size:16px;
-  color: #a0b0c0; /* СЕРЫЙ (по умолчанию) */
+  color: #a0b0c0;
   background: rgba(255,255,255,.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -353,11 +367,12 @@ html.android-mode .gear {
   background: rgba(255,255,255,.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  color: #a0b0c0; /* СЕРЫЙ (по умолчанию) */
+  color: #a0b0c0;
   font-size:17px;
   display:flex;
   align-items:center;
   justify-content:center;
+  font-weight: 700;
 }
 
 /* ============================= */
@@ -368,8 +383,8 @@ html.android-mode .gear {
   margin: 0;
   padding: 10px 12px;
   max-width: 70px;
-  background: rgba(86, 98, 112, 0.94); /* Светлее */
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(96, 108, 122, 0.95); /* Светлее и серее */
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   border-top-left-radius: 8px;
   backdrop-filter: blur(8px) saturate(112%);
@@ -383,7 +398,7 @@ html.android-mode .gear {
 }
 
 html.android-mode .msg.bot.typing {
-  background: #3a4656; /* Светлее */
+  background: #4a5666;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -460,6 +475,7 @@ html.android-mode .msg.bot.typing {
 :root[data-theme="blue"] #persona-limit,
 :root[data-theme="blue"] .settings-row .limit-hint {
   color: #ffffff !important;
+  font-weight: 600;
 }
 
 /* Черная тема - все лимиты белые */
@@ -469,6 +485,7 @@ html.android-mode .msg.bot.typing {
 :root[data-theme="black"] #persona-limit,
 :root[data-theme="black"] .settings-row .limit-hint {
   color: #ffffff !important;
+  font-weight: 600;
 }
 
 /* Светлая тема - лимиты серые */
@@ -478,6 +495,7 @@ html.android-mode .msg.bot.typing {
 :root[data-theme="light"] #persona-limit,
 :root[data-theme="light"] .settings-row .limit-hint {
   color: var(--text-secondary);
+  font-weight: 600;
 }
 
 /* Красный цвет для предупреждения (лимит исчерпан) - для всех тем */
@@ -496,7 +514,8 @@ html.android-mode .msg.bot.typing {
   border: none;
   color: var(--text-primary);
   box-shadow: none;
-  text-shadow: none;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.3);
 }
 
 :root[data-theme="light"] .user .msg {
@@ -504,7 +523,8 @@ html.android-mode .msg.bot.typing {
   background: var(--user-bg);
   border: none;
   box-shadow: none;
-  text-shadow: none;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.3);
 }
 
 :root[data-theme="light"] .input textarea {
@@ -512,6 +532,7 @@ html.android-mode .msg.bot.typing {
   color: var(--text-primary);
   border: var(--btn-border-width) solid var(--btn-border);
   box-shadow: none;
+  font-weight: 600;
 }
 
 :root[data-theme="light"] .input textarea::placeholder {
@@ -526,6 +547,7 @@ html.android-mode .msg.bot.typing {
   -webkit-backdrop-filter: var(--blur-amount);
   border: none;
   color: var(--text-primary);
+  font-weight: 700;
 }
 
 :root[data-theme="light"] .action-btn svg {
@@ -555,7 +577,7 @@ html.android-mode[data-theme="light"] .bot .msg {
   color: var(--text-primary);
   backdrop-filter: none;
   box-shadow: none;
-  text-shadow: none;
+  font-weight: 700;
 }
 
 html.android-mode[data-theme="light"] .user .msg {
@@ -563,7 +585,7 @@ html.android-mode[data-theme="light"] .user .msg {
   color: var(--text-primary);
   border: none;
   box-shadow: none;
-  text-shadow: none;
+  font-weight: 700;
 }
 
 html.android-mode[data-theme="light"] .input {
@@ -628,6 +650,7 @@ html.android-mode .sheet {
 :root[data-theme="light"] .row,
 :root[data-theme="light"] .limit-hint {
   color: var(--text-primary);
+  font-weight: 600;
 }
 
 .sheet h3{
@@ -674,6 +697,7 @@ html.android-mode .sheet {
   padding: 8px;
   border-radius: 8px;
   outline: none;
+  font-weight: 600;
 }
 
 .settings-row select:disabled {
@@ -689,6 +713,7 @@ html.android-mode .sheet {
   padding-left: 8px;
   text-align: left;
   width: 100%;
+  font-weight: 600;
 }
 
 /* Кнопки */
@@ -703,7 +728,7 @@ html.android-mode .sheet {
   flex: 1;
   padding: 12px;
   border-radius: 12px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -725,4 +750,5 @@ html.android-mode .sheet {
   font-size: 11px;
   color: #ffaa00;
   margin-left: 8px;
+  font-weight: 600;
 }
