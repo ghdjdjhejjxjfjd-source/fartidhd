@@ -17,25 +17,19 @@ try:
 except Exception:
     ADMIN_USER_ID = 0
 
+# ID группы логов
 LOG_GROUP_ID_RAW = (os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or "0").strip()
-SUPPORT_GROUP_ID_RAW = (os.getenv("SUPPORT_GROUP_ID") or "0").strip()
-
 try:
     LOG_GROUP_ID = int(LOG_GROUP_ID_RAW)
 except Exception:
     LOG_GROUP_ID = 0
 
+# ID группы поддержки
+SUPPORT_GROUP_ID_RAW = (os.getenv("SUPPORT_GROUP_ID") or "0").strip()
 try:
     SUPPORT_GROUP_ID = int(SUPPORT_GROUP_ID_RAW)
 except Exception:
     SUPPORT_GROUP_ID = 0
-
-# Список разрешенных групп для админ-команд
-ALLOWED_ADMIN_GROUPS = []
-if LOG_GROUP_ID:
-    ALLOWED_ADMIN_GROUPS.append(LOG_GROUP_ID)
-if SUPPORT_GROUP_ID and SUPPORT_GROUP_ID != LOG_GROUP_ID:
-    ALLOWED_ADMIN_GROUPS.append(SUPPORT_GROUP_ID)
 
 admin_command_usage = {}
 COMMAND_LIMIT = 10
@@ -55,11 +49,19 @@ def admin_only(func):
             await update.effective_message.reply_text("⛔ У вас нет прав администратора.")
             return
         
-        # Проверка что команда вызвана в разрешенной группе
-        if ALLOWED_ADMIN_GROUPS and chat.id not in ALLOWED_ADMIN_GROUPS:
+        # Список разрешенных групп
+        allowed_groups = []
+        if LOG_GROUP_ID:
+            allowed_groups.append(LOG_GROUP_ID)
+        if SUPPORT_GROUP_ID and SUPPORT_GROUP_ID != LOG_GROUP_ID:
+            allowed_groups.append(SUPPORT_GROUP_ID)
+        
+        # Проверка что команда в разрешенной группе
+        if allowed_groups and chat.id not in allowed_groups:
             await update.effective_message.reply_text("⛔ Эта команда работает только в админ-группах.")
             return
         
+        # Rate limiting
         now = time.time()
         key = f"{user.id}:{func.__name__}"
         
