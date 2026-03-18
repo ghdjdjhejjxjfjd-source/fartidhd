@@ -60,7 +60,7 @@
       min-height: 100vh;
     }
 
-    /* ===== ТЕМЫ - КАК В МЕНЮ ===== */
+    /* ===== ТЕМЫ ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
@@ -69,8 +69,8 @@
       --accent2: #3496ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
-      --card-bg: rgba(255,255,255,0.1);
-      --card-border: rgba(255,255,255,0.12);
+      --card-bg: rgba(255, 255, 255, 0.15);
+      --card-border: rgba(255, 255, 255, 0.2);
     }
     
     :root[data-theme="black"] { 
@@ -81,8 +81,8 @@
       --accent2: #5a98ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
-      --card-bg: rgba(255,255,255,0.1);
-      --card-border: rgba(255,255,255,0.12);
+      --card-bg: rgba(255, 255, 255, 0.15);
+      --card-border: rgba(255, 255, 255, 0.2);
     }
     
     :root[data-theme="light"] { 
@@ -93,14 +93,15 @@
       --accent2: #1a6cff;
       --text: #2c3e50;
       --subtext: #4a5a6a;
-      --card-bg: rgba(255,255,255,0.8);
-      --card-border: rgba(0,0,0,0.1);
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(0, 0, 0, 0.1);
     }
 
-    /* Градиент фона как в меню */
+    /* ФИКСИРОВАННЫЙ ГРАДИЕНТ НА ВЕСЬ ЭКРАН */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
+      min-height: 100vh;
     }
 
     /* ШАПКА */
@@ -114,9 +115,10 @@
       align-items: center;
       padding: 12px 16px;
       padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(0,0,0,0.2);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--card-border);
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .back-btn {
@@ -142,114 +144,110 @@
 
     /* КОНТЕЙНЕР */
     .container {
-      padding: 80px 16px 20px;
       min-height: 100vh;
+      padding-top: 80px;
+      padding-bottom: 20px;
+      display: flex;
+      flex-direction: column;
     }
 
     /* ЗАГОЛОВОК */
     .section-title {
       font-size: 20px;
       font-weight: 700;
-      margin-bottom: 20px;
+      margin: 0 16px 20px 16px;
       color: var(--accent1);
     }
 
-    /* КАРТОЧКИ - В СТОЛБИК НА ВСЮ ШИРИНУ */
+    /* КАРТОЧКИ - В СТОЛБИК */
     .cards-list {
       display: flex;
       flex-direction: column;
       gap: 16px;
-      padding-bottom: 20px;
+      padding: 0 16px 20px 16px;
+      flex: 1;
     }
 
-    /* КАРТОЧКА - НА ВСЮ ШИРИНУ */
+    /* КАРТОЧКА - СТЕКЛЯННАЯ ДЛЯ iOS */
     .card {
       display: block;
       text-decoration: none;
       color: var(--text);
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 20px;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(12px) saturate(118%);
-      -webkit-backdrop-filter: blur(12px) saturate(118%);
-      box-shadow: 0 10px 22px rgba(0,0,0,0.14);
+      border-radius: 24px;
+      overflow: hidden;
+      transition: all 0.2s ease;
       width: 100%;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     }
 
     .card:active {
-      transform: scale(0.995);
+      transform: scale(0.99);
     }
 
-    /* ВЕРХНЯЯ ЧАСТЬ КАРТОЧКИ */
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 12px;
+    /* ОБЛАСТЬ ДЛЯ КАРТИНКИ-ПРИМЕРА */
+    .card-image {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background-size: cover;
+      background-position: center;
+      background-color: rgba(0, 0, 0, 0.2);
     }
 
-    /* ИКОНКА */
-    .card-icon {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 18%, white 8%) 0%, rgba(255,255,255,0.08) 100%);
-      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,0.12));
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      color: var(--text);
-      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    /* ПЛЕЙСХОЛДЕРЫ ДЛЯ КАРТИНОК (ВРЕМЕННО) */
+    .card-image[data-card="1"] { background-image: linear-gradient(45deg, #667eea, #764ba2); }
+    .card-image[data-card="2"] { background-image: linear-gradient(45deg, #f093fb, #f5576c); }
+    .card-image[data-card="3"] { background-image: linear-gradient(45deg, #4facfe, #00f2fe); }
+    .card-image[data-card="4"] { background-image: linear-gradient(45deg, #43e97b, #38f9d7); }
+    .card-image[data-card="5"] { background-image: linear-gradient(45deg, #fa709a, #fee140); }
+
+    /* ТЕКСТ КАРТОЧКИ - СНИЗУ */
+    .card-content {
+      padding: 16px;
     }
 
     .card-title {
       font-weight: 700;
       font-size: 18px;
       color: var(--text);
-      flex: 1;
+      margin-bottom: 4px;
     }
 
     .card-desc {
       font-size: 14px;
       color: var(--subtext);
       line-height: 1.5;
-      padding-left: 76px; /* ширина иконки + отступ */
     }
 
-    /* СТРЕЛКА */
-    .card-arrow {
-      color: rgba(255,255,255,0.4);
-      font-size: 14px;
-      margin-left: auto;
-    }
-
-    /* ===== ANDROID MODE - БЕЗ ОБВОДКИ ===== */
+    /* ===== ANDROID MODE - БЕЗ СТЕКЛА ===== */
     html.android-mode .card {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      border: 1px solid rgba(255,255,255,0.1) !important;
-      box-shadow: none !important;
-      background: rgba(255,255,255,0.08) !important;
-    }
-
-    html.android-mode .card-icon {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
       border: 1px solid rgba(255,255,255,0.15) !important;
       box-shadow: none !important;
+      background: rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html.android-mode .card-image {
+      filter: brightness(0.9);
+    }
+
+    html.android-mode .header {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: rgba(0, 0, 0, 0.5) !important;
     }
 
     html.android-mode[data-theme="light"] .card {
-      background: rgba(255,255,255,0.8) !important;
-      border: 1px solid rgba(0,0,0,0.1) !important;
+      background: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
     }
 
-    html.android-mode[data-theme="light"] .card-icon {
-      background: rgba(255,255,255,0.9) !important;
-      border: 1px solid rgba(0,0,0,0.1) !important;
+    html.android-mode[data-theme="light"] .header {
+      background: rgba(255, 255, 255, 0.8) !important;
     }
   </style>
 </head>
@@ -267,52 +265,47 @@
     <div class="cards-list">
       <!-- Карточка 1: Свободный промпт -->
       <a href="./card-text-to-image.html" class="card" id="card1">
-        <div class="card-header">
-          <div class="card-icon">🖋️</div>
+        <div class="card-image" data-card="1"></div>
+        <div class="card-content">
           <div class="card-title" id="card1Title">Свободный промпт</div>
-          <span class="card-arrow">▶</span>
+          <div class="card-desc" id="card1Desc">Напиши что хочешь увидеть — ИИ нарисует в любом стиле</div>
         </div>
-        <div class="card-desc" id="card1Desc">Напиши что хочешь увидеть — ИИ нарисует в любом стиле</div>
       </a>
 
       <!-- Карточка 2: Фото → Аниме -->
       <a href="./card-photo-to-anime.html" class="card" id="card2">
-        <div class="card-header">
-          <div class="card-icon">📸</div>
+        <div class="card-image" data-card="2"></div>
+        <div class="card-content">
           <div class="card-title" id="card2Title">Фото → Аниме</div>
-          <span class="card-arrow">▶</span>
+          <div class="card-desc" id="card2Desc">Преврати своё фото в аниме персонажа с большими глазами</div>
         </div>
-        <div class="card-desc" id="card2Desc">Преврати своё фото в аниме персонажа с большими глазами</div>
       </a>
 
       <!-- Карточка 3: Фото → Рисунок -->
       <a href="./card-photo-to-drawing.html" class="card" id="card3">
-        <div class="card-header">
-          <div class="card-icon">✏️</div>
+        <div class="card-image" data-card="3"></div>
+        <div class="card-content">
           <div class="card-title" id="card3Title">Фото → Рисунок</div>
-          <span class="card-arrow">▶</span>
+          <div class="card-desc" id="card3Desc">Стань нарисованным карандашом, акварелью или маслом</div>
         </div>
-        <div class="card-desc" id="card3Desc">Стань нарисованным карандашом, акварелью или маслом</div>
       </a>
 
       <!-- Карточка 4: Цветочная фантазия -->
       <a href="./card-flowers.html" class="card" id="card4">
-        <div class="card-header">
-          <div class="card-icon">🌸</div>
+        <div class="card-image" data-card="4"></div>
+        <div class="card-content">
           <div class="card-title" id="card4Title">Цветочная фантазия</div>
-          <span class="card-arrow">▶</span>
+          <div class="card-desc" id="card4Desc">Создай волшебные цветы и лепестки любых оттенков</div>
         </div>
-        <div class="card-desc" id="card4Desc">Создай волшебные цветы и лепестки любых оттенков</div>
       </a>
 
       <!-- Карточка 5: Фэнтези персонаж -->
       <a href="./card-fantasy.html" class="card" id="card5">
-        <div class="card-header">
-          <div class="card-icon">🧝‍♀️</div>
+        <div class="card-image" data-card="5"></div>
+        <div class="card-content">
           <div class="card-title" id="card5Title">Фэнтези персонаж</div>
-          <span class="card-arrow">▶</span>
+          <div class="card-desc" id="card5Desc">Стань эльфом, магом, рыцарем или другим героем</div>
         </div>
-        <div class="card-desc" id="card5Desc">Стань эльфом, магом, рыцарем или другим героем</div>
       </a>
     </div>
   </div>
