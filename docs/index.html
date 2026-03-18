@@ -271,7 +271,7 @@
         </button>
       </div>
 
-      <!-- БЛОК ПЛАТФОРМЫ (iOS/Android) - НОВЫЙ -->
+      <!-- БЛОК ПЛАТФОРМЫ (iOS/Android) -->
       <div class="platformBlock">
         <div class="platformTitle" id="platformTitle">Режим</div>
         <button class="platformPill" id="platformBtn" type="button">
@@ -303,7 +303,7 @@
     </div>
   </div>
 
-  <!-- Оверлей платформы (iOS/Android) - НОВЫЙ -->
+  <!-- Оверлей платформы (iOS/Android) -->
   <div class="platformOverlay" id="platformOverlay">
     <div class="platformSheet">
       <div class="platformSheetHeader">
@@ -353,7 +353,7 @@
       catch(e) { return "blue"; }
     }
 
-    // Получение сохраненной платформы (iOS/Android) - НОВОЕ
+    // Получение сохраненной платформы (iOS/Android)
     function getSavedPlatform() {
       try { return localStorage.getItem("miniapp_platform_v1") || "ios"; } 
       catch(e) { return "ios"; }
@@ -409,6 +409,29 @@
         toolsChev.textContent = '▲';
       }
     })();
+
+    // ===== ДОБАВЛЕН ПЕРЕВОД ДЛЯ "РЕЖИМ" =====
+    const I18N = {
+      ru: { platform: "Режим" },
+      kk: { platform: "Режим" },
+      en: { platform: "Mode" },
+      tr: { platform: "Mod" },
+      uk: { platform: "Режим" },
+      fr: { platform: "Mode" }
+    };
+
+    function updatePlatformTitle() {
+      const lang = getSavedLang();
+      const t = I18N[lang] || I18N.ru;
+      const platformTitle = document.getElementById('platformTitle');
+      if (platformTitle) {
+        platformTitle.textContent = t.platform;
+      }
+    }
+
+    // Обновляем при загрузке и при смене языка
+    document.addEventListener('DOMContentLoaded', updatePlatformTitle);
+    window.addEventListener('languageChanged', updatePlatformTitle);
   </script>
 
   <!-- Подключаем index.js -->
