@@ -86,12 +86,13 @@
       color: var(--text);
       display: flex;
       flex-direction: column;
-      /* МАКСИМАЛЬНАЯ ЧЕТКОСТЬ И НАСЫЩЕННОСТЬ ТЕКСТА */
-      font-weight: 700 !important;
+      /* МАКСИМАЛЬНАЯ ЧЕТКОСТЬ ДЛЯ ВСЕХ ТЕМ (iOS/Android) */
+      font-weight: 800 !important;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
-      text-shadow: 0 0 0.5px rgba(255,255,255,0.3);
+      font-smooth: always;
+      -webkit-text-stroke: 0.3px rgba(255,255,255,0.1);
     }
     
     .wrap {
@@ -120,32 +121,62 @@
     .btn, .tools-btn, .tool-item, .langPill, .themePill, .platformPill {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
-      font-weight: 800 !important; /* Кнопки максимально жирные */
-      border: 2px solid rgba(255, 255, 255, 0.25) !important; /* Базовая обводка */
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      font-weight: 800 !important; /* Максимально жирные */
+      border: 1px solid rgba(255, 255, 255, 0.35) !important; /* Узкая обводка */
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      letter-spacing: 0.3px;
     }
 
-    /* ДЛЯ ANDROID - более яркий синий и заметная обводка */
+    /* ЧЕРНАЯ ТЕМА - белая обводка */
+    :root[data-theme="black"] .btn,
+    :root[data-theme="black"] .tools-btn,
+    :root[data-theme="black"] .tool-item,
+    :root[data-theme="black"] .langPill,
+    :root[data-theme="black"] .themePill,
+    :root[data-theme="black"] .platformPill {
+      border: 1px solid rgba(255, 255, 255, 0.5) !important; /* Белая обводка */
+    }
+
+    /* СИНЯЯ ТЕМА - стандартная обводка */
+    :root[data-theme="blue"] .btn,
+    :root[data-theme="blue"] .tools-btn,
+    :root[data-theme="blue"] .tool-item,
+    :root[data-theme="blue"] .langPill,
+    :root[data-theme="blue"] .themePill,
+    :root[data-theme="blue"] .platformPill {
+      border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    }
+
+    /* СВЕТЛАЯ ТЕМА - темная обводка */
+    :root[data-theme="light"] .btn,
+    :root[data-theme="light"] .tools-btn,
+    :root[data-theme="light"] .tool-item,
+    :root[data-theme="light"] .langPill,
+    :root[data-theme="light"] .themePill,
+    :root[data-theme="light"] .platformPill {
+      border: 1px solid rgba(0, 0, 0, 0.3) !important;
+      color: #1a2634 !important;
+    }
+
+    /* ДЛЯ ANDROID - чуть ярче */
     html.android-mode[data-theme="blue"] {
-      filter: brightness(1.1); /* Весь интерфейс ярче на 10% */
+      filter: brightness(1.08);
     }
     
-    html.android-mode[data-theme="blue"] .btn,
-    html.android-mode[data-theme="blue"] .tools-btn,
-    html.android-mode[data-theme="blue"] .tool-item,
-    html.android-mode[data-theme="blue"] .langPill,
-    html.android-mode[data-theme="blue"] .themePill,
-    html.android-mode[data-theme="blue"] .platformPill {
-      border: 2px solid rgba(255, 255, 255, 0.4) !important; /* Более заметная обводка */
-      box-shadow: 0 2px 8px rgba(0, 120, 255, 0.3) !important; /* Легкое свечение */
+    html.android-mode[data-theme="black"] {
+      filter: brightness(1.1);
     }
 
-    /* Текст максимально четкий */
-    .sub, .ver, .langTitle, .platformTitle, 
-    .btn, .tools-btn, .tool-text, .langPill span, .themePill span, .platformPill span {
-      font-weight: 700 !important;
+    /* Текст максимально четкий для всех элементов */
+    body, .sub, .ver, .langTitle, .platformTitle, 
+    .btn, .tools-btn, .tool-text, .langPill span, .themePill span, .platformPill span,
+    .title, .gear, a, button, span, div {
+      font-weight: 800 !important;
       text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
-      letter-spacing: 0.3px !important; /* Легкий интервал для четкости */
+      letter-spacing: 0.3px !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
     }
   </style>
 
