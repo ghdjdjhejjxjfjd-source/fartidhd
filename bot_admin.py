@@ -1,4 +1,4 @@
-# bot_admin.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
+# bot_admin.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (команды работают в обеих группах)
 import os
 import re
 import time
@@ -17,11 +17,25 @@ try:
 except Exception:
     ADMIN_USER_ID = 0
 
-GROUP_ID_RAW = (os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or "0").strip()
+LOG_GROUP_ID_RAW = (os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or "0").strip()
+SUPPORT_GROUP_ID_RAW = (os.getenv("SUPPORT_GROUP_ID") or "0").strip()
+
 try:
-    ADMIN_GROUP_ID = int(GROUP_ID_RAW)
+    LOG_GROUP_ID = int(LOG_GROUP_ID_RAW)
 except Exception:
-    ADMIN_GROUP_ID = 0
+    LOG_GROUP_ID = 0
+
+try:
+    SUPPORT_GROUP_ID = int(SUPPORT_GROUP_ID_RAW)
+except Exception:
+    SUPPORT_GROUP_ID = 0
+
+# Список разрешенных групп для админ-команд
+ALLOWED_ADMIN_GROUPS = []
+if LOG_GROUP_ID:
+    ALLOWED_ADMIN_GROUPS.append(LOG_GROUP_ID)
+if SUPPORT_GROUP_ID and SUPPORT_GROUP_ID != LOG_GROUP_ID:
+    ALLOWED_ADMIN_GROUPS.append(SUPPORT_GROUP_ID)
 
 admin_command_usage = {}
 COMMAND_LIMIT = 10
@@ -36,12 +50,14 @@ def admin_only(func):
         if not user or not chat:
             return
         
+        # Проверка на админа
         if ADMIN_USER_ID and user.id != ADMIN_USER_ID:
             await update.effective_message.reply_text("⛔ У вас нет прав администратора.")
             return
         
-        if ADMIN_GROUP_ID and chat.id != ADMIN_GROUP_ID:
-            await update.effective_message.reply_text("⛔ Эта команда работает только в админ-группе.")
+        # Проверка что команда вызвана в разрешенной группе
+        if ALLOWED_ADMIN_GROUPS and chat.id not in ALLOWED_ADMIN_GROUPS:
+            await update.effective_message.reply_text("⛔ Эта команда работает только в админ-группах.")
             return
         
         now = time.time()
@@ -60,7 +76,7 @@ def admin_only(func):
             admin_command_usage[key] = (1, now)
         
         command = update.message.text if update.message else "callback"
-        print(f"👑 Админ {user.id} выполнил: {command}")
+        print(f"👑 Админ {user.id} выполнил в чате {chat.id}: {command}")
         
         return await func(update, context)
     return wrapper
