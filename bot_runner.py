@@ -27,20 +27,12 @@ LOG_GROUP_ID = int(os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or 
 
 async def post_init(app: Application):
     """Инициализация после запуска"""
-    # 1️⃣ Сначала удаляем ВСЕ глобальные команды (от BotFather)
-    try:
-        await app.bot.delete_my_commands()
-        print("🧹 Удалены все глобальные команды (от BotFather)")
-        await asyncio.sleep(1)
-    except Exception as e:
-        print(f"⚠️ Ошибка удаления глобальных команд: {e}")
-    
-    # 2️⃣ Устанавливаем ТОЛЬКО /start глобально
+    # 1️⃣ Устанавливаем ТОЛЬКО /start глобально для всех
     try:
         await app.bot.set_my_commands([
             ("start", "🚀 Запустить бота"),
         ])
-        print("✅ Глобальная команда /start восстановлена")
+        print("✅ Глобальная команда /start установлена")
     except Exception as e:
         print(f"⚠️ Ошибка установки /start: {e}")
     
@@ -58,15 +50,9 @@ async def post_init(app: Application):
         BotCommand("resetstars", "🔄 Сброс баланса"),
     ]
     
-    # 3️⃣ Устанавливаем админ-команды ТОЛЬКО для группы логов
+    # 2️⃣ Устанавливаем админ-команды ТОЛЬКО для группы логов
     if LOG_GROUP_ID:
         try:
-            # Сначала удаляем старые команды для этой группы
-            await app.bot.delete_my_commands(scope=BotCommandScopeChat(chat_id=LOG_GROUP_ID))
-            print(f"🧹 Удалены старые команды для группы логов {LOG_GROUP_ID}")
-            await asyncio.sleep(1)
-            
-            # Устанавливаем новые
             await app.bot.set_my_commands(
                 admin_commands,
                 scope=BotCommandScopeChat(chat_id=LOG_GROUP_ID)
@@ -75,13 +61,9 @@ async def post_init(app: Application):
         except Exception as e:
             print(f"⚠️ Ошибка установки команд для группы логов: {e}")
     
-    # 4️⃣ Устанавливаем админ-команды ТОЛЬКО для группы поддержки
+    # 3️⃣ Устанавливаем админ-команды ТОЛЬКО для группы поддержки
     if SUPPORT_GROUP_ID and SUPPORT_GROUP_ID != LOG_GROUP_ID:
         try:
-            await app.bot.delete_my_commands(scope=BotCommandScopeChat(chat_id=SUPPORT_GROUP_ID))
-            print(f"🧹 Удалены старые команды для группы поддержки {SUPPORT_GROUP_ID}")
-            await asyncio.sleep(1)
-            
             await app.bot.set_my_commands(
                 admin_commands,
                 scope=BotCommandScopeChat(chat_id=SUPPORT_GROUP_ID)
