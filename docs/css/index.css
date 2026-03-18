@@ -30,13 +30,13 @@
   --sheet-text: #f7fbff;
 }
 
-/* Синяя тема */
+/* Синяя тема - кнопки стали светлее */
 :root[data-theme="blue"]{
   --bgTop:#27384b;
   --bgMid:#1d2b3a;
   --bgBot:#16212d;
-  --accent1: #6bb5ff;
-  --accent2: #4aa3ff;
+  --accent1: #6bb5ff;  /* Светлее (было #5aaeff) */
+  --accent2: #4aa3ff;  /* Светлее (было #3496ff) */
   --text:#f7fbff;
   --subtext: rgba(247, 251, 255, 0.68);
   --sheet-bg: rgba(39, 56, 75, 0.95);
@@ -44,7 +44,7 @@
   --sheet-text: #f7fbff;
 }
 
-/* Светлая тема */
+/* ===== СВЕТЛАЯ ТЕМА ===== */
 :root[data-theme="light"]{
   --bgTop:#e8edf5;
   --bgMid:#d9e0eb;
@@ -52,13 +52,18 @@
   --accent1:#3a8cff;
   --accent2:#1a6cff;
   
-  --text-primary: #3a4a5a;
-  --text-secondary: #5a6a7a;
+  /* 📝 ТЕКСТ — сделал чуть светлее (было #2c3e50) */
+  --text-primary: #3a4a5a;      /* ← УМЕНЬШИЛ КОНТРАСТ (было #2c3e50) */
+  --text-secondary: #5a6a7a;     /* ← УМЕНЬШИЛ КОНТРАСТ (было #4a5a6a) */
   
+  /* Панели */
   --sheet-bg: rgba(255, 255, 255, 0.85);
   --sheet-border: rgba(0, 0, 0, 0.1);
   --sheet-text: var(--text-primary);
   
+  /* 🔘 СЕРАЯ ОБВОДКА */
+  --btn-border: #c0c0c0;
+  --btn-border-width: 1.5px;
   --btn-bg: rgba(255, 255, 255, 0.4);
   --btn-blur: blur(12px);
 }
@@ -80,8 +85,8 @@ html.android-mode .platformPill {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   filter: none !important;
-  border: none !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
@@ -91,10 +96,9 @@ html.android-mode[data-theme="light"] .tool-item,
 html.android-mode[data-theme="light"] .langPill,
 html.android-mode[data-theme="light"] .themePill,
 html.android-mode[data-theme="light"] .platformPill {
-  border: none !important;
+  border: var(--btn-border-width) solid var(--btn-border) !important;
   background: rgba(255, 255, 255, 0.8) !important;
   color: var(--text-primary) !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
 }
 
 * {
@@ -191,7 +195,7 @@ body > * {
 @keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-8px,10px)} }
 
 /* ========================= */
-/* ОСНОВНОЙ КОНТЕЙНЕР */
+/* ОСНОВНОЙ КОНТЕЙНЕР - ИСПРАВЛЕНО */
 /* ========================= */
 .wrap {
   position: relative;
@@ -206,7 +210,7 @@ body > * {
 }
 
 /* ========================= */
-/* КАРТОЧКА МЕНЮ */
+/* КАРТОЧКА МЕНЮ - ИСПРАВЛЕНО */
 /* ========================= */
 .card {
   width: min(520px, 100%);
@@ -221,7 +225,7 @@ body > * {
 }
 
 /* ========================= */
-/* КНОПКИ - ПОЛНОСТЬЮ БЕЗ ОБВОДКИ */
+/* КНОПКИ */
 /* ========================= */
 .btn {
   display: block;
@@ -239,17 +243,14 @@ body > * {
       color-mix(in srgb, var(--accent1) 18%, white 8%) 0%,
       rgba(255,255,255,.08) 100%
     );
-  border: none;
+  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3), 0 4px 12px color-mix(in srgb, var(--accent1) 15%, transparent);
+  box-shadow:
+    0 10px 22px rgba(0,0,0,.14),
+    0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
   margin-bottom: 12px;
   transition: all 0.2s ease;
-}
-
-.btn:active {
-  transform: scale(0.98);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
 
 /* Светлая тема - кнопки */
@@ -257,9 +258,32 @@ body > * {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: none;
+  border: var(--btn-border-width) solid var(--btn-border);
   color: var(--text-primary);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.btn:active {
+  transform: scale(.995);
+  box-shadow:
+    0 12px 24px rgba(0,0,0,.18),
+    0 0 18px color-mix(in srgb, var(--accent1) 20%, transparent);
+}
+
+.btn:hover {
+  border-color: color-mix(in srgb, var(--accent1) 35%, rgba(255,255,255,.18));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent1) 22%, white 10%) 0%,
+      rgba(255,255,255,.10) 100%
+    );
+}
+
+/* Светлая тема - hover для кнопок */
+:root[data-theme="light"] .btn:hover {
+  border-color: var(--accent1);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 /* ========================= */
@@ -270,12 +294,11 @@ body > * {
   align-items: center !important;
   justify-content: space-between !important;
   margin-bottom: 0 !important;
-  border: none !important;
 }
 
 .tools-btn.active {
-  background: rgba(255,255,255,0.2) !important;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4) !important;
+  border-color: var(--accent1) !important;
+  background: rgba(255,255,255,0.15) !important;
 }
 
 /* Светлая тема - кнопка инструментов */
@@ -283,14 +306,13 @@ body > * {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: none !important;
+  border: var(--btn-border-width) solid var(--btn-border);
   color: var(--text-primary);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
 }
 
 :root[data-theme="light"] .tools-btn.active {
-  background: rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: var(--accent1) !important;
 }
 
 /* Выпадающий список */
@@ -316,7 +338,7 @@ body > * {
   padding: 14px 18px;
   margin: 6px 0;
   background: rgba(255, 255, 255, 0.06);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 16px;
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
@@ -325,7 +347,7 @@ body > * {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 22px rgba(0,0,0,.14);
 }
 
 /* Светлая тема - элементы инструментов */
@@ -333,14 +355,21 @@ body > * {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: none;
+  border: var(--btn-border-width) solid var(--btn-border);
   color: var(--text-primary);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .tool-item:hover {
   background: rgba(255, 255, 255, 0.15);
+  border-color: var(--accent1);
   transform: translateX(6px);
+}
+
+/* Светлая тема - hover для элементов инструментов */
+:root[data-theme="light"] .tool-item:hover {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: var(--accent1);
 }
 
 .tool-icon {
@@ -383,6 +412,7 @@ body > * {
   font-size: 14px;
 }
 
+/* Светлая тема - тексты */
 :root[data-theme="light"] .sub {
   color: var(--text-secondary);
 }
@@ -408,6 +438,7 @@ body > * {
   padding-top: 12px;
 }
 
+/* Светлая тема - разделитель */
 :root[data-theme="light"] .langBlock {
   border-top-color: rgba(0, 0, 0, 0.1);
 }
@@ -428,12 +459,12 @@ body > * {
   border-radius: 16px;
   padding: 12px 14px;
   background: rgba(255, 255, 255, .10);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, .12);
   color: var(--text);
   outline: none;
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
   font-size: 15px;
   font-weight: 700;
   display: flex;
@@ -444,17 +475,19 @@ body > * {
   transition: all 0.2s ease;
 }
 
+/* Светлая тема - кнопка языка */
 :root[data-theme="light"] .langPill {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: none;
+  border: var(--btn-border-width) solid var(--btn-border);
   color: var(--text-primary);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .langPill:hover {
   background: rgba(255, 255, 255, .13);
+  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
 }
 
 .langPill:active {
@@ -474,6 +507,7 @@ body > * {
   padding-top: 12px;
 }
 
+/* Светлая тема - разделитель */
 :root[data-theme="light"] .platformBlock {
   border-top-color: rgba(0, 0, 0, 0.1);
 }
@@ -494,12 +528,12 @@ body > * {
   border-radius: 16px;
   padding: 12px 14px;
   background: rgba(255, 255, 255, .10);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, .12);
   color: var(--text);
   outline: none;
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
   font-size: 15px;
   font-weight: 700;
   display: flex;
@@ -510,17 +544,19 @@ body > * {
   transition: all 0.2s ease;
 }
 
+/* Светлая тема - кнопка платформы */
 :root[data-theme="light"] .platformPill {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: none;
+  border: var(--btn-border-width) solid var(--btn-border);
   color: var(--text-primary);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .platformPill:hover {
   background: rgba(255, 255, 255, .13);
+  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
 }
 
 .platformPill:active {
@@ -543,7 +579,7 @@ body > * {
       color-mix(in srgb, var(--accent1) 16%, white 8%) 0%,
       rgba(255,255,255,.08) 100%
     );
-  border: none;
+  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
   color: var(--text);
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
@@ -552,18 +588,21 @@ body > * {
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 10px 22px rgba(0,0,0,0.25), 0 0 15px color-mix(in srgb, var(--accent1) 20%, transparent);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.12),
+    0 0 12px color-mix(in srgb, var(--accent1) 14%, transparent);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
+/* Светлая тема - кнопка темы */
 :root[data-theme="light"] .themePill {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: none;
+  border: var(--btn-border-width) solid var(--btn-border);
   color: var(--text-primary);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .themePill:hover {
@@ -573,6 +612,7 @@ body > * {
       color-mix(in srgb, var(--accent1) 20%, white 10%) 0%,
       rgba(255,255,255,.11) 100%
     );
+  border-color: color-mix(in srgb, var(--accent1) 30%, rgba(255,255,255,.18));
 }
 
 .themePill:active {
@@ -580,7 +620,7 @@ body > * {
 }
 
 /* ========================= */
-/* BOTTOM SHEETS */
+/* BOTTOM SHEETS - ИСПРАВЛЕНО */
 /* ========================= */
 .langOverlay, .themeOverlay, .platformOverlay {
   position: fixed;
@@ -671,6 +711,7 @@ body > * {
   transition: all 0.2s ease;
 }
 
+/* Последний элемент без нижней границы */
 .langItem:last-child, .themeItem:last-child, .platformItem:last-child {
   border-bottom: none;
 }
