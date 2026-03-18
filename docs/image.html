@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Генерация картинок</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
+  <script>
+    (function(){
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.disableVerticalSwipes();
+      }
+    })();
+  </script>
+
+  <!-- ТЕМА -->
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+      }
+      document.documentElement.setAttribute("data-theme", getTheme());
+    })();
+  </script>
+
+  <!-- ПЛАТФОРМА -->
+  <script>
+    (function(){
+      const KEY = "miniapp_platform_v1";
+      function getPlatform(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("platform");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "ios"; }catch(e){ return "ios"; }
+      }
+      const platform = getPlatform();
+      if (platform === 'android') {
+        document.documentElement.classList.add('android-mode');
+      }
+    })();
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: #0b0f18;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+
+    :root[data-theme="blue"] { --accent: #5aaeff; --accent2: #3496ff; }
+    :root[data-theme="black"] { --accent: #8bb8ff; --accent2: #5a98ff; }
+    :root[data-theme="light"] { --accent: #3a8cff; --accent2: #1a6cff; }
+
+    /* ШАПКА */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .back-btn {
+      color: white;
+      text-decoration: none;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .spacer { width: 40px; }
+
+    /* КОНТЕЙНЕР */
+    .container {
+      padding: 80px 16px 20px;
+    }
+
+    /* ЗАГОЛОВОК */
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+
+    /* СЕТКА КАРТОЧЕК */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    /* КАРТОЧКА */
+    .card {
+      display: block;
+      text-decoration: none;
+      color: white;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 16px;
+      transition: all 0.2s;
+    }
+
+    .card:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      font-size: 36px;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+    }
+
+    /* СВЕТЛАЯ ТЕМА */
+    :root[data-theme="light"] {
+      --text-primary: #2c3e50;
+    }
+    :root[data-theme="light"] body {
+      color: var(--text-primary);
+    }
+    :root[data-theme="light"] .card {
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(0,0,0,0.1);
+      color: var(--text-primary);
+    }
+    :root[data-theme="light"] .card-desc {
+      color: #4a5a6a;
+    }
+
+    /* ANDROID */
+    html.android-mode .card {
+      backdrop-filter: none !important;
+      background: rgba(255,255,255,0.08) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="./index.html" class="back-btn">←</a>
+    <div class="title" id="title">Генерация картинок</div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="container">
+    <div class="section-title" id="sectionTitle">🎨 Выбери стиль</div>
+
+    <div class="cards-grid">
+      <!-- Карточка 1: Свободный промпт -->
+      <a href="./card-text-to-image.html" class="card" id="card1">
+        <div class="card-icon">🖋️</div>
+        <div class="card-title" id="card1Title">Свободный промпт</div>
+        <div class="card-desc" id="card1Desc">Напиши что хочешь</div>
+      </a>
+
+      <!-- Карточка 2: Фото → Аниме -->
+      <a href="./card-photo-to-anime.html" class="card" id="card2">
+        <div class="card-icon">📸</div>
+        <div class="card-title" id="card2Title">Фото → Аниме</div>
+        <div class="card-desc" id="card2Desc">Стань аниме персонажем</div>
+      </a>
+
+      <!-- Карточка 3: Фото → Рисунок -->
+      <a href="./card-photo-to-drawing.html" class="card" id="card3">
+        <div class="card-icon">✏️</div>
+        <div class="card-title" id="card3Title">Фото → Рисунок</div>
+        <div class="card-desc" id="card3Desc">Как нарисованное</div>
+      </a>
+
+      <!-- Карточка 4: Цветочная фантазия -->
+      <a href="./card-flowers.html" class="card" id="card4">
+        <div class="card-icon">🌸</div>
+        <div class="card-title" id="card4Title">Цветочная фантазия</div>
+        <div class="card-desc" id="card4Desc">Лепестки цветов</div>
+      </a>
+
+      <!-- Карточка 5: Фэнтези персонаж -->
+      <a href="./card-fantasy.html" class="card" id="card5">
+        <div class="card-icon">🧝‍♀️</div>
+        <div class="card-title" id="card5Title">Фэнтези персонаж</div>
+        <div class="card-desc" id="card5Desc">Стань эльфом</div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // ===== ПЕРЕВОДЫ =====
+    const I18N = {
+      ru: {
+        title: "Генерация картинок",
+        sectionTitle: "🎨 Выбери стиль",
+        card1Title: "Свободный промпт",
+        card1Desc: "Напиши что хочешь",
+        card2Title: "Фото → Аниме",
+        card2Desc: "Стань аниме персонажем",
+        card3Title: "Фото → Рисунок",
+        card3Desc: "Как нарисованное",
+        card4Title: "Цветочная фантазия",
+        card4Desc: "Лепестки цветов",
+        card5Title: "Фэнтези персонаж",
+        card5Desc: "Стань эльфом"
+      },
+      en: {
+        title: "Image generation",
+        sectionTitle: "🎨 Choose style",
+        card1Title: "Free prompt",
+        card1Desc: "Write what you want",
+        card2Title: "Photo → Anime",
+        card2Desc: "Become anime character",
+        card3Title: "Photo → Drawing",
+        card3Desc: "Like drawn",
+        card4Title: "Flower fantasy",
+        card4Desc: "Flower petals",
+        card5Title: "Fantasy character",
+        card5Desc: "Become an elf"
+      },
+      kk: {
+        title: "Сурет генерациясы",
+        sectionTitle: "🎨 Стиль таңда",
+        card1Title: "Еркін промпт",
+        card1Desc: "Қалағаныңды жаз",
+        card2Title: "Фото → Аниме",
+        card2Desc: "Аниме кейіпкері",
+        card3Title: "Фото → Сурет",
+        card3Desc: "Салынғандай",
+        card4Title: "Гүлді фантазия",
+        card4Desc: "Гүл жапырақтары",
+        card5Title: "Фэнтези кейіпкер",
+        card5Desc: "Эльфке айнал"
+      }
+    };
+
+    function getLang() {
+      const url = new URL(window.location.href);
+      const qp = url.searchParams.get("lang");
+      if (qp) return qp;
+      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } 
+      catch(e) { return "ru"; }
+    }
+
+    const lang = getLang();
+    const t = I18N[lang] || I18N.ru;
+
+    // Применяем переводы
+    document.getElementById('title').textContent = t.title;
+    document.getElementById('sectionTitle').textContent = t.sectionTitle;
+    document.getElementById('card1Title').textContent = t.card1Title;
+    document.getElementById('card1Desc').textContent = t.card1Desc;
+    document.getElementById('card2Title').textContent = t.card2Title;
+    document.getElementById('card2Desc').textContent = t.card2Desc;
+    document.getElementById('card3Title').textContent = t.card3Title;
+    document.getElementById('card3Desc').textContent = t.card3Desc;
+    document.getElementById('card4Title').textContent = t.card4Title;
+    document.getElementById('card4Desc').textContent = t.card4Desc;
+    document.getElementById('card5Title').textContent = t.card5Title;
+    document.getElementById('card5Desc').textContent = t.card5Desc;
+
+    // Функция открытия (на всякий случай)
+    function openCard(url) {
+      const lang = getLang();
+      const theme = document.documentElement.getAttribute('data-theme') || 'blue';
+      const platform = document.documentElement.classList.contains('android-mode') ? 'android' : 'ios';
+      window.location.href = `${url}?lang=${lang}&theme=${theme}&platform=${platform}`;
+    }
+  </script>
+</body>
+</html>
