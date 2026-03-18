@@ -566,4 +566,19 @@ html.android-mode .msg.bot.typing {
   box-shadow: 0 20px 44px rgba(0,0,0,.32);
 }
 
-/* ... остальные стили без изменений ... */
+/* ===== ДОБАВЛЕННЫЕ СТИЛИ ДЛЯ КНОПОК В СВЕТЛОЙ ТЕМЕ ===== */
+:root[data-theme="light"] .action-btn svg {
+  fill: #4a5a6a !important;  /* Темно-серый для иконок */
+}
+
+:root[data-theme="light"] .action-btn:hover svg {
+  fill: var(--accent1) !important;  /* При наведении - синий */
+}
+
+:root[data-theme="light"] .action-btn.copied svg {
+  fill: #2e7d32 !important;  /* Темно-зеленый для состояния "скопировано" */
+}
+
+html.android-mode[data-theme="light"] .action-btn svg {
+  fill: #4a5a6a !important;
+}
