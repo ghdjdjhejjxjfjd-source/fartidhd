@@ -60,43 +60,47 @@
       min-height: 100vh;
     }
 
-    /* ===== ТЕМЫ - ТЕПЕРЬ РАЗНЫЕ ===== */
+    /* ===== ТЕМЫ - КАК В МЕНЮ ===== */
     :root[data-theme="blue"] { 
-      --bg-start: #1a2a3a;
-      --bg-end: #0d1a2a;
-      --accent: #3a8cff;
-      --accent-glow: rgba(58, 140, 255, 0.3);
-      --card-bg: rgba(58, 140, 255, 0.1);
-      --card-border: rgba(58, 140, 255, 0.3);
-      --text: #ffffff;
-      --text-secondary: rgba(255,255,255,0.7);
+      --bg-top: #27384b;
+      --bg-mid: #1d2b3a;
+      --bg-bot: #16212d;
+      --accent1: #5aaeff;
+      --accent2: #3496ff;
+      --text: #f7fbff;
+      --subtext: rgba(247, 251, 255, 0.68);
+      --card-bg: rgba(255,255,255,0.1);
+      --card-border: rgba(255,255,255,0.12);
     }
     
     :root[data-theme="black"] { 
-      --bg-start: #1a1a1a;
-      --bg-end: #0a0a0a;
-      --accent: #8bb8ff;
-      --accent-glow: rgba(139, 184, 255, 0.3);
-      --card-bg: rgba(139, 184, 255, 0.1);
-      --card-border: rgba(139, 184, 255, 0.3);
-      --text: #ffffff;
-      --text-secondary: rgba(255,255,255,0.7);
+      --bg-top: #1b2430;
+      --bg-mid: #141b24;
+      --bg-bot: #0e141c;
+      --accent1: #8bb8ff;
+      --accent2: #5a98ff;
+      --text: #f7fbff;
+      --subtext: rgba(247, 251, 255, 0.68);
+      --card-bg: rgba(255,255,255,0.1);
+      --card-border: rgba(255,255,255,0.12);
     }
     
     :root[data-theme="light"] { 
-      --bg-start: #f0f4fa;
-      --bg-end: #e4ecf5;
-      --accent: #3a8cff;
-      --accent-glow: rgba(58, 140, 255, 0.2);
+      --bg-top: #e8edf5;
+      --bg-mid: #d9e0eb;
+      --bg-bot: #cad1de;
+      --accent1: #3a8cff;
+      --accent2: #1a6cff;
+      --text: #2c3e50;
+      --subtext: #4a5a6a;
       --card-bg: rgba(255,255,255,0.8);
       --card-border: rgba(0,0,0,0.1);
-      --text: #2c3e50;
-      --text-secondary: #4a5a6a;
     }
 
-    /* Градиент фона */
+    /* Градиент фона как в меню */
     body {
-      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
+      background-attachment: fixed;
     }
 
     /* ШАПКА */
@@ -142,119 +146,110 @@
       min-height: 100vh;
     }
 
-    /* ТАБЫ (Все | Избранные) */
-    .tabs {
+    /* ЗАГОЛОВОК */
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--accent1);
+    }
+
+    /* КАРТОЧКИ - В СТОЛБИК НА ВСЮ ШИРИНУ */
+    .cards-list {
       display: flex;
-      gap: 10px;
-      margin-bottom: 24px;
-      background: rgba(0,0,0,0.2);
-      padding: 4px;
-      border-radius: 30px;
-      backdrop-filter: blur(10px);
-    }
-
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 10px;
-      border-radius: 26px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .tab.active {
-      background: var(--accent);
-      color: white;
-      box-shadow: 0 4px 10px var(--accent-glow);
-    }
-
-    /* СЕТКА КАРТОЧЕК */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      flex-direction: column;
       gap: 16px;
+      padding-bottom: 20px;
     }
 
-    /* КАРТОЧКА - ВЕРТИКАЛЬНАЯ КАК НА СКРИНЕ */
+    /* КАРТОЧКА - НА ВСЮ ШИРИНУ */
     .card {
       display: block;
       text-decoration: none;
       color: var(--text);
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 20px 12px;
+      border-radius: 20px;
+      padding: 20px;
       transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      aspect-ratio: 3/4;
+      backdrop-filter: blur(12px) saturate(118%);
+      -webkit-backdrop-filter: blur(12px) saturate(118%);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.14);
+      width: 100%;
+    }
+
+    .card:active {
+      transform: scale(0.995);
+    }
+
+    /* ВЕРХНЯЯ ЧАСТЬ КАРТОЧКИ */
+    .card-header {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
     }
 
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-      box-shadow: 0 10px 20px var(--accent-glow);
-    }
-
-    /* КРУГЛАЯ ОБЛАСТЬ ДЛЯ ИКОНКИ */
+    /* ИКОНКА */
     .card-icon {
-      width: 80px;
-      height: 80px;
-      background: var(--accent);
-      border-radius: 40px;
-      margin: 0 auto 16px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 18%, white 8%) 0%, rgba(255,255,255,0.08) 100%);
+      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,0.12));
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 36px;
-      color: white;
-      box-shadow: 0 8px 16px var(--accent-glow);
+      font-size: 32px;
+      color: var(--text);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
     }
 
     .card-title {
       font-weight: 700;
       font-size: 18px;
-      margin-bottom: 8px;
       color: var(--text);
-      text-align: center;
-    }
-
-    .card-desc {
-      font-size: 12px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-      text-align: center;
       flex: 1;
     }
 
-    /* ===== ANDROID MODE - ТЕПЕРЬ РАБОТАЕТ ===== */
+    .card-desc {
+      font-size: 14px;
+      color: var(--subtext);
+      line-height: 1.5;
+      padding-left: 76px; /* ширина иконки + отступ */
+    }
+
+    /* СТРЕЛКА */
+    .card-arrow {
+      color: rgba(255,255,255,0.4);
+      font-size: 14px;
+      margin-left: auto;
+    }
+
+    /* ===== ANDROID MODE - БЕЗ ОБВОДКИ ===== */
     html.android-mode .card {
       backdrop-filter: none !important;
-      border: 2px solid var(--accent) !important;
-      background: rgba(0,0,0,0.3) !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      box-shadow: none !important;
+      background: rgba(255,255,255,0.08) !important;
     }
 
     html.android-mode .card-icon {
-      box-shadow: none !important;
-      border: 2px solid white;
-    }
-
-    html.android-mode .tabs {
       backdrop-filter: none !important;
-      background: rgba(0,0,0,0.3) !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid rgba(255,255,255,0.15) !important;
+      box-shadow: none !important;
     }
 
     html.android-mode[data-theme="light"] .card {
-      background: rgba(255,255,255,0.9) !important;
-      border: 2px solid var(--accent) !important;
+      background: rgba(255,255,255,0.8) !important;
+      border: 1px solid rgba(0,0,0,0.1) !important;
     }
 
-    html.android-mode[data-theme="light"] .tabs {
-      background: rgba(255,255,255,0.5) !important;
+    html.android-mode[data-theme="light"] .card-icon {
+      background: rgba(255,255,255,0.9) !important;
+      border: 1px solid rgba(0,0,0,0.1) !important;
     }
   </style>
 </head>
@@ -267,46 +262,57 @@
   </div>
 
   <div class="container">
-    <!-- ТАБЫ как на скрине -->
-    <div class="tabs">
-      <div class="tab active" id="tabAll">Все</div>
-      <div class="tab" id="tabFav">Избранные</div>
-    </div>
+    <div class="section-title" id="sectionTitle">🎨 Выбери стиль</div>
 
-    <div class="cards-grid">
+    <div class="cards-list">
       <!-- Карточка 1: Свободный промпт -->
       <a href="./card-text-to-image.html" class="card" id="card1">
-        <div class="card-icon">🖋️</div>
-        <div class="card-title" id="card1Title">Свободный промпт</div>
-        <div class="card-desc" id="card1Desc">Нарисуй что угодно в любом стиле</div>
+        <div class="card-header">
+          <div class="card-icon">🖋️</div>
+          <div class="card-title" id="card1Title">Свободный промпт</div>
+          <span class="card-arrow">▶</span>
+        </div>
+        <div class="card-desc" id="card1Desc">Напиши что хочешь увидеть — ИИ нарисует в любом стиле</div>
       </a>
 
       <!-- Карточка 2: Фото → Аниме -->
       <a href="./card-photo-to-anime.html" class="card" id="card2">
-        <div class="card-icon">📸</div>
-        <div class="card-title" id="card2Title">Фото → Аниме</div>
-        <div class="card-desc" id="card2Desc">Преврати своё фото в аниме персонажа</div>
+        <div class="card-header">
+          <div class="card-icon">📸</div>
+          <div class="card-title" id="card2Title">Фото → Аниме</div>
+          <span class="card-arrow">▶</span>
+        </div>
+        <div class="card-desc" id="card2Desc">Преврати своё фото в аниме персонажа с большими глазами</div>
       </a>
 
       <!-- Карточка 3: Фото → Рисунок -->
       <a href="./card-photo-to-drawing.html" class="card" id="card3">
-        <div class="card-icon">✏️</div>
-        <div class="card-title" id="card3Title">Фото → Рисунок</div>
-        <div class="card-desc" id="card3Desc">Стань нарисованным карандашом или красками</div>
+        <div class="card-header">
+          <div class="card-icon">✏️</div>
+          <div class="card-title" id="card3Title">Фото → Рисунок</div>
+          <span class="card-arrow">▶</span>
+        </div>
+        <div class="card-desc" id="card3Desc">Стань нарисованным карандашом, акварелью или маслом</div>
       </a>
 
       <!-- Карточка 4: Цветочная фантазия -->
       <a href="./card-flowers.html" class="card" id="card4">
-        <div class="card-icon">🌸</div>
-        <div class="card-title" id="card4Title">Цветочная фантазия</div>
-        <div class="card-desc" id="card4Desc">Создай волшебные цветы и лепестки</div>
+        <div class="card-header">
+          <div class="card-icon">🌸</div>
+          <div class="card-title" id="card4Title">Цветочная фантазия</div>
+          <span class="card-arrow">▶</span>
+        </div>
+        <div class="card-desc" id="card4Desc">Создай волшебные цветы и лепестки любых оттенков</div>
       </a>
 
       <!-- Карточка 5: Фэнтези персонаж -->
       <a href="./card-fantasy.html" class="card" id="card5">
-        <div class="card-icon">🧝‍♀️</div>
-        <div class="card-title" id="card5Title">Фэнтези персонаж</div>
-        <div class="card-desc" id="card5Desc">Стань эльфом, магом или рыцарем</div>
+        <div class="card-header">
+          <div class="card-icon">🧝‍♀️</div>
+          <div class="card-title" id="card5Title">Фэнтези персонаж</div>
+          <span class="card-arrow">▶</span>
+        </div>
+        <div class="card-desc" id="card5Desc">Стань эльфом, магом, рыцарем или другим героем</div>
       </a>
     </div>
   </div>
@@ -316,33 +322,31 @@
     const I18N = {
       ru: {
         title: "Генерация картинок",
-        tabAll: "Все",
-        tabFav: "Избранные",
+        sectionTitle: "🎨 Выбери стиль",
         card1Title: "Свободный промпт",
-        card1Desc: "Нарисуй что угодно в любом стиле",
+        card1Desc: "Напиши что хочешь увидеть — ИИ нарисует в любом стиле",
         card2Title: "Фото → Аниме",
-        card2Desc: "Преврати своё фото в аниме персонажа",
+        card2Desc: "Преврати своё фото в аниме персонажа с большими глазами",
         card3Title: "Фото → Рисунок",
-        card3Desc: "Стань нарисованным карандашом или красками",
+        card3Desc: "Стань нарисованным карандашом, акварелью или маслом",
         card4Title: "Цветочная фантазия",
-        card4Desc: "Создай волшебные цветы и лепестки",
+        card4Desc: "Создай волшебные цветы и лепестки любых оттенков",
         card5Title: "Фэнтези персонаж",
-        card5Desc: "Стань эльфом, магом или рыцарем"
+        card5Desc: "Стань эльфом, магом, рыцарем или другим героем"
       },
       en: {
         title: "Image generation",
-        tabAll: "All",
-        tabFav: "Favorites",
+        sectionTitle: "🎨 Choose style",
         card1Title: "Free prompt",
-        card1Desc: "Draw anything in any style",
+        card1Desc: "Write what you want to see — AI will draw in any style",
         card2Title: "Photo → Anime",
-        card2Desc: "Turn your photo into anime character",
+        card2Desc: "Turn your photo into anime character with big eyes",
         card3Title: "Photo → Drawing",
-        card3Desc: "Become drawn with pencil or paints",
+        card3Desc: "Become drawn with pencil, watercolor or oil",
         card4Title: "Flower fantasy",
-        card4Desc: "Create magical flowers and petals",
+        card4Desc: "Create magical flowers and petals of any colors",
         card5Title: "Fantasy character",
-        card5Desc: "Become an elf, wizard or knight"
+        card5Desc: "Become an elf, wizard, knight or other hero"
       }
     };
 
@@ -359,8 +363,7 @@
 
     // Применяем переводы
     document.getElementById('title').textContent = t.title;
-    document.getElementById('tabAll').textContent = t.tabAll;
-    document.getElementById('tabFav').textContent = t.tabFav;
+    document.getElementById('sectionTitle').textContent = t.sectionTitle;
     document.getElementById('card1Title').textContent = t.card1Title;
     document.getElementById('card1Desc').textContent = t.card1Desc;
     document.getElementById('card2Title').textContent = t.card2Title;
@@ -371,14 +374,6 @@
     document.getElementById('card4Desc').textContent = t.card4Desc;
     document.getElementById('card5Title').textContent = t.card5Title;
     document.getElementById('card5Desc').textContent = t.card5Desc;
-
-    // Логика табов (для демонстрации)
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', function() {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-      });
-    });
   </script>
 </body>
 </html>
