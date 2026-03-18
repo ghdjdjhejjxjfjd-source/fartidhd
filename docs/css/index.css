@@ -85,8 +85,8 @@ html.android-mode .platformPill {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   filter: none !important;
-  box-shadow: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: none !important; /* Убрали обводку */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important; /* Тень для Android */
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
@@ -96,9 +96,10 @@ html.android-mode[data-theme="light"] .tool-item,
 html.android-mode[data-theme="light"] .langPill,
 html.android-mode[data-theme="light"] .themePill,
 html.android-mode[data-theme="light"] .platformPill {
-  border: var(--btn-border-width) solid var(--btn-border) !important;
+  border: none !important; /* Убрали обводку */
   background: rgba(255, 255, 255, 0.8) !important;
   color: var(--text-primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 * {
@@ -225,7 +226,7 @@ body > * {
 }
 
 /* ========================= */
-/* КНОПКИ */
+/* КНОПКИ - ИСПРАВЛЕНО (УБРАЛ ОБВОДКУ, УСИЛИЛ ТЕНИ) */
 /* ========================= */
 .btn {
   display: block;
@@ -243,12 +244,11 @@ body > * {
       color-mix(in srgb, var(--accent1) 18%, white 8%) 0%,
       rgba(255,255,255,.08) 100%
     );
-  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+  border: none; /* УБРАЛИ ОБВОДКУ */
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow:
-    0 10px 22px rgba(0,0,0,.14),
-    0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
+  /* УСИЛЕННАЯ ТЕНЬ ДЛЯ ТЕМНЫХ ТЕМ */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), 0 0 15px color-mix(in srgb, var(--accent1) 20%, transparent);
   margin-bottom: 12px;
   transition: all 0.2s ease;
 }
@@ -258,20 +258,17 @@ body > * {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border);
+  border: none; /* УБРАЛИ ОБВОДКУ */
   color: var(--text-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08); /* Чуть заметнее тень */
 }
 
 .btn:active {
   transform: scale(.995);
-  box-shadow:
-    0 12px 24px rgba(0,0,0,.18),
-    0 0 18px color-mix(in srgb, var(--accent1) 20%, transparent);
+  box-shadow: 0 8px 18px rgba(0,0,0,.2);
 }
 
 .btn:hover {
-  border-color: color-mix(in srgb, var(--accent1) 35%, rgba(255,255,255,.18));
   background:
     linear-gradient(
       180deg,
@@ -282,8 +279,7 @@ body > * {
 
 /* Светлая тема - hover для кнопок */
 :root[data-theme="light"] .btn:hover {
-  border-color: var(--accent1);
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 /* ========================= */
@@ -294,11 +290,11 @@ body > * {
   align-items: center !important;
   justify-content: space-between !important;
   margin-bottom: 0 !important;
+  border: none !important; /* УБРАЛИ ОБВОДКУ */
 }
 
 .tools-btn.active {
-  border-color: var(--accent1) !important;
-  background: rgba(255,255,255,0.15) !important;
+  background: rgba(255,255,255,0.2) !important;
 }
 
 /* Светлая тема - кнопка инструментов */
@@ -306,13 +302,13 @@ body > * {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border);
+  border: none !important;
   color: var(--text-primary);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 :root[data-theme="light"] .tools-btn.active {
-  background: rgba(255, 255, 255, 0.5) !important;
-  border-color: var(--accent1) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* Выпадающий список */
@@ -338,7 +334,7 @@ body > * {
   padding: 14px 18px;
   margin: 6px 0;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, .12);
+  border: none; /* УБРАЛИ ОБВОДКУ */
   border-radius: 16px;
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
@@ -347,7 +343,8 @@ body > * {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 22px rgba(0,0,0,.14);
+  /* УСИЛЕННАЯ ТЕНЬ */
+  box-shadow: 0 10px 22px rgba(0,0,0,0.2);
 }
 
 /* Светлая тема - элементы инструментов */
@@ -355,21 +352,19 @@ body > * {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border);
+  border: none;
   color: var(--text-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 .tool-item:hover {
   background: rgba(255, 255, 255, 0.15);
-  border-color: var(--accent1);
   transform: translateX(6px);
 }
 
 /* Светлая тема - hover для элементов инструментов */
 :root[data-theme="light"] .tool-item:hover {
-  background: rgba(255, 255, 255, 0.5);
-  border-color: var(--accent1);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .tool-icon {
@@ -459,12 +454,12 @@ body > * {
   border-radius: 16px;
   padding: 12px 14px;
   background: rgba(255, 255, 255, .10);
-  border: 1px solid rgba(255, 255, 255, .12);
+  border: none; /* УБРАЛИ ОБВОДКУ */
   color: var(--text);
   outline: none;
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.2); /* УСИЛЕННАЯ ТЕНЬ */
   font-size: 15px;
   font-weight: 700;
   display: flex;
@@ -480,14 +475,13 @@ body > * {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border);
+  border: none;
   color: var(--text-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 .langPill:hover {
   background: rgba(255, 255, 255, .13);
-  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
 }
 
 .langPill:active {
@@ -528,12 +522,12 @@ body > * {
   border-radius: 16px;
   padding: 12px 14px;
   background: rgba(255, 255, 255, .10);
-  border: 1px solid rgba(255, 255, 255, .12);
+  border: none; /* УБРАЛИ ОБВОДКУ */
   color: var(--text);
   outline: none;
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
-  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.2); /* УСИЛЕННАЯ ТЕНЬ */
   font-size: 15px;
   font-weight: 700;
   display: flex;
@@ -549,14 +543,13 @@ body > * {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border);
+  border: none;
   color: var(--text-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 .platformPill:hover {
   background: rgba(255, 255, 255, .13);
-  border-color: color-mix(in srgb, var(--accent1) 26%, rgba(255,255,255,.18));
 }
 
 .platformPill:active {
@@ -579,7 +572,7 @@ body > * {
       color-mix(in srgb, var(--accent1) 16%, white 8%) 0%,
       rgba(255,255,255,.08) 100%
     );
-  border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+  border: none; /* УБРАЛИ ОБВОДКУ */
   color: var(--text);
   backdrop-filter: blur(12px) saturate(115%);
   -webkit-backdrop-filter: blur(12px) saturate(115%);
@@ -588,9 +581,8 @@ body > * {
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow:
-    0 8px 18px rgba(0,0,0,.12),
-    0 0 12px color-mix(in srgb, var(--accent1) 14%, transparent);
+  /* УСИЛЕННАЯ ТЕНЬ */
+  box-shadow: 0 10px 22px rgba(0,0,0,0.2), 0 0 15px color-mix(in srgb, var(--accent1) 20%, transparent);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -600,9 +592,9 @@ body > * {
   background: var(--btn-bg);
   backdrop-filter: var(--btn-blur);
   -webkit-backdrop-filter: var(--btn-blur);
-  border: var(--btn-border-width) solid var(--btn-border);
+  border: none;
   color: var(--text-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 .themePill:hover {
@@ -612,7 +604,6 @@ body > * {
       color-mix(in srgb, var(--accent1) 20%, white 10%) 0%,
       rgba(255,255,255,.11) 100%
     );
-  border-color: color-mix(in srgb, var(--accent1) 30%, rgba(255,255,255,.18));
 }
 
 .themePill:active {
