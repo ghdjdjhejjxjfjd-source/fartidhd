@@ -2,7 +2,7 @@ import os
 import time
 import asyncio
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
-from telegram import Update, BotCommandScopeChat
+from telegram import Update, BotCommandScopeChat, BotCommand
 from telegram.error import Conflict, TimedOut, NetworkError
 
 from bot.handlers import start, on_button
@@ -27,65 +27,68 @@ LOG_GROUP_ID = int(os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or 
 
 async def post_init(app: Application):
     """Инициализация после запуска"""
+    # Сначала удаляем ВСЕ глобальные команды (которые установил BotFather)
+    try:
+        await app.bot.delete_my_commands()
+        print("🧹 Удалены все глобальные команды")
+        await asyncio.sleep(1)
+    except Exception as e:
+        print(f"⚠️ Ошибка удаления глобальных команд: {e}")
+    
+    # Устанавливаем только /start глобально
     try:
         await app.bot.set_my_commands([
             ("start", "🚀 Запустить бота"),
         ])
-        print("✅ Глобальная команда /start установлена")
+        print("✅ Глобальная команда /start восстановлена")
     except Exception as e:
-        print(f"⚠️ Ошибка установки глобальных команд: {e}")
+        print(f"⚠️ Ошибка установки /start: {e}")
     
-    # Список админ-команд
+    # Список админ-команд (короткие описания)
     admin_commands = [
-        ("whoami", "👤 Проверка админа"),
-        ("free", "⭐ Сделать бесплатным"),
-        ("paid", "💰 Сделать платным"),
-        ("block", "⛔ Заблокировать"),
-        ("unblock", "✅ Разблокировать"),
-        ("status", "ℹ️ Статус пользователя"),
-        ("addstars", "✨ Добавить звезды"),
-        ("balance", "💎 Баланс"),
-        ("starstrans", "🏆 Топ звезд"),
-        ("resetstars", "🔄 Сбросить баланс"),
+        BotCommand("whoami", "👤 Проверка админа"),
+        BotCommand("free", "⭐ Сделать бесплатным"),
+        BotCommand("paid", "💰 Сделать платным"),
+        BotCommand("block", "⛔ Заблокировать"),
+        BotCommand("unblock", "✅ Разблокировать"),
+        BotCommand("status", "ℹ️ Статус"),
+        BotCommand("addstars", "✨ Добавить звезды"),
+        BotCommand("balance", "💎 Баланс"),
+        BotCommand("starstrans", "🏆 Топ звезд"),
+        BotCommand("resetstars", "🔄 Сброс баланса"),
     ]
     
-    # Удаляем старые команды и устанавливаем новые для группы логов
+    # Устанавливаем админ-команды ТОЛЬКО для группы логов
     if LOG_GROUP_ID:
         try:
-            # Сначала удаляем все команды для этой группы
-            await app.bot.delete_my_commands(scope={"type": "chat", "chat_id": LOG_GROUP_ID})
-            print(f"🧹 Удалены старые команды для группы логов {LOG_GROUP_ID}")
-            
-            # Немного ждем
+            # Сначала удаляем старые команды для этой группы
+            await app.bot.delete_my_commands(scope=BotCommandScopeChat(chat_id=LOG_GROUP_ID))
+            print(f"🧹 Удалены старые команды для группы {LOG_GROUP_ID}")
             await asyncio.sleep(1)
             
-            # Устанавливаем новые команды
+            # Устанавливаем новые
             await app.bot.set_my_commands(
                 admin_commands,
-                scope={"type": "chat", "chat_id": LOG_GROUP_ID}
+                scope=BotCommandScopeChat(chat_id=LOG_GROUP_ID)
             )
-            print(f"✅ Админ-команды установлены для группы логов {LOG_GROUP_ID}")
+            print(f"✅ Админ-команды установлены для группы {LOG_GROUP_ID}")
         except Exception as e:
-            print(f"⚠️ Ошибка при установке команд для группы логов: {e}")
+            print(f"⚠️ Ошибка установки команд для группы: {e}")
     
-    # Удаляем старые команды и устанавливаем новые для группы поддержки
-    if SUPPORT_GROUP_ID:
+    # Устанавливаем команды для группы поддержки (если нужны)
+    if SUPPORT_GROUP_ID and SUPPORT_GROUP_ID != LOG_GROUP_ID:
         try:
-            # Сначала удаляем все команды для этой группы
-            await app.bot.delete_my_commands(scope={"type": "chat", "chat_id": SUPPORT_GROUP_ID})
-            print(f"🧹 Удалены старые команды для группы поддержки {SUPPORT_GROUP_ID}")
-            
-            # Немного ждем
+            await app.bot.delete_my_commands(scope=BotCommandScopeChat(chat_id=SUPPORT_GROUP_ID))
+            print(f"🧹 Удалены старые команды для поддержки {SUPPORT_GROUP_ID}")
             await asyncio.sleep(1)
             
-            # Устанавливаем новые команды
             await app.bot.set_my_commands(
                 admin_commands,
-                scope={"type": "chat", "chat_id": SUPPORT_GROUP_ID}
+                scope=BotCommandScopeChat(chat_id=SUPPORT_GROUP_ID)
             )
-            print(f"✅ Админ-команды установлены для группы поддержки {SUPPORT_GROUP_ID}")
+            print(f"✅ Админ-команды установлены для поддержки {SUPPORT_GROUP_ID}")
         except Exception as e:
-            print(f"⚠️ Ошибка при установке команд для группы поддержки: {e}")
+            print(f"⚠️ Ошибка установки команд для поддержки: {e}")
 
 async def error_handler(update: Update, context):
     """Обработчик ошибок"""
@@ -108,7 +111,7 @@ def start_bot():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN is not set")
 
-    # Создаем приложение с увеличенными таймаутами
+    # Создаем приложение
     app = (
         Application.builder()
         .token(BOT_TOKEN)
@@ -119,11 +122,8 @@ def start_bot():
         .build()
     )
 
-    # Добавляем обработчики
+    # Добавляем обработчики команд
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(on_button))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
     app.add_handler(CommandHandler("whoami", cmd_whoami))
     app.add_handler(CommandHandler("free", cmd_free))
     app.add_handler(CommandHandler("paid", cmd_paid))
@@ -135,20 +135,23 @@ def start_bot():
     app.add_handler(CommandHandler("starstrans", cmd_starstrans))
     app.add_handler(CommandHandler("resetstars", cmd_resetstars))
     
+    app.add_handler(CallbackQueryHandler(on_button))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    
     # Обработчик для команд в группе поддержки
     if SUPPORT_GROUP_ID:
         app.add_handler(MessageHandler(
             filters.Chat(SUPPORT_GROUP_ID) & filters.COMMAND, 
             handle_support_command
         ))
-        print(f"✅ Поддержка настроена: группа {SUPPORT_GROUP_ID}")
     
     app.add_error_handler(error_handler)
 
     print("🤖 Telegram bot started")
     print(f"✅ В личке: только /start")
     print(f"✅ В группе логов ({LOG_GROUP_ID}): все админ-команды")
-    print(f"✅ В группе поддержки ({SUPPORT_GROUP_ID}): все админ-команды + /reply /block /unblock")
+    if SUPPORT_GROUP_ID:
+        print(f"✅ В группе поддержки ({SUPPORT_GROUP_ID}): все админ-команды")
 
     # Запускаем polling
     try:
