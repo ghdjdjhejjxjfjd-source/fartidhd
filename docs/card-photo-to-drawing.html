@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Фото → Рисунок</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
+  <script>
+    (function(){
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.disableVerticalSwipes();
+      }
+    })();
+  </script>
+
+  <!-- ТЕМА из URL -->
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+      }
+      document.documentElement.setAttribute("data-theme", getTheme());
+    })();
+  </script>
+
+  <!-- ПЛАТФОРМА из URL -->
+  <script>
+    (function(){
+      const KEY = "miniapp_platform_v1";
+      function getPlatform(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("platform");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "ios"; }catch(e){ return "ios"; }
+      }
+      const platform = getPlatform();
+      if (platform === 'android') {
+        document.documentElement.classList.add('android-mode');
+      }
+    })();
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: #0b0f18;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+
+    :root[data-theme="blue"] { --accent1: #5aaeff; --accent2: #3496ff; }
+    :root[data-theme="black"] { --accent1: #8bb8ff; --accent2: #5a98ff; }
+    :root[data-theme="light"] { --accent1: #3a8cff; --accent2: #1a6cff; }
+
+    /* ШАПКА */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .back-btn {
+      color: white;
+      text-decoration: none;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .spacer { width: 40px; }
+
+    /* КОНТЕЙНЕР */
+    .container {
+      padding: 80px 16px 20px;
+    }
+
+    /* КАРТОЧКА */
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-icon {
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    /* ВЫБОР СТИЛЯ РИСУНКА */
+    .style-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .style-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .style-btn.active {
+      background: var(--accent1);
+      border-color: var(--accent1);
+    }
+
+    /* ОБЛАСТЬ ЗАГРУЗКИ */
+    .upload-area {
+      background: rgba(255,255,255,0.05);
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent1);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .upload-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .upload-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* ПРЕВЬЮ */
+    .preview-container {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .preview-image {
+      width: 100%;
+      border-radius: 16px;
+      margin-bottom: 10px;
+    }
+
+    .remove-btn {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    .remove-btn button {
+      background: none;
+      border: none;
+      color: #ff4444;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    /* КНОПКА ГЕНЕРАЦИИ */
+    .generate-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 20px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .generate-btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    /* РЕЗУЛЬТАТ */
+    .result {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-image {
+      width: 100%;
+      border-radius: 16px;
+      background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      border: none;
+    }
+
+    /* СВЕТЛАЯ ТЕМА */
+    :root[data-theme="light"] {
+      --text-primary: #2c3e50;
+    }
+    :root[data-theme="light"] body {
+      color: var(--text-primary);
+    }
+    :root[data-theme="light"] .upload-area {
+      background: rgba(255,255,255,0.8);
+      border: 2px dashed rgba(0,0,0,0.2);
+    }
+    :root[data-theme="light"] .upload-text {
+      color: #4a5a6a;
+    }
+    :root[data-theme="light"] .style-btn {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    :root[data-theme="light"] .action-btn {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+
+    /* ANDROID */
+    html.android-mode .card,
+    html.android-mode .upload-area,
+    html.android-mode .style-btn {
+      backdrop-filter: none !important;
+      background: rgba(255,255,255,0.08) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="./image.html" class="back-btn">←</a>
+    <div class="title" id="title">Фото → Рисунок</div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-icon">✏️</div>
+      <div class="card-title" id="cardTitle">Фото → Рисунок</div>
+      <div class="card-desc" id="cardDesc">Преврати своё фото в рисунок</div>
+
+      <!-- Выбор стиля рисунка -->
+      <div class="style-selector">
+        <button class="style-btn active" data-style="pencil" id="stylePencil">✏️ Карандаш</button>
+        <button class="style-btn" data-style="watercolor" id="styleWatercolor">🎨 Акварель</button>
+        <button class="style-btn" data-style="oil" id="styleOil">🖼 Масло</button>
+        <button class="style-btn" data-style="sketch" id="styleSketch">📝 Скетч</button>
+      </div>
+
+      <!-- Область загрузки -->
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📱</div>
+        <div class="upload-text" id="uploadText">Нажми чтобы выбрать фото</div>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </div>
+
+      <!-- Превью фото -->
+      <div class="preview-container" id="previewContainer">
+        <div class="remove-btn">
+          <button id="removeBtn">✕ Удалить</button>
+        </div>
+        <img class="preview-image" id="previewImg" src="">
+      </div>
+
+      <!-- Кнопка генерации -->
+      <button class="generate-btn" id="generateBtn" disabled>✨ Превратить в рисунок</button>
+
+      <!-- Результат -->
+      <div class="result" id="result">
+        <img class="result-image" id="resultImg" src="">
+        <div class="action-buttons">
+          <button class="action-btn" id="saveBtn">💾 Сохранить</button>
+          <button class="action-btn primary" id="newBtn">🔄 Новое</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/image-card.js"></script>
+
+  <script>
+    // ===== ПЕРЕВОДЫ =====
+    const I18N = {
+      ru: {
+        title: "Фото → Рисунок",
+        cardTitle: "Фото → Рисунок",
+        cardDesc: "Преврати своё фото в рисунок",
+        uploadText: "Нажми чтобы выбрать фото",
+        generate: "✨ Превратить в рисунок",
+        save: "💾 Сохранить",
+        new: "🔄 Новое",
+        remove: "✕ Удалить",
+        loading: "Превращаем в рисунок...",
+        stylePencil: "✏️ Карандаш",
+        styleWatercolor: "🎨 Акварель",
+        styleOil: "🖼 Масло",
+        styleSketch: "📝 Скетч"
+      },
+      en: {
+        title: "Photo → Drawing",
+        cardTitle: "Photo → Drawing",
+        cardDesc: "Turn your photo into a drawing",
+        uploadText: "Click to select photo",
+        generate: "✨ Turn into drawing",
+        save: "💾 Save",
+        new: "🔄 New",
+        remove: "✕ Remove",
+        loading: "Turning into drawing...",
+        stylePencil: "✏️ Pencil",
+        styleWatercolor: "🎨 Watercolor",
+        styleOil: "🖼 Oil",
+        styleSketch: "📝 Sketch"
+      },
+      kk: {
+        title: "Фото → Сурет",
+        cardTitle: "Фото → Сурет",
+        cardDesc: "Фотоңды суретке айналдыр",
+        uploadText: "Фото таңдау үшін бас",
+        generate: "✨ Суретке айналдыр",
+        save: "💾 Сақтау",
+        new: "🔄 Жаңа",
+        remove: "✕ Өшіру",
+        loading: "Суретке айналдыру...",
+        stylePencil: "✏️ Қарындаш",
+        styleWatercolor: "🎨 Акварель",
+        styleOil: "🖼 Май",
+        styleSketch: "📝 Нобай"
+      }
+    };
+
+    function getLang() {
+      const url = new URL(window.location.href);
+      const qp = url.searchParams.get("lang");
+      if (qp) return qp;
+      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } 
+      catch(e) { return "ru"; }
+    }
+
+    const lang = getLang();
+    const t = I18N[lang] || I18N.ru;
+
+    // Применяем переводы
+    document.getElementById('title').textContent = t.title;
+    document.getElementById('cardTitle').textContent = t.cardTitle;
+    document.getElementById('cardDesc').textContent = t.cardDesc;
+    document.getElementById('uploadText').textContent = t.uploadText;
+    document.getElementById('generateBtn').textContent = t.generate;
+    document.getElementById('saveBtn').textContent = t.save;
+    document.getElementById('newBtn').textContent = t.new;
+    document.getElementById('removeBtn').textContent = t.remove;
+    document.getElementById('stylePencil').textContent = t.stylePencil;
+    document.getElementById('styleWatercolor').textContent = t.styleWatercolor;
+    document.getElementById('styleOil').textContent = t.styleOil;
+    document.getElementById('styleSketch').textContent = t.styleSketch;
+
+    // ===== ЛОГИКА =====
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImg = document.getElementById('previewImg');
+    const removeBtn = document.getElementById('removeBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const result = document.getElementById('result');
+    const resultImg = document.getElementById('resultImg');
+    const saveBtn = document.getElementById('saveBtn');
+    const newBtn = document.getElementById('newBtn');
+
+    let currentFile = null;
+    let currentImageBase64 = null;
+    let currentStyle = 'pencil';
+
+    // Выбор стиля
+    document.querySelectorAll('.style-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentStyle = btn.dataset.style;
+      });
+    });
+
+    // Загрузка фото
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        const file = e.target.files[0];
+        
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Файл слишком большой. Максимум 5MB');
+          return;
+        }
+        
+        currentFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImg.src = e.target.result;
+          uploadArea.style.display = 'none';
+          previewContainer.style.display = 'block';
+          generateBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Удалить фото
+    removeBtn.addEventListener('click', () => {
+      currentFile = null;
+      previewContainer.style.display = 'none';
+      uploadArea.style.display = 'block';
+      fileInput.value = '';
+      generateBtn.disabled = true;
+    });
+
+    // Генерация
+    generateBtn.addEventListener('click', async () => {
+      if (!currentFile) return;
+
+      // Промпты для разных стилей
+      const stylePrompts = {
+        pencil: "transform this photo into a pencil drawing, sketch style, black and white, detailed lines, artistic",
+        watercolor: "transform this photo into a watercolor painting, soft colors, artistic, beautiful brush strokes",
+        oil: "transform this photo into an oil painting, rich colors, thick brush strokes, masterpiece",
+        sketch: "transform this photo into a quick sketch, rough lines, artistic, minimal details"
+      };
+
+      const fullPrompt = stylePrompts[currentStyle] + ", high quality, detailed";
+      
+      const imageBase64 = await generateImage(fullPrompt, "img2img", currentFile);
+      
+      if (imageBase64) {
+        currentImageBase64 = imageBase64;
+        resultImg.src = imageBase64;
+        result.style.display = 'block';
+        generateBtn.style.display = 'none';
+        previewContainer.style.display = 'none';
+      }
+    });
+
+    // Сохранение
+    saveBtn.addEventListener('click', () => {
+      if (currentImageBase64) {
+        saveImage(currentImageBase64, 'drawing-style.png');
+      }
+    });
+
+    // Новое изображение
+    newBtn.addEventListener('click', () => {
+      result.style.display = 'none';
+      generateBtn.style.display = 'block';
+      uploadArea.style.display = 'block';
+      previewContainer.style.display = 'none';
+      fileInput.value = '';
+      currentFile = null;
+      currentImageBase64 = null;
+      generateBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>
