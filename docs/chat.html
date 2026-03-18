@@ -299,7 +299,7 @@
         save:"💾 Сохранить",
         cancel:"✖ Отмена",
         saving:"Сохранение...",
-        aiModeLimit:"Осталось смен режима: {remaining}/8"
+        aiModeLimit:"📊 Осталось смен режима: {remaining}/8"
       },
       kk: {
         title:"AI чат",
@@ -323,7 +323,7 @@
         save:"💾 Сақтау",
         cancel:"✖ Болдырмау",
         saving:"Сақтау...",
-        aiModeLimit:"Режим ауыстыру қалды: {remaining}/8"
+        aiModeLimit:"📊 Режим ауыстыру қалды: {remaining}/8"
       },
       en: {
         title:"AI Chat",
@@ -347,7 +347,7 @@
         save:"💾 Save",
         cancel:"✖ Cancel",
         saving:"Saving...",
-        aiModeLimit:"Mode changes left: {remaining}/8"
+        aiModeLimit:"📊 Mode changes left: {remaining}/8"
       },
       tr: {
         title:"Yapay Zekâ Sohbet",
@@ -371,7 +371,7 @@
         save:"💾 Kaydet",
         cancel:"✖ İptal",
         saving:"Kaydediliyor...",
-        aiModeLimit:"Kalan mod değişikliği: {remaining}/8"
+        aiModeLimit:"📊 Kalan mod değişikliği: {remaining}/8"
       },
       uk: {
         title:"AI чат",
@@ -395,7 +395,7 @@
         save:"💾 Зберегти",
         cancel:"✖ Скасувати",
         saving:"Збереження...",
-        aiModeLimit:"Залишилось змін режиму: {remaining}/8"
+        aiModeLimit:"📊 Залишилось змін режиму: {remaining}/8"
       },
       fr: {
         title:"Chat IA",
@@ -419,12 +419,15 @@
         save:"💾 Enregistrer",
         cancel:"✖ Annuler",
         saving:"Enregistrement...",
-        aiModeLimit:"Changements de mode restants: {remaining}/8"
+        aiModeLimit:"📊 Changements de mode restants: {remaining}/8"
       },
     };
 
     const lang = getLang();
     const t = I18N[lang] || I18N.ru;
+
+    // Делаем переводы доступными глобально для chat.js
+    window.t = t;
 
     document.getElementById("titleText").textContent = t.title;
     const input = document.getElementById("text");
