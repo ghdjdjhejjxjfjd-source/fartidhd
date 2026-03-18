@@ -122,19 +122,19 @@
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
       font-weight: 800 !important; /* Максимально жирные */
-      border: 1px solid rgba(255, 255, 255, 0.35) !important; /* Узкая обводка */
+      border: 1px solid rgba(255, 255, 255, 0.35) !important; /* Узкая обводка для всех тем */
       text-shadow: 0 1px 3px rgba(0,0,0,0.3);
       letter-spacing: 0.3px;
     }
 
-    /* ЧЕРНАЯ ТЕМА - белая обводка */
+    /* ЧЕРНАЯ ТЕМА - такая же обводка как у синей */
     :root[data-theme="black"] .btn,
     :root[data-theme="black"] .tools-btn,
     :root[data-theme="black"] .tool-item,
     :root[data-theme="black"] .langPill,
     :root[data-theme="black"] .themePill,
     :root[data-theme="black"] .platformPill {
-      border: 1px solid rgba(255, 255, 255, 0.5) !important; /* Белая обводка */
+      border: 1px solid rgba(255, 255, 255, 0.35) !important; /* Такая же как у синей */
     }
 
     /* СИНЯЯ ТЕМА - стандартная обводка */
