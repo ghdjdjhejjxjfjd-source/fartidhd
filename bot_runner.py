@@ -2,7 +2,7 @@ import os
 import time
 import asyncio
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
-from telegram import Update
+from telegram import Update, BotCommandScopeChat
 from telegram.error import Conflict, TimedOut, NetworkError
 
 from bot.handlers import start, on_button
@@ -31,44 +31,61 @@ async def post_init(app: Application):
         await app.bot.set_my_commands([
             ("start", "🚀 Запустить бота"),
         ])
+        print("✅ Глобальная команда /start установлена")
     except Exception as e:
-        print(f"⚠️ Ошибка установки команд: {e}")
+        print(f"⚠️ Ошибка установки глобальных команд: {e}")
     
     # Список админ-команд
     admin_commands = [
         ("whoami", "👤 Проверка админа"),
-        ("free", "⭐ Сделать бесплатным: /free <id>"),
-        ("paid", "💰 Сделать платным: /paid <id>"),
-        ("block", "⛔ Заблокировать: /block <id>"),
-        ("unblock", "✅ Разблокировать: /unblock <id>"),
-        ("status", "ℹ️ Статус: /status <id>"),
-        ("addstars", "✨ Добавить звезды: /addstars <id> <кол-во>"),
-        ("balance", "💎 Баланс: /balance <id>"),
-        ("starstrans", "🏆 Топ звезд: /starstrans [лимит]"),
-        ("resetstars", "🔄 Сбросить баланс: /resetstars <id>"),
+        ("free", "⭐ Сделать бесплатным"),
+        ("paid", "💰 Сделать платным"),
+        ("block", "⛔ Заблокировать"),
+        ("unblock", "✅ Разблокировать"),
+        ("status", "ℹ️ Статус пользователя"),
+        ("addstars", "✨ Добавить звезды"),
+        ("balance", "💎 Баланс"),
+        ("starstrans", "🏆 Топ звезд"),
+        ("resetstars", "🔄 Сбросить баланс"),
     ]
     
-    # Устанавливаем для группы поддержки
-    if SUPPORT_GROUP_ID:
+    # Удаляем старые команды и устанавливаем новые для группы логов
+    if LOG_GROUP_ID:
         try:
-            await app.bot.set_my_commands(
-                admin_commands,
-                scope={"type": "chat", "chat_id": SUPPORT_GROUP_ID}
-            )
-            print(f"✅ Админ-команды установлены для поддержки {SUPPORT_GROUP_ID}")
-        except Exception as e:
-            print(f"⚠️ Не удалось установить команды для поддержки: {e}")
-    
-    # Устанавливаем для группы логов
-    if LOG_GROUP_ID and LOG_GROUP_ID != SUPPORT_GROUP_ID:
-        try:
+            # Сначала удаляем все команды для этой группы
+            await app.bot.delete_my_commands(scope={"type": "chat", "chat_id": LOG_GROUP_ID})
+            print(f"🧹 Удалены старые команды для группы логов {LOG_GROUP_ID}")
+            
+            # Немного ждем
+            await asyncio.sleep(1)
+            
+            # Устанавливаем новые команды
             await app.bot.set_my_commands(
                 admin_commands,
                 scope={"type": "chat", "chat_id": LOG_GROUP_ID}
             )
-            print(f"✅ Админ-команды установлены для логов {LOG_GROUP_ID}")
+            print(f"✅ Админ-команды установлены для группы логов {LOG_GROUP_ID}")
         except Exception as e:
-            print(f"⚠️ Не удалось установить команды для логов: {e}")
+            print(f"⚠️ Ошибка при установке команд для группы логов: {e}")
+    
+    # Удаляем старые команды и устанавливаем новые для группы поддержки
+    if SUPPORT_GROUP_ID:
+        try:
+            # Сначала удаляем все команды для этой группы
+            await app.bot.delete_my_commands(scope={"type": "chat", "chat_id": SUPPORT_GROUP_ID})
+            print(f"🧹 Удалены старые команды для группы поддержки {SUPPORT_GROUP_ID}")
+            
+            # Немного ждем
+            await asyncio.sleep(1)
+            
+            # Устанавливаем новые команды
+            await app.bot.set_my_commands(
+                admin_commands,
+                scope={"type": "chat", "chat_id": SUPPORT_GROUP_ID}
+            )
+            print(f"✅ Админ-команды установлены для группы поддержки {SUPPORT_GROUP_ID}")
+        except Exception as e:
+            print(f"⚠️ Ошибка при установке команд для группы поддержки: {e}")
 
 async def error_handler(update: Update, context):
     """Обработчик ошибок"""
