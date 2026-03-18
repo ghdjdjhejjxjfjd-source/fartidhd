@@ -60,9 +60,29 @@
       min-height: 100vh;
     }
 
-    :root[data-theme="blue"] { --accent: #5aaeff; --accent2: #3496ff; }
-    :root[data-theme="black"] { --accent: #8bb8ff; --accent2: #5a98ff; }
-    :root[data-theme="light"] { --accent: #3a8cff; --accent2: #1a6cff; }
+    :root[data-theme="blue"] { 
+      --accent: #5aaeff; 
+      --accent2: #3496ff;
+      --card-bg: rgba(90, 174, 255, 0.1);
+      --card-border: rgba(90, 174, 255, 0.3);
+      --text: #ffffff;
+    }
+    :root[data-theme="black"] { 
+      --accent: #8bb8ff; 
+      --accent2: #5a98ff;
+      --card-bg: rgba(139, 184, 255, 0.1);
+      --card-border: rgba(139, 184, 255, 0.3);
+      --text: #ffffff;
+    }
+    :root[data-theme="light"] { 
+      --accent: #3a8cff; 
+      --accent2: #1a6cff;
+      --card-bg: rgba(58, 140, 255, 0.05);
+      --card-border: rgba(58, 140, 255, 0.2);
+      --text: #2c3e50;
+      --text-secondary: #4a5a6a;
+      --bg: #f5f5f5;
+    }
 
     /* ШАПКА */
     .header {
@@ -81,7 +101,7 @@
     }
 
     .back-btn {
-      color: white;
+      color: var(--text);
       text-decoration: none;
       font-size: 24px;
       width: 40px;
@@ -96,6 +116,7 @@
       text-align: center;
       font-weight: 600;
       font-size: 18px;
+      color: var(--text);
     }
 
     .spacer { width: 40px; }
@@ -103,6 +124,8 @@
     /* КОНТЕЙНЕР */
     .container {
       padding: 80px 16px 20px;
+      background: var(--bg, transparent);
+      min-height: 100vh;
     }
 
     /* ЗАГОЛОВОК */
@@ -113,70 +136,99 @@
       color: var(--accent);
     }
 
-    /* СЕТКА КАРТОЧЕК */
+    /* СЕТКА КАРТОЧЕК - ПО 2 В РЯД */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      gap: 16px;
     }
 
-    /* КАРТОЧКА */
+    /* КАРТОЧКА - ПРЯМОУГОЛЬНАЯ В ДЛИНУ */
     .card {
       display: block;
       text-decoration: none;
-      color: white;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 20px;
       padding: 16px;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      aspect-ratio: 3/4; /* Делает карточки прямоугольными и в длину */
+      display: flex;
+      flex-direction: column;
     }
 
     .card:hover {
-      background: rgba(255,255,255,0.1);
+      transform: translateY(-4px);
       border-color: var(--accent);
-      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     }
 
-    .card-icon {
-      font-size: 36px;
-      text-align: center;
-      margin-bottom: 8px;
+    /* КАРТИНКА-ПРЕВЬЮ */
+    .card-image {
+      width: 100%;
+      aspect-ratio: 1/1;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      background-size: cover;
+      background-position: center;
+      background-color: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
     }
+
+    /* ПЛЕЙСХОЛДЕРЫ ДЛЯ КАРТИНОК */
+    .card-image[data-card="1"] { background-image: linear-gradient(45deg, #667eea, #764ba2); }
+    .card-image[data-card="2"] { background-image: linear-gradient(45deg, #f093fb, #f5576c); }
+    .card-image[data-card="3"] { background-image: linear-gradient(45deg, #4facfe, #00f2fe); }
+    .card-image[data-card="4"] { background-image: linear-gradient(45deg, #43e97b, #38f9d7); }
+    .card-image[data-card="5"] { background-image: linear-gradient(45deg, #fa709a, #fee140); }
 
     .card-title {
       font-weight: 700;
       font-size: 16px;
-      text-align: center;
       margin-bottom: 4px;
+      color: var(--text);
     }
 
     .card-desc {
       font-size: 12px;
-      color: rgba(255,255,255,0.6);
-      text-align: center;
+      color: var(--text-secondary, rgba(255,255,255,0.6));
+      line-height: 1.4;
+      flex: 1;
     }
 
     /* СВЕТЛАЯ ТЕМА */
-    :root[data-theme="light"] {
-      --text-primary: #2c3e50;
-    }
     :root[data-theme="light"] body {
-      color: var(--text-primary);
+      background: #f5f5f5;
     }
     :root[data-theme="light"] .card {
-      background: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.9);
       border: 1px solid rgba(0,0,0,0.1);
-      color: var(--text-primary);
     }
     :root[data-theme="light"] .card-desc {
       color: #4a5a6a;
+    }
+    :root[data-theme="light"] .header {
+      background: rgba(255,255,255,0.9);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    :root[data-theme="light"] .back-btn,
+    :root[data-theme="light"] .title {
+      color: #2c3e50;
     }
 
     /* ANDROID */
     html.android-mode .card {
       backdrop-filter: none !important;
       background: rgba(255,255,255,0.08) !important;
+    }
+    html.android-mode[data-theme="light"] .card {
+      background: rgba(255,255,255,0.9) !important;
     }
   </style>
 </head>
@@ -194,37 +246,37 @@
     <div class="cards-grid">
       <!-- Карточка 1: Свободный промпт -->
       <a href="./card-text-to-image.html" class="card" id="card1">
-        <div class="card-icon">🖋️</div>
+        <div class="card-image" data-card="1">🖋️</div>
         <div class="card-title" id="card1Title">Свободный промпт</div>
-        <div class="card-desc" id="card1Desc">Напиши что хочешь</div>
+        <div class="card-desc" id="card1Desc">Напиши что хочешь увидеть</div>
       </a>
 
       <!-- Карточка 2: Фото → Аниме -->
       <a href="./card-photo-to-anime.html" class="card" id="card2">
-        <div class="card-icon">📸</div>
+        <div class="card-image" data-card="2">📸</div>
         <div class="card-title" id="card2Title">Фото → Аниме</div>
-        <div class="card-desc" id="card2Desc">Стань аниме персонажем</div>
+        <div class="card-desc" id="card2Desc">Преврати своё фото в аниме персонажа</div>
       </a>
 
       <!-- Карточка 3: Фото → Рисунок -->
       <a href="./card-photo-to-drawing.html" class="card" id="card3">
-        <div class="card-icon">✏️</div>
+        <div class="card-image" data-card="3">✏️</div>
         <div class="card-title" id="card3Title">Фото → Рисунок</div>
-        <div class="card-desc" id="card3Desc">Как нарисованное</div>
+        <div class="card-desc" id="card3Desc">Стань нарисованным карандашом или красками</div>
       </a>
 
       <!-- Карточка 4: Цветочная фантазия -->
       <a href="./card-flowers.html" class="card" id="card4">
-        <div class="card-icon">🌸</div>
+        <div class="card-image" data-card="4">🌸</div>
         <div class="card-title" id="card4Title">Цветочная фантазия</div>
-        <div class="card-desc" id="card4Desc">Лепестки цветов</div>
+        <div class="card-desc" id="card4Desc">Волшебные цветы и лепестки</div>
       </a>
 
       <!-- Карточка 5: Фэнтези персонаж -->
       <a href="./card-fantasy.html" class="card" id="card5">
-        <div class="card-icon">🧝‍♀️</div>
+        <div class="card-image" data-card="5">🧝‍♀️</div>
         <div class="card-title" id="card5Title">Фэнтези персонаж</div>
-        <div class="card-desc" id="card5Desc">Стань эльфом</div>
+        <div class="card-desc" id="card5Desc">Стань эльфом, магом или рыцарем</div>
       </a>
     </div>
   </div>
@@ -236,29 +288,29 @@
         title: "Генерация картинок",
         sectionTitle: "🎨 Выбери стиль",
         card1Title: "Свободный промпт",
-        card1Desc: "Напиши что хочешь",
+        card1Desc: "Напиши что хочешь увидеть",
         card2Title: "Фото → Аниме",
-        card2Desc: "Стань аниме персонажем",
+        card2Desc: "Преврати своё фото в аниме персонажа",
         card3Title: "Фото → Рисунок",
-        card3Desc: "Как нарисованное",
+        card3Desc: "Стань нарисованным карандашом или красками",
         card4Title: "Цветочная фантазия",
-        card4Desc: "Лепестки цветов",
+        card4Desc: "Волшебные цветы и лепестки",
         card5Title: "Фэнтези персонаж",
-        card5Desc: "Стань эльфом"
+        card5Desc: "Стань эльфом, магом или рыцарем"
       },
       en: {
         title: "Image generation",
         sectionTitle: "🎨 Choose style",
         card1Title: "Free prompt",
-        card1Desc: "Write what you want",
+        card1Desc: "Write what you want to see",
         card2Title: "Photo → Anime",
-        card2Desc: "Become anime character",
+        card2Desc: "Turn your photo into anime character",
         card3Title: "Photo → Drawing",
-        card3Desc: "Like drawn",
+        card3Desc: "Become drawn with pencil or paints",
         card4Title: "Flower fantasy",
-        card4Desc: "Flower petals",
+        card4Desc: "Magical flowers and petals",
         card5Title: "Fantasy character",
-        card5Desc: "Become an elf"
+        card5Desc: "Become an elf, wizard or knight"
       },
       kk: {
         title: "Сурет генерациясы",
@@ -266,13 +318,13 @@
         card1Title: "Еркін промпт",
         card1Desc: "Қалағаныңды жаз",
         card2Title: "Фото → Аниме",
-        card2Desc: "Аниме кейіпкері",
+        card2Desc: "Фотоңды аниме кейіпкеріне айналдыр",
         card3Title: "Фото → Сурет",
-        card3Desc: "Салынғандай",
+        card3Desc: "Қарындашпен салынғандай бол",
         card4Title: "Гүлді фантазия",
-        card4Desc: "Гүл жапырақтары",
+        card4Desc: "Сиқырлы гүлдер",
         card5Title: "Фэнтези кейіпкер",
-        card5Desc: "Эльфке айнал"
+        card5Desc: "Эльф, сиқыршы не сарбаз бол"
       }
     };
 
@@ -300,14 +352,6 @@
     document.getElementById('card4Desc').textContent = t.card4Desc;
     document.getElementById('card5Title').textContent = t.card5Title;
     document.getElementById('card5Desc').textContent = t.card5Desc;
-
-    // Функция открытия (на всякий случай)
-    function openCard(url) {
-      const lang = getLang();
-      const theme = document.documentElement.getAttribute('data-theme') || 'blue';
-      const platform = document.documentElement.classList.contains('android-mode') ? 'android' : 'ios';
-      window.location.href = `${url}?lang=${lang}&theme=${theme}&platform=${platform}`;
-    }
   </script>
 </body>
 </html>
