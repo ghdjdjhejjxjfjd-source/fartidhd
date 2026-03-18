@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Фото → Аниме</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: #0b0f18;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+
+    :root[data-theme="blue"] { --accent1: #5aaeff; --accent2: #3496ff; }
+    :root[data-theme="black"] { --accent1: #8bb8ff; --accent2: #5a98ff; }
+    :root[data-theme="light"] { --accent1: #3a8cff; --accent2: #1a6cff; }
+
+    /* ШАПКА */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .back-btn {
+      color: white;
+      text-decoration: none;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .spacer { width: 40px; }
+
+    /* КОНТЕЙНЕР */
+    .container {
+      padding: 80px 16px 20px;
+    }
+
+    /* КАРТОЧКА */
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-icon {
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    /* ОБЛАСТЬ ЗАГРУЗКИ */
+    .upload-area {
+      background: rgba(255,255,255,0.05);
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent1);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .upload-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .upload-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* ПРЕВЬЮ */
+    .preview-container {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .preview-image {
+      width: 100%;
+      border-radius: 16px;
+      margin-bottom: 10px;
+    }
+
+    .remove-btn {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    .remove-btn button {
+      background: none;
+      border: none;
+      color: #ff4444;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    /* ПРОМПТ */
+    .prompt-input {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .prompt-input:focus {
+      outline: none;
+      border-color: var(--accent1);
+    }
+
+    /* КНОПКА ГЕНЕРАЦИИ */
+    .generate-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 20px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .generate-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* РЕЗУЛЬТАТ */
+    .result {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-image {
+      width: 100%;
+      border-radius: 16px;
+      background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      border: none;
+    }
+
+    /* СВЕТЛАЯ ТЕМА */
+    :root[data-theme="light"] {
+      --text-primary: #2c3e50;
+    }
+    :root[data-theme="light"] body {
+      color: var(--text-primary);
+    }
+    :root[data-theme="light"] .upload-area {
+      background: rgba(255,255,255,0.8);
+      border: 2px dashed rgba(0,0,0,0.2);
+    }
+    :root[data-theme="light"] .upload-text {
+      color: #4a5a6a;
+    }
+    :root[data-theme="light"] .prompt-input {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    :root[data-theme="light"] .action-btn {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+
+    /* ANDROID */
+    html.android-mode .card,
+    html.android-mode .upload-area,
+    html.android-mode .prompt-input {
+      backdrop-filter: none !important;
+      background: rgba(255,255,255,0.08) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="./image.html" class="back-btn">←</a>
+    <div class="title" id="title">Фото → Аниме</div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-icon">📸</div>
+      <div class="card-title" id="cardTitle">Фото → Аниме</div>
+      <div class="card-desc" id="cardDesc">Преврати своё фото в аниме</div>
+
+      <!-- Область загрузки -->
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📱</div>
+        <div class="upload-text" id="uploadText">Нажми чтобы выбрать фото</div>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </div>
+
+      <!-- Превью фото -->
+      <div class="preview-container" id="previewContainer">
+        <div class="remove-btn">
+          <button id="removeBtn">✕ Удалить</button>
+        </div>
+        <img class="preview-image" id="previewImg" src="">
+      </div>
+
+      <!-- Дополнительный промпт (необязательно) -->
+      <input type="text" class="prompt-input" id="promptInput" placeholder="Дополнительное описание (необязательно)">
+
+      <!-- Кнопка генерации -->
+      <button class="generate-btn" id="generateBtn" disabled>✨ Превратить в аниме</button>
+
+      <!-- Результат -->
+      <div class="result" id="result">
+        <img class="result-image" id="resultImg" src="">
+        <div class="action-buttons">
+          <button class="action-btn" id="saveBtn">💾 Сохранить</button>
+          <button class="action-btn primary" id="newBtn">🔄 Новое</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/image-card.js"></script>
+
+  <script>
+    // ===== ПЕРЕВОДЫ =====
+    const I18N = {
+      ru: {
+        title: "Фото → Аниме",
+        cardTitle: "Фото → Аниме",
+        cardDesc: "Преврати своё фото в аниме",
+        uploadText: "Нажми чтобы выбрать фото",
+        promptPlaceholder: "Дополнительное описание (необязательно)",
+        generate: "✨ Превратить в аниме",
+        save: "💾 Сохранить",
+        new: "🔄 Новое",
+        remove: "✕ Удалить",
+        loading: "Превращаем в аниме..."
+      },
+      en: {
+        title: "Photo → Anime",
+        cardTitle: "Photo → Anime",
+        cardDesc: "Turn your photo into anime",
+        uploadText: "Click to select photo",
+        promptPlaceholder: "Additional description (optional)",
+        generate: "✨ Turn into anime",
+        save: "💾 Save",
+        new: "🔄 New",
+        remove: "✕ Remove",
+        loading: "Turning into anime..."
+      },
+      kk: {
+        title: "Фото → Аниме",
+        cardTitle: "Фото → Аниме",
+        cardDesc: "Фотоңды анимеге айналдыр",
+        uploadText: "Фото таңдау үшін бас",
+        promptPlaceholder: "Қосымша сипаттама (міндетті емес)",
+        generate: "✨ Анимеге айналдыр",
+        save: "💾 Сақтау",
+        new: "🔄 Жаңа",
+        remove: "✕ Өшіру",
+        loading: "Анимеге айналдыру..."
+      }
+    };
+
+    const lang = getLang();
+    const t = I18N[lang] || I18N.ru;
+
+    // Применяем переводы
+    document.getElementById('title').textContent = t.title;
+    document.getElementById('cardTitle').textContent = t.cardTitle;
+    document.getElementById('cardDesc').textContent = t.cardDesc;
+    document.getElementById('uploadText').textContent = t.uploadText;
+    document.getElementById('promptInput').placeholder = t.promptPlaceholder;
+    document.getElementById('generateBtn').textContent = t.generate;
+    document.getElementById('saveBtn').textContent = t.save;
+    document.getElementById('newBtn').textContent = t.new;
+    document.getElementById('removeBtn').textContent = t.remove;
+
+    // ===== ЛОГИКА =====
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImg = document.getElementById('previewImg');
+    const removeBtn = document.getElementById('removeBtn');
+    const promptInput = document.getElementById('promptInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const result = document.getElementById('result');
+    const resultImg = document.getElementById('resultImg');
+    const saveBtn = document.getElementById('saveBtn');
+    const newBtn = document.getElementById('newBtn');
+
+    let currentFile = null;
+    let currentImageBase64 = null;
+
+    // Загрузка фото
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        const file = e.target.files[0];
+        
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Файл слишком большой. Максимум 5MB');
+          return;
+        }
+        
+        currentFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImg.src = e.target.result;
+          uploadArea.style.display = 'none';
+          previewContainer.style.display = 'block';
+          generateBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Удалить фото
+    removeBtn.addEventListener('click', () => {
+      currentFile = null;
+      previewContainer.style.display = 'none';
+      uploadArea.style.display = 'block';
+      fileInput.value = '';
+      generateBtn.disabled = true;
+    });
+
+    // Генерация
+    generateBtn.addEventListener('click', async () => {
+      if (!currentFile) return;
+
+      // Базовый промпт для аниме стиля
+      const basePrompt = "transform this photo into anime style, anime character, japanese anime art style, vibrant colors, big eyes, detailed, masterpiece";
+      const additionalPrompt = promptInput.value.trim();
+      const fullPrompt = additionalPrompt 
+        ? `${additionalPrompt}, ${basePrompt}`
+        : basePrompt;
+
+      const imageBase64 = await generateImage(fullPrompt, "img2img", currentFile);
+      
+      if (imageBase64) {
+        currentImageBase64 = imageBase64;
+        resultImg.src = imageBase64;
+        result.style.display = 'block';
+        generateBtn.style.display = 'none';
+        previewContainer.style.display = 'none';
+      }
+    });
+
+    // Сохранение
+    saveBtn.addEventListener('click', () => {
+      if (currentImageBase64) {
+        saveImage(currentImageBase64, 'anime-style.png');
+      }
+    });
+
+    // Новое изображение
+    newBtn.addEventListener('click', () => {
+      result.style.display = 'none';
+      generateBtn.style.display = 'block';
+      uploadArea.style.display = 'block';
+      previewContainer.style.display = 'none';
+      fileInput.value = '';
+      promptInput.value = '';
+      currentFile = null;
+      currentImageBase64 = null;
+      generateBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>
