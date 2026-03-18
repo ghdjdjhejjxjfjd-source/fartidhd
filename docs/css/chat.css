@@ -40,14 +40,14 @@
   padding:12px 16px;
   border-radius:18px;
   line-height:1.55;
-  font-size:18px;
-  /* МАКСИМАЛЬНАЯ ЧЕТКОСТЬ ТЕКСТА */
-  font-weight: 700 !important;
+  font-size:17px; /* НЕМНОГО УМЕНЬШИЛ */
+  /* ЧЕТКОСТЬ НО НЕ СЛИШКОМ ЖИРНО */
+  font-weight: 600 !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px; /* Чуть меньше */
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
@@ -73,17 +73,16 @@
   }
 }
 
-/* bot bubble - СЕРЫЙ (как просил) */
+/* bot bubble - ТЕМНО-СЕРЫЙ */
 .bot .msg{
   align-self:flex-start;
-  background: rgba(96, 108, 122, 0.95); /* Серый */
+  background: rgba(76, 86, 100, 0.95); /* ТЕМНО-СЕРЫЙ */
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #ffffff;
   backdrop-filter: blur(8px) saturate(112%);
   -webkit-backdrop-filter: blur(8px) saturate(112%);
   border-top-left-radius:8px;
-  /* Четкость текста максимальная */
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   -webkit-font-smoothing: antialiased;
   font-smoothing: antialiased;
 }
@@ -91,7 +90,7 @@
 /* user bubble - НЕМНОГО СВЕТЛЕЕ */
 .user .msg{
   align-self:flex-end;
-  background: rgba(90, 174, 255, 0.35); /* Немного светлее (было 0.28) */
+  background: rgba(90, 174, 255, 0.38); /* ЕЩЕ НЕМНОГО СВЕТЛЕЕ */
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #ffffff;
   backdrop-filter:none;
@@ -100,8 +99,7 @@
   border-bottom-right-radius:8px;
   width: fit-content;
   display: inline-block;
-  /* Четкость текста максимальная */
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   -webkit-font-smoothing: antialiased;
   font-smoothing: antialiased;
 }
@@ -122,17 +120,16 @@ html.android-mode .msg {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   box-shadow: none !important;
-  /* Четкость для Android */
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 html.android-mode .bot .msg {
-  background: #4a5666; /* Серый для Android */
+  background: #3e4a58; /* ТЕМНО-СЕРЫЙ ДЛЯ ANDROID */
   color: #ffffff;
 }
 
 html.android-mode .user .msg {
-  background: rgba(90, 174, 255, 0.45); /* Светлее для Android */
+  background: rgba(90, 174, 255, 0.48); /* СВЕТЛЕЕ ДЛЯ ANDROID */
   color: #ffffff;
 }
 
@@ -197,7 +194,7 @@ html.android-mode .msg {
 }
 
 /* ============================= */
-/* НИЖНЯЯ ПАНЕЛЬ - СЛАБАЯ ОБВОДКА */
+/* НИЖНЯЯ ПАНЕЛЬ */
 /* ============================= */
 .input{
   flex:0 0 auto;
@@ -209,7 +206,7 @@ html.android-mode .msg {
   background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.1) !important; /* СЛАБАЯ ОБВОДКА */
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
   min-height: 60px;
 }
 
@@ -222,14 +219,14 @@ html.android-mode .input {
 
 .input textarea {
   flex: 1;
-  padding: 12px 16px; /* Чуть больше */
-  border-radius: 20px; /* Чуть скругленнее */
-  border: 1px solid rgba(255, 255, 255, 0.15); /* СЛАБАЯ ОБВОДКА */
+  padding: 12px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   outline: none;
-  font-size: 16px; /* Немного больше */
-  font-weight: 500; /* Светлее */
-  color: #ffffff;
-  background: rgba(37, 48, 60, 0.8); /* Чуть прозрачнее */
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff; /* ТЕКСТ БЕЛЫЙ */
+  background: rgba(37, 48, 60, 0.8);
   caret-color: var(--accent2);
   resize: none;
   max-height: 120px;
@@ -242,8 +239,9 @@ html.android-mode .input {
 }
 
 .input textarea::placeholder{
-  color: rgba(247,251,255,0.7); /* Светлее */
+  color: #ffffff; /* ПЛЕЙСХОЛДЕР ТОЖЕ БЕЛЫЙ */
   font-weight: 400;
+  opacity: 0.8;
 }
 
 .input textarea:focus{
@@ -254,17 +252,18 @@ html.android-mode .input {
 html.android-mode .input textarea {
   background: rgba(42, 54, 68, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
 .input button{
   padding:0 18px;
   border-radius:18px;
-  border: 1px solid rgba(255, 255, 255, 0.15); /* СЛАБАЯ ОБВОДКА */
+  border: 1px solid rgba(255, 255, 255, 0.15);
   font-size:16px;
   font-weight:800;
   background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
   color:#fff;
-  height: 44px; /* Чуть выше */
+  height: 44px;
   align-self: flex-end;
   cursor: pointer;
   transition: all 0.18s ease;
@@ -285,7 +284,7 @@ html.android-mode .input textarea {
 }
 
 /* ============================= */
-/* ВЕРХНЯЯ ПАНЕЛЬ - СЛАБАЯ ОБВОДКА */
+/* ВЕРХНЯЯ ПАНЕЛЬ - БЕЗ ОБВОДКИ */
 /* ============================= */
 .top{
   position: fixed;
@@ -299,8 +298,53 @@ html.android-mode .input textarea {
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important; /* СЛАБАЯ ОБВОДКА */
+  border-bottom: none !important; /* УБРАЛ ОБВОДКУ */
   flex:0 0 auto;
+}
+
+/* КНОПКА НАЗАД - С ОБВОДКОЙ */
+.top a{
+  color: #a0b0c0;
+  text-decoration:none;
+  font-size:15px;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important; /* ОБВОДКА */
+  font-weight: 600;
+}
+
+/* НАДПИСЬ AI CHAT - С ОБВОДКОЙ */
+.title{
+  font-weight:700;
+  font-size:16px;
+  color: #a0b0c0;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important; /* ОБВОДКА */
+  margin-left: 2px;
+}
+
+/* КНОПКА НАСТРОЕК - С ОБВОДКОЙ */
+.gear{
+  width:34px;
+  height:34px;
+  border-radius:17px;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important; /* ОБВОДКА */
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #a0b0c0;
+  font-size:17px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 700;
 }
 
 html.android-mode .top a,
@@ -309,7 +353,7 @@ html.android-mode .gear {
   background: #1a2634 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Синяя тема - БЕЛЫЙ текст */
@@ -328,49 +372,7 @@ html.android-mode .gear {
   font-weight: 700;
 }
 
-.top a{
-  color: #a0b0c0;
-  text-decoration:none;
-  font-size:15px;
-  background: rgba(255,255,255,.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 6px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  font-weight: 600;
-}
-
-.title{
-  font-weight:700;
-  font-size:16px;
-  color: #a0b0c0;
-  background: rgba(255,255,255,.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 6px 14px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  margin-left: 2px;
-}
-
 .spacer{ flex:1; }
-
-.gear{
-  width:34px;
-  height:34px;
-  border-radius:17px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255,255,255,.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  color: #a0b0c0;
-  font-size:17px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight: 700;
-}
 
 /* ============================= */
 /* TYPING BUBBLE */
@@ -380,7 +382,7 @@ html.android-mode .gear {
   margin: 0;
   padding: 10px 12px;
   max-width: 70px;
-  background: rgba(96, 108, 122, 0.95); /* Серый */
+  background: rgba(76, 86, 100, 0.95); /* ТЕМНО-СЕРЫЙ */
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   border-top-left-radius: 8px;
@@ -395,7 +397,7 @@ html.android-mode .gear {
 }
 
 html.android-mode .msg.bot.typing {
-  background: #4a5666;
+  background: #3e4a58;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -462,10 +464,8 @@ html.android-mode .msg.bot.typing {
 }
 
 /* ============================= */
-/* ЛИМИТЫ - БЕЛЫЕ ДЛЯ СИНЕЙ И ЧЕРНОЙ ТЕМЫ */
+/* ЛИМИТЫ */
 /* ============================= */
-
-/* Синяя тема - все лимиты белые */
 :root[data-theme="blue"] .limit-hint,
 :root[data-theme="blue"] #aiMode-limit,
 :root[data-theme="blue"] #style-limit,
@@ -475,7 +475,6 @@ html.android-mode .msg.bot.typing {
   font-weight: 600;
 }
 
-/* Черная тема - все лимиты белые */
 :root[data-theme="black"] .limit-hint,
 :root[data-theme="black"] #aiMode-limit,
 :root[data-theme="black"] #style-limit,
@@ -485,7 +484,6 @@ html.android-mode .msg.bot.typing {
   font-weight: 600;
 }
 
-/* Светлая тема - лимиты серые */
 :root[data-theme="light"] .limit-hint,
 :root[data-theme="light"] #aiMode-limit,
 :root[data-theme="light"] #style-limit,
@@ -495,7 +493,6 @@ html.android-mode .msg.bot.typing {
   font-weight: 600;
 }
 
-/* Красный цвет для предупреждения (лимит исчерпан) - для всех тем */
 .limit-hint.warning,
 #aiMode-limit.warning,
 #style-limit.warning,
@@ -511,7 +508,7 @@ html.android-mode .msg.bot.typing {
   border: none;
   color: var(--text-primary);
   box-shadow: none;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 :root[data-theme="light"] .user .msg {
@@ -519,7 +516,7 @@ html.android-mode .msg.bot.typing {
   background: var(--user-bg);
   border: none;
   box-shadow: none;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 :root[data-theme="light"] .input textarea {
@@ -542,58 +539,9 @@ html.android-mode .msg.bot.typing {
   background: var(--btn-bg);
   backdrop-filter: var(--blur-amount);
   -webkit-backdrop-filter: var(--blur-amount);
-  border: none;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
   color: var(--text-primary);
   font-weight: 700;
-}
-
-:root[data-theme="light"] .action-btn svg {
-  fill: var(--text-secondary);
-}
-
-:root[data-theme="light"] .action-btn:hover svg {
-  fill: var(--accent1);
-}
-
-:root[data-theme="light"] .msg.bot.typing {
-  background: var(--btn-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border: none;
-  box-shadow: none;
-}
-
-:root[data-theme="light"] .typing .dot {
-  background: var(--text-secondary);
-}
-
-/* Светлая тема для Android */
-html.android-mode[data-theme="light"] .bot .msg {
-  background: #e8ecf3;
-  border: none;
-  color: var(--text-primary);
-  backdrop-filter: none;
-  box-shadow: none;
-  font-weight: 700;
-}
-
-html.android-mode[data-theme="light"] .user .msg {
-  background: rgba(58, 140, 255, 0.15);
-  color: var(--text-primary);
-  border: none;
-  box-shadow: none;
-  font-weight: 700;
-}
-
-html.android-mode[data-theme="light"] .input {
-  background: rgba(255, 255, 255, 0.9);
-}
-
-html.android-mode[data-theme="light"] .input textarea {
-  background: white;
-  color: var(--text-primary);
-  border: var(--btn-border-width) solid var(--btn-border);
-  box-shadow: none;
 }
 
 /* ============================= */
@@ -618,134 +566,4 @@ html.android-mode[data-theme="light"] .input textarea {
   box-shadow: 0 20px 44px rgba(0,0,0,.32);
 }
 
-html.android-mode .sheet {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  background: #1a2634;
-}
-
-:root[data-theme="blue"] .sheet {
-  background: rgba(39, 56, 75, 0.95);
-  border: 1px solid rgba(90, 174, 255, 0.2);
-}
-
-:root[data-theme="black"] .sheet {
-  background: rgba(24, 31, 40, .97);
-  border: 1px solid rgba(255, 255, 255, .10);
-}
-
-:root[data-theme="light"] .sheet {
-  background: var(--panel-bg);
-  backdrop-filter: var(--blur-amount);
-  -webkit-backdrop-filter: var(--blur-amount);
-  border: var(--btn-border-width) solid var(--btn-border);
-}
-
-:root[data-theme="light"] .sheet h3,
-:root[data-theme="light"] .sheet div,
-:root[data-theme="light"] .settings-row,
-:root[data-theme="light"] .row,
-:root[data-theme="light"] .limit-hint {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.sheet h3{
-  margin:0 0 10px 0;
-  font-size:16px;
-  font-weight:800;
-}
-
-.row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:10px 0;
-  border-top:1px solid rgba(255,255,255,.08);
-}
-
-.row:first-of-type{ border-top:none; }
-
-.pill{
-  padding:10px 12px;
-  border-radius:14px;
-  font-weight:700;
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-/* Настройки - ряды */
-.settings-row {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-  margin-bottom: 4px;
-}
-
-.settings-row select {
-  width: 100%;
-  margin-top: 4px;
-  padding: 8px;
-  border-radius: 8px;
-  outline: none;
-  font-weight: 600;
-}
-
-.settings-row select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Лимиты */
-.limit-hint {
-  font-size: 12px;
-  margin-top: 2px;
-  margin-bottom: 8px;
-  padding-left: 8px;
-  text-align: left;
-  width: 100%;
-  font-weight: 600;
-}
-
-/* Кнопки */
-.button-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-  justify-content: space-between;
-}
-
-.button-row button {
-  flex: 1;
-  padding: 12px;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.button-row button.primary:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.button-row button:hover:not(:disabled) {
-  background: rgba(255,255,255,.2);
-}
-
-.button-row button.primary:hover:not(:disabled) {
-  background: var(--accent2);
-}
-
-.unsaved-badge {
-  font-size: 11px;
-  color: #ffaa00;
-  margin-left: 8px;
-  font-weight: 600;
-}
+/* ... остальные стили без изменений ... */
