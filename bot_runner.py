@@ -23,6 +23,7 @@ from bot_admin import (
 
 BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
 SUPPORT_GROUP_ID = int(os.getenv("SUPPORT_GROUP_ID", "0"))
+LOG_GROUP_ID = int(os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or "0")
 
 async def post_init(app: Application):
     """Инициализация после запуска"""
@@ -33,31 +34,41 @@ async def post_init(app: Application):
     except Exception as e:
         print(f"⚠️ Ошибка установки команд: {e}")
     
-    group_id_raw = (os.getenv("TARGET_GROUP_ID") or os.getenv("LOG_GROUP_ID") or "0").strip()
-    try:
-        group_id = int(group_id_raw)
-        if group_id:
-            try:
-                await app.bot.set_my_commands(
-                    [
-                        ("whoami", "👤 Проверка админа"),
-                        ("free", "⭐ Сделать бесплатным: /free <id>"),
-                        ("paid", "💰 Сделать платным: /paid <id>"),
-                        ("block", "⛔ Заблокировать: /block <id>"),
-                        ("unblock", "✅ Разблокировать: /unblock <id>"),
-                        ("status", "ℹ️ Статус: /status <id>"),
-                        ("addstars", "✨ Добавить звезды: /addstars <id> <кол-во>"),
-                        ("balance", "💎 Баланс: /balance <id>"),
-                        ("starstrans", "🏆 Топ звезд: /starstrans [лимит]"),
-                        ("resetstars", "🔄 Сбросить баланс: /resetstars <id>"),
-                    ],
-                    scope={"type": "chat", "chat_id": group_id}
-                )
-                print(f"✅ Админ-команды установлены для группы {group_id}")
-            except Exception as e:
-                print(f"⚠️ Не удалось установить админ-команды: {e}")
-    except Exception as e:
-        print(f"⚠️ Ошибка: {e}")
+    # Список админ-команд
+    admin_commands = [
+        ("whoami", "👤 Проверка админа"),
+        ("free", "⭐ Сделать бесплатным: /free <id>"),
+        ("paid", "💰 Сделать платным: /paid <id>"),
+        ("block", "⛔ Заблокировать: /block <id>"),
+        ("unblock", "✅ Разблокировать: /unblock <id>"),
+        ("status", "ℹ️ Статус: /status <id>"),
+        ("addstars", "✨ Добавить звезды: /addstars <id> <кол-во>"),
+        ("balance", "💎 Баланс: /balance <id>"),
+        ("starstrans", "🏆 Топ звезд: /starstrans [лимит]"),
+        ("resetstars", "🔄 Сбросить баланс: /resetstars <id>"),
+    ]
+    
+    # Устанавливаем для группы поддержки
+    if SUPPORT_GROUP_ID:
+        try:
+            await app.bot.set_my_commands(
+                admin_commands,
+                scope={"type": "chat", "chat_id": SUPPORT_GROUP_ID}
+            )
+            print(f"✅ Админ-команды установлены для поддержки {SUPPORT_GROUP_ID}")
+        except Exception as e:
+            print(f"⚠️ Не удалось установить команды для поддержки: {e}")
+    
+    # Устанавливаем для группы логов
+    if LOG_GROUP_ID and LOG_GROUP_ID != SUPPORT_GROUP_ID:
+        try:
+            await app.bot.set_my_commands(
+                admin_commands,
+                scope={"type": "chat", "chat_id": LOG_GROUP_ID}
+            )
+            print(f"✅ Админ-команды установлены для логов {LOG_GROUP_ID}")
+        except Exception as e:
+            print(f"⚠️ Не удалось установить команды для логов: {e}")
 
 async def error_handler(update: Update, context):
     """Обработчик ошибок"""
@@ -118,8 +129,9 @@ def start_bot():
     app.add_error_handler(error_handler)
 
     print("🤖 Telegram bot started")
-    print("✅ В личке: только /start")
-    print("✅ В админ-группе: все команды")
+    print(f"✅ В личке: только /start")
+    print(f"✅ В группе логов ({LOG_GROUP_ID}): все админ-команды")
+    print(f"✅ В группе поддержки ({SUPPORT_GROUP_ID}): все админ-команды + /reply /block /unblock")
 
     # Запускаем polling
     try:
