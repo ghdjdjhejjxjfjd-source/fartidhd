@@ -359,31 +359,25 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
   }
 
   function updateLimitsDisplay() {
-    const t = window.t || {
-      personaLimit: "📊 Осталось изменений характера: {remaining}/{max}",
-      personaLocked: "🔒 Изменение характера недоступно",
-      styleLimit: "📊 Осталось изменений стиля: {remaining}/{max}",
-      aiModeLimit: "📊 Осталось смен режима: {remaining}/8"
-    };
+    const t = window.t;
     
-    // ===== ХАРАКТЕР (persona-limit) =====
+    // Характер
     const personaLimitSpan = document.getElementById('persona-limit');
     if (personaLimitSpan) {
       if (currentAiMode === 'fast') {
         const used = currentLimits.groq_persona;
         const max = currentLimits.groq_persona_max;
         const remaining = max - used;
-        personaLimitSpan.textContent = t.personaLimit
-          .replace('{remaining}', remaining)
-          .replace('{max}', max);
+        const template = t?.personaLimit || "📊 Осталось изменений характера: {remaining}/{max}";
+        personaLimitSpan.textContent = template.replace('{remaining}', remaining).replace('{max}', max);
         personaLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
       } else {
-        personaLimitSpan.textContent = t.personaLocked;
+        personaLimitSpan.textContent = t?.personaLocked || "🔒 Изменение характера недоступно";
         personaLimitSpan.style.color = '#666';
       }
     }
     
-    // ===== СТИЛЬ (style-limit) =====
+    // Стиль
     const styleLimitSpan = document.getElementById('style-limit');
     if (styleLimitSpan) {
       let used, max;
@@ -395,17 +389,17 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
         max = currentLimits.openai_style_max;
       }
       const remaining = max - used;
-      styleLimitSpan.textContent = t.styleLimit
-        .replace('{remaining}', remaining)
-        .replace('{max}', max);
+      const template = t?.styleLimit || "📊 Осталось изменений стиля: {remaining}/{max}";
+      styleLimitSpan.textContent = template.replace('{remaining}', remaining).replace('{max}', max);
       styleLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
     }
 
-    // ===== РЕЖИМ ИИ (aiMode-limit) =====
+    // Режим ИИ
     const aiModeLimitSpan = document.getElementById('aiMode-limit');
     if (aiModeLimitSpan) {
       const remaining = 8 - (currentLimits.ai_mode_changes || 0);
-      aiModeLimitSpan.textContent = t.aiModeLimit.replace('{remaining}', remaining);
+      const template = t?.aiModeLimit || "📊 Осталось смен режима: {remaining}/8";
+      aiModeLimitSpan.textContent = template.replace('{remaining}', remaining);
       aiModeLimitSpan.style.color = remaining <= 0 ? '#ff4444' : '#666';
     }
   }
