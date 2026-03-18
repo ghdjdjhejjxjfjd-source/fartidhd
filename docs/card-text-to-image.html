@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Свободный промпт</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: #0b0f18;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+
+    :root[data-theme="blue"] { --accent1: #5aaeff; --accent2: #3496ff; }
+    :root[data-theme="black"] { --accent1: #8bb8ff; --accent2: #5a98ff; }
+    :root[data-theme="light"] { --accent1: #3a8cff; --accent2: #1a6cff; }
+
+    /* ШАПКА */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .back-btn {
+      color: white;
+      text-decoration: none;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .spacer { width: 40px; }
+
+    /* КОНТЕЙНЕР */
+    .container {
+      padding: 80px 16px 20px;
+    }
+
+    /* КАРТОЧКА */
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-icon {
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    /* ПОЛЕ ВВОДА */
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: var(--accent1);
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* РАЗМЕР */
+    .size-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .size-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .size-btn.active {
+      background: var(--accent1);
+      border-color: var(--accent1);
+    }
+
+    /* КНОПКА ГЕНЕРАЦИИ */
+    .generate-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 20px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .generate-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* РЕЗУЛЬТАТ */
+    .result {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-image {
+      width: 100%;
+      border-radius: 16px;
+      background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      border: none;
+    }
+
+    /* СВЕТЛАЯ ТЕМА */
+    :root[data-theme="light"] {
+      --text-primary: #2c3e50;
+    }
+    :root[data-theme="light"] body {
+      color: var(--text-primary);
+    }
+    :root[data-theme="light"] .text-input {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    :root[data-theme="light"] .size-btn {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    :root[data-theme="light"] .action-btn {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+
+    /* ANDROID */
+    html.android-mode .card,
+    html.android-mode .text-input,
+    html.android-mode .size-btn {
+      backdrop-filter: none !important;
+      background: rgba(255,255,255,0.08) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="./index.html" class="back-btn">←</a>
+    <div class="title" id="title">Свободный промпт</div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-icon">🖋️</div>
+      <div class="card-title" id="cardTitle">Свободный промпт</div>
+      <div class="card-desc" id="cardDesc">Напиши что хочешь увидеть</div>
+
+      <!-- Поле ввода -->
+      <div class="input-group">
+        <label class="input-label" id="promptLabel">Твой промпт</label>
+        <input type="text" class="text-input" id="promptInput" placeholder="например: красивый закат в горах">
+      </div>
+
+      <!-- Выбор размера -->
+      <div class="size-selector">
+        <button class="size-btn active" data-size="1024x1024" id="sizeSquare">1:1</button>
+        <button class="size-btn" data-size="1024x1792" id="sizePortrait">9:16</button>
+        <button class="size-btn" data-size="1792x1024" id="sizeLandscape">16:9</button>
+      </div>
+
+      <!-- Кнопка генерации -->
+      <button class="generate-btn" id="generateBtn">✨ Сгенерировать</button>
+
+      <!-- Результат -->
+      <div class="result" id="result">
+        <img class="result-image" id="resultImg" src="">
+        <div class="action-buttons">
+          <button class="action-btn" id="saveBtn">💾 Сохранить</button>
+          <button class="action-btn primary" id="newBtn">🔄 Новое</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/image-card.js"></script>
+
+  <script>
+    // ===== ПЕРЕВОДЫ =====
+    const I18N = {
+      ru: {
+        title: "Свободный промпт",
+        cardTitle: "Свободный промпт",
+        cardDesc: "Напиши что хочешь увидеть",
+        promptLabel: "Твой промпт",
+        promptPlaceholder: "например: красивый закат в горах",
+        sizeSquare: "1:1",
+        sizePortrait: "9:16",
+        sizeLandscape: "16:9",
+        generate: "✨ Сгенерировать",
+        save: "💾 Сохранить",
+        new: "🔄 Новое",
+        loading: "Генерация..."
+      },
+      en: {
+        title: "Free prompt",
+        cardTitle: "Free prompt",
+        cardDesc: "Write what you want to see",
+        promptLabel: "Your prompt",
+        promptPlaceholder: "e.g.: beautiful sunset in mountains",
+        sizeSquare: "1:1",
+        sizePortrait: "9:16",
+        sizeLandscape: "16:9",
+        generate: "✨ Generate",
+        save: "💾 Save",
+        new: "🔄 New",
+        loading: "Generating..."
+      }
+    };
+
+    const lang = getLang();
+    const t = I18N[lang] || I18N.ru;
+
+    // Применяем переводы
+    document.getElementById('title').textContent = t.title;
+    document.getElementById('cardTitle').textContent = t.cardTitle;
+    document.getElementById('cardDesc').textContent = t.cardDesc;
+    document.getElementById('promptLabel').textContent = t.promptLabel;
+    document.getElementById('promptInput').placeholder = t.promptPlaceholder;
+    document.getElementById('sizeSquare').textContent = t.sizeSquare;
+    document.getElementById('sizePortrait').textContent = t.sizePortrait;
+    document.getElementById('sizeLandscape').textContent = t.sizeLandscape;
+    document.getElementById('generateBtn').textContent = t.generate;
+    document.getElementById('saveBtn').textContent = t.save;
+    document.getElementById('newBtn').textContent = t.new;
+
+    // ===== ЛОГИКА =====
+    const promptInput = document.getElementById('promptInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const result = document.getElementById('result');
+    const resultImg = document.getElementById('resultImg');
+    const saveBtn = document.getElementById('saveBtn');
+    const newBtn = document.getElementById('newBtn');
+    
+    let currentSize = '1024x1024';
+    let currentImageBase64 = null;
+
+    // Выбор размера
+    document.querySelectorAll('.size-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSize = btn.dataset.size;
+      });
+    });
+
+    // Генерация
+    generateBtn.addEventListener('click', async () => {
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        alert('Введите промпт');
+        return;
+      }
+
+      // Добавляем размер в промпт для DALL-E
+      const fullPrompt = `${prompt}, high quality, detailed, 8k`;
+      
+      const imageBase64 = await generateImage(fullPrompt, "txt2img");
+      
+      if (imageBase64) {
+        currentImageBase64 = imageBase64;
+        resultImg.src = imageBase64;
+        result.style.display = 'block';
+        generateBtn.style.display = 'none';
+      }
+    });
+
+    // Сохранение
+    saveBtn.addEventListener('click', () => {
+      if (currentImageBase64) {
+        saveImage(currentImageBase64, 'image.png');
+      }
+    });
+
+    // Новое изображение
+    newBtn.addEventListener('click', () => {
+      result.style.display = 'none';
+      generateBtn.style.display = 'block';
+      promptInput.value = '';
+      currentImageBase64 = null;
+    });
+  </script>
+</body>
+</html>
