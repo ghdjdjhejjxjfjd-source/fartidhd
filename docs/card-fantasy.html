@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Фэнтези персонаж</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ -->
+  <script>
+    (function(){
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.disableVerticalSwipes();
+      }
+    })();
+  </script>
+
+  <!-- ТЕМА из URL -->
+  <script>
+    (function(){
+      const KEY = "miniapp_theme_v1";
+      function getTheme(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("theme");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "blue"; }catch(e){ return "blue"; }
+      }
+      document.documentElement.setAttribute("data-theme", getTheme());
+    })();
+  </script>
+
+  <!-- ПЛАТФОРМА из URL -->
+  <script>
+    (function(){
+      const KEY = "miniapp_platform_v1";
+      function getPlatform(){
+        const url = new URL(window.location.href);
+        const qp = url.searchParams.get("platform");
+        if (qp) return qp;
+        try{ return localStorage.getItem(KEY) || "ios"; }catch(e){ return "ios"; }
+      }
+      const platform = getPlatform();
+      if (platform === 'android') {
+        document.documentElement.classList.add('android-mode');
+      }
+    })();
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: #0b0f18;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+
+    :root[data-theme="blue"] { --accent1: #5aaeff; --accent2: #3496ff; }
+    :root[data-theme="black"] { --accent1: #8bb8ff; --accent2: #5a98ff; }
+    :root[data-theme="light"] { --accent1: #3a8cff; --accent2: #1a6cff; }
+
+    /* ШАПКА */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .back-btn {
+      color: white;
+      text-decoration: none;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .spacer { width: 40px; }
+
+    /* КОНТЕЙНЕР */
+    .container {
+      padding: 80px 16px 20px;
+    }
+
+    /* КАРТОЧКА */
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-icon {
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    /* ВЫБОР РАСЫ */
+    .race-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .race-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .race-btn.active {
+      background: var(--accent1);
+      border-color: var(--accent1);
+    }
+
+    /* ВЫБОР ПОЛА */
+    .gender-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .gender-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .gender-btn.active {
+      background: var(--accent1);
+      border-color: var(--accent1);
+    }
+
+    /* ВЫБОР ЦВЕТА ВОЛОС */
+    .hair-color-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    .hair-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .hair-btn.active {
+      border-color: white;
+      transform: scale(1.1);
+    }
+
+    .hair-btn.blonde { background: #ffd966; }
+    .hair-btn.brunette { background: #8b4513; }
+    .hair-btn.red { background: #ff6666; }
+    .hair-btn.black { background: #2c3e50; }
+    .hair-btn.silver { background: #c0c0c0; }
+    .hair-btn.blue { background: #6699ff; }
+
+    /* ОБЛАСТЬ ЗАГРУЗКИ (ОПЦИОНАЛЬНО) */
+    .upload-area {
+      background: rgba(255,255,255,0.05);
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent1);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .upload-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .upload-text {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .upload-hint {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 4px;
+    }
+
+    /* ПРЕВЬЮ (если загрузили фото) */
+    .preview-container {
+      display: none;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .preview-image {
+      width: 100%;
+      border-radius: 16px;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    /* ДОПОЛНИТЕЛЬНОЕ ОПИСАНИЕ */
+    .prompt-input {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .prompt-input:focus {
+      outline: none;
+      border-color: var(--accent1);
+    }
+
+    /* КНОПКА ГЕНЕРАЦИИ */
+    .generate-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 20px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .generate-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* РЕЗУЛЬТАТ */
+    .result {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-image {
+      width: 100%;
+      border-radius: 16px;
+      background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      border: none;
+    }
+
+    /* СВЕТЛАЯ ТЕМА */
+    :root[data-theme="light"] {
+      --text-primary: #2c3e50;
+    }
+    :root[data-theme="light"] body {
+      color: var(--text-primary);
+    }
+    :root[data-theme="light"] .race-btn,
+    :root[data-theme="light"] .gender-btn {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    :root[data-theme="light"] .upload-area {
+      background: rgba(255,255,255,0.8);
+      border: 2px dashed rgba(0,0,0,0.2);
+    }
+    :root[data-theme="light"] .upload-text,
+    :root[data-theme="light"] .upload-hint {
+      color: #4a5a6a;
+    }
+    :root[data-theme="light"] .prompt-input {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    :root[data-theme="light"] .action-btn {
+      background: rgba(255,255,255,0.8);
+      color: var(--text-primary);
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+
+    /* ANDROID */
+    html.android-mode .card,
+    html.android-mode .race-btn,
+    html.android-mode .gender-btn,
+    html.android-mode .upload-area,
+    html.android-mode .prompt-input {
+      backdrop-filter: none !important;
+      background: rgba(255,255,255,0.08) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="./image.html" class="back-btn">←</a>
+    <div class="title" id="title">Фэнтези персонаж</div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-icon">🧝‍♀️</div>
+      <div class="card-title" id="cardTitle">Фэнтези персонаж</div>
+      <div class="card-desc" id="cardDesc">Создай своего волшебного героя</div>
+
+      <!-- Выбор расы -->
+      <div class="race-selector">
+        <button class="race-btn active" data-race="elf" id="raceElf">🧝 Эльф</button>
+        <button class="race-btn" data-race="dwarf" id="raceDwarf">⚒️ Дварф</button>
+        <button class="race-btn" data-race="wizard" id="raceWizard">🧙 Маг</button>
+        <button class="race-btn" data-race="knight" id="raceKnight">⚔️ Рыцарь</button>
+        <button class="race-btn" data-race="druid" id="raceDruid">🌿 Друид</button>
+      </div>
+
+      <!-- Выбор пола -->
+      <div class="gender-selector">
+        <button class="gender-btn active" data-gender="female" id="genderFemale">👩 Женский</button>
+        <button class="gender-btn" data-gender="male" id="genderMale">👨 Мужской</button>
+      </div>
+
+      <!-- Выбор цвета волос -->
+      <div class="hair-color-selector">
+        <button class="hair-btn blonde active" data-hair="blonde" title="Блондин"></button>
+        <button class="hair-btn brunette" data-hair="brunette" title="Шатен"></button>
+        <button class="hair-btn red" data-hair="red" title="Рыжий"></button>
+        <button class="hair-btn black" data-hair="black" title="Черный"></button>
+        <button class="hair-btn silver" data-hair="silver" title="Серебро"></button>
+        <button class="hair-btn blue" data-hair="blue" title="Синий"></button>
+      </div>
+
+      <!-- Загрузка фото (опционально) -->
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📸</div>
+        <div class="upload-text" id="uploadText">Загрузи своё фото (необязательно)</div>
+        <div class="upload-hint" id="uploadHint">персонаж будет похож на тебя</div>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </div>
+
+      <!-- Превью фото (если загрузили) -->
+      <div class="preview-container" id="previewContainer">
+        <button class="remove-btn" id="removeBtn">✕</button>
+        <img class="preview-image" id="previewImg" src="">
+      </div>
+
+      <!-- Дополнительное описание -->
+      <input type="text" class="prompt-input" id="promptInput" placeholder="Добавь детали... (необязательно)">
+
+      <!-- Кнопка генерации -->
+      <button class="generate-btn" id="generateBtn">✨ Создать персонажа</button>
+
+      <!-- Результат -->
+      <div class="result" id="result">
+        <img class="result-image" id="resultImg" src="">
+        <div class="action-buttons">
+          <button class="action-btn" id="saveBtn">💾 Сохранить</button>
+          <button class="action-btn primary" id="newBtn">🔄 Новое</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/image-card.js"></script>
+
+  <script>
+    // ===== ПЕРЕВОДЫ =====
+    const I18N = {
+      ru: {
+        title: "Фэнтези персонаж",
+        cardTitle: "Фэнтези персонаж",
+        cardDesc: "Создай своего волшебного героя",
+        generate: "✨ Создать персонажа",
+        save: "💾 Сохранить",
+        new: "🔄 Новое",
+        loading: "Создаем персонажа...",
+        promptPlaceholder: "Добавь детали... (необязательно)",
+        uploadText: "Загрузи своё фото (необязательно)",
+        uploadHint: "персонаж будет похож на тебя",
+        raceElf: "🧝 Эльф",
+        raceDwarf: "⚒️ Дварф",
+        raceWizard: "🧙 Маг",
+        raceKnight: "⚔️ Рыцарь",
+        raceDruid: "🌿 Друид",
+        genderFemale: "👩 Женский",
+        genderMale: "👨 Мужской"
+      },
+      en: {
+        title: "Fantasy character",
+        cardTitle: "Fantasy character",
+        cardDesc: "Create your magical hero",
+        generate: "✨ Create character",
+        save: "💾 Save",
+        new: "🔄 New",
+        loading: "Creating character...",
+        promptPlaceholder: "Add details... (optional)",
+        uploadText: "Upload your photo (optional)",
+        uploadHint: "character will look like you",
+        raceElf: "🧝 Elf",
+        raceDwarf: "⚒️ Dwarf",
+        raceWizard: "🧙 Wizard",
+        raceKnight: "⚔️ Knight",
+        raceDruid: "🌿 Druid",
+        genderFemale: "👩 Female",
+        genderMale: "👨 Male"
+      },
+      kk: {
+        title: "Фэнтези кейіпкер",
+        cardTitle: "Фэнтези кейіпкер",
+        cardDesc: "Өзіңнің сиқырлы кейіпкеріңді жаса",
+        generate: "✨ Кейіпкер жаса",
+        save: "💾 Сақтау",
+        new: "🔄 Жаңа",
+        loading: "Кейіпкер жасалуда...",
+        promptPlaceholder: "Детальдар қос... (міндетті емес)",
+        uploadText: "Фотоңды жүкте (міндетті емес)",
+        uploadHint: "кейіпкер саған ұқсайды",
+        raceElf: "🧝 Эльф",
+        raceDwarf: "⚒️ Дварф",
+        raceWizard: "🧙 Сиқыршы",
+        raceKnight: "⚔️ Сарбаз",
+        raceDruid: "🌿 Друид",
+        genderFemale: "👩 Әйел",
+        genderMale: "👨 Ер"
+      }
+    };
+
+    function getLang() {
+      const url = new URL(window.location.href);
+      const qp = url.searchParams.get("lang");
+      if (qp) return qp;
+      try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } 
+      catch(e) { return "ru"; }
+    }
+
+    const lang = getLang();
+    const t = I18N[lang] || I18N.ru;
+
+    // Применяем переводы
+    document.getElementById('title').textContent = t.title;
+    document.getElementById('cardTitle').textContent = t.cardTitle;
+    document.getElementById('cardDesc').textContent = t.cardDesc;
+    document.getElementById('generateBtn').textContent = t.generate;
+    document.getElementById('saveBtn').textContent = t.save;
+    document.getElementById('newBtn').textContent = t.new;
+    document.getElementById('promptInput').placeholder = t.promptPlaceholder;
+    document.getElementById('uploadText').textContent = t.uploadText;
+    document.getElementById('uploadHint').textContent = t.uploadHint;
+    document.getElementById('raceElf').textContent = t.raceElf;
+    document.getElementById('raceDwarf').textContent = t.raceDwarf;
+    document.getElementById('raceWizard').textContent = t.raceWizard;
+    document.getElementById('raceKnight').textContent = t.raceKnight;
+    document.getElementById('raceDruid').textContent = t.raceDruid;
+    document.getElementById('genderFemale').textContent = t.genderFemale;
+    document.getElementById('genderMale').textContent = t.genderMale;
+
+    // ===== ЛОГИКА =====
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImg = document.getElementById('previewImg');
+    const removeBtn = document.getElementById('removeBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const result = document.getElementById('result');
+    const resultImg = document.getElementById('resultImg');
+    const saveBtn = document.getElementById('saveBtn');
+    const newBtn = document.getElementById('newBtn');
+    const promptInput = document.getElementById('promptInput');
+
+    let currentFile = null;
+    let currentImageBase64 = null;
+    let currentRace = 'elf';
+    let currentGender = 'female';
+    let currentHair = 'blonde';
+
+    // Выбор расы
+    document.querySelectorAll('.race-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.race-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentRace = btn.dataset.race;
+      });
+    });
+
+    // Выбор пола
+    document.querySelectorAll('.gender-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentGender = btn.dataset.gender;
+      });
+    });
+
+    // Выбор цвета волос
+    document.querySelectorAll('.hair-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.hair-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentHair = btn.dataset.hair;
+      });
+    });
+
+    // Цвета волос на английском
+    const hairColors = {
+      blonde: 'blonde',
+      brunette: 'brown',
+      red: 'red',
+      black: 'black',
+      silver: 'silver',
+      blue: 'blue'
+    };
+
+    // Промпты для разных рас
+    const racePrompts = {
+      elf: "fantasy elf character, {gender}, {hair} hair, pointy ears, magical, ethereal, beautiful, detailed",
+      dwarf: "fantasy dwarf character, {gender}, {hair} hair, bearded if male, strong, warrior, detailed",
+      wizard: "fantasy wizard character, {gender}, {hair} hair, magical robes, staff, intelligent, detailed",
+      knight: "fantasy knight character, {gender}, {hair} hair, shining armor, sword, heroic, detailed",
+      druid: "fantasy druid character, {gender}, {hair} hair, nature magic, forest clothes, animals, detailed"
+    };
+
+    // Загрузка фото
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        const file = e.target.files[0];
+        
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Файл слишком большой. Максимум 5MB');
+          return;
+        }
+        
+        currentFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImg.src = e.target.result;
+          uploadArea.style.display = 'none';
+          previewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Удалить фото
+    removeBtn.addEventListener('click', () => {
+      currentFile = null;
+      previewContainer.style.display = 'none';
+      uploadArea.style.display = 'block';
+      fileInput.value = '';
+    });
+
+    // Генерация
+    generateBtn.addEventListener('click', async () => {
+      let basePrompt = racePrompts[currentRace] || racePrompts.elf;
+      
+      const genderText = currentGender === 'female' ? 'female' : 'male';
+      basePrompt = basePrompt
+        .replace('{gender}', genderText)
+        .replace('{hair}', hairColors[currentHair] || 'blonde');
+      
+      const additionalPrompt = promptInput.value.trim();
+      const fullPrompt = additionalPrompt 
+        ? `${basePrompt}, ${additionalPrompt}, fantasy art, highly detailed, 8k, masterpiece`
+        : `${basePrompt}, fantasy art, highly detailed, 8k, masterpiece`;
+
+      let imageBase64;
+      
+      if (currentFile) {
+        // Если есть фото - делаем img2img с лицом
+        imageBase64 = await generateImage(fullPrompt, "img2img", currentFile);
+      } else {
+        // Если нет фото - просто txt2img
+        imageBase64 = await generateImage(fullPrompt, "txt2img");
+      }
+      
+      if (imageBase64) {
+        currentImageBase64 = imageBase64;
+        resultImg.src = imageBase64;
+        result.style.display = 'block';
+        generateBtn.style.display = 'none';
+      }
+    });
+
+    // Сохранение
+    saveBtn.addEventListener('click', () => {
+      if (currentImageBase64) {
+        saveImage(currentImageBase64, 'fantasy-character.png');
+      }
+    });
+
+    // Новое изображение
+    newBtn.addEventListener('click', () => {
+      result.style.display = 'none';
+      generateBtn.style.display = 'block';
+      previewContainer.style.display = 'none';
+      uploadArea.style.display = 'block';
+      fileInput.value = '';
+      promptInput.value = '';
+      currentFile = null;
+      currentImageBase64 = null;
+    });
+  </script>
+</body>
+</html>
