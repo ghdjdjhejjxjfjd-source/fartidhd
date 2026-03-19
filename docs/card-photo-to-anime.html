@@ -357,50 +357,6 @@
       transform: scale(1.1);
     }
 
-    /* ПОЛЕ ВВОДА */
-    .input-group {
-      margin-bottom: 20px;
-      position: relative;
-    }
-
-    .input-label {
-      font-size: 14px;
-      color: var(--subtext);
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    .input-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .text-input {
-      flex: 1;
-      padding: 16px;
-      border-radius: 20px;
-      border: 1px solid var(--card-border);
-      background: var(--input-bg);
-      color: var(--text);
-      font-size: 16px;
-      transition: all 0.2s;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      
-      caret-color: var(--caret-color);
-      caret-shape: bar;
-    }
-
-    .text-input:focus {
-      outline: none;
-      border-color: var(--accent1);
-    }
-
-    .text-input::placeholder {
-      color: var(--subtext);
-      opacity: 0.7;
-    }
-
     /* КНОПКА ГЕНЕРАЦИИ */
     .generate-btn {
       width: 100%;
@@ -605,7 +561,7 @@
         <span class="star-badge">10⭐</span>
       </div>
       
-      <div class="card-desc" id="cardDesc">Преврати своё фото в аниме персонажа</div>
+      <div class="card-desc" id="cardDesc">Преврати своё фото в аниме с сохранением черт лица</div>
 
       <!-- Область загрузки -->
       <div class="upload-area" id="uploadArea">
@@ -619,14 +575,6 @@
       <div class="preview-container" id="previewContainer">
         <button class="remove-btn" id="removeBtn">✕</button>
         <img class="preview-image" id="previewImg" src="">
-      </div>
-
-      <!-- Дополнительный промпт (необязательно) -->
-      <div class="input-group">
-        <label class="input-label" id="promptLabel">Дополнительное описание</label>
-        <div class="input-wrapper">
-          <input type="text" class="text-input" id="promptInput" placeholder="например: с большими глазами, в стиле Studio Ghibli">
-        </div>
       </div>
 
       <!-- Кнопка генерации -->
@@ -668,11 +616,9 @@
       ru: {
         title: "Фото → Аниме",
         cardTitle: "Фото → Аниме",
-        cardDesc: "Преврати своё фото в аниме персонажа",
+        cardDesc: "Преврати своё фото в аниме с сохранением черт лица",
         uploadText: "Нажми чтобы выбрать фото",
         uploadHint: "PNG, JPG (макс 5MB)",
-        promptLabel: "Дополнительное описание",
-        promptPlaceholder: "например: с большими глазами, в стиле Studio Ghibli",
         generate: "Превратить в аниме",
         save: "Сохранить",
         repeat: "Повторить",
@@ -685,11 +631,9 @@
       en: {
         title: "Photo → Anime",
         cardTitle: "Photo → Anime",
-        cardDesc: "Turn your photo into anime character",
+        cardDesc: "Turn your photo into anime while preserving facial features",
         uploadText: "Click to select photo",
         uploadHint: "PNG, JPG (max 5MB)",
-        promptLabel: "Additional description",
-        promptPlaceholder: "e.g.: big eyes, Studio Ghibli style",
         generate: "Turn into anime",
         save: "Save",
         repeat: "Repeat",
@@ -702,11 +646,9 @@
       kk: {
         title: "Фото → Аниме",
         cardTitle: "Фото → Аниме",
-        cardDesc: "Фотоңды аниме кейіпкеріне айналдыр",
+        cardDesc: "Фотоңды анимеге айналдыр, бет ерекшеліктерін сақта",
         uploadText: "Фото таңдау үшін бас",
         uploadHint: "PNG, JPG (макс 5MB)",
-        promptLabel: "Қосымша сипаттама",
-        promptPlaceholder: "мысалы: үлкен көздер, Studio Ghibli стилі",
         generate: "Анимеге айналдыр",
         save: "Сақтау",
         repeat: "Қайталау",
@@ -719,11 +661,9 @@
       tr: {
         title: "Fotoğraf → Anime",
         cardTitle: "Fotoğraf → Anime",
-        cardDesc: "Fotografını anime karakterine dönüştür",
+        cardDesc: "Fotoğrafını animeye dönüştür, yüz özelliklerini koru",
         uploadText: "Fotoğraf seçmek için tıkla",
         uploadHint: "PNG, JPG (maks 5MB)",
-        promptLabel: "Ek açıklama",
-        promptPlaceholder: "örnek: büyük gözler, Studio Ghibli stili",
         generate: "Animeye dönüştür",
         save: "Kaydet",
         repeat: "Tekrarla",
@@ -736,11 +676,9 @@
       uk: {
         title: "Фото → Аніме",
         cardTitle: "Фото → Аніме",
-        cardDesc: "Перетвори своє фото на аніме персонажа",
+        cardDesc: "Перетвори своє фото на аніме, зберігаючи риси обличчя",
         uploadText: "Натисни щоб вибрати фото",
         uploadHint: "PNG, JPG (макс 5MB)",
-        promptLabel: "Додатковий опис",
-        promptPlaceholder: "наприклад: великі очі, стиль Studio Ghibli",
         generate: "Перетворити в аніме",
         save: "Зберегти",
         repeat: "Повторити",
@@ -753,11 +691,9 @@
       fr: {
         title: "Photo → Anime",
         cardTitle: "Photo → Anime",
-        cardDesc: "Transforme ta photo en personnage d'anime",
+        cardDesc: "Transforme ta photo en anime tout en préservant les traits du visage",
         uploadText: "Clique pour sélectionner une photo",
         uploadHint: "PNG, JPG (max 5MB)",
-        promptLabel: "Description supplémentaire",
-        promptPlaceholder: "ex: grands yeux, style Studio Ghibli",
         generate: "Transformer en anime",
         save: "Enregistrer",
         repeat: "Répéter",
@@ -794,8 +730,6 @@
       document.getElementById('cardDesc').textContent = t.cardDesc;
       document.getElementById('uploadText').textContent = t.uploadText;
       document.getElementById('uploadHint').textContent = t.uploadHint;
-      document.getElementById('promptLabel').textContent = t.promptLabel;
-      document.getElementById('promptInput').placeholder = t.promptPlaceholder;
       document.getElementById('generateText').textContent = t.generate;
       document.getElementById('saveText').textContent = t.save;
       document.getElementById('repeatText').textContent = t.repeat;
@@ -860,7 +794,7 @@
     }
 
     // ===== ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЯ =====
-    async function generateImage(prompt, imageFile) {
+    async function generateImage(imageFile) {
       const user = getUser();
       if (!user) {
         alert("Ошибка: не удалось получить данные пользователя");
@@ -882,10 +816,11 @@
           return null;
         }
 
-        // УЛУЧШЕННЫЙ ПРОМПТ ДЛЯ ПОЛНОЙ АНИМЕ-ТРАНСФОРМАЦИИ
-        const basePrompt = "transform this entire photo into complete anime artwork, full anime transformation, everything becomes anime style, anime character with anime background, vibrant anime colors, detailed anime art, Studio Ghibli style, Japanese anime aesthetic, masterpiece, high quality, 8k";
-        const additionalPrompt = prompt ? `, ${prompt}` : '';
-        const fullPrompt = `${basePrompt}${additionalPrompt}`;
+        // УЛУЧШЕННЫЙ ПРОМПТ С СОХРАНЕНИЕМ ЧЕРТ ЛИЦА
+        const fullPrompt = "transform this photo into anime artwork, same person, same gender, preserve facial features, identical face, same eyes, same nose, same mouth, perfectly detailed hands and fingers, 5 fingers on each hand, correct anatomy, beautiful anime style, vibrant colors, detailed, masterpiece, 8k";
+
+        // Негативный промпт для исправления анатомии
+        const negativePrompt = "bad anatomy, extra fingers, missing fingers, deformed hands, wrong gender, different person, mutated, ugly, disfigured, bad proportions, deformed face, blurry, low quality";
 
         console.log("🎨 Prompt:", fullPrompt);
 
@@ -894,7 +829,9 @@
         formData.append('tg_username', user.username || '');
         formData.append('tg_first_name', user.first_name || '');
         formData.append('prompt', fullPrompt);
+        formData.append('negative_prompt', negativePrompt);
         formData.append('mode', 'img2img');
+        formData.append('strength', '0.75'); // Баланс между сохранением и изменением
         formData.append('image', imageFile);
 
         const response = await fetch(`${API_BASE}/api/image`, {
@@ -975,7 +912,6 @@
     const previewContainer = document.getElementById('previewContainer');
     const previewImg = document.getElementById('previewImg');
     const removeBtn = document.getElementById('removeBtn');
-    const promptInput = document.getElementById('promptInput');
     const generateBtn = document.getElementById('generateBtn');
     const result = document.getElementById('result');
     const resultImg = document.getElementById('resultImg');
@@ -1023,8 +959,7 @@
     generateBtn.addEventListener('click', async () => {
       if (!currentFile) return;
 
-      const additionalPrompt = promptInput.value.trim();
-      const imageBase64 = await generateImage(additionalPrompt, currentFile);
+      const imageBase64 = await generateImage(currentFile);
       
       if (imageBase64) {
         currentImageBase64 = imageBase64;
@@ -1049,17 +984,14 @@
       uploadArea.style.display = 'block';
       previewContainer.style.display = 'none';
       fileInput.value = '';
-      promptInput.value = '';
       currentFile = null;
       currentImageBase64 = null;
       generateBtn.disabled = true;
     });
 
-    // Закрытие клавиатуры
+    // Закрытие клавиатуры (на всякий случай)
     document.addEventListener('click', function(event) {
-      const input = document.getElementById('promptInput');
-      const isClickInside = input.contains(event.target);
-      if (!isClickInside && document.activeElement === input) input.blur();
+      // Здесь ничего не делаем, так как поля ввода нет
     });
   </script>
 </body>
