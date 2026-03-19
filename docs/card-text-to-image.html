@@ -70,9 +70,9 @@
 
     /* ===== ТЕМЫ ===== */
     :root[data-theme="blue"] { 
-      --bg-top: #1a2a38;  /* Темно-голубой */
-      --bg-mid: #13222e;   /* Темно-голубой */
-      --bg-bot: #0e1a24;   /* Темно-голубой */
+      --bg-top: #1a2a38;
+      --bg-mid: #13222e;
+      --bg-bot: #0e1a24;
       --accent1: #4a8ed4;
       --accent2: #2a6bb0;
       --text: #f7fbff;
@@ -82,7 +82,8 @@
       --input-bg: rgba(0, 0, 0, 0.3);
       --btn-bg: rgba(90, 174, 255, 0.2);
       --star-color: #ffffff;
-      --header-text: #ffffff;  /* Белый */
+      --header-text: #ffffff;
+      --header-bg: rgba(26, 42, 56, 0.95);  /* Темно-голубой фон */
       --caret-color: #ffffff;
       --border-light: rgba(255, 255, 255, 0.2);
       --contrast: 1.07;
@@ -101,7 +102,8 @@
       --input-bg: rgba(0, 0, 0, 0.3);
       --btn-bg: rgba(139, 184, 255, 0.15);
       --star-color: #ffffff;
-      --header-text: #ffffff;  /* Белый */
+      --header-text: #ffffff;
+      --header-bg: rgba(27, 36, 48, 0.95);  /* Темно-серый фон */
       --caret-color: #ffffff;
       --border-light: rgba(255, 255, 255, 0.2);
       --contrast: 1.07;
@@ -121,6 +123,7 @@
       --btn-bg: rgba(58, 140, 255, 0.1);
       --star-color: #2c3e50;
       --header-text: #2c3e50;
+      --header-bg: rgba(232, 237, 245, 0.95);  /* Светлый фон */
       --caret-color: #3a8cff;
       --border-light: rgba(0, 0, 0, 0.15);
       --contrast: 1;
@@ -132,7 +135,7 @@
       background-attachment: fixed;
     }
 
-    /* ===== iOS - ВЕРХНЯЯ ПАНЕЛЬ КАК В ЧАТЕ ===== */
+    /* ===== iOS - ВЕРХНЯЯ ПАНЕЛЬ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -143,10 +146,10 @@
       align-items: center;
       padding: 8px 14px;
       padding-top: calc(8px + env(safe-area-inset-top));
-      background: transparent;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      border-bottom: none;
+      background: var(--header-bg);  /* Темно-голубой фон */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-light);
       height: 60px;
     }
 
@@ -160,12 +163,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: var(--header-bg);  /* Тот же темно-голубой фон */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       padding: 0 12px;
       border-radius: 17px;
-      border: 1px solid rgba(255,255,255,0.15);
+      border: 1px solid var(--border-light);
       font-weight: 600;
     }
 
@@ -175,12 +178,12 @@
       font-weight: 600;
       font-size: 16px;
       color: var(--header-text);
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: var(--header-bg);  /* Тот же темно-голубой фон */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       padding: 6px 14px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.15);
+      border: 1px solid var(--border-light);
       margin: 0 8px;
     }
 
