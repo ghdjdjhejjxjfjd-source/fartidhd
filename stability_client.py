@@ -1,4 +1,4 @@
-# stability_client.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (с автоматическим ресайзом)
+# stability_client.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (с сохранением пропорций и качества)
 import os
 import base64
 import time
@@ -57,11 +57,15 @@ MODELS = [
     }
 ]
 
-def resize_to_allowed_dimensions(image_bytes, target_size=None):
+def resize_with_padding(image_bytes, target_size=None):
     """
-    Изменяет размер изображения до разрешенного Stability AI
+    Изменяет размер изображения с сохранением пропорций
+    Добавляет черные полосы (padding) чтобы не обрезать фото
     """
     try:
+        from PIL import Image, ImageOps
+        import io
+        
         # Открываем изображение
         img = Image.open(io.BytesIO(image_bytes))
         
@@ -69,27 +73,60 @@ def resize_to_allowed_dimensions(image_bytes, target_size=None):
         if img.mode != 'RGB':
             img = img.convert('RGB')
         
-        # Если передан конкретный target_size, используем его
+        # Получаем оригинальный размер
+        original_width, original_height = img.size
+        print(f"📸 Original image: {original_width}x{original_height}")
+        
+        # Выбираем целевой размер
         if target_size and target_size in [f"{w}x{h}" for w, h in ALLOWED_SIZES]:
             w, h = map(int, target_size.split('x'))
             target = (w, h)
         else:
-            # Иначе выбираем наиболее подходящий размер
-            # По умолчанию 1024x1024
-            target = ALLOWED_SIZES[0]
+            # Выбираем наиболее подходящий размер по соотношению сторон
+            target_ratio = original_width / original_height
+            best_size = ALLOWED_SIZES[0]
+            best_ratio_diff = float('inf')
+            
+            for size in ALLOWED_SIZES:
+                ratio = size[0] / size[1]
+                ratio_diff = abs(target_ratio - ratio)
+                if ratio_diff < best_ratio_diff:
+                    best_ratio_diff = ratio_diff
+                    best_size = size
+            
+            target = best_size
+        
+        print(f"🎯 Target size: {target[0]}x{target[1]}")
+        
+        # Вычисляем новый размер с сохранением пропорций
+        ratio = min(target[0] / original_width, target[1] / original_height)
+        new_width = int(original_width * ratio)
+        new_height = int(original_height * ratio)
         
         # Изменяем размер
-        img = img.resize(target, Image.Resampling.LANCZOS)
+        img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        print(f"📏 Resized to: {new_width}x{new_height}")
         
-        # Сохраняем в байты
+        # Создаем новое изображение с черным фоном
+        new_img = Image.new('RGB', target, (0, 0, 0))
+        
+        # Вставляем изображение по центру
+        paste_x = (target[0] - new_width) // 2
+        paste_y = (target[1] - new_height) // 2
+        new_img.paste(img, (paste_x, paste_y))
+        
+        print(f"✅ Final image: {target[0]}x{target[1]} with padding")
+        
+        # Сохраняем в байты с максимальным качеством
         img_byte_arr = io.BytesIO()
-        img.save(img_byte_arr, format='PNG')
-        print(f"✅ Image resized from original to {target[0]}x{target[1]}")
+        new_img.save(img_byte_arr, format='PNG', quality=100, optimize=False)
         return img_byte_arr.getvalue()
         
     except Exception as e:
         print(f"⚠️ Error resizing image: {e}")
-        return image_bytes  # Возвращаем оригинал если ошибка
+        import traceback
+        traceback.print_exc()
+        return image_bytes
 
 def translate_text(text: str) -> str:
     if not text or not text.strip():
@@ -334,8 +371,8 @@ def generate_image_from_image(
     if not init_image:
         raise ValueError("Init image is required")
     
-    # Изменяем размер изображения до разрешенного
-    resized_image = resize_to_allowed_dimensions(init_image)
+    # Изменяем размер изображения с сохранением пропорций (добавляем padding)
+    resized_image = resize_with_padding(init_image)
     
     translated = translate_text(prompt)
     
@@ -400,8 +437,8 @@ def remove_background(
     if not init_image:
         raise ValueError("Init image is required")
     
-    # Изменяем размер изображения
-    resized_image = resize_to_allowed_dimensions(init_image)
+    # Изменяем размер изображения с сохранением пропорций
+    resized_image = resize_with_padding(init_image)
     
     # Промпт для удаления фона
     bg_prompt = prompt or "subject on transparent background, white background, no background, isolated object"
