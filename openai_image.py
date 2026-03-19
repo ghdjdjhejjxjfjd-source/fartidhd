@@ -1,4 +1,4 @@
-# openai_image.py — РАБОЧИЙ (img2img через dall-e-2)
+# openai_image.py — ФИНАЛЬНЫЙ РАБОЧИЙ (исправлены ВСЕ ошибки)
 
 import os
 import base64
@@ -35,10 +35,10 @@ def edit_image_gpt(
         print(f"🎨 DALL-E 2 edit: {openai_size}")
         print(f"📦 Image size: {len(image_bytes)} bytes")
 
-        # ⚠️ ВАЖНО: используем dall-e-2
+        # ✅ ФИНАЛЬНЫЙ ФИКС: правильный mime + filename
         response = client.images.edit(
             model="dall-e-2",
-            image=image_bytes,
+            image=("image.png", image_bytes, "image/png"),
             prompt=prompt,
             size=openai_size
         )
@@ -71,7 +71,7 @@ def generate_image_dalle(
     size: str = "1024x1024",
     quality: str = "standard"
 ) -> str:
-    """Обычная генерация через DALL·E 3"""
+    """Генерация через DALL·E 3"""
 
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
