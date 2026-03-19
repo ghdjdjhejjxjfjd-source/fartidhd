@@ -73,36 +73,38 @@
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
       --bg-bot: #16212d;
-      --accent1: #4a8ed4;  /* Более темный синий */
-      --accent2: #2a6bb0;  /* Более темный для градиента */
+      --accent1: #4a8ed4;
+      --accent2: #2a6bb0;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.1);
       --card-border: rgba(255, 255, 255, 0.12);
-      --input-bg: rgba(0, 0, 0, 0.3);  /* Темнее */
+      --input-bg: rgba(0, 0, 0, 0.3);
       --btn-bg: rgba(90, 174, 255, 0.2);
       --star-color: #ffffff;
-      --header-text: #f7fbff;
+      --header-text: #a0b0c0;
       --caret-color: #ffffff;
       --border-light: rgba(255, 255, 255, 0.2);
+      --contrast: 1.07;
     }
     
     :root[data-theme="black"] { 
       --bg-top: #1b2430;
       --bg-mid: #141b24;
       --bg-bot: #0e141c;
-      --accent1: #6a8ed4;  /* Более темный */
-      --accent2: #4a6eb0;  /* Более темный */
+      --accent1: #6a8ed4;
+      --accent2: #4a6eb0;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.08);
       --card-border: rgba(255, 255, 255, 0.12);
-      --input-bg: rgba(0, 0, 0, 0.3);  /* Темнее */
+      --input-bg: rgba(0, 0, 0, 0.3);
       --btn-bg: rgba(139, 184, 255, 0.15);
       --star-color: #ffffff;
-      --header-text: #f7fbff;
+      --header-text: #a0b0c0;
       --caret-color: #ffffff;
       --border-light: rgba(255, 255, 255, 0.2);
+      --contrast: 1.07;
     }
     
     :root[data-theme="light"] { 
@@ -121,6 +123,7 @@
       --header-text: #2c3e50;
       --caret-color: #3a8cff;
       --border-light: rgba(0, 0, 0, 0.15);
+      --contrast: 1;
     }
 
     /* ГРАДИЕНТ ФОНА */
@@ -129,7 +132,7 @@
       background-attachment: fixed;
     }
 
-    /* ВЕРХНЯЯ ПАНЕЛЬ */
+    /* ===== iOS - ВЕРХНЯЯ ПАНЕЛЬ КАК В ЧАТЕ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -138,31 +141,47 @@
       z-index: 20;
       display: flex;
       align-items: center;
-      padding: 12px 16px;
-      padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(0,0,0,0.2);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--card-border);
+      padding: 8px 14px;
+      padding-top: calc(8px + env(safe-area-inset-top));
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-bottom: none;
       height: 60px;
     }
 
     .back-btn {
       color: var(--header-text);
       text-decoration: none;
-      font-size: 24px;
-      width: 40px;
-      height: 40px;
+      font-size: 15px;
+      width: auto;
+      min-width: 40px;
+      height: 34px;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 0 12px;
+      border-radius: 17px;
+      border: 1px solid rgba(255,255,255,0.15);
+      font-weight: 600;
     }
 
     .title {
       flex: 1;
       text-align: center;
       font-weight: 600;
-      font-size: 18px;
+      font-size: 16px;
       color: var(--header-text);
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 6px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.15);
+      margin: 0 8px;
     }
 
     .spacer { width: 40px; }
@@ -177,6 +196,7 @@
       padding: 16px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      filter: contrast(var(--contrast));
     }
 
     /* КАРТОЧКА */
@@ -193,7 +213,7 @@
       overflow: hidden;
     }
 
-    /* ТОНКАЯ ОБВОДКА ДЛЯ ПАНЕЛИ */
+    /* ТОНКАЯ ОБВОДКА */
     .card::after {
       content: '';
       position: absolute;
@@ -316,7 +336,8 @@
 
     .text-input:focus {
       outline: none;
-      border-color: var(--border-light);
+      border-color: var(--accent1);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
     }
 
     .text-input::placeholder {
@@ -437,7 +458,7 @@
       color: white;
     }
 
-    /* РЕЗУЛЬТАТ */
+    /* РЕЗУЛЬТАТ - БЕЗ УВЕЛИЧЕНИЯ */
     .result {
       display: none;
       margin-top: 20px;
@@ -445,20 +466,26 @@
 
     .result-image {
       width: 100%;
+      height: auto;
       border-radius: 24px;
       background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
       margin-bottom: 16px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      pointer-events: none;  /* Запрещаем клики по картинке */
+      user-select: none;      /* Запрещаем выделение */
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* ЗАГРУЗКА */
+    /* ЗАГРУЗКА - СВЕЧЕНИЕ КАК РАНЬШЕ */
     .loading-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.95);
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -474,6 +501,7 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin-bottom: 20px;
+      filter: drop-shadow(0 0 10px rgba(90,174,255,0.5));
     }
 
     @keyframes spin {
@@ -484,9 +512,10 @@
       color: white;
       font-size: 18px;
       font-weight: 600;
+      text-shadow: 0 0 10px rgba(90,174,255,0.5);
     }
 
-    /* ===== ANDROID - НЕ ТРОГАЕМ ===== */
+    /* ===== ANDROID ===== */
     html.android-mode .card::before,
     html.android-mode .card::after {
       display: none !important;
@@ -504,6 +533,29 @@
 
     html.android-mode .text-input {
       border: none !important;
+    }
+
+    html.android-mode .result-image {
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+
+    html.android-mode .loading-overlay {
+      background: rgba(0,0,0,0.8) !important;
+    }
+
+    html.android-mode .header {
+      background: rgba(0,0,0,0.2) !important;
+      backdrop-filter: blur(10px) !important;
+      border-bottom: 1px solid var(--card-border) !important;
+    }
+
+    html.android-mode .back-btn,
+    html.android-mode .title {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      border: none !important;
+      color: var(--text) !important;
     }
   </style>
 </head>
