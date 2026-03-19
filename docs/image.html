@@ -71,6 +71,7 @@
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.15);
       --card-border: rgba(255, 255, 255, 0.2);
+      --panel-bg: rgba(255, 255, 255, 0.1);
     }
     
     :root[data-theme="black"] { 
@@ -83,6 +84,7 @@
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.15);
       --card-border: rgba(255, 255, 255, 0.2);
+      --panel-bg: rgba(255, 255, 255, 0.1);
     }
     
     :root[data-theme="light"] { 
@@ -95,6 +97,7 @@
       --subtext: #4a5a6a;
       --card-bg: rgba(255, 255, 255, 0.85);
       --card-border: rgba(0, 0, 0, 0.1);
+      --panel-bg: rgba(255, 255, 255, 0.5);
     }
 
     /* ФИКСИРОВАННЫЙ ГРАДИЕНТ */
@@ -104,7 +107,7 @@
       min-height: 100vh;
     }
 
-    /* ===== ВЕРХНЯЯ ПАНЕЛЬ - УЖЕ НА 30% ===== */
+    /* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -113,14 +116,14 @@
       z-index: 20;
       display: flex;
       align-items: center;
-      justify-content: center; /* Центрируем содержимое */
+      justify-content: center;
       padding: 10px 20px;
       padding-top: calc(10px + env(safe-area-inset-top));
-      width: 70%; /* Уже на 30% (100% - 30% = 70%) */
-      margin: 0 auto; /* Центрируем */
+      width: 70%;
+      margin: 0 auto;
       left: 0;
       right: 0;
-      border-radius: 40px; /* Скругленные углы */
+      border-radius: 40px;
       top: 10px;
       background: rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(20px) saturate(180%);
@@ -158,19 +161,52 @@
     /* КОНТЕЙНЕР */
     .container {
       min-height: 100vh;
-      padding-top: 100px; /* Больше отступ из-за новой шапки */
+      padding-top: 100px;
       padding-bottom: 20px;
       display: flex;
       flex-direction: column;
     }
 
-    /* ЗАГОЛОВОК */
+    /* ===== ЗАГОЛОВОК "ВЫБЕРИ СТИЛЬ" ===== */
     .section-title {
       font-size: 22px;
       font-weight: 700;
       margin: 0 16px 20px 16px;
-      color: var(--accent1);
-      text-shadow: 0 2px 10px rgba(90, 174, 255, 0.3);
+      padding: 12px 24px;
+      display: inline-block;
+      width: fit-content;
+      border-radius: 40px;
+    }
+
+    /* iOS - стеклянный с обводкой как у кнопок */
+    .section-title {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      color: var(--text);
+    }
+
+    /* Android - без свечения */
+    html.android-mode .section-title {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 12px 0;
+    }
+
+    /* Android синяя/черная тема - белый текст */
+    html.android-mode[data-theme="blue"] .section-title,
+    html.android-mode[data-theme="black"] .section-title {
+      color: #ffffff !important;
+    }
+
+    /* Android светлая тема - серый текст */
+    html.android-mode[data-theme="light"] .section-title {
+      color: var(--text) !important;
     }
 
     /* КАРТОЧКИ - В СТОЛБИК */
@@ -182,13 +218,13 @@
       flex: 1;
     }
 
-    /* ===== СТИЛЬ ДЛЯ iOS - СУПЕР СТЕКЛЯННЫЙ ===== */
+    /* ===== КАРТОЧКА ===== */
     .card {
       display: block;
       text-decoration: none;
       color: var(--text);
-      background: transparent; /* Прозрачный фон */
-      border: none; /* Убираем стандартную обводку */
+      background: transparent;
+      border: none;
       border-radius: 28px;
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
@@ -197,7 +233,7 @@
       position: relative;
     }
 
-    /* СТЕКЛЯННЫЙ ЭФФЕКТ ДЛЯ iOS */
+    /* iOS - стеклянный эффект для всей карточки */
     .card::before {
       content: '';
       position: absolute;
@@ -214,7 +250,7 @@
       pointer-events: none;
     }
 
-    /* БЛИК СВЕРХУ */
+    /* iOS - блик */
     .card::after {
       content: '';
       position: absolute;
@@ -232,7 +268,7 @@
       transform: scale(0.98);
     }
 
-    /* КАРТИНКА-ПРИМЕР */
+    /* КАРТИНКА-ПРИМЕР (для будущих загрузок) */
     .card-image {
       width: 100%;
       aspect-ratio: 16/9;
@@ -241,20 +277,25 @@
       position: relative;
       z-index: 3;
       border-radius: 28px 28px 0 0;
+      background-color: rgba(0, 0, 0, 0.2);
     }
 
-    /* ПЛЕЙСХОЛДЕРЫ */
+    /* ПЛЕЙСХОЛДЕРЫ (временные) */
     .card-image[data-card="1"] { background-image: linear-gradient(135deg, #667eea, #764ba2); }
     .card-image[data-card="2"] { background-image: linear-gradient(135deg, #f093fb, #f5576c); }
     .card-image[data-card="3"] { background-image: linear-gradient(135deg, #4facfe, #00f2fe); }
     .card-image[data-card="4"] { background-image: linear-gradient(135deg, #43e97b, #38f9d7); }
     .card-image[data-card="5"] { background-image: linear-gradient(135deg, #fa709a, #fee140); }
 
-    /* ТЕКСТ КАРТОЧКИ - ПРОЗРАЧНЫЙ С БЛЮРОМ */
+    /* ===== ПАНЕЛЬ КАРТОЧКИ (ТЕКСТ) ===== */
     .card-content {
       padding: 18px;
       position: relative;
       z-index: 3;
+    }
+
+    /* iOS - прозрачная с блюром */
+    .card-content {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -276,61 +317,58 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
-    /* ===== ANDROID MODE - СТИЛЬ КАК У iOS ===== */
-    html.android-mode .card {
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    }
-
+    /* ===== ANDROID MODE ===== */
     html.android-mode .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(30, 30, 30, 0.7);
-      backdrop-filter: blur(15px) saturate(150%);
-      -webkit-backdrop-filter: blur(15px) saturate(150%);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 28px;
-      z-index: 1;
-      pointer-events: none;
+      content: none;
     }
 
     html.android-mode .card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50%;
-      background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+      content: none;
+    }
+
+    html.android-mode .card {
+      background: transparent;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Android - фон карточки */
+    html.android-mode .card-image {
       border-radius: 28px 28px 0 0;
-      z-index: 2;
-      pointer-events: none;
     }
 
+    /* Android - панель текста (слабая обводка и светлее) */
     html.android-mode .card-content {
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.15) !important;  /* Светлее */
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;  /* Слабая обводка */
+      border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
     }
 
+    /* Android синяя тема - ещё светлее */
+    html.android-mode[data-theme="blue"] .card-content {
+      background: rgba(255, 255, 255, 0.18) !important;
+      border: 1px solid rgba(90, 174, 255, 0.3) !important;
+    }
+
+    /* Android черная тема - светлее */
+    html.android-mode[data-theme="black"] .card-content {
+      background: rgba(255, 255, 255, 0.16) !important;
+      border: 1px solid rgba(139, 184, 255, 0.3) !important;
+    }
+
+    /* Android светлая тема */
+    html.android-mode[data-theme="light"] .card-content {
+      background: rgba(255, 255, 255, 0.5) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Android - верхняя панель */
     html.android-mode .header {
       background: rgba(30, 30, 30, 0.7);
-      backdrop-filter: blur(15px) saturate(150%);
-      -webkit-backdrop-filter: blur(15px) saturate(150%);
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
       border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    /* СВЕТЛАЯ ТЕМА ДЛЯ ANDROID */
-    html.android-mode[data-theme="light"] .card::before {
-      background: rgba(255, 255, 255, 0.7);
-    }
-
-    html.android-mode[data-theme="light"] .card-content {
-      background: rgba(255, 255, 255, 0.5);
     }
 
     html.android-mode[data-theme="light"] .header {
@@ -340,7 +378,7 @@
 </head>
 <body>
 
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ - УЖЕ НА 30% -->
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
   <div class="header">
     <a href="./index.html" class="back-btn">←</a>
     <div class="title" id="title">Генерация картинок</div>
