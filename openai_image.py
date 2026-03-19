@@ -14,7 +14,7 @@ SIZE_MAP = {
     "1024x576": "1792x1024",   # 16:9 конвертируем в горизонтальный
 }
 
-async def generate_image_dalle(prompt: str, size: str = "1024x1024") -> str:
+def generate_image_dalle(prompt: str, size: str = "1024x1024") -> str:
     """
     Генерация изображения через DALL-E 3
     size: 1024x1024, 832x1040, 1024x576
