@@ -882,10 +882,12 @@
           return null;
         }
 
-        // Базовый промпт для аниме
-        const basePrompt = "transform this photo into anime style, anime character, japanese anime art style, vibrant colors, big eyes, detailed, masterpiece";
+        // УЛУЧШЕННЫЙ ПРОМПТ ДЛЯ ПОЛНОЙ АНИМЕ-ТРАНСФОРМАЦИИ
+        const basePrompt = "transform this entire photo into complete anime artwork, full anime transformation, everything becomes anime style, anime character with anime background, vibrant anime colors, detailed anime art, Studio Ghibli style, Japanese anime aesthetic, masterpiece, high quality, 8k";
         const additionalPrompt = prompt ? `, ${prompt}` : '';
         const fullPrompt = `${basePrompt}${additionalPrompt}`;
+
+        console.log("🎨 Prompt:", fullPrompt);
 
         const formData = new FormData();
         formData.append('tg_user_id', user.id);
