@@ -670,12 +670,12 @@
     const API_BASE = "https://fayrat-production.up.railway.app";
     const COST = 10;
 
-    // ===== ПРОМПТЫ ДЛЯ РАЗНЫХ СТИЛЕЙ =====
+    // ===== ПРОМПТЫ ДЛЯ РАЗНЫХ СТИЛЕЙ (УЛУЧШЕННЫЕ) =====
     const STYLE_PROMPTS = {
-      pencil: "transform this photo into a pencil drawing, sketch style, black and white, detailed lines, artistic, high quality",
-      watercolor: "transform this photo into a watercolor painting, soft colors, artistic, beautiful brush strokes, detailed",
-      oil: "transform this photo into an oil painting, rich colors, thick brush strokes, masterpiece, artistic",
-      sketch: "transform this photo into a quick sketch, rough lines, artistic, minimal details, creative"
+      pencil: "transform this photo into a pencil sketch, black and white, detailed shading, hand-drawn art, line art, graphite drawing, artistic sketch, high quality",
+      watercolor: "transform this photo into a watercolor painting, soft colors, artistic, beautiful brush strokes, wet on wet technique, watercolor art, detailed",
+      oil: "transform this photo into an oil painting, rich textures, impasto technique, thick brush strokes, canvas texture, classical painting style, masterpiece",
+      sketch: "transform this photo into a quick sketch, rough lines, minimal details, artistic, creative sketch, gestural drawing, expressive lines"
     };
 
     // ===== ПЕРЕВОДЫ ДЛЯ ВСЕХ 6 ЯЗЫКОВ =====
@@ -913,7 +913,7 @@
 
         // Получаем промпт для выбранного стиля
         const basePrompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.pencil;
-        const negativePrompt = "bad anatomy, extra fingers, missing fingers, deformed, ugly, text, letters, words, watermark";
+        const negativePrompt = "bad anatomy, extra fingers, missing fingers, deformed, ugly, text, letters, words, watermark, signature, logo, writing, caption, label, messy, cluttered, busy background, photo, photograph, realistic";
 
         console.log("🎨 Style:", style);
         console.log("📝 Prompt:", basePrompt);
@@ -925,7 +925,7 @@
         formData.append('prompt', basePrompt);
         formData.append('negative_prompt', negativePrompt);
         formData.append('mode', 'img2img');
-        formData.append('strength', '0.7');
+        formData.append('strength', '0.75'); // Чуть сильнее для рисунков
         formData.append('image', imageFile);
 
         const response = await fetch(`${API_BASE}/api/image`, {
