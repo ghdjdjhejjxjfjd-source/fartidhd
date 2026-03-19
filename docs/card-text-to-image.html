@@ -82,6 +82,7 @@
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
+      --contrast: 1.1;
     }
     
     :root[data-theme="black"] { 
@@ -99,6 +100,7 @@
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
+      --contrast: 1.1;
     }
     
     :root[data-theme="light"] { 
@@ -116,6 +118,7 @@
       --star-color: #2c3e50;
       --header-text: rgba(255, 255, 255, 0.9);
       --caret-color: #3a8cff;
+      --contrast: 1.1;
     }
 
     /* ГРАДИЕНТ ФОНА */
@@ -186,11 +189,6 @@
       box-shadow: 0 25px 50px rgba(0,0,0,0.5);
       position: relative;
       overflow: hidden;
-      
-      /* ЧЕТКОСТЬ */
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
     }
 
     /* ===== IOS - БЕГУЩАЯ ЗМЕЙКА ===== */
@@ -227,6 +225,26 @@
     @keyframes snakeMove {
       0% { background-position: 0% 0; }
       100% { background-position: 300% 0; }
+    }
+
+    /* ===== МАКСИМАЛЬНАЯ ЧЕТКОСТЬ ДЛЯ ВСЕХ ТЕКСТОВ ===== */
+    .card-title, .card-desc, .input-label, .text-input, .size-btn, .action-btn, .generate-btn, .star-badge, .title, .back-btn {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-smooth: always;
+      letter-spacing: 0.2px;
+      font-weight: 500;
+    }
+
+    /* УВЕЛИЧИВАЕМ КОНТРАСТ */
+    .card-title, .title, .generate-btn, .action-btn.primary {
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .card-desc, .input-label, .text-input, .size-btn, .action-btn, .star-badge {
+      text-shadow: 0 1px 3px rgba(0,0,0,0.25);
     }
 
     .card-header {
@@ -355,6 +373,17 @@
       color: white;
     }
 
+    /* ===== АНИМАЦИЯ НА КНОПКАХ (БЕЗ ОСВЕТЛЕНИЯ) ===== */
+    .size-btn:hover, .clear-input:hover, .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+    }
+
+    .size-btn:active, .clear-input:active, .action-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
     /* КНОПКА ГЕНЕРАЦИИ */
     .generate-btn {
       width: 100%;
@@ -375,8 +404,14 @@
       box-shadow: 0 20px 35px rgba(0,0,0,0.5);
     }
 
+    .generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 25px 40px rgba(0,0,0,0.6);
+    }
+
     .generate-btn:active {
       transform: scale(0.98);
+      box-shadow: 0 20px 35px rgba(0,0,0,0.5);
     }
 
     /* РЕЗУЛЬТАТ */
@@ -422,7 +457,7 @@
       color: white;
     }
 
-    /* ЗАГРУЗКА - БЕЗ ОСВЕТЛЕНИЯ */
+    /* ЗАГРУЗКА */
     .loading-overlay {
       position: fixed;
       top: 0;
@@ -457,14 +492,20 @@
       font-weight: 600;
     }
 
-    /* ===== ANDROID - ПРОСТОЙ ДИЗАЙН ===== */
+    /* ===== ANDROID - НИЧЕГО НЕ МЕНЯЕМ ===== */
     html.android-mode .card::before {
       display: none !important;
     }
 
-    /* Убираем обводку у поля ввода */
     html.android-mode .text-input {
       border: none !important;
+    }
+
+    html.android-mode .size-btn:hover,
+    html.android-mode .clear-input:hover,
+    html.android-mode .action-btn:hover,
+    html.android-mode .generate-btn:hover {
+      transform: none !important;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
     }
 
@@ -473,22 +514,8 @@
       -webkit-backdrop-filter: none !important;
     }
 
-    html.android-mode .size-btn,
-    html.android-mode .clear-input,
-    html.android-mode .action-btn {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-
-    /* Убираем осветление при загрузке */
     html.android-mode .loading-overlay {
       background: rgba(0,0,0,0.95) !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-
-    html.android-mode[data-theme="light"] .card {
-      background: rgba(255,255,255,0.95) !important;
     }
   </style>
 </head>
