@@ -68,7 +68,7 @@
       overflow: hidden;
     }
 
-    /* ===== ТЕМЫ - КАК БЫЛО ===== */
+    /* ===== ТЕМЫ ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
@@ -87,9 +87,9 @@
     }
     
     :root[data-theme="black"] { 
-      --bg-top: #1b2430;
-      --bg-mid: #141b24;
-      --bg-bot: #0e141c;
+      --bg-top: #0e141c;  /* Немного темнее */
+      --bg-mid: #0a1018;  /* Немного темнее */
+      --bg-bot: #060c14;  /* Немного темнее */
       --accent1: #8bb8ff;
       --accent2: #5a98ff;
       --text: #f7fbff;
@@ -120,13 +120,13 @@
       --caret-color: #3a8cff;
     }
 
-    /* ГРАДИЕНТ ФОНА - КАК БЫЛО */
+    /* ГРАДИЕНТ ФОНА */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
     }
 
-    /* ===== iOS - НОВАЯ ВЕРХНЯЯ ПАНЕЛЬ ===== */
+    /* ===== iOS - ВЕРХНЯЯ ПАНЕЛЬ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -189,7 +189,7 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* ===== КАРТОЧКА - КАК БЫЛО ===== */
+    /* ===== КАРТОЧКА ===== */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -278,7 +278,7 @@
       line-height: 1.5;
     }
 
-    /* ПОЛЕ ВВОДА - КАК БЫЛО */
+    /* ПОЛЕ ВВОДА */
     .input-group {
       margin-bottom: 20px;
       position: relative;
@@ -338,7 +338,7 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
-    /* ВЫБОР РАЗМЕРА - КАК БЫЛО */
+    /* ВЫБОР РАЗМЕРА */
     .size-selector {
       display: flex;
       gap: 10px;
@@ -372,7 +372,7 @@
       color: white;
     }
 
-    /* КНОПКА ГЕНЕРАЦИИ - КАК БЫЛО */
+    /* КНОПКА ГЕНЕРАЦИИ */
     .generate-btn {
       width: 100%;
       padding: 18px;
@@ -400,7 +400,7 @@
       transform: scale(0.98);
     }
 
-    /* КНОПКИ ДЕЙСТВИЙ - КАК БЫЛО */
+    /* КНОПКИ ДЕЙСТВИЙ */
     .action-buttons {
       display: flex;
       gap: 12px;
@@ -490,7 +490,7 @@
       font-weight: 600;
     }
 
-    /* ===== ANDROID - ТОЛЬКО СТРЕЛКА НАЗАД ===== */
+    /* ===== ANDROID ===== */
     html.android-mode .card::before {
       display: none !important;
     }
@@ -648,9 +648,82 @@
         insufficientStars: "❌ Insufficient stars. Need 10⭐",
         error: "Generation error",
         saved: "✅ Saved to gallery"
+      },
+      kk: {
+        title: "Еркін промпт",
+        cardTitle: "Еркін промпт",
+        cardDesc: "Қалағаныңды жаз — ИИ кез келген стильде салады",
+        promptLabel: "Сенің промптың",
+        promptPlaceholder: "мысалы: таудағы әдемі күн батуы",
+        sizeSquare: "1:1",
+        sizePortrait: "4:5",
+        sizeLandscape: "16:9",
+        generate: "Жасау",
+        save: "Сақтау",
+        repeat: "Қайталау",
+        loading: "Жасалуда...",
+        clear: "Тазалау",
+        insufficientStars: "❌ Жұлдыздар жеткіліксіз. 10⭐ керек",
+        error: "Қате",
+        saved: "✅ Галереяға сақталды"
+      },
+      tr: {
+        title: "Serbest prompt",
+        cardTitle: "Serbest prompt",
+        cardDesc: "Ne görmek istediğini yaz — AI her stilde çizecek",
+        promptLabel: "Prompt'un",
+        promptPlaceholder: "örnek: dağlarda güzel gün batımı",
+        sizeSquare: "1:1",
+        sizePortrait: "4:5",
+        sizeLandscape: "16:9",
+        generate: "Oluştur",
+        save: "Kaydet",
+        repeat: "Tekrarla",
+        loading: "Oluşturuluyor...",
+        clear: "Temizle",
+        insufficientStars: "❌ Yetersiz yıldız. 10⭐ gerekli",
+        error: "Hata",
+        saved: "✅ Galeriye kaydedildi"
+      },
+      uk: {
+        title: "Вільний промпт",
+        cardTitle: "Вільний промпт",
+        cardDesc: "Напиши що хочеш побачити — AI намалює в будь-якому стилі",
+        promptLabel: "Твій промпт",
+        promptPlaceholder: "наприклад: гарний захід сонця в горах",
+        sizeSquare: "1:1",
+        sizePortrait: "4:5",
+        sizeLandscape: "16:9",
+        generate: "Створити",
+        save: "Зберегти",
+        repeat: "Повторити",
+        loading: "Створення...",
+        clear: "Очистити",
+        insufficientStars: "❌ Недостатньо зірок. Потрібно 10⭐",
+        error: "Помилка",
+        saved: "✅ Збережено в галерею"
+      },
+      fr: {
+        title: "Prompt libre",
+        cardTitle: "Prompt libre",
+        cardDesc: "Écris ce que tu veux voir — L'IA dessinera dans n'importe quel style",
+        promptLabel: "Ton prompt",
+        promptPlaceholder: "ex: beau coucher de soleil dans les montagnes",
+        sizeSquare: "1:1",
+        sizePortrait: "4:5",
+        sizeLandscape: "16:9",
+        generate: "Générer",
+        save: "Enregistrer",
+        repeat: "Répéter",
+        loading: "Génération...",
+        clear: "Effacer",
+        insufficientStars: "❌ Étoiles insuffisantes. Besoin de 10⭐",
+        error: "Erreur",
+        saved: "✅ Enregistré dans la galerie"
       }
     };
 
+    // ===== ПОЛУЧЕНИЕ ЯЗЫКА =====
     function getLang() {
       const url = new URL(window.location.href);
       const urlLang = url.searchParams.get("lang");
@@ -665,12 +738,48 @@
       return "ru";
     }
 
+    // ===== ОБНОВЛЕНИЕ ЯЗЫКА =====
+    function updateLanguage() {
+      const lang = getLang();
+      const t = I18N[lang] || I18N.ru;
+
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('cardTitle').textContent = t.cardTitle;
+      document.getElementById('cardDesc').textContent = t.cardDesc;
+      document.getElementById('promptLabel').textContent = t.promptLabel;
+      document.getElementById('promptInput').placeholder = t.promptPlaceholder;
+      document.getElementById('sizeSquare').textContent = t.sizeSquare;
+      document.getElementById('sizePortrait').textContent = t.sizePortrait;
+      document.getElementById('sizeLandscape').textContent = t.sizeLandscape;
+      document.getElementById('generateText').textContent = t.generate;
+      document.getElementById('saveText').textContent = t.save;
+      document.getElementById('repeatText').textContent = t.repeat;
+      document.getElementById('loadingText').textContent = t.loading;
+      document.getElementById('clearInputBtn').title = t.clear;
+    }
+
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
+    document.addEventListener('DOMContentLoaded', updateLanguage);
+    window.addEventListener('languageChanged', updateLanguage);
+
+    // Принудительная проверка языка
+    let lastLang = getLang();
+    setInterval(() => {
+      const currentLang = getLang();
+      if (currentLang !== lastLang) {
+        lastLang = currentLang;
+        updateLanguage();
+      }
+    }, 1000);
+
+    // ===== ПОЛУЧЕНИЕ ПОЛЬЗОВАТЕЛЯ =====
     function getUser() {
       const tg = window.Telegram?.WebApp;
       if (!tg || !tg.initDataUnsafe?.user) return null;
       return tg.initDataUnsafe.user;
     }
 
+    // ===== ПРОВЕРКА БАЛАНСА =====
     async function checkBalance() {
       const user = getUser();
       if (!user) return false;
@@ -684,6 +793,7 @@
       }
     }
 
+    // ===== СПИСАНИЕ ЗВЕЗД =====
     async function spendStars() {
       const user = getUser();
       if (!user) return false;
@@ -704,6 +814,7 @@
       }
     }
 
+    // ===== ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЯ =====
     async function generateImage(prompt, size) {
       const user = getUser();
       if (!user) {
@@ -759,6 +870,7 @@
       }
     }
 
+    // ===== СОХРАНЕНИЕ В ГАЛЕРЕЮ =====
     async function saveToGallery(base64Data) {
       const t = I18N[getLang()] || I18N.ru;
       try {
@@ -779,41 +891,11 @@
       }
     }
 
-    function updateLanguage() {
-      const lang = getLang();
-      const t = I18N[lang] || I18N.ru;
-      document.getElementById('title').textContent = t.title;
-      document.getElementById('cardTitle').textContent = t.cardTitle;
-      document.getElementById('cardDesc').textContent = t.cardDesc;
-      document.getElementById('promptLabel').textContent = t.promptLabel;
-      document.getElementById('promptInput').placeholder = t.promptPlaceholder;
-      document.getElementById('sizeSquare').textContent = t.sizeSquare;
-      document.getElementById('sizePortrait').textContent = t.sizePortrait;
-      document.getElementById('sizeLandscape').textContent = t.sizeLandscape;
-      document.getElementById('generateText').textContent = t.generate;
-      document.getElementById('saveText').textContent = t.save;
-      document.getElementById('repeatText').textContent = t.repeat;
-      document.getElementById('loadingText').textContent = t.loading;
-      document.getElementById('clearInputBtn').title = t.clear;
-    }
-
     document.addEventListener('click', function(event) {
       const input = document.getElementById('promptInput');
       const isClickInside = input.contains(event.target);
       if (!isClickInside && document.activeElement === input) input.blur();
     });
-
-    document.addEventListener('DOMContentLoaded', updateLanguage);
-    window.addEventListener('languageChanged', updateLanguage);
-
-    let lastLang = getLang();
-    setInterval(() => {
-      const currentLang = getLang();
-      if (currentLang !== lastLang) {
-        lastLang = currentLang;
-        updateLanguage();
-      }
-    }, 1000);
 
     // ===== ЛОГИКА =====
     const promptInput = document.getElementById('promptInput');
