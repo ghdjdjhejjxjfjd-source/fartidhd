@@ -178,17 +178,25 @@
       border-radius: 40px;
     }
 
-    /* iOS - стеклянный с обводкой как у кнопок */
+    /* iOS - светящийся с обводкой */
     .section-title {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(12px) saturate(115%);
       -webkit-backdrop-filter: blur(12px) saturate(115%);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 25px rgba(90, 174, 255, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2);
       color: var(--text);
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     }
 
-    /* Android - без свечения */
+    /* iOS синяя тема - повышение качества цвета */
+    :root[data-theme="blue"] .section-title {
+      background: rgba(90, 174, 255, 0.2);
+      border: 1px solid rgba(90, 174, 255, 0.4);
+      box-shadow: 0 8px 25px rgba(90, 174, 255, 0.4);
+    }
+
+    /* Android - максимальная четкость */
     html.android-mode .section-title {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
@@ -196,17 +204,25 @@
       border: none !important;
       box-shadow: none !important;
       padding: 12px 0;
+      font-weight: 800 !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-smooth: always;
+      letter-spacing: 0.3px;
     }
 
-    /* Android синяя/черная тема - белый текст */
+    /* Android синяя/черная тема - белый текст максимально четкий */
     html.android-mode[data-theme="blue"] .section-title,
     html.android-mode[data-theme="black"] .section-title {
       color: #ffffff !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
     /* Android светлая тема - серый текст */
     html.android-mode[data-theme="light"] .section-title {
       color: var(--text) !important;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.3);
     }
 
     /* КАРТОЧКИ - В СТОЛБИК */
@@ -248,6 +264,12 @@
       border-radius: 28px;
       z-index: 1;
       pointer-events: none;
+    }
+
+    /* iOS синяя тема - повышение качества цвета */
+    :root[data-theme="blue"] .card::before {
+      background: rgba(90, 174, 255, 0.15);
+      border: 1px solid rgba(90, 174, 255, 0.3);
     }
 
     /* iOS - блик */
@@ -302,6 +324,12 @@
       border-top: 1px solid rgba(255, 255, 255, 0.2);
     }
 
+    /* iOS синяя тема - повышение качества цвета */
+    :root[data-theme="blue"] .card-content {
+      background: rgba(90, 174, 255, 0.15);
+      border-top: 1px solid rgba(90, 174, 255, 0.3);
+    }
+
     .card-title {
       font-weight: 700;
       font-size: 18px;
@@ -317,7 +345,14 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
-    /* ===== ANDROID MODE ===== */
+    /* ===== ANDROID MODE - МАКСИМАЛЬНАЯ ЧЕТКОСТЬ ===== */
+    html.android-mode {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-smooth: always;
+    }
+
     html.android-mode .card::before {
       content: none;
     }
@@ -336,22 +371,22 @@
       border-radius: 28px 28px 0 0;
     }
 
-    /* Android - панель текста (слабая обводка и светлее) */
+    /* Android - панель текста */
     html.android-mode .card-content {
-      background: rgba(255, 255, 255, 0.15) !important;  /* Светлее */
+      background: rgba(255, 255, 255, 0.15) !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
-      border: 1px solid rgba(255, 255, 255, 0.25) !important;  /* Слабая обводка */
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
       border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
     }
 
-    /* Android синяя тема - ещё светлее */
+    /* Android синяя тема */
     html.android-mode[data-theme="blue"] .card-content {
       background: rgba(255, 255, 255, 0.18) !important;
       border: 1px solid rgba(90, 174, 255, 0.3) !important;
     }
 
-    /* Android черная тема - светлее */
+    /* Android черная тема */
     html.android-mode[data-theme="black"] .card-content {
       background: rgba(255, 255, 255, 0.16) !important;
       border: 1px solid rgba(139, 184, 255, 0.3) !important;
@@ -361,6 +396,17 @@
     html.android-mode[data-theme="light"] .card-content {
       background: rgba(255, 255, 255, 0.5) !important;
       border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Android - текст с максимальной четкостью */
+    html.android-mode .card-title,
+    html.android-mode .card-desc {
+      font-weight: 600 !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-smooth: always;
+      letter-spacing: 0.2px;
     }
 
     /* Android - верхняя панель */
