@@ -16,17 +16,24 @@
         tg.expand();
         tg.disableVerticalSwipes();
         
-        document.body.style.overflow = 'hidden';
-        const container = document.querySelector('.container');
-        if (container) {
-          container.style.overflowY = 'auto';
-          container.style.webkitOverflowScrolling = 'touch';
-        }
+        const setHeight = () => {
+          const vh = tg.viewportHeight || window.innerHeight;
+          document.documentElement.style.setProperty('--vh', vh + 'px');
+        };
+        
+        setHeight();
+        tg.onEvent('viewportChanged', setHeight);
+      } else {
+        const setHeight = () => {
+          document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+        };
+        setHeight();
+        window.addEventListener('resize', setHeight);
       }
     })();
   </script>
 
-  <!-- ТЕМА из URL -->
+  <!-- ТЕМА -->
   <script>
     (function(){
       const KEY = "miniapp_theme_v1";
@@ -40,73 +47,81 @@
     })();
   </script>
 
-  <!-- ПЛАТФОРМА из URL -->
+  <!-- Запрет зума -->
   <script>
     (function(){
-      const KEY = "miniapp_platform_v1";
-      function getPlatform(){
-        const url = new URL(window.location.href);
-        const qp = url.searchParams.get("platform");
-        if (qp) return qp;
-        try{ return localStorage.getItem(KEY) || "ios"; }catch(e){ return "ios"; }
-      }
-      const platform = getPlatform();
-      if (platform === 'android') {
-        document.documentElement.classList.add('android-mode');
-      }
+      document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive:false });
+      document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive:false });
+      document.addEventListener("gestureend", (e) => e.preventDefault(), { passive:false });
+
+      let lastTouchEnd = 0;
+      document.addEventListener("touchend", (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) e.preventDefault();
+        lastTouchEnd = now;
+      }, { passive:false });
+
+      document.addEventListener("dblclick", (e) => e.preventDefault(), { passive:false });
     })();
   </script>
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* ПОЛНОЭКРАННЫЕ СТИЛИ */
+    :root {
+      --vh: 100vh;
+    }
+    
+    html, body {
+      height: var(--vh);
+      height: -webkit-fill-available;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+    }
     
     body {
-      background: #0b0f18;
-      color: white;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      min-height: 100vh;
-      overflow: hidden;
+      position: relative;
+      background: transparent;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      font-weight: 800 !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-smooth: always;
     }
 
-    /* ===== ТЕМЫ ===== */
+    /* ===== ТЕМЫ КАК В МЕНЮ ===== */
     :root[data-theme="blue"] { 
-      --bg-top: #1a2a38;
-      --bg-mid: #13222e;
-      --bg-bot: #0e1a24;
-      --accent1: #4a8ed4;
-      --accent2: #2a6bb0;
+      --bg-top: #27384b;
+      --bg-mid: #1d2b3a;
+      --bg-bot: #16212d;
+      --accent1: #5aaeff;
+      --accent2: #3496ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
-      --card-bg: rgba(255, 255, 255, 0.1);
-      --card-border: rgba(255, 255, 255, 0.12);
-      --input-bg: rgba(0, 0, 0, 0.3);
-      --btn-bg: rgba(90, 174, 255, 0.2);
-      --star-color: #ffffff;
-      --header-text: #ffffff;
-      --header-bg: rgba(26, 42, 56, 0.95);  /* Темно-голубой фон */
-      --caret-color: #ffffff;
-      --border-light: rgba(255, 255, 255, 0.2);
-      --contrast: 1.07;
+      --card-bg: rgba(255, 255, 255, .10);
+      --card-border: rgba(255, 255, 255, .12);
+      --sheet-bg: rgba(24, 31, 40, .97);
+      --sheet-border: rgba(255, 255, 255, .10);
+      --sheet-text: #f7fbff;
     }
     
     :root[data-theme="black"] { 
       --bg-top: #1b2430;
       --bg-mid: #141b24;
       --bg-bot: #0e141c;
-      --accent1: #6a8ed4;
-      --accent2: #4a6eb0;
+      --accent1: #8bb8ff;
+      --accent2: #5a98ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
-      --card-bg: rgba(255, 255, 255, 0.08);
-      --card-border: rgba(255, 255, 255, 0.12);
-      --input-bg: rgba(0, 0, 0, 0.3);
-      --btn-bg: rgba(139, 184, 255, 0.15);
-      --star-color: #ffffff;
-      --header-text: #ffffff;
-      --header-bg: rgba(27, 36, 48, 0.95);  /* Темно-серый фон */
-      --caret-color: #ffffff;
-      --border-light: rgba(255, 255, 255, 0.2);
-      --contrast: 1.07;
+      --card-bg: rgba(255, 255, 255, .10);
+      --card-border: rgba(255, 255, 255, .12);
+      --sheet-bg: rgba(24, 31, 40, .97);
+      --sheet-border: rgba(255, 255, 255, .10);
+      --sheet-text: #f7fbff;
     }
     
     :root[data-theme="light"] { 
@@ -115,27 +130,22 @@
       --bg-bot: #cad1de;
       --accent1: #3a8cff;
       --accent2: #1a6cff;
-      --text: #2c3e50;
-      --subtext: #4a5a6a;
-      --card-bg: rgba(255, 255, 255, 0.9);
+      --text: #1a2634;
+      --subtext: rgba(0, 0, 0, 0.5);
+      --card-bg: rgba(255, 255, 255, 0.85);
       --card-border: rgba(0, 0, 0, 0.1);
-      --input-bg: rgba(255, 255, 255, 0.95);
-      --btn-bg: rgba(58, 140, 255, 0.1);
-      --star-color: #2c3e50;
-      --header-text: #2c3e50;
-      --header-bg: rgba(232, 237, 245, 0.95);  /* Светлый фон */
-      --caret-color: #3a8cff;
-      --border-light: rgba(0, 0, 0, 0.15);
-      --contrast: 1;
+      --sheet-bg: rgba(255, 255, 255, 0.85);
+      --sheet-border: rgba(0, 0, 0, 0.1);
+      --sheet-text: #1a2634;
     }
 
-    /* ГРАДИЕНТ ФОНА */
+    /* ГРАДИЕНТ ФОНА КАК В МЕНЮ */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
     }
 
-    /* ===== iOS - ВЕРХНЯЯ ПАНЕЛЬ ===== */
+    /* ВЕРХНЯЯ ПАНЕЛЬ КАК В МЕНЮ */
     .header {
       position: fixed;
       top: 0;
@@ -146,29 +156,23 @@
       align-items: center;
       padding: 8px 14px;
       padding-top: calc(8px + env(safe-area-inset-top));
-      background: var(--header-bg);  /* Темно-голубой фон */
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border-light);
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-bottom: none;
       height: 60px;
     }
 
     .back-btn {
-      color: var(--header-text);
+      color: #a0b0c0;
       text-decoration: none;
       font-size: 15px;
-      width: auto;
-      min-width: 40px;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--header-bg);  /* Тот же темно-голубой фон */
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      padding: 0 12px;
-      border-radius: 17px;
-      border: 1px solid var(--border-light);
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 6px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
       font-weight: 600;
     }
 
@@ -177,13 +181,13 @@
       text-align: center;
       font-weight: 600;
       font-size: 16px;
-      color: var(--header-text);
-      background: var(--header-bg);  /* Тот же темно-голубой фон */
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      color: #a0b0c0;
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       padding: 6px 14px;
       border-radius: 16px;
-      border: 1px solid var(--border-light);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       margin: 0 8px;
     }
 
@@ -199,71 +203,18 @@
       padding: 16px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      filter: contrast(var(--contrast));
     }
 
-    /* КАРТОЧКА */
+    /* КАРТОЧКА КАК В МЕНЮ */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 28px;
-      padding: 24px;
+      border-radius: 24px;
+      padding: 20px 22px;
+      backdrop-filter: blur(12px) saturate(118%);
+      -webkit-backdrop-filter: blur(12px) saturate(118%);
+      box-shadow: 0 18px 42px rgba(0,0,0,.28);
       margin-bottom: 20px;
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* ТОНКАЯ ОБВОДКА */
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 28px;
-      border: 1px solid var(--border-light);
-      pointer-events: none;
-      z-index: 6;
-    }
-
-    /* БЕГУЩАЯ ЗМЕЙКА */
-    .card::before {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      border-radius: 30px;
-      padding: 2px;
-      background: linear-gradient(
-        90deg,
-        #ff0000,
-        #ff7f00,
-        #ffff00,
-        #00ff00,
-        #0000ff,
-        #4b0082,
-        #8f00ff,
-        #ff0000
-      );
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      animation: snakeMove 3s linear infinite;
-      background-size: 300% 100%;
-      opacity: 0.7;
-      pointer-events: none;
-      z-index: 5;
-    }
-
-    @keyframes snakeMove {
-      0% { background-position: 0% 0; }
-      100% { background-position: 300% 0; }
     }
 
     .card-header {
@@ -284,38 +235,39 @@
     }
 
     .card-title {
-      font-size: 22px;
-      font-weight: 700;
+      font-size: 19px;
+      font-weight: 800;
       color: var(--text);
     }
 
     .star-badge {
-      font-size: 16px;
-      color: var(--star-color);
+      font-size: 14px;
+      color: var(--text);
       background: rgba(255,215,0,0.15);
       padding: 4px 10px;
-      border-radius: 20px;
+      border-radius: 16px;
       border: 1px solid rgba(255,215,0,0.3);
+      font-weight: 700;
     }
 
     .card-desc {
       font-size: 14px;
       color: var(--subtext);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       line-height: 1.5;
     }
 
-    /* ПОЛЕ ВВОДА */
+    /* ПОЛЕ ВВОДА КАК В МЕНЮ */
     .input-group {
-      margin-bottom: 20px;
-      position: relative;
+      margin-bottom: 16px;
     }
 
     .input-label {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--subtext);
       margin-bottom: 8px;
       display: block;
+      text-align: center;
     }
 
     .input-wrapper {
@@ -326,69 +278,68 @@
 
     .text-input {
       flex: 1;
-      padding: 16px;
-      border-radius: 20px;
-      border: 1px solid var(--border-light);
-      background: var(--input-bg);
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,.10);
       color: var(--text);
-      font-size: 16px;
-      transition: all 0.2s;
-      caret-color: var(--caret-color);
-      caret-shape: bar;
+      font-size: 15px;
+      font-weight: 700;
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
+      caret-color: var(--accent1);
     }
 
     .text-input:focus {
       outline: none;
       border-color: var(--accent1);
-      box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
     }
 
     .text-input::placeholder {
       color: var(--subtext);
-      opacity: 0.7;
+      opacity: 0.8;
     }
 
     .clear-input {
-      background: var(--btn-bg);
-      border: 1px solid var(--border-light);
+      background: rgba(255,255,255,.10);
+      border: 1px solid var(--card-border);
       color: var(--text);
-      width: 50px;
-      height: 50px;
-      border-radius: 20px;
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
       font-size: 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
+      font-weight: 700;
     }
 
-    /* ВЫБОР РАЗМЕРА */
+    /* ВЫБОР РАЗМЕРА КАК В МЕНЮ */
     .size-selector {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      margin: 16px 0;
     }
 
     .size-btn {
       flex: 1;
-      padding: 14px;
-      border-radius: 20px;
-      border: 1px solid var(--border-light);
-      background: var(--btn-bg);
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,.10);
       color: var(--text);
       cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
       transition: all 0.2s ease;
-      font-weight: 600;
-      position: relative;
-    }
-
-    .size-btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .size-btn:active {
-      transform: translateY(0);
     }
 
     .size-btn.active {
@@ -397,68 +348,76 @@
       color: white;
     }
 
-    /* КНОПКА ГЕНЕРАЦИИ */
+    .size-btn:active {
+      transform: scale(.995);
+    }
+
+    /* КНОПКА ГЕНЕРАЦИИ КАК В МЕНЮ */
     .generate-btn {
       width: 100%;
-      padding: 18px;
-      border-radius: 24px;
-      border: 1px solid var(--border-light);
-      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
-      color: white;
-      font-size: 18px;
-      font-weight: 600;
-      margin: 20px 0;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--accent1) 18%, white 8%) 0%,
+        rgba(255,255,255,.08) 100%
+      );
+      color: var(--text);
+      font-size: 19px;
+      font-weight: 800;
+      margin: 16px 0;
       cursor: pointer;
-      transition: all 0.2s ease;
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      box-shadow: 0 10px 22px rgba(0,0,0,.14);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
     }
 
-    .generate-btn:hover {
-      transform: translateY(-2px);
-    }
-
     .generate-btn:active {
-      transform: scale(0.98);
+      transform: scale(.995);
     }
 
-    /* КНОПКИ ДЕЙСТВИЙ */
+    /* КНОПКИ ДЕЙСТВИЙ КАК В МЕНЮ */
     .action-buttons {
       display: flex;
       gap: 12px;
+      margin-top: 16px;
     }
 
     .action-btn {
       flex: 1;
-      padding: 16px;
-      border-radius: 20px;
-      border: 1px solid var(--border-light);
-      background: var(--btn-bg);
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,.10);
       color: var(--text);
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s ease;
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
     }
 
-    .action-btn:hover {
-      transform: translateY(-2px);
-    }
-
     .action-btn:active {
-      transform: translateY(0);
+      transform: scale(.995);
     }
 
     .action-btn.primary {
-      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
-      border: 1px solid var(--border-light);
-      color: white;
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--accent1) 18%, white 8%) 0%,
+        rgba(255,255,255,.08) 100%
+      );
+      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
     }
 
     /* РЕЗУЛЬТАТ */
@@ -469,14 +428,12 @@
 
     .result-image {
       width: 100%;
-      height: auto;
-      border-radius: 24px;
+      border-radius: 20px;
       background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
       margin-bottom: 16px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      box-shadow: 0 18px 42px rgba(0,0,0,.28);
       pointer-events: none;
       user-select: none;
-      -webkit-tap-highlight-color: transparent;
     }
 
     /* ЗАГРУЗКА */
@@ -497,14 +454,13 @@
     }
 
     .spinner {
-      width: 60px;
-      height: 60px;
-      border: 4px solid rgba(255,255,255,0.1);
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255,255,255,0.1);
       border-top-color: var(--accent1);
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin-bottom: 20px;
-      filter: drop-shadow(0 0 10px rgba(90,174,255,0.5));
     }
 
     @keyframes spin {
@@ -513,52 +469,29 @@
 
     .loading-text {
       color: white;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
-      text-shadow: 0 0 10px rgba(90,174,255,0.5);
     }
 
     /* ===== ANDROID ===== */
-    html.android-mode .card::before,
-    html.android-mode .card::after {
-      display: none !important;
-    }
-
-    html.android-mode .size-btn:hover,
-    html.android-mode .generate-btn:hover,
-    html.android-mode .action-btn:hover {
-      transform: none !important;
-    }
-
-    html.android-mode .card {
+    html.android-mode .card,
+    html.android-mode .text-input,
+    html.android-mode .size-btn,
+    html.android-mode .action-btn,
+    html.android-mode .generate-btn,
+    html.android-mode .clear-input {
       backdrop-filter: none !important;
-    }
-
-    html.android-mode .text-input {
-      border: none !important;
-    }
-
-    html.android-mode .result-image {
-      pointer-events: none !important;
-      user-select: none !important;
-    }
-
-    html.android-mode .loading-overlay {
-      background: rgba(0,0,0,0.8) !important;
-    }
-
-    html.android-mode .header {
-      background: rgba(0,0,0,0.2) !important;
-      backdrop-filter: blur(10px) !important;
-      border-bottom: 1px solid var(--card-border) !important;
+      -webkit-backdrop-filter: none !important;
     }
 
     html.android-mode .back-btn,
     html.android-mode .title {
-      background: transparent !important;
+      background: rgba(255,255,255,0.08) !important;
       backdrop-filter: none !important;
-      border: none !important;
-      color: var(--text) !important;
+    }
+
+    html.android-mode .result-image {
+      pointer-events: none !important;
     }
   </style>
 </head>
