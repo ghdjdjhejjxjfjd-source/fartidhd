@@ -18,8 +18,11 @@
         
         // ФИКСИРУЕМ ВКЛАДКУ
         document.body.style.overflow = 'hidden';
-        document.querySelector('.container').style.overflowY = 'auto';
-        document.querySelector('.container').style.webkitOverflowScrolling = 'touch';
+        const container = document.querySelector('.container');
+        if (container) {
+          container.style.overflowY = 'auto';
+          container.style.webkitOverflowScrolling = 'touch';
+        }
       }
     })();
   </script>
@@ -66,13 +69,13 @@
       overflow: hidden;
     }
 
-    /* ===== ТЕМЫ ===== */
+    /* ===== ТЕМЫ - КАК В МЕНЮ ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
       --bg-bot: #16212d;
-      --accent1: #5aaeff;
-      --accent2: #3496ff;
+      --accent1: #5aaeff;  /* ТОЧНО КАК В МЕНЮ */
+      --accent2: #3496ff;  /* ТОЧНО КАК В МЕНЮ */
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.1);
@@ -82,15 +85,14 @@
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
-      --contrast: 1.1;
     }
     
     :root[data-theme="black"] { 
       --bg-top: #1b2430;
       --bg-mid: #141b24;
       --bg-bot: #0e141c;
-      --accent1: #8bb8ff;
-      --accent2: #5a98ff;
+      --accent1: #8bb8ff;  /* ТОЧНО КАК В МЕНЮ */
+      --accent2: #5a98ff;  /* ТОЧНО КАК В МЕНЮ */
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.08);
@@ -100,15 +102,14 @@
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
-      --contrast: 1.1;
     }
     
     :root[data-theme="light"] { 
       --bg-top: #e8edf5;
       --bg-mid: #d9e0eb;
       --bg-bot: #cad1de;
-      --accent1: #3a8cff;
-      --accent2: #1a6cff;
+      --accent1: #3a8cff;  /* ТОЧНО КАК В МЕНЮ */
+      --accent2: #1a6cff;  /* ТОЧНО КАК В МЕНЮ */
       --text: #2c3e50;
       --subtext: #4a5a6a;
       --card-bg: rgba(255, 255, 255, 0.9);
@@ -118,10 +119,9 @@
       --star-color: #2c3e50;
       --header-text: rgba(255, 255, 255, 0.9);
       --caret-color: #3a8cff;
-      --contrast: 1.1;
     }
 
-    /* ГРАДИЕНТ ФОНА */
+    /* ГРАДИЕНТ ФОНА КАК В МЕНЮ */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
@@ -191,7 +191,21 @@
       overflow: hidden;
     }
 
-    /* ===== IOS - БЕГУЩАЯ ЗМЕЙКА ===== */
+    /* ===== iOS - СЛАБАЯ ОБВОДКА ДЛЯ ПАНЕЛИ ===== */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    /* ===== iOS - БЕГУЩАЯ ЗМЕЙКА ===== */
     .card::before {
       content: '';
       position: absolute;
@@ -227,24 +241,19 @@
       100% { background-position: 300% 0; }
     }
 
-    /* ===== МАКСИМАЛЬНАЯ ЧЕТКОСТЬ ДЛЯ ВСЕХ ТЕКСТОВ ===== */
+    /* ===== КАЧЕСТВО ТЕКСТА КАК В МЕНЮ ===== */
     .card-title, .card-desc, .input-label, .text-input, .size-btn, .action-btn, .generate-btn, .star-badge, .title, .back-btn {
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
       font-smooth: always;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.3px;
       font-weight: 500;
     }
 
-    /* УВЕЛИЧИВАЕМ КОНТРАСТ */
     .card-title, .title, .generate-btn, .action-btn.primary {
       font-weight: 700;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-
-    .card-desc, .input-label, .text-input, .size-btn, .action-btn, .star-badge {
-      text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
 
     .card-header {
@@ -347,7 +356,7 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
-    /* ВЫБОР РАЗМЕРА */
+    /* ===== iOS - КНОПКИ ВЫБОРА РАЗМЕРА ===== */
     .size-selector {
       display: flex;
       gap: 10px;
@@ -362,8 +371,34 @@
       background: var(--btn-bg);
       color: var(--text);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
       font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ОБВОДКА ВОКРУГ КНОПОК */
+    .size-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+    }
+
+    /* АНИМАЦИЯ КНОПОК */
+    .size-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+    }
+
+    .size-btn:active {
+      transform: translateY(0);
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
@@ -373,18 +408,11 @@
       color: white;
     }
 
-    /* ===== АНИМАЦИЯ НА КНОПКАХ (БЕЗ ОСВЕТЛЕНИЯ) ===== */
-    .size-btn:hover, .clear-input:hover, .action-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+    .size-btn.active::after {
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
-    .size-btn:active, .clear-input:active, .action-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-
-    /* КНОПКА ГЕНЕРАЦИИ */
+    /* ===== iOS - КНОПКА ГЕНЕРАЦИИ ===== */
     .generate-btn {
       width: 100%;
       padding: 18px;
@@ -396,16 +424,32 @@
       font-weight: 600;
       margin: 20px 0;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
     }
 
+    /* ОБВОДКА ВОКРУГ КНОПКИ ГЕНЕРАЦИИ */
+    .generate-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      pointer-events: none;
+    }
+
+    /* АНИМАЦИЯ КНОПКИ ГЕНЕРАЦИИ */
     .generate-btn:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px);
       box-shadow: 0 25px 40px rgba(0,0,0,0.6);
     }
 
@@ -414,20 +458,7 @@
       box-shadow: 0 20px 35px rgba(0,0,0,0.5);
     }
 
-    /* РЕЗУЛЬТАТ */
-    .result {
-      display: none;
-      margin-top: 20px;
-    }
-
-    .result-image {
-      width: 100%;
-      border-radius: 24px;
-      background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    }
-
+    /* ===== iOS - КНОПКИ ДЕЙСТВИЙ ===== */
     .action-buttons {
       display: flex;
       gap: 12px;
@@ -443,18 +474,60 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .action-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+    }
+
+    .action-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
     .action-btn.primary {
       background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
       border: none;
       color: white;
+    }
+
+    .action-btn.primary::after {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* РЕЗУЛЬТАТ */
+    .result {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-image {
+      width: 100%;
+      border-radius: 24px;
+      background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     }
 
     /* ЗАГРУЗКА */
@@ -493,18 +566,17 @@
     }
 
     /* ===== ANDROID - НИЧЕГО НЕ МЕНЯЕМ ===== */
-    html.android-mode .card::before {
+    html.android-mode .card::before,
+    html.android-mode .card::after,
+    html.android-mode .size-btn::after,
+    html.android-mode .generate-btn::after,
+    html.android-mode .action-btn::after {
       display: none !important;
     }
 
-    html.android-mode .text-input {
-      border: none !important;
-    }
-
     html.android-mode .size-btn:hover,
-    html.android-mode .clear-input:hover,
-    html.android-mode .action-btn:hover,
-    html.android-mode .generate-btn:hover {
+    html.android-mode .generate-btn:hover,
+    html.android-mode .action-btn:hover {
       transform: none !important;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
     }
@@ -512,6 +584,10 @@
     html.android-mode .card {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
+    }
+
+    html.android-mode .text-input {
+      border: none !important;
     }
 
     html.android-mode .loading-overlay {
