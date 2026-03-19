@@ -554,7 +554,7 @@
       document.getElementById('title').textContent = t.title;
       document.getElementById('sectionTitle').textContent = t.sectionTitle;
       
-      // Обновляем карточки (звезды остаются, меняется только текст)
+      // Обновляем карточки
       document.getElementById('card1Title').textContent = t.card1Title;
       document.getElementById('card1Desc').textContent = t.card1Desc;
       
@@ -584,16 +584,15 @@
       }
     });
 
-    // ✅ ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ЯЗЫКА КАЖДЫЕ 500мс
+    // ===== ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА КАЖДУЮ СЕКУНДУ =====
     let lastLang = getLang();
     setInterval(() => {
       const currentLang = getLang();
       if (currentLang !== lastLang) {
-        console.log("Язык изменился:", currentLang);
         lastLang = currentLang;
         updateLanguage();
       }
-    }, 500);
+    }, 1000);
   </script>
 </body>
 </html>
