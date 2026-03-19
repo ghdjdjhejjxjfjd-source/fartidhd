@@ -70,9 +70,9 @@
 
     /* ===== ТЕМЫ ===== */
     :root[data-theme="blue"] { 
-      --bg-top: #27384b;
-      --bg-mid: #1d2b3a;
-      --bg-bot: #16212d;
+      --bg-top: #1a2a38;  /* Темно-голубой */
+      --bg-mid: #13222e;   /* Темно-голубой */
+      --bg-bot: #0e1a24;   /* Темно-голубой */
       --accent1: #4a8ed4;
       --accent2: #2a6bb0;
       --text: #f7fbff;
@@ -82,7 +82,7 @@
       --input-bg: rgba(0, 0, 0, 0.3);
       --btn-bg: rgba(90, 174, 255, 0.2);
       --star-color: #ffffff;
-      --header-text: #a0b0c0;
+      --header-text: #ffffff;  /* Белый */
       --caret-color: #ffffff;
       --border-light: rgba(255, 255, 255, 0.2);
       --contrast: 1.07;
@@ -101,7 +101,7 @@
       --input-bg: rgba(0, 0, 0, 0.3);
       --btn-bg: rgba(139, 184, 255, 0.15);
       --star-color: #ffffff;
-      --header-text: #a0b0c0;
+      --header-text: #ffffff;  /* Белый */
       --caret-color: #ffffff;
       --border-light: rgba(255, 255, 255, 0.2);
       --contrast: 1.07;
@@ -458,7 +458,7 @@
       color: white;
     }
 
-    /* РЕЗУЛЬТАТ - БЕЗ УВЕЛИЧЕНИЯ */
+    /* РЕЗУЛЬТАТ */
     .result {
       display: none;
       margin-top: 20px;
@@ -471,12 +471,12 @@
       background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
       margin-bottom: 16px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      pointer-events: none;  /* Запрещаем клики по картинке */
-      user-select: none;      /* Запрещаем выделение */
+      pointer-events: none;
+      user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ЗАГРУЗКА - СВЕЧЕНИЕ КАК РАНЬШЕ */
+    /* ЗАГРУЗКА */
     .loading-overlay {
       position: fixed;
       top: 0;
