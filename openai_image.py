@@ -1,4 +1,4 @@
-# openai_image.py - ПОЛНОСТЬЮ ПЕРЕПИСАНО
+# openai_image.py - ИСПРАВЛЕНО
 import os
 import base64
 import requests
@@ -15,27 +15,17 @@ SIZE_MAP = {
     "1024x576": "1792x1024",   # 16:9 конвертируем в горизонтальный
 }
 
-# Цены:
-# low     = 0.010$ (для стилей, аниме, рисунков)
-# medium  = 0.020$ (для обычных промптов)
-# standard = 0.040$ (для премиум)
-
 def generate_image_dalle(
     prompt: str, 
     size: str = "1024x1024", 
     quality: str = "medium"
 ) -> str:
-    """
-    Генерация изображения через DALL-E 3
-    size: 1024x1024, 832x1040, 1024x576
-    quality: low (0.010$), medium (0.020$), standard (0.040$)
-    """
+    """Генерация изображения через DALL-E 3"""
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
     
     openai_size = SIZE_MAP.get(size, "1024x1024")
     
-    # Маппинг качества
     quality_map = {
         "low": "low",
         "medium": "medium", 
@@ -57,11 +47,9 @@ def generate_image_dalle(
         image_url = response.data[0].url
         print(f"✅ Изображение получено, URL: {image_url[:50]}...")
         
-        # Скачиваем изображение
         img_response = requests.get(image_url, timeout=30)
         img_response.raise_for_status()
         
-        # Конвертируем в base64
         image_base64 = base64.b64encode(img_response.content).decode('utf-8')
         return f"data:image/png;base64,{image_base64}"
         
@@ -77,8 +65,6 @@ def edit_image_dalle(
 ) -> str:
     """
     Редактирование изображения через gpt-image-1
-    Для img2img, remove_bg, inpaint
-    quality: low (0.010$) - идеально для стилей
     """
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -88,14 +74,12 @@ def edit_image_dalle(
     try:
         print(f"🎨 gpt-image-1 edit: {openai_size}, quality={quality}")
         
-        # Кодируем изображение в base64
-        base64_image = base64.b64encode(image_bytes).decode('utf-8')
+        # ✅ ПРАВИЛЬНО: передаем как файл
+        image_file = ("image.png", image_bytes, "image/png")
         
-        # Формируем запрос для редактирования
-        # Используем gpt-image-1 (новая модель)
         response = client.images.edit(
-            model="gpt-image-1",  # Новая модель для редактирования!
-            image=base64_image,
+            model="gpt-image-1",
+            image=image_file,
             prompt=prompt,
             size=openai_size,
             quality=quality,
@@ -105,11 +89,9 @@ def edit_image_dalle(
         image_url = response.data[0].url
         print(f"✅ Редактирование успешно, URL: {image_url[:50]}...")
         
-        # Скачиваем изображение
         img_response = requests.get(image_url, timeout=30)
         img_response.raise_for_status()
         
-        # Конвертируем в base64
         image_base64 = base64.b64encode(img_response.content).decode('utf-8')
         return f"data:image/png;base64,{image_base64}"
         
@@ -122,16 +104,12 @@ def remove_bg_dalle(
     prompt: Optional[str] = None,
     size: str = "1024x1024"
 ) -> str:
-    """
-    Удаление фона через gpt-image-1
-    """
+    """Удаление фона через gpt-image-1"""
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
     
-    # Промпт для удаления фона
     bg_prompt = prompt or "subject on transparent background, white background, isolated object, no background"
     
-    # Используем ту же функцию edit, но с quality="low"
     return edit_image_dalle(
         prompt=bg_prompt,
         image_bytes=image_bytes,
@@ -140,9 +118,7 @@ def remove_bg_dalle(
     )
 
 def is_openai_available() -> bool:
-    """Проверка доступности OpenAI"""
     return bool(OPENAI_API_KEY)
 
 def is_gpt_image_1_available() -> bool:
-    """Проверка доступности gpt-image-1 (всегда true если есть ключ)"""
     return bool(OPENAI_API_KEY)
