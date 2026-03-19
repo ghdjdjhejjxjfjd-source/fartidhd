@@ -816,11 +816,14 @@
           return null;
         }
 
-        // ОПТИМАЛЬНЫЙ ПРОМПТ - как было, но с negative prompt для анатомии
-        const fullPrompt = "transform this photo into anime style, anime character, japanese anime art style, vibrant colors, big eyes, detailed, masterpiece";
-        const negativePrompt = "bad anatomy, extra fingers, missing fingers, deformed hands, mutated, ugly, disfigured";
+        // ОПТИМАЛЬНЫЙ ПРОМПТ - чистый аниме стиль
+        const fullPrompt = "transform this photo into anime style, anime character, japanese anime art style, vibrant colors, big eyes, detailed, clean, simple background, masterpiece";
+
+        // УСИЛЕННЫЙ NEGATIVE PROMPT - запрет текста и лишних деталей
+        const negativePrompt = "bad anatomy, extra fingers, missing fingers, deformed hands, mutated, ugly, disfigured, text, letters, words, watermark, signature, logo, writing, caption, label, messy, cluttered, busy background, extra details, noise, distortion";
 
         console.log("🎨 Prompt:", fullPrompt);
+        console.log("🚫 Negative:", negativePrompt);
 
         const formData = new FormData();
         formData.append('tg_user_id', user.id);
@@ -829,7 +832,7 @@
         formData.append('prompt', fullPrompt);
         formData.append('negative_prompt', negativePrompt);
         formData.append('mode', 'img2img');
-        formData.append('strength', '0.65'); // Оптимальное значение
+        formData.append('strength', '0.65');
         formData.append('image', imageFile);
 
         const response = await fetch(`${API_BASE}/api/image`, {
