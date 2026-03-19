@@ -1,4 +1,4 @@
-# openai_image.py - РАБОЧАЯ ВЕРСИЯ С gpt-image-1
+# openai_image.py - ИСПРАВЛЕНО
 import os
 import base64
 import requests
@@ -22,54 +22,32 @@ def edit_image_gpt(
     size: str = "1024x1024",
     quality: str = "low"
 ) -> str:
-    """Редактирование изображения через gpt-image-1"""
+    """Редактирование изображения через OpenAI"""
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
     
     openai_size = SIZE_MAP.get(size, "1024x1024")
     
     try:
-        print(f"🎨 gpt-image-1 edit: {openai_size}, quality={quality}")
+        print(f"🎨 OpenAI edit: {openai_size}")
         print(f"📦 Image size: {len(image_bytes)} bytes")
         
-        # ✅ Правильный формат для gpt-image-1
-        files = {
-            "image": ("image.png", image_bytes, "image/png"),
-            "prompt": (None, prompt),
-        }
-        
-        headers = {
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
-        }
-        
-        # Добавляем параметры если нужно
-        data = {
-            "model": "gpt-image-1",
-            "size": openai_size,
-            "n": "1"
-        }
-        
-        if quality:
-            data["quality"] = quality
-        
-        response = requests.post(
-            "https://api.openai.com/v1/images/edits",
-            headers=headers,
-            files=files,
-            data=data,
-            timeout=60
+        # ✅ Используем официальный клиент OpenAI
+        response = client.images.edit(
+            image=image_bytes,
+            prompt=prompt,
+            size=openai_size,
+            n=1
         )
         
-        if response.status_code != 200:
-            error_detail = response.json()
-            print(f"❌ Ошибка API: {error_detail}")
-            raise RuntimeError(f"OpenAI error: {error_detail}")
+        if not response or not response.data or not response.data[0]:
+            print("❌ Пустой ответ от OpenAI")
+            raise RuntimeError("Empty response from OpenAI")
         
-        result = response.json()
-        if not result or not result.get("data") or not result["data"][0].get("url"):
-            raise RuntimeError("Пустой ответ от OpenAI")
+        image_url = response.data[0].url
+        if not image_url:
+            raise RuntimeError("No URL in response")
         
-        image_url = result["data"][0]["url"]
         print(f"✅ URL получен")
         
         # Скачиваем изображение
@@ -81,13 +59,55 @@ def edit_image_gpt(
         return f"data:image/png;base64,{image_base64}"
         
     except Exception as e:
-        print(f"❌ Ошибка gpt-image-1: {e}")
-        if hasattr(e, 'response') and e.response:
-            try:
-                print(f"📋 Детали: {e.response.json()}")
-            except:
-                print(f"📋 Текст: {e.response.text}")
-        raise RuntimeError(f"Failed to edit image: {str(e)}")
+        print(f"❌ Ошибка OpenAI edit: {e}")
+        
+        # Пробуем через requests API напрямую
+        try:
+            print("🔄 Пробуем через прямой API...")
+            
+            files = {
+                "image": ("image.png", image_bytes, "image/png"),
+                "prompt": (None, prompt),
+            }
+            
+            data = {
+                "size": openai_size,
+                "n": "1"
+            }
+            
+            headers = {
+                "Authorization": f"Bearer {OPENAI_API_KEY}"
+            }
+            
+            response = requests.post(
+                "https://api.openai.com/v1/images/edits",
+                headers=headers,
+                files=files,
+                data=data,
+                timeout=60
+            )
+            
+            if response.status_code != 200:
+                error_text = response.text
+                print(f"❌ API ошибка: {error_text}")
+                raise RuntimeError(f"OpenAI API error: {error_text}")
+            
+            result = response.json()
+            if not result.get("data") or not result["data"][0].get("url"):
+                raise RuntimeError("Empty response")
+            
+            image_url = result["data"][0]["url"]
+            print(f"✅ URL получен через прямой API")
+            
+            img_response = requests.get(image_url, timeout=30)
+            img_response.raise_for_status()
+            
+            image_base64 = base64.b64encode(img_response.content).decode('utf-8')
+            return f"data:image/png;base64,{image_base64}"
+            
+        except Exception as e2:
+            print(f"❌ Прямой API тоже не сработал: {e2}")
+            raise RuntimeError(f"Failed to edit image: {str(e)}")
 
 def generate_image_dalle(
     prompt: str, 
@@ -139,11 +159,11 @@ def remove_bg_gpt(
     prompt: Optional[str] = None,
     size: str = "1024x1024"
 ) -> str:
-    """Удаление фона через gpt-image-1"""
-    bg_prompt = prompt or "subject on transparent background, white background, isolated object, no background"
+    """Удаление фона через OpenAI"""
+    bg_prompt = prompt or "Remove background, make it transparent"
     return edit_image_gpt(bg_prompt, image_bytes, size, "low")
 
 def is_openai_available() -> bool:
     return bool(OPENAI_API_KEY)
 
-print("✅ openai_image.py с gpt-image-1 загружен!")
+print("✅ openai_image.py загружен!")
