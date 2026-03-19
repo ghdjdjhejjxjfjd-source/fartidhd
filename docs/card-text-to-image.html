@@ -87,21 +87,21 @@
     }
     
     :root[data-theme="black"] { 
-  --bg-top: #1b2430;  /* ТОЧНО КАК В МЕНЮ */
-  --bg-mid: #141b24;  /* ТОЧНО КАК В МЕНЮ */
-  --bg-bot: #0e141c;  /* ТОЧНО КАК В МЕНЮ */
-  --accent1: #8bb8ff;
-  --accent2: #5a98ff;
-  --text: #f7fbff;
-  --subtext: rgba(247, 251, 255, 0.68);
-  --card-bg: rgba(255, 255, 255, 0.08);
-  --card-border: rgba(255, 255, 255, 0.12);
-  --input-bg: rgba(255, 255, 255, 0.06);
-  --btn-bg: rgba(139, 184, 255, 0.15);
-  --star-color: #ffffff;
-  --header-text: #f7fbff;
-  --caret-color: #ffffff;
-}
+      --bg-top: #1b2430;
+      --bg-mid: #141b24;
+      --bg-bot: #0e141c;
+      --accent1: #8bb8ff;
+      --accent2: #5a98ff;
+      --text: #f7fbff;
+      --subtext: rgba(247, 251, 255, 0.68);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(255, 255, 255, 0.06);
+      --btn-bg: rgba(139, 184, 255, 0.15);
+      --star-color: #ffffff;
+      --header-text: #f7fbff;
+      --caret-color: #ffffff;
+    }
     
     :root[data-theme="light"] { 
       --bg-top: #e8edf5;
@@ -438,7 +438,7 @@
       color: white;
     }
 
-    /* РЕЗУЛЬТАТ - БЕЗ ВОЗМОЖНОСТИ УВЕЛИЧЕНИЯ */
+    /* РЕЗУЛЬТАТ */
     .result {
       display: none;
       margin-top: 20px;
@@ -873,10 +873,15 @@
       }
     }
 
-    // ===== ОТПРАВКА В БОТА =====
+    // ===== ОТПРАВКА В БОТА (ИСПРАВЛЕНО) =====
     async function sendToBot(base64Data) {
       const t = I18N[getLang()] || I18N.ru;
       const user = getUser();
+      
+      if (!user) {
+        alert("Ошибка: пользователь не найден");
+        return;
+      }
       
       try {
         // Конвертируем base64 в blob
@@ -889,20 +894,31 @@
         formData.append('image', blob, `image_${Date.now()}.png`);
         formData.append('filename', `image_${Date.now()}.png`);
         
-        // Отправляем на сервер, который перешлет в Telegram
+        // Показываем загрузку
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('loadingText').textContent = t.loading;
+        
+        // Отправляем на сервер
         const response = await fetch(`${API_BASE}/api/send-photo`, {
           method: 'POST',
           body: formData
         });
         
-        if (response.ok) {
+        // Получаем ответ как JSON
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
           alert(t.saved);
         } else {
-          throw new Error('Failed to send');
+          console.error("Send error:", data);
+          alert("Ошибка при отправке в бота: " + (data.error || data.message || "неизвестная ошибка"));
         }
       } catch (e) {
         console.error("Send to bot error:", e);
         alert("Ошибка при отправке в бота");
+      } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('loadingText').textContent = t.loading;
       }
     }
 
@@ -955,7 +971,7 @@
       }
     });
 
-    // Сохранение - теперь отправляет в бота
+    // Сохранение - отправляет в бота
     saveBtn.addEventListener('click', () => {
       if (currentImageBase64) {
         sendToBot(currentImageBase64);
