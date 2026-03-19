@@ -68,7 +68,7 @@
       overflow: hidden;
     }
 
-    /* ===== ТЕМЫ ===== */
+    /* ===== ТЕМЫ - КАК БЫЛО ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
@@ -84,7 +84,6 @@
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
-      --contrast: 1.05;
     }
     
     :root[data-theme="black"] { 
@@ -102,7 +101,6 @@
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
-      --contrast: 1.05;
     }
     
     :root[data-theme="light"] { 
@@ -120,16 +118,15 @@
       --star-color: #2c3e50;
       --header-text: #2c3e50;
       --caret-color: #3a8cff;
-      --contrast: 1.05;
     }
 
-    /* ГРАДИЕНТ ФОНА */
+    /* ГРАДИЕНТ ФОНА - КАК БЫЛО */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
     }
 
-    /* ===== iOS - ПРОЗРАЧНАЯ ВЕРХНЯЯ ПАНЕЛЬ ===== */
+    /* ===== iOS - НОВАЯ ВЕРХНЯЯ ПАНЕЛЬ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -150,7 +147,7 @@
     .back-btn {
       color: var(--header-text);
       text-decoration: none;
-      font-size: 20px;
+      font-size: 24px;
       width: 40px;
       height: 40px;
       display: flex;
@@ -161,14 +158,13 @@
       -webkit-backdrop-filter: blur(16px);
       border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      font-weight: 600;
     }
 
     .title {
       flex: 1;
       text-align: center;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 18px;
       color: var(--header-text);
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(16px);
@@ -191,10 +187,9 @@
       padding: 16px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      filter: contrast(var(--contrast));
     }
 
-    /* КАРТОЧКА */
+    /* ===== КАРТОЧКА - КАК БЫЛО ===== */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -206,20 +201,6 @@
       box-shadow: 0 25px 50px rgba(0,0,0,0.5);
       position: relative;
       overflow: hidden;
-    }
-
-    /* ТОНКАЯ ОБВОДКА */
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      pointer-events: none;
-      z-index: 6;
     }
 
     /* БЕГУЩАЯ ЗМЕЙКА */
@@ -297,7 +278,7 @@
       line-height: 1.5;
     }
 
-    /* ПОЛЕ ВВОДА */
+    /* ПОЛЕ ВВОДА - КАК БЫЛО */
     .input-group {
       margin-bottom: 20px;
       position: relative;
@@ -357,7 +338,7 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
-    /* ВЫБОР РАЗМЕРА */
+    /* ВЫБОР РАЗМЕРА - КАК БЫЛО */
     .size-selector {
       display: flex;
       gap: 10px;
@@ -375,7 +356,6 @@
       transition: all 0.2s ease;
       font-weight: 600;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      position: relative;
     }
 
     .size-btn:hover {
@@ -392,7 +372,7 @@
       color: white;
     }
 
-    /* КНОПКА ГЕНЕРАЦИИ */
+    /* КНОПКА ГЕНЕРАЦИИ - КАК БЫЛО */
     .generate-btn {
       width: 100%;
       padding: 18px;
@@ -420,7 +400,7 @@
       transform: scale(0.98);
     }
 
-    /* КНОПКИ ДЕЙСТВИЙ */
+    /* КНОПКИ ДЕЙСТВИЙ - КАК БЫЛО */
     .action-buttons {
       display: flex;
       gap: 12px;
@@ -510,10 +490,8 @@
       font-weight: 600;
     }
 
-    /* ===== ANDROID ===== */
-    html.android-mode .card::before,
-    html.android-mode .card::after,
-    html.android-mode .size-btn::after {
+    /* ===== ANDROID - ТОЛЬКО СТРЕЛКА НАЗАД ===== */
+    html.android-mode .card::before {
       display: none !important;
     }
 
