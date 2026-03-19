@@ -103,12 +103,14 @@
       --star-color: #2c3e50;
     }
 
+    /* ФИКСИРОВАННЫЙ ГРАДИЕНТ */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
       min-height: 100vh;
     }
 
+    /* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -159,6 +161,7 @@
       right: 12px;
     }
 
+    /* КОНТЕЙНЕР */
     .container {
       min-height: 100vh;
       padding-top: 100px;
@@ -167,6 +170,7 @@
       flex-direction: column;
     }
 
+    /* ===== ЗАГОЛОВОК "ВЫБЕРИ СТИЛЬ" ===== */
     .section-title {
       font-size: 22px;
       font-weight: 700;
@@ -184,6 +188,7 @@
       text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     }
 
+    /* КАРТОЧКИ - В СТОЛБИК */
     .cards-list {
       display: flex;
       flex-direction: column;
@@ -192,6 +197,7 @@
       flex: 1;
     }
 
+    /* ===== КАРТОЧКА ===== */
     .card {
       display: block;
       text-decoration: none;
@@ -206,6 +212,7 @@
       position: relative;
     }
 
+    /* iOS - стеклянный эффект */
     .card::before {
       content: '';
       position: absolute;
@@ -222,6 +229,7 @@
       pointer-events: none;
     }
 
+    /* iOS - блик */
     .card::after {
       content: '';
       position: absolute;
@@ -235,6 +243,11 @@
       pointer-events: none;
     }
 
+    .card:active {
+      transform: scale(0.98);
+    }
+
+    /* КАРТИНКА-ПРИМЕР */
     .card-image {
       width: 100%;
       aspect-ratio: 16/9;
@@ -246,12 +259,14 @@
       background-color: rgba(0, 0, 0, 0.2);
     }
 
+    /* ПЛЕЙСХОЛДЕРЫ */
     .card-image[data-card="1"] { background-image: linear-gradient(135deg, #667eea, #764ba2); }
     .card-image[data-card="2"] { background-image: linear-gradient(135deg, #f093fb, #f5576c); }
     .card-image[data-card="3"] { background-image: linear-gradient(135deg, #4facfe, #00f2fe); }
     .card-image[data-card="4"] { background-image: linear-gradient(135deg, #43e97b, #38f9d7); }
     .card-image[data-card="5"] { background-image: linear-gradient(135deg, #fa709a, #fee140); }
 
+    /* ПАНЕЛЬ КАРТОЧКИ */
     .card-content {
       padding: 18px;
       position: relative;
@@ -286,82 +301,30 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
-    /* ТЕСТОВАЯ ПАНЕЛЬ */
-    .test-panel {
-      position: fixed;
-      top: 80px;
-      left: 10px;
-      z-index: 9999;
-      background: rgba(0,0,0,0.9);
-      color: #00ff00;
-      padding: 15px;
-      border-radius: 15px;
-      font-size: 12px;
-      max-width: 300px;
-      max-height: 300px;
-      overflow-y: auto;
-      font-family: monospace;
-      border: 2px solid #00ff00;
-      box-shadow: 0 0 20px rgba(0,255,0,0.3);
+    /* ANDROID */
+    html.android-mode .card::before {
+      content: none;
     }
-    
-    .test-button {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 9999;
-      background: #ff4444;
-      color: white;
-      border: none;
-      border-radius: 30px;
-      padding: 12px 20px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+
+    html.android-mode .card::after {
+      content: none;
     }
-    
-    .test-button.green {
-      background: #00aa00;
-      right: 200px;
+
+    html.android-mode .card {
+      background: transparent;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     }
-    
-    .test-button.blue {
-      background: #0066cc;
-      right: 380px;
-    }
-    
-    .lang-indicator {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      background: var(--accent1);
-      color: white;
-      padding: 8px 15px;
-      border-radius: 30px;
-      font-weight: bold;
-      font-size: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+
+    html.android-mode .card-content {
+      background: rgba(255, 255, 255, 0.15) !important;
+      backdrop-filter: none !important;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
     }
   </style>
 </head>
 <body>
 
-  <!-- ИНДИКАТОР ТЕКУЩЕГО ЯЗЫКА -->
-  <div class="lang-indicator" id="langIndicator">🇷🇺 RU</div>
-
-  <!-- ТЕСТОВАЯ ПАНЕЛЬ -->
-  <div class="test-panel" id="testPanel">
-    <b>🔧 ТЕСТОВЫЙ РЕЖИМ</b><br>
-    <div id="testLogs"></div>
-  </div>
-
-  <!-- ТЕСТОВЫЕ КНОПКИ -->
-  <button class="test-button" id="testLangBtn">🔍 Показать язык</button>
-  <button class="test-button green" id="testForceEnBtn">🇬🇧 Принудительно EN</button>
-  <button class="test-button blue" id="testForceRuBtn">🇷🇺 Принудительно RU</button>
-
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
   <div class="header">
     <a href="./index.html" class="back-btn">←</a>
     <div class="title" id="title">Генерация картинок</div>
@@ -372,6 +335,7 @@
     <div class="section-title" id="sectionTitle">🎨 Выбери стиль</div>
 
     <div class="cards-list">
+      <!-- Карточка 1: Свободный промпт -->
       <a href="./card-text-to-image.html" class="card" id="card1">
         <div class="card-image" data-card="1"></div>
         <div class="card-content">
@@ -383,6 +347,7 @@
         </div>
       </a>
 
+      <!-- Карточка 2: Фото → Аниме -->
       <a href="./card-photo-to-anime.html" class="card" id="card2">
         <div class="card-image" data-card="2"></div>
         <div class="card-content">
@@ -394,6 +359,7 @@
         </div>
       </a>
 
+      <!-- Карточка 3: Фото → Рисунок -->
       <a href="./card-photo-to-drawing.html" class="card" id="card3">
         <div class="card-image" data-card="3"></div>
         <div class="card-content">
@@ -405,6 +371,7 @@
         </div>
       </a>
 
+      <!-- Карточка 4: Цветочная фантазия -->
       <a href="./card-flowers.html" class="card" id="card4">
         <div class="card-image" data-card="4"></div>
         <div class="card-content">
@@ -416,6 +383,7 @@
         </div>
       </a>
 
+      <!-- Карточка 5: Фэнтези персонаж -->
       <a href="./card-fantasy.html" class="card" id="card5">
         <div class="card-image" data-card="5"></div>
         <div class="card-content">
@@ -430,14 +398,6 @@
   </div>
 
   <script>
-    // ===== ФУНКЦИЯ ДЛЯ ТЕСТОВЫХ ЛОГОВ =====
-    function addTestLog(message) {
-      const logsDiv = document.getElementById('testLogs');
-      const time = new Date().toLocaleTimeString();
-      logsDiv.innerHTML = `<div style="border-bottom:1px solid #333; padding:3px;">[${time}] ${message}</div>` + logsDiv.innerHTML;
-      console.log(message);
-    }
-
     // ===== ПЕРЕВОДЫ =====
     const I18N = {
       ru: {
@@ -486,24 +446,19 @@
 
     // ===== ПОЛУЧЕНИЕ ЯЗЫКА =====
     function getLang() {
-      // Сначала проверяем URL
+      // Сначала из URL
       const url = new URL(window.location.href);
       const urlLang = url.searchParams.get("lang");
-      
-      // Проверяем localStorage
-      let storedLang = null;
-      try { storedLang = localStorage.getItem("miniapp_lang_v1"); } catch(e) {}
-      
-      addTestLog(`URL lang: ${urlLang || 'нет'}, localStorage: ${storedLang || 'нет'}`);
-      
-      // Приоритет: URL > localStorage > ru
       if (urlLang) {
-        // Синхронизируем с localStorage
         try { localStorage.setItem("miniapp_lang_v1", urlLang); } catch(e) {}
         return urlLang;
       }
       
-      if (storedLang) return storedLang;
+      // Потом из localStorage
+      try { 
+        const stored = localStorage.getItem("miniapp_lang_v1");
+        if (stored) return stored;
+      } catch(e) {}
       
       return "ru";
     }
@@ -513,106 +468,69 @@
       const lang = getLang();
       const t = I18N[lang] || I18N.ru;
       
-      addTestLog(`🔄 ОБНОВЛЕНИЕ ЯЗЫКА НА: ${lang.toUpperCase()}`);
+      console.log("Обновление языка на:", lang);
       
-      // Обновляем индикатор
-      const langIndicator = document.getElementById('langIndicator');
-      if (langIndicator) {
-        const flags = { ru: '🇷🇺', en: '🇬🇧', kk: '🇰🇿' };
-        langIndicator.textContent = `${flags[lang] || '🏳️'} ${lang.toUpperCase()}`;
-      }
+      // Обновляем все элементы
+      const titleEl = document.getElementById('title');
+      if (titleEl) titleEl.textContent = t.title;
       
-      // Обновляем все элементы с проверкой
-      const elements = [
-        { id: 'title', value: t.title },
-        { id: 'sectionTitle', value: t.sectionTitle },
-        { id: 'card1Title', value: t.card1Title },
-        { id: 'card1Desc', value: t.card1Desc },
-        { id: 'card2Title', value: t.card2Title },
-        { id: 'card2Desc', value: t.card2Desc },
-        { id: 'card3Title', value: t.card3Title },
-        { id: 'card3Desc', value: t.card3Desc },
-        { id: 'card4Title', value: t.card4Title },
-        { id: 'card4Desc', value: t.card4Desc },
-        { id: 'card5Title', value: t.card5Title },
-        { id: 'card5Desc', value: t.card5Desc }
-      ];
+      const sectionTitleEl = document.getElementById('sectionTitle');
+      if (sectionTitleEl) sectionTitleEl.textContent = t.sectionTitle;
       
-      elements.forEach(el => {
-        const element = document.getElementById(el.id);
-        if (element) {
-          const oldText = element.textContent;
-          element.textContent = el.value;
-          addTestLog(`  ✅ ${el.id}: "${oldText}" → "${el.value}"`);
-        } else {
-          addTestLog(`  ❌ ${el.id} не найден!`);
-        }
-      });
+      const card1Title = document.getElementById('card1Title');
+      if (card1Title) card1Title.textContent = t.card1Title;
       
-      addTestLog(`✅ Обновление завершено`);
-    }
-
-    // ===== ТЕСТОВЫЕ ФУНКЦИИ =====
-    function showCurrentLang() {
-      const lang = getLang();
-      addTestLog(`📍 Текущий язык: ${lang}`);
-      alert(`Текущий язык: ${lang.toUpperCase()}`);
-    }
-    
-    function forceLang(lang) {
-      addTestLog(`🔧 ПРИНУДИТЕЛЬНАЯ УСТАНОВКА: ${lang}`);
-      try { 
-        localStorage.setItem("miniapp_lang_v1", lang);
-        addTestLog(`✅ localStorage обновлен: ${lang}`);
-      } catch(e) {
-        addTestLog(`❌ Ошибка localStorage: ${e}`);
-      }
-      updateLanguage();
+      const card1Desc = document.getElementById('card1Desc');
+      if (card1Desc) card1Desc.textContent = t.card1Desc;
+      
+      const card2Title = document.getElementById('card2Title');
+      if (card2Title) card2Title.textContent = t.card2Title;
+      
+      const card2Desc = document.getElementById('card2Desc');
+      if (card2Desc) card2Desc.textContent = t.card2Desc;
+      
+      const card3Title = document.getElementById('card3Title');
+      if (card3Title) card3Title.textContent = t.card3Title;
+      
+      const card3Desc = document.getElementById('card3Desc');
+      if (card3Desc) card3Desc.textContent = t.card3Desc;
+      
+      const card4Title = document.getElementById('card4Title');
+      if (card4Title) card4Title.textContent = t.card4Title;
+      
+      const card4Desc = document.getElementById('card4Desc');
+      if (card4Desc) card4Desc.textContent = t.card4Desc;
+      
+      const card5Title = document.getElementById('card5Title');
+      if (card5Title) card5Title.textContent = t.card5Title;
+      
+      const card5Desc = document.getElementById('card5Desc');
+      if (card5Desc) card5Desc.textContent = t.card5Desc;
     }
 
     // ===== ИНИЦИАЛИЗАЦИЯ =====
-    document.addEventListener('DOMContentLoaded', () => {
-      addTestLog("🚀 Страница загружена");
-      updateLanguage();
-    });
+    document.addEventListener('DOMContentLoaded', updateLanguage);
     
-    // ===== СЛУШАТЕЛИ СОБЫТИЙ =====
-    window.addEventListener('languageChanged', () => {
-      addTestLog("📡 ПОЛУЧЕНО СОБЫТИЕ languageChanged");
-      updateLanguage();
-    });
-
+    // ===== СЛУШАТЕЛЬ СОБЫТИЯ ИЗ МЕНЮ =====
+    window.addEventListener('languageChanged', updateLanguage);
+    
+    // ===== ПРОВЕРКА LOCALSTORAGE =====
     window.addEventListener('storage', (e) => {
       if (e.key === 'miniapp_lang_v1') {
-        addTestLog(`💾 Изменение localStorage: ${e.oldValue} → ${e.newValue}`);
         updateLanguage();
       }
     });
 
-    // ===== ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА =====
+    // ===== ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА КАЖДУЮ СЕКУНДУ =====
     let lastLang = getLang();
     setInterval(() => {
       const currentLang = getLang();
       if (currentLang !== lastLang) {
-        addTestLog(`⏱️ setInterval: ${lastLang} → ${currentLang}`);
+        console.log("Язык изменился (setInterval):", currentLang);
         lastLang = currentLang;
         updateLanguage();
       }
-    }, 2000);
-
-    // ===== ОБРАБОТЧИКИ ТЕСТОВЫХ КНОПОК =====
-    document.getElementById('testLangBtn').addEventListener('click', showCurrentLang);
-    document.getElementById('testForceEnBtn').addEventListener('click', () => forceLang('en'));
-    document.getElementById('testForceRuBtn').addEventListener('click', () => forceLang('ru'));
-    
-    // Добавляем кнопку для казахского
-    const testKzBtn = document.createElement('button');
-    testKzBtn.className = 'test-button';
-    testKzBtn.style.right = '560px';
-    testKzBtn.style.background = '#880088';
-    testKzBtn.textContent = '🇰🇿 Принудительно KZ';
-    testKzBtn.onclick = () => forceLang('kk');
-    document.body.appendChild(testKzBtn);
+    }, 1000);
   </script>
 </body>
 </html>
