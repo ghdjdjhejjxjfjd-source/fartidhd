@@ -16,6 +16,7 @@
         tg.expand();
         tg.disableVerticalSwipes();
         
+        // ФИКСИРУЕМ ВКЛАДКУ
         document.body.style.overflow = 'hidden';
         const container = document.querySelector('.container');
         if (container) {
@@ -68,43 +69,41 @@
       overflow: hidden;
     }
 
-    /* ===== ТЕМЫ ===== */
+    /* ===== ТЕМЫ - КАК В МЕНЮ ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
       --bg-bot: #16212d;
-      --accent1: #4a8ed4;
-      --accent2: #2a6bb0;
+      --accent1: #5aaeff;
+      --accent2: #3496ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.1);
       --card-border: rgba(255, 255, 255, 0.12);
-      --input-bg: rgba(0, 0, 0, 0.3);
+      --input-bg: rgba(255, 255, 255, 0.08);
       --btn-bg: rgba(90, 174, 255, 0.2);
       --star-color: #ffffff;
-      --header-text: #a0b0c0;
+      --header-text: #f7fbff;
       --caret-color: #ffffff;
-      --border-light: rgba(255, 255, 255, 0.2);
-      --contrast: 1.07;
+      --contrast: 1.05;
     }
     
     :root[data-theme="black"] { 
       --bg-top: #1b2430;
       --bg-mid: #141b24;
       --bg-bot: #0e141c;
-      --accent1: #6a8ed4;
-      --accent2: #4a6eb0;
+      --accent1: #8bb8ff;
+      --accent2: #5a98ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.08);
       --card-border: rgba(255, 255, 255, 0.12);
-      --input-bg: rgba(0, 0, 0, 0.3);
+      --input-bg: rgba(255, 255, 255, 0.06);
       --btn-bg: rgba(139, 184, 255, 0.15);
       --star-color: #ffffff;
-      --header-text: #a0b0c0;
+      --header-text: #f7fbff;
       --caret-color: #ffffff;
-      --border-light: rgba(255, 255, 255, 0.2);
-      --contrast: 1.07;
+      --contrast: 1.05;
     }
     
     :root[data-theme="light"] { 
@@ -120,10 +119,9 @@
       --input-bg: rgba(255, 255, 255, 0.95);
       --btn-bg: rgba(58, 140, 255, 0.1);
       --star-color: #2c3e50;
-      --header-text: #2c3e50;
+      --header-text: rgba(255, 255, 255, 0.9);
       --caret-color: #3a8cff;
-      --border-light: rgba(0, 0, 0, 0.15);
-      --contrast: 1;
+      --contrast: 1.05;
     }
 
     /* ГРАДИЕНТ ФОНА */
@@ -132,7 +130,7 @@
       background-attachment: fixed;
     }
 
-    /* ===== iOS - ВЕРХНЯЯ ПАНЕЛЬ КАК В ЧАТЕ ===== */
+    /* ===== iOS - СТЕКЛЯННАЯ ВЕРХНЯЯ ПАНЕЛЬ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -141,47 +139,38 @@
       z-index: 20;
       display: flex;
       align-items: center;
-      padding: 8px 14px;
-      padding-top: calc(8px + env(safe-area-inset-top));
-      background: transparent;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      border-bottom: none;
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
       height: 60px;
     }
 
     .back-btn {
       color: var(--header-text);
       text-decoration: none;
-      font-size: 15px;
-      width: auto;
-      min-width: 40px;
-      height: 34px;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 0 12px;
-      border-radius: 17px;
-      border: 1px solid rgba(255,255,255,0.15);
-      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .title {
       flex: 1;
       text-align: center;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 18px;
       color: var(--header-text);
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 6px 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.15);
-      margin: 0 8px;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
 
     .spacer { width: 40px; }
@@ -196,10 +185,9 @@
       padding: 16px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      filter: contrast(var(--contrast));
     }
 
-    /* КАРТОЧКА */
+    /* ===== КАРТОЧКА ===== */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -211,9 +199,10 @@
       box-shadow: 0 25px 50px rgba(0,0,0,0.5);
       position: relative;
       overflow: hidden;
+      filter: contrast(var(--contrast));
     }
 
-    /* ТОНКАЯ ОБВОДКА */
+    /* ТОНКАЯ ЧЕТКАЯ ОБВОДКА ДЛЯ ПАНЕЛИ */
     .card::after {
       content: '';
       position: absolute;
@@ -222,7 +211,7 @@
       right: 0;
       bottom: 0;
       border-radius: 28px;
-      border: 1px solid var(--border-light);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       pointer-events: none;
       z-index: 6;
     }
@@ -263,6 +252,11 @@
       100% { background-position: 300% 0; }
     }
 
+    /* УВЕЛИЧЕННАЯ НАСЫЩЕННОСТЬ */
+    .card, .size-btn, .generate-btn, .action-btn, .text-input {
+      filter: saturate(1.05) contrast(1.05);
+    }
+
     .card-header {
       display: flex;
       align-items: center;
@@ -284,6 +278,7 @@
       font-size: 22px;
       font-weight: 700;
       color: var(--text);
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
 
     .star-badge {
@@ -293,6 +288,8 @@
       padding: 4px 10px;
       border-radius: 20px;
       border: 1px solid rgba(255,215,0,0.3);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     .card-desc {
@@ -300,6 +297,7 @@
       color: var(--subtext);
       margin-bottom: 24px;
       line-height: 1.5;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     /* ПОЛЕ ВВОДА */
@@ -313,6 +311,7 @@
       color: var(--subtext);
       margin-bottom: 8px;
       display: block;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     .input-wrapper {
@@ -325,19 +324,23 @@
       flex: 1;
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid var(--border-light);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       background: var(--input-bg);
       color: var(--text);
       font-size: 16px;
       transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      
+      /* КУРСОР */
       caret-color: var(--caret-color);
       caret-shape: bar;
     }
 
     .text-input:focus {
       outline: none;
-      border-color: var(--accent1);
-      box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+      border-color: rgba(255, 255, 255, 0.4);
     }
 
     .text-input::placeholder {
@@ -346,8 +349,8 @@
     }
 
     .clear-input {
-      background: var(--btn-bg);
-      border: 1px solid var(--border-light);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       color: var(--text);
       width: 50px;
       height: 50px;
@@ -358,9 +361,12 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
-    /* ВЫБОР РАЗМЕРА */
+    /* ===== iOS - СТЕКЛЯННЫЕ КНОПКИ ВЫБОРА РАЗМЕРА ===== */
     .size-selector {
       display: flex;
       gap: 10px;
@@ -371,17 +377,35 @@
       flex: 1;
       padding: 14px;
       border-radius: 20px;
-      border: 1px solid var(--border-light);
-      background: var(--btn-bg);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
       color: var(--text);
       cursor: pointer;
       transition: all 0.2s ease;
       font-weight: 600;
-      position: relative;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(15px) saturate(180%);
+      -webkit-backdrop-filter: blur(15px) saturate(180%);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* ТОНКАЯ ЧЕТКАЯ ОБВОДКА */
+    .size-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      pointer-events: none;
     }
 
     .size-btn:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+      background: rgba(255, 255, 255, 0.15);
     }
 
     .size-btn:active {
@@ -394,12 +418,16 @@
       color: white;
     }
 
-    /* КНОПКА ГЕНЕРАЦИИ */
+    .size-btn.active::after {
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* ===== iOS - СТЕКЛЯННАЯ КНОПКА ГЕНЕРАЦИИ ===== */
     .generate-btn {
       width: 100%;
       padding: 18px;
       border-radius: 24px;
-      border: 1px solid var(--border-light);
+      border: none;
       background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
       color: white;
       font-size: 18px;
@@ -411,17 +439,35 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .generate-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      pointer-events: none;
     }
 
     .generate-btn:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 25px 40px rgba(0,0,0,0.6);
     }
 
     .generate-btn:active {
       transform: scale(0.98);
     }
 
-    /* КНОПКИ ДЕЙСТВИЙ */
+    /* ===== iOS - КНОПКИ ДЕЙСТВИЙ ===== */
     .action-buttons {
       display: flex;
       gap: 12px;
@@ -431,21 +477,40 @@
       flex: 1;
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid var(--border-light);
-      background: var(--btn-bg);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
       color: var(--text);
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(15px) saturate(180%);
+      -webkit-backdrop-filter: blur(15px) saturate(180%);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .action-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      pointer-events: none;
     }
 
     .action-btn:hover {
       transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+      background: rgba(255, 255, 255, 0.15);
     }
 
     .action-btn:active {
@@ -454,11 +519,15 @@
 
     .action-btn.primary {
       background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
-      border: 1px solid var(--border-light);
+      border: none;
       color: white;
     }
 
-    /* РЕЗУЛЬТАТ - БЕЗ УВЕЛИЧЕНИЯ */
+    .action-btn.primary::after {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* РЕЗУЛЬТАТ */
     .result {
       display: none;
       margin-top: 20px;
@@ -466,26 +535,20 @@
 
     .result-image {
       width: 100%;
-      height: auto;
       border-radius: 24px;
       background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
       margin-bottom: 16px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      pointer-events: none;  /* Запрещаем клики по картинке */
-      user-select: none;      /* Запрещаем выделение */
-      -webkit-tap-highlight-color: transparent;
     }
 
-    /* ЗАГРУЗКА - СВЕЧЕНИЕ КАК РАНЬШЕ */
+    /* ЗАГРУЗКА */
     .loading-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.95);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -501,7 +564,6 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin-bottom: 20px;
-      filter: drop-shadow(0 0 10px rgba(90,174,255,0.5));
     }
 
     @keyframes spin {
@@ -512,13 +574,30 @@
       color: white;
       font-size: 18px;
       font-weight: 600;
-      text-shadow: 0 0 10px rgba(90,174,255,0.5);
     }
 
-    /* ===== ANDROID ===== */
+    /* ===== ANDROID - НИЧЕГО НЕ МЕНЯЕМ ===== */
     html.android-mode .card::before,
-    html.android-mode .card::after {
+    html.android-mode .card::after,
+    html.android-mode .size-btn::after,
+    html.android-mode .generate-btn::after,
+    html.android-mode .action-btn::after,
+    html.android-mode .back-btn {
       display: none !important;
+    }
+
+    html.android-mode .header {
+      background: rgba(0,0,0,0.3) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    html.android-mode .size-btn,
+    html.android-mode .action-btn,
+    html.android-mode .generate-btn {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: rgba(255,255,255,0.08) !important;
     }
 
     html.android-mode .size-btn:hover,
@@ -529,33 +608,11 @@
 
     html.android-mode .card {
       backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
 
     html.android-mode .text-input {
       border: none !important;
-    }
-
-    html.android-mode .result-image {
-      pointer-events: none !important;
-      user-select: none !important;
-    }
-
-    html.android-mode .loading-overlay {
-      background: rgba(0,0,0,0.8) !important;
-    }
-
-    html.android-mode .header {
-      background: rgba(0,0,0,0.2) !important;
-      backdrop-filter: blur(10px) !important;
-      border-bottom: 1px solid var(--card-border) !important;
-    }
-
-    html.android-mode .back-btn,
-    html.android-mode .title {
-      background: transparent !important;
-      backdrop-filter: none !important;
-      border: none !important;
-      color: var(--text) !important;
     }
   </style>
 </head>
