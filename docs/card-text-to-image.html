@@ -87,9 +87,9 @@
     }
     
     :root[data-theme="black"] { 
-      --bg-top: #0e141c;  /* Немного темнее */
-      --bg-mid: #0a1018;  /* Немного темнее */
-      --bg-bot: #060c14;  /* Немного темнее */
+      --bg-top: #1b2430;  /* Светлее (как было до затемнения) */
+      --bg-mid: #141b24;  /* Светлее */
+      --bg-bot: #0e141c;  /* Светлее */
       --accent1: #8bb8ff;
       --accent2: #5a98ff;
       --text: #f7fbff;
@@ -438,7 +438,7 @@
       color: white;
     }
 
-    /* РЕЗУЛЬТАТ */
+    /* РЕЗУЛЬТАТ - БЕЗ ВОЗМОЖНОСТИ УВЕЛИЧЕНИЯ */
     .result {
       display: none;
       margin-top: 20px;
@@ -453,6 +453,9 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
       pointer-events: none;
       user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     /* ЗАГРУЗКА */
@@ -629,7 +632,7 @@
         clear: "Очистить",
         insufficientStars: "❌ Недостаточно звезд. Нужно 10⭐",
         error: "Ошибка генерации",
-        saved: "✅ Сохранено в галерею"
+        saved: "✅ Отправлено в бота"
       },
       en: {
         title: "Free prompt",
@@ -647,7 +650,7 @@
         clear: "Clear",
         insufficientStars: "❌ Insufficient stars. Need 10⭐",
         error: "Generation error",
-        saved: "✅ Saved to gallery"
+        saved: "✅ Sent to bot"
       },
       kk: {
         title: "Еркін промпт",
@@ -665,7 +668,7 @@
         clear: "Тазалау",
         insufficientStars: "❌ Жұлдыздар жеткіліксіз. 10⭐ керек",
         error: "Қате",
-        saved: "✅ Галереяға сақталды"
+        saved: "✅ Ботқа жіберілді"
       },
       tr: {
         title: "Serbest prompt",
@@ -683,7 +686,7 @@
         clear: "Temizle",
         insufficientStars: "❌ Yetersiz yıldız. 10⭐ gerekli",
         error: "Hata",
-        saved: "✅ Galeriye kaydedildi"
+        saved: "✅ Bot'a gönderildi"
       },
       uk: {
         title: "Вільний промпт",
@@ -701,7 +704,7 @@
         clear: "Очистити",
         insufficientStars: "❌ Недостатньо зірок. Потрібно 10⭐",
         error: "Помилка",
-        saved: "✅ Збережено в галерею"
+        saved: "✅ Відправлено в бота"
       },
       fr: {
         title: "Prompt libre",
@@ -719,7 +722,7 @@
         clear: "Effacer",
         insufficientStars: "❌ Étoiles insuffisantes. Besoin de 10⭐",
         error: "Erreur",
-        saved: "✅ Enregistré dans la galerie"
+        saved: "✅ Envoyé au bot"
       }
     };
 
@@ -870,24 +873,36 @@
       }
     }
 
-    // ===== СОХРАНЕНИЕ В ГАЛЕРЕЮ =====
-    async function saveToGallery(base64Data) {
+    // ===== ОТПРАВКА В БОТА =====
+    async function sendToBot(base64Data) {
       const t = I18N[getLang()] || I18N.ru;
+      const user = getUser();
+      
       try {
+        // Конвертируем base64 в blob
         const base64Response = await fetch(base64Data);
         const blob = await base64Response.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `image_${Date.now()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 100);
-        alert(t.saved);
+        
+        // Создаем FormData для отправки
+        const formData = new FormData();
+        formData.append('user_id', user.id);
+        formData.append('image', blob, `image_${Date.now()}.png`);
+        formData.append('filename', `image_${Date.now()}.png`);
+        
+        // Отправляем на сервер, который перешлет в Telegram
+        const response = await fetch(`${API_BASE}/api/send-photo`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          alert(t.saved);
+        } else {
+          throw new Error('Failed to send');
+        }
       } catch (e) {
-        console.error("Save error:", e);
-        alert("Ошибка при сохранении");
+        console.error("Send to bot error:", e);
+        alert("Ошибка при отправке в бота");
       }
     }
 
@@ -940,8 +955,11 @@
       }
     });
 
+    // Сохранение - теперь отправляет в бота
     saveBtn.addEventListener('click', () => {
-      if (currentImageBase64) saveToGallery(currentImageBase64);
+      if (currentImageBase64) {
+        sendToBot(currentImageBase64);
+      }
     });
 
     repeatBtn.addEventListener('click', () => {
