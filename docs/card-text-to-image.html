@@ -60,7 +60,7 @@
       min-height: 100vh;
     }
 
-    /* ===== ТЕМЫ - КАК В МЕНЮ И ЧАТЕ ===== */
+    /* ===== ТЕМЫ ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
@@ -74,6 +74,8 @@
       --input-bg: rgba(255, 255, 255, 0.08);
       --btn-bg: rgba(90, 174, 255, 0.2);
       --star-color: #ffffff;
+      --header-text: #f7fbff;
+      --caret-color: #ffffff; /* Белый курсор для синей темы */
     }
     
     :root[data-theme="black"] { 
@@ -89,6 +91,8 @@
       --input-bg: rgba(255, 255, 255, 0.06);
       --btn-bg: rgba(139, 184, 255, 0.15);
       --star-color: #ffffff;
+      --header-text: #f7fbff;
+      --caret-color: #ffffff; /* Белый курсор для черной темы */
     }
     
     :root[data-theme="light"] { 
@@ -104,9 +108,11 @@
       --input-bg: rgba(255, 255, 255, 0.95);
       --btn-bg: rgba(58, 140, 255, 0.1);
       --star-color: #2c3e50;
+      --header-text: rgba(255, 255, 255, 0.9); /* Белые буквы для светлой темы */
+      --caret-color: #3a8cff; /* Синий курсор для светлой темы */
     }
 
-    /* ГРАДИЕНТ ФОНА КАК В МЕНЮ */
+    /* ГРАДИЕНТ ФОНА */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
@@ -130,7 +136,7 @@
     }
 
     .back-btn {
-      color: var(--text);
+      color: var(--header-text);
       text-decoration: none;
       font-size: 24px;
       width: 40px;
@@ -145,7 +151,7 @@
       text-align: center;
       font-weight: 600;
       font-size: 18px;
-      color: var(--text);
+      color: var(--header-text);
     }
 
     .spacer { width: 40px; }
@@ -156,16 +162,49 @@
       min-height: 100vh;
     }
 
-    /* КАРТОЧКА */
+    /* ===== IOS - МОЩНЫЙ ПРЕМИАЛЬНЫЙ ДИЗАЙН ===== */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 24px;
+      border-radius: 28px;
       padding: 24px;
       margin-bottom: 20px;
-      backdrop-filter: blur(12px) saturate(118%);
-      -webkit-backdrop-filter: blur(12px) saturate(118%);
-      box-shadow: 0 18px 42px rgba(0,0,0,0.28);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Эффект свечения сверху для iOS */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      z-index: 4;
+    }
+
+    /* Кнопки с мощным стеклом для iOS */
+    .size-btn, .clear-input, .action-btn {
+      backdrop-filter: blur(15px) saturate(180%);
+      -webkit-backdrop-filter: blur(15px) saturate(180%);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset;
+      transition: all 0.2s ease;
+    }
+
+    .size-btn:hover, .clear-input:hover, .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.15) inset;
+    }
+
+    .generate-btn {
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.15) inset;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     .card-header {
@@ -183,12 +222,14 @@
 
     .card-icon {
       font-size: 32px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
 
     .card-title {
       font-size: 22px;
       font-weight: 700;
       color: var(--text);
+      text-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     .star-badge {
@@ -198,6 +239,9 @@
       padding: 4px 10px;
       border-radius: 20px;
       border: 1px solid rgba(255,215,0,0.3);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
 
     .card-desc {
@@ -205,6 +249,7 @@
       color: var(--subtext);
       margin-bottom: 24px;
       line-height: 1.5;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     /* ПОЛЕ ВВОДА */
@@ -218,6 +263,7 @@
       color: var(--subtext);
       margin-bottom: 8px;
       display: block;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     .input-wrapper {
@@ -229,42 +275,48 @@
     .text-input {
       flex: 1;
       padding: 16px;
-      border-radius: 16px;
+      border-radius: 20px;
       border: 1px solid var(--card-border);
       background: var(--input-bg);
       color: var(--text);
       font-size: 16px;
       transition: all 0.2s;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.05) inset;
+      
+      /* ВИДИМЫЙ КУРСОР */
+      caret-color: var(--caret-color);
+      caret-shape: bar;
     }
 
     .text-input:focus {
       outline: none;
       border-color: var(--accent1);
+      box-shadow: 0 8px 25px rgba(90,174,255,0.3), 0 0 0 2px rgba(255,255,255,0.1) inset;
     }
 
     .text-input::placeholder {
       color: var(--subtext);
+      opacity: 0.7;
     }
 
     .clear-input {
       background: var(--btn-bg);
       border: 1px solid var(--card-border);
       color: var(--text);
-      width: 46px;
-      height: 46px;
-      border-radius: 16px;
+      width: 50px;
+      height: 50px;
+      border-radius: 20px;
       font-size: 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
-      backdrop-filter: blur(5px);
-    }
-
-    .clear-input:hover {
-      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
 
     /* ВЫБОР РАЗМЕРА */
@@ -277,27 +329,31 @@
     .size-btn {
       flex: 1;
       padding: 14px;
-      border-radius: 16px;
+      border-radius: 20px;
       border: 1px solid var(--card-border);
       background: var(--btn-bg);
       color: var(--text);
       cursor: pointer;
       transition: all 0.2s;
       font-weight: 600;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     .size-btn.active {
       background: var(--accent1);
       border-color: var(--accent1);
       color: white;
+      box-shadow: 0 8px 25px rgba(90,174,255,0.4);
     }
 
     /* КНОПКА ГЕНЕРАЦИИ */
     .generate-btn {
       width: 100%;
       padding: 18px;
-      border-radius: 20px;
+      border-radius: 24px;
       border: none;
       background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
       color: white;
@@ -310,15 +366,15 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.15) inset;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
 
     .generate-btn:active {
       transform: scale(0.98);
-    }
-
-    .generate-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
     }
 
     /* РЕЗУЛЬТАТ */
@@ -329,10 +385,11 @@
 
     .result-image {
       width: 100%;
-      border-radius: 20px;
+      border-radius: 24px;
       background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
       margin-bottom: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
     .action-buttons {
@@ -343,7 +400,7 @@
     .action-btn {
       flex: 1;
       padding: 16px;
-      border-radius: 16px;
+      border-radius: 20px;
       border: 1px solid var(--card-border);
       background: var(--btn-bg);
       color: var(--text);
@@ -351,21 +408,21 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-    }
-
-    .action-btn:hover {
-      background: rgba(255,255,255,0.15);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     .action-btn.primary {
       background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
       border: none;
       color: white;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4);
     }
 
     /* ЗАГРУЗКА */
@@ -376,7 +433,8 @@
       right: 0;
       bottom: 0;
       background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -392,6 +450,7 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin-bottom: 20px;
+      box-shadow: 0 0 30px rgba(90,174,255,0.3);
     }
 
     @keyframes spin {
@@ -402,26 +461,51 @@
       color: white;
       font-size: 18px;
       font-weight: 600;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
 
-    /* ANDROID */
-    html.android-mode .card,
-    html.android-mode .size-btn,
-    html.android-mode .action-btn,
-    html.android-mode .clear-input,
-    html.android-mode .text-input {
-      backdrop-filter: none !important;
-    }
-
+    /* ===== ANDROID MODE ===== */
+    /* Копируем дизайн iOS для синей темы на Android */
     html.android-mode .card {
-      background: rgba(0,0,0,0.3) !important;
-      border: 1px solid rgba(255,255,255,0.15) !important;
+      backdrop-filter: blur(20px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+      background: var(--card-bg) !important;
+      border: 1px solid var(--card-border) !important;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset !important;
+    }
+
+    html.android-mode .card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      z-index: 4;
+    }
+
+    html.android-mode .size-btn,
+    html.android-mode .clear-input,
+    html.android-mode .action-btn {
+      backdrop-filter: blur(15px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset !important;
     }
 
     html.android-mode .text-input {
-      background: rgba(0,0,0,0.2) !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.05) inset !important;
     }
 
+    html.android-mode .generate-btn {
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.15) inset !important;
+    }
+
+    /* Сохраняем оригинальные цвета для других тем Android */
     html.android-mode[data-theme="light"] .card {
       background: rgba(255,255,255,0.9) !important;
     }
@@ -499,7 +583,7 @@
   <script>
     // ===== КОНФИГУРАЦИЯ =====
     const API_BASE = "https://fayrat-production.up.railway.app";
-    const COST = 10; // 10 звезд за генерацию
+    const COST = 10;
 
     // ===== ПЕРЕВОДЫ =====
     const I18N = {
@@ -687,11 +771,9 @@
         return null;
       }
 
-      // Показываем загрузку
       document.getElementById('loadingOverlay').style.display = 'flex';
 
       try {
-        // Проверяем баланс
         const hasBalance = await checkBalance();
         if (!hasBalance) {
           const t = I18N[getLang()] || I18N.ru;
@@ -724,9 +806,7 @@
           }
         }
 
-        // Списываем звезды
         await spendStars();
-
         return data.image_base64;
 
       } catch (error) {
@@ -747,29 +827,17 @@
       const t = I18N[getLang()] || I18N.ru;
       
       try {
-        // Конвертируем base64 в blob
         const base64Response = await fetch(base64Data);
         const blob = await base64Response.blob();
-        
-        // Создаем временную ссылку
         const url = URL.createObjectURL(blob);
-        
-        // Создаем тег <a> для скачивания
         const link = document.createElement('a');
         link.href = url;
         link.download = `image_${Date.now()}.png`;
-        
-        // Добавляем в документ, кликаем и удаляем
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
-        // Освобождаем память
         setTimeout(() => URL.revokeObjectURL(url), 100);
-        
-        // Показываем уведомление
         alert(t.saved);
-        
       } catch (e) {
         console.error("Save error:", e);
         alert("Ошибка при сохранении");
@@ -796,21 +864,18 @@
       document.getElementById('clearInputBtn').title = t.clear;
     }
 
-    // ===== ЗАКРЫТИЕ КЛАВИАТУРЫ ПРИ ТАПЕ ВНЕ ПОЛЯ =====
+    // ===== ЗАКРЫТИЕ КЛАВИАТУРЫ =====
     document.addEventListener('click', function(event) {
       const input = document.getElementById('promptInput');
       const isClickInside = input.contains(event.target);
-      
       if (!isClickInside && document.activeElement === input) {
         input.blur();
       }
     });
 
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
     document.addEventListener('DOMContentLoaded', updateLanguage);
     window.addEventListener('languageChanged', updateLanguage);
 
-    // Принудительная проверка языка
     let lastLang = getLang();
     setInterval(() => {
       const currentLang = getLang();
@@ -831,15 +896,12 @@
     
     let currentSize = '1024x1024';
     let currentImageBase64 = null;
-    let currentPrompt = '';
 
-    // Очистка поля ввода
     clearInputBtn.addEventListener('click', () => {
       promptInput.value = '';
       promptInput.focus();
     });
 
-    // Выбор размера
     document.querySelectorAll('.size-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
@@ -848,7 +910,6 @@
       });
     });
 
-    // Генерация
     generateBtn.addEventListener('click', async () => {
       const prompt = promptInput.value.trim();
       if (!prompt) {
@@ -856,11 +917,7 @@
         return;
       }
 
-      currentPrompt = prompt;
-      
-      // Добавляем quality prompt
       const fullPrompt = `${prompt}, high quality, detailed, 8k, masterpiece`;
-      
       const imageBase64 = await generateImage(fullPrompt, currentSize);
       
       if (imageBase64) {
@@ -871,18 +928,15 @@
       }
     });
 
-    // Сохранение
     saveBtn.addEventListener('click', () => {
       if (currentImageBase64) {
         saveToGallery(currentImageBase64);
       }
     });
 
-    // Повторить
     repeatBtn.addEventListener('click', () => {
       result.style.display = 'none';
       generateBtn.style.display = 'flex';
-      // Промпт остается в поле
     });
   </script>
 </body>
