@@ -68,39 +68,41 @@
       overflow: hidden;
     }
 
-    /* ===== ТЕМЫ - ТОЧНО КАК В МЕНЮ ===== */
+    /* ===== ТЕМЫ ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
       --bg-bot: #16212d;
-      --accent1: #5aaeff;
-      --accent2: #3496ff;
+      --accent1: #4a8ed4;  /* Более темный синий */
+      --accent2: #2a6bb0;  /* Более темный для градиента */
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.1);
       --card-border: rgba(255, 255, 255, 0.12);
-      --input-bg: rgba(255, 255, 255, 0.08);
+      --input-bg: rgba(0, 0, 0, 0.3);  /* Темнее */
       --btn-bg: rgba(90, 174, 255, 0.2);
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
+      --border-light: rgba(255, 255, 255, 0.2);
     }
     
     :root[data-theme="black"] { 
       --bg-top: #1b2430;
       --bg-mid: #141b24;
       --bg-bot: #0e141c;
-      --accent1: #8bb8ff;
-      --accent2: #5a98ff;
+      --accent1: #6a8ed4;  /* Более темный */
+      --accent2: #4a6eb0;  /* Более темный */
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.08);
       --card-border: rgba(255, 255, 255, 0.12);
-      --input-bg: rgba(255, 255, 255, 0.06);
+      --input-bg: rgba(0, 0, 0, 0.3);  /* Темнее */
       --btn-bg: rgba(139, 184, 255, 0.15);
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
+      --border-light: rgba(255, 255, 255, 0.2);
     }
     
     :root[data-theme="light"] { 
@@ -118,15 +120,16 @@
       --star-color: #2c3e50;
       --header-text: #2c3e50;
       --caret-color: #3a8cff;
+      --border-light: rgba(0, 0, 0, 0.15);
     }
 
-    /* ГРАДИЕНТ ФОНА КАК В МЕНЮ */
+    /* ГРАДИЕНТ ФОНА */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
     }
 
-    /* ВЕРХНЯЯ ПАНЕЛЬ - КАК БЫЛО */
+    /* ВЕРХНЯЯ ПАНЕЛЬ */
     .header {
       position: fixed;
       top: 0;
@@ -199,7 +202,7 @@
       right: 0;
       bottom: 0;
       border-radius: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--border-light);
       pointer-events: none;
       z-index: 6;
     }
@@ -302,20 +305,18 @@
       flex: 1;
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-light);
       background: var(--input-bg);
       color: var(--text);
       font-size: 16px;
       transition: all 0.2s;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      
       caret-color: var(--caret-color);
       caret-shape: bar;
     }
 
     .text-input:focus {
       outline: none;
-      border-color: var(--accent1);
+      border-color: var(--border-light);
     }
 
     .text-input::placeholder {
@@ -325,7 +326,7 @@
 
     .clear-input {
       background: var(--btn-bg);
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-light);
       color: var(--text);
       width: 50px;
       height: 50px;
@@ -336,7 +337,6 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
     /* ВЫБОР РАЗМЕРА */
@@ -350,32 +350,17 @@
       flex: 1;
       padding: 14px;
       border-radius: 20px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-light);
       background: var(--btn-bg);
       color: var(--text);
       cursor: pointer;
       transition: all 0.2s ease;
       font-weight: 600;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
       position: relative;
-    }
-
-    /* УЗКАЯ ОБВОДКА ВОКРУГ КНОПОК */
-    .size-btn::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      pointer-events: none;
     }
 
     .size-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
     }
 
     .size-btn:active {
@@ -393,7 +378,7 @@
       width: 100%;
       padding: 18px;
       border-radius: 24px;
-      border: none;
+      border: 1px solid var(--border-light);
       background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
       color: white;
       font-size: 18px;
@@ -405,25 +390,10 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 20px 35px rgba(0,0,0,0.5);
-      position: relative;
-    }
-
-    .generate-btn::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      pointer-events: none;
     }
 
     .generate-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 25px 40px rgba(0,0,0,0.6);
     }
 
     .generate-btn:active {
@@ -440,36 +410,21 @@
       flex: 1;
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-light);
       background: var(--btn-bg);
       color: var(--text);
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      position: relative;
-    }
-
-    .action-btn::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      pointer-events: none;
     }
 
     .action-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
     }
 
     .action-btn:active {
@@ -478,7 +433,7 @@
 
     .action-btn.primary {
       background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
-      border: none;
+      border: 1px solid var(--border-light);
       color: white;
     }
 
@@ -533,10 +488,7 @@
 
     /* ===== ANDROID - НЕ ТРОГАЕМ ===== */
     html.android-mode .card::before,
-    html.android-mode .card::after,
-    html.android-mode .size-btn::after,
-    html.android-mode .generate-btn::after,
-    html.android-mode .action-btn::after {
+    html.android-mode .card::after {
       display: none !important;
     }
 
