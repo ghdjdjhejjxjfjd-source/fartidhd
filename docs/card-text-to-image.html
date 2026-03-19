@@ -16,7 +16,6 @@
         tg.expand();
         tg.disableVerticalSwipes();
         
-        // ФИКСИРУЕМ ВКЛАДКУ
         document.body.style.overflow = 'hidden';
         const container = document.querySelector('.container');
         if (container) {
@@ -69,7 +68,7 @@
       overflow: hidden;
     }
 
-    /* ===== ТЕМЫ - КАК В МЕНЮ ===== */
+    /* ===== ТЕМЫ ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
@@ -119,7 +118,7 @@
       --input-bg: rgba(255, 255, 255, 0.95);
       --btn-bg: rgba(58, 140, 255, 0.1);
       --star-color: #2c3e50;
-      --header-text: rgba(255, 255, 255, 0.9);
+      --header-text: #2c3e50;
       --caret-color: #3a8cff;
       --contrast: 1.05;
     }
@@ -130,7 +129,7 @@
       background-attachment: fixed;
     }
 
-    /* ===== iOS - СТЕКЛЯННАЯ ВЕРХНЯЯ ПАНЕЛЬ ===== */
+    /* ===== iOS - ПРОЗРАЧНАЯ ВЕРХНЯЯ ПАНЕЛЬ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -141,36 +140,43 @@
       align-items: center;
       padding: 12px 16px;
       padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(0, 0, 0, 0.25);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-bottom: none;
       height: 60px;
     }
 
     .back-btn {
       color: var(--header-text);
       text-decoration: none;
-      font-size: 24px;
+      font-size: 20px;
       width: 40px;
       height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-radius: 20px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
+      font-weight: 600;
     }
 
     .title {
       flex: 1;
       text-align: center;
       font-weight: 600;
-      font-size: 18px;
+      font-size: 16px;
       color: var(--header-text);
-      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin: 0 12px;
     }
 
     .spacer { width: 40px; }
@@ -185,9 +191,10 @@
       padding: 16px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      filter: contrast(var(--contrast));
     }
 
-    /* ===== КАРТОЧКА ===== */
+    /* КАРТОЧКА */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -199,10 +206,9 @@
       box-shadow: 0 25px 50px rgba(0,0,0,0.5);
       position: relative;
       overflow: hidden;
-      filter: contrast(var(--contrast));
     }
 
-    /* ТОНКАЯ ЧЕТКАЯ ОБВОДКА ДЛЯ ПАНЕЛИ */
+    /* ТОНКАЯ ОБВОДКА */
     .card::after {
       content: '';
       position: absolute;
@@ -211,7 +217,7 @@
       right: 0;
       bottom: 0;
       border-radius: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       pointer-events: none;
       z-index: 6;
     }
@@ -252,11 +258,6 @@
       100% { background-position: 300% 0; }
     }
 
-    /* УВЕЛИЧЕННАЯ НАСЫЩЕННОСТЬ */
-    .card, .size-btn, .generate-btn, .action-btn, .text-input {
-      filter: saturate(1.05) contrast(1.05);
-    }
-
     .card-header {
       display: flex;
       align-items: center;
@@ -278,7 +279,6 @@
       font-size: 22px;
       font-weight: 700;
       color: var(--text);
-      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
 
     .star-badge {
@@ -288,8 +288,6 @@
       padding: 4px 10px;
       border-radius: 20px;
       border: 1px solid rgba(255,215,0,0.3);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
     }
 
     .card-desc {
@@ -297,7 +295,6 @@
       color: var(--subtext);
       margin-bottom: 24px;
       line-height: 1.5;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     /* ПОЛЕ ВВОДА */
@@ -311,7 +308,6 @@
       color: var(--subtext);
       margin-bottom: 8px;
       display: block;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     .input-wrapper {
@@ -324,23 +320,20 @@
       flex: 1;
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      border: 1px solid var(--card-border);
       background: var(--input-bg);
       color: var(--text);
       font-size: 16px;
       transition: all 0.2s;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       
-      /* КУРСОР */
       caret-color: var(--caret-color);
       caret-shape: bar;
     }
 
     .text-input:focus {
       outline: none;
-      border-color: rgba(255, 255, 255, 0.4);
+      border-color: var(--accent1);
     }
 
     .text-input::placeholder {
@@ -349,8 +342,8 @@
     }
 
     .clear-input {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: var(--btn-bg);
+      border: 1px solid var(--card-border);
       color: var(--text);
       width: 50px;
       height: 50px;
@@ -362,11 +355,9 @@
       justify-content: center;
       transition: all 0.2s;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
     }
 
-    /* ===== iOS - СТЕКЛЯННЫЕ КНОПКИ ВЫБОРА РАЗМЕРА ===== */
+    /* ВЫБОР РАЗМЕРА */
     .size-selector {
       display: flex;
       gap: 10px;
@@ -377,35 +368,18 @@
       flex: 1;
       padding: 14px;
       border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--card-border);
+      background: var(--btn-bg);
       color: var(--text);
       cursor: pointer;
       transition: all 0.2s ease;
       font-weight: 600;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      backdrop-filter: blur(15px) saturate(180%);
-      -webkit-backdrop-filter: blur(15px) saturate(180%);
-      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-
-    /* ТОНКАЯ ЧЕТКАЯ ОБВОДКА */
-    .size-btn::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      pointer-events: none;
+      position: relative;
     }
 
     .size-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
     }
 
     .size-btn:active {
@@ -418,11 +392,7 @@
       color: white;
     }
 
-    .size-btn.active::after {
-      border-color: rgba(255, 255, 255, 0.6);
-    }
-
-    /* ===== iOS - СТЕКЛЯННАЯ КНОПКА ГЕНЕРАЦИИ ===== */
+    /* КНОПКА ГЕНЕРАЦИИ */
     .generate-btn {
       width: 100%;
       padding: 18px;
@@ -440,34 +410,17 @@
       justify-content: center;
       gap: 8px;
       box-shadow: 0 20px 35px rgba(0,0,0,0.5);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      position: relative;
-    }
-
-    .generate-btn::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      pointer-events: none;
     }
 
     .generate-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 25px 40px rgba(0,0,0,0.6);
+      transform: translateY(-2px);
     }
 
     .generate-btn:active {
       transform: scale(0.98);
     }
 
-    /* ===== iOS - КНОПКИ ДЕЙСТВИЙ ===== */
+    /* КНОПКИ ДЕЙСТВИЙ */
     .action-buttons {
       display: flex;
       gap: 12px;
@@ -477,40 +430,22 @@
       flex: 1;
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--card-border);
+      background: var(--btn-bg);
       color: var(--text);
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      backdrop-filter: blur(15px) saturate(180%);
-      -webkit-backdrop-filter: blur(15px) saturate(180%);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      position: relative;
-    }
-
-    .action-btn::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      pointer-events: none;
     }
 
     .action-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
-      background: rgba(255, 255, 255, 0.15);
     }
 
     .action-btn:active {
@@ -523,10 +458,6 @@
       color: white;
     }
 
-    .action-btn.primary::after {
-      border-color: rgba(255, 255, 255, 0.5);
-    }
-
     /* РЕЗУЛЬТАТ */
     .result {
       display: none;
@@ -535,10 +466,13 @@
 
     .result-image {
       width: 100%;
+      height: auto;
       border-radius: 24px;
       background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
       margin-bottom: 16px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      pointer-events: none;
+      user-select: none;
     }
 
     /* ЗАГРУЗКА */
@@ -576,28 +510,38 @@
       font-weight: 600;
     }
 
-    /* ===== ANDROID - НИЧЕГО НЕ МЕНЯЕМ ===== */
+    /* ===== ANDROID ===== */
     html.android-mode .card::before,
     html.android-mode .card::after,
-    html.android-mode .size-btn::after,
-    html.android-mode .generate-btn::after,
-    html.android-mode .action-btn::after,
-    html.android-mode .back-btn {
+    html.android-mode .size-btn::after {
       display: none !important;
     }
 
     html.android-mode .header {
-      background: rgba(0,0,0,0.3) !important;
+      background: transparent !important;
       backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
+      border-bottom: none !important;
     }
 
-    html.android-mode .size-btn,
-    html.android-mode .action-btn,
-    html.android-mode .generate-btn {
+    html.android-mode .back-btn {
+      background: transparent !important;
       backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      background: rgba(255,255,255,0.08) !important;
+      border: none !important;
+      color: var(--text) !important;
+      font-size: 24px !important;
+      width: 40px !important;
+      height: 40px !important;
+      padding: 0 !important;
+    }
+
+    html.android-mode .title {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      border: none !important;
+      color: var(--text) !important;
+      font-size: 18px !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
     html.android-mode .size-btn:hover,
@@ -608,11 +552,14 @@
 
     html.android-mode .card {
       backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
     }
 
     html.android-mode .text-input {
       border: none !important;
+    }
+
+    html.android-mode .result-image {
+      pointer-events: none !important;
     }
   </style>
 </head>
