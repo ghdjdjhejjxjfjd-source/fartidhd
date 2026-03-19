@@ -15,6 +15,11 @@
         tg.ready();
         tg.expand();
         tg.disableVerticalSwipes();
+        
+        // ФИКСИРУЕМ ВКЛАДКУ
+        document.body.style.overflow = 'hidden';
+        document.querySelector('.container').style.overflowY = 'auto';
+        document.querySelector('.container').style.webkitOverflowScrolling = 'touch';
       }
     })();
   </script>
@@ -58,6 +63,7 @@
       color: white;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
+      overflow: hidden; /* ФИКСИРУЕМ ВКЛАДКУ */
     }
 
     /* ===== ТЕМЫ ===== */
@@ -119,7 +125,7 @@
       min-height: 100vh;
     }
 
-    /* ШАПКА */
+    /* ШАПКА - ФИКСИРОВАННАЯ */
     .header {
       position: fixed;
       top: 0;
@@ -133,6 +139,7 @@
       background: rgba(0,0,0,0.2);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--card-border);
+      height: 60px;
     }
 
     .back-btn {
@@ -156,13 +163,19 @@
 
     .spacer { width: 40px; }
 
-    /* КОНТЕЙНЕР */
+    /* КОНТЕЙНЕР - СКРОЛЛИТСЯ */
     .container {
-      padding: 80px 16px 20px;
-      min-height: 100vh;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* ===== IOS - МОЩНЫЙ ДИЗАЙН С БЕГУЩЕЙ ЗМЕЙКОЙ ===== */
+    /* ===== IOS - МАКСИМАЛЬНАЯ ЧЕТКОСТЬ ===== */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -171,24 +184,28 @@
       margin-bottom: 20px;
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1) inset;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
       position: relative;
       overflow: hidden;
+      
+      /* МАКСИМАЛЬНАЯ ЧЕТКОСТЬ */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-smooth: always;
     }
 
-    /* Эффект свечения сверху */
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-      z-index: 4;
+    /* УЛУЧШЕННАЯ ЧЕТКОСТЬ ДЛЯ ВСЕХ ТЕКСТОВ */
+    .card-title, .card-desc, .input-label, .text-input, .size-btn, .action-btn, .generate-btn, .star-badge {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-smooth: always;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      letter-spacing: 0.2px;
     }
 
-    /* ===== БЕГУЩАЯ ЗМЕЙКА ВОКРУГ ПАНЕЛИ ===== */
+    /* ===== РАДУЖНАЯ ЗМЕЙКА ВОКРУГ ПАНЕЛИ ===== */
     .card::before {
       content: '';
       position: absolute;
@@ -197,7 +214,7 @@
       right: -2px;
       bottom: -2px;
       border-radius: 30px;
-      padding: 2px;
+      padding: 3px;
       background: linear-gradient(
         90deg,
         #ff0000,
@@ -213,10 +230,11 @@
       -webkit-mask-composite: xor;
       mask-composite: exclude;
       animation: snakeMove 3s linear infinite;
-      background-size: 300% 100%;
-      opacity: 0.8;
+      background-size: 400% 100%;
+      opacity: 0.9;
       pointer-events: none;
       z-index: 5;
+      filter: brightness(1.2) saturate(1.5); /* ДЕЛАЕМ ЗАМЕТНЕЕ */
     }
 
     @keyframes snakeMove {
@@ -224,59 +242,8 @@
         background-position: 0% 0;
       }
       100% {
-        background-position: 300% 0;
+        background-position: 400% 0;
       }
-    }
-
-    /* Кнопки с мощным стеклом */
-    .size-btn, .clear-input, .action-btn {
-      backdrop-filter: blur(15px) saturate(180%);
-      -webkit-backdrop-filter: blur(15px) saturate(180%);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.15) inset;
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .size-btn:hover, .clear-input:hover, .action-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 20px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.2) inset;
-    }
-
-    /* Эффект свечения на кнопках при наведении */
-    .size-btn:hover::after, .clear-input:hover::after, .action-btn:hover::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-      animation: buttonGlow 1.5s infinite;
-    }
-
-    @keyframes buttonGlow {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-
-    .generate-btn {
-      box-shadow: 0 20px 35px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.2) inset;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .generate-btn::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
-      animation: buttonGlow 2s infinite;
     }
 
     .card-header {
@@ -536,17 +503,20 @@
     }
 
     /* ===== ANDROID - ПРОСТОЙ ДИЗАЙН ===== */
+    html.android-mode .card::before {
+      display: none !important;
+    }
+
+    html.android-mode .size-btn:hover,
+    html.android-mode .clear-input:hover,
+    html.android-mode .action-btn:hover {
+      transform: none !important;
+    }
+
     html.android-mode .card {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
-      background: var(--card-bg) !important;
-      border: 1px solid var(--card-border) !important;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
-    }
-
-    html.android-mode .card::before,
-    html.android-mode .card::after {
-      display: none !important;
     }
 
     html.android-mode .size-btn,
@@ -686,78 +656,6 @@
         insufficientStars: "❌ Insufficient stars. Need 10⭐",
         error: "Generation error",
         saved: "✅ Saved to gallery"
-      },
-      kk: {
-        title: "Еркін промпт",
-        cardTitle: "Еркін промпт",
-        cardDesc: "Қалағаныңды жаз — ИИ кез келген стильде салады",
-        promptLabel: "Сенің промптың",
-        promptPlaceholder: "мысалы: таудағы әдемі күн батуы",
-        sizeSquare: "1:1",
-        sizePortrait: "4:5",
-        sizeLandscape: "16:9",
-        generate: "Жасау",
-        save: "Сақтау",
-        repeat: "Қайталау",
-        loading: "Жасалуда...",
-        clear: "Тазалау",
-        insufficientStars: "❌ Жұлдыздар жеткіліксіз. 10⭐ керек",
-        error: "Қате",
-        saved: "✅ Галереяға сақталды"
-      },
-      tr: {
-        title: "Serbest prompt",
-        cardTitle: "Serbest prompt",
-        cardDesc: "Ne görmek istediğini yaz — AI her stilde çizecek",
-        promptLabel: "Prompt'un",
-        promptPlaceholder: "örnek: dağlarda güzel gün batımı",
-        sizeSquare: "1:1",
-        sizePortrait: "4:5",
-        sizeLandscape: "16:9",
-        generate: "Oluştur",
-        save: "Kaydet",
-        repeat: "Tekrarla",
-        loading: "Oluşturuluyor...",
-        clear: "Temizle",
-        insufficientStars: "❌ Yetersiz yıldız. 10⭐ gerekli",
-        error: "Hata",
-        saved: "✅ Galeriye kaydedildi"
-      },
-      uk: {
-        title: "Вільний промпт",
-        cardTitle: "Вільний промпт",
-        cardDesc: "Напиши що хочеш побачити — AI намалює в будь-якому стилі",
-        promptLabel: "Твій промпт",
-        promptPlaceholder: "наприклад: гарний захід сонця в горах",
-        sizeSquare: "1:1",
-        sizePortrait: "4:5",
-        sizeLandscape: "16:9",
-        generate: "Створити",
-        save: "Зберегти",
-        repeat: "Повторити",
-        loading: "Створення...",
-        clear: "Очистити",
-        insufficientStars: "❌ Недостатньо зірок. Потрібно 10⭐",
-        error: "Помилка",
-        saved: "✅ Збережено в галерею"
-      },
-      fr: {
-        title: "Prompt libre",
-        cardTitle: "Prompt libre",
-        cardDesc: "Écris ce que tu veux voir — L'IA dessinera dans n'importe quel style",
-        promptLabel: "Ton prompt",
-        promptPlaceholder: "ex: beau coucher de soleil dans les montagnes",
-        sizeSquare: "1:1",
-        sizePortrait: "4:5",
-        sizeLandscape: "16:9",
-        generate: "Générer",
-        save: "Enregistrer",
-        repeat: "Répéter",
-        loading: "Génération...",
-        clear: "Effacer",
-        insufficientStars: "❌ Étoiles insuffisantes. Besoin de 10⭐",
-        error: "Erreur",
-        saved: "✅ Enregistré dans la galerie"
       }
     };
 
