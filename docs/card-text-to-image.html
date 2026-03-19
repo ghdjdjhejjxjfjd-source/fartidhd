@@ -74,8 +74,8 @@
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
       --bg-bot: #16212d;
-      --accent1: #5aaeff;  /* ТОЧНО КАК В МЕНЮ */
-      --accent2: #3496ff;  /* ТОЧНО КАК В МЕНЮ */
+      --accent1: #5aaeff;
+      --accent2: #3496ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.1);
@@ -85,14 +85,15 @@
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
+      --contrast: 1.05;
     }
     
     :root[data-theme="black"] { 
       --bg-top: #1b2430;
       --bg-mid: #141b24;
       --bg-bot: #0e141c;
-      --accent1: #8bb8ff;  /* ТОЧНО КАК В МЕНЮ */
-      --accent2: #5a98ff;  /* ТОЧНО КАК В МЕНЮ */
+      --accent1: #8bb8ff;
+      --accent2: #5a98ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
       --card-bg: rgba(255, 255, 255, 0.08);
@@ -102,14 +103,15 @@
       --star-color: #ffffff;
       --header-text: #f7fbff;
       --caret-color: #ffffff;
+      --contrast: 1.05;
     }
     
     :root[data-theme="light"] { 
       --bg-top: #e8edf5;
       --bg-mid: #d9e0eb;
       --bg-bot: #cad1de;
-      --accent1: #3a8cff;  /* ТОЧНО КАК В МЕНЮ */
-      --accent2: #1a6cff;  /* ТОЧНО КАК В МЕНЮ */
+      --accent1: #3a8cff;
+      --accent2: #1a6cff;
       --text: #2c3e50;
       --subtext: #4a5a6a;
       --card-bg: rgba(255, 255, 255, 0.9);
@@ -119,15 +121,16 @@
       --star-color: #2c3e50;
       --header-text: rgba(255, 255, 255, 0.9);
       --caret-color: #3a8cff;
+      --contrast: 1.05;
     }
 
-    /* ГРАДИЕНТ ФОНА КАК В МЕНЮ */
+    /* ГРАДИЕНТ ФОНА */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
     }
 
-    /* ШАПКА */
+    /* ===== iOS - СТЕКЛЯННАЯ ВЕРХНЯЯ ПАНЕЛЬ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -138,9 +141,10 @@
       align-items: center;
       padding: 12px 16px;
       padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(0,0,0,0.2);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--card-border);
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
       height: 60px;
     }
 
@@ -153,6 +157,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .title {
@@ -161,6 +170,7 @@
       font-weight: 600;
       font-size: 18px;
       color: var(--header-text);
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
 
     .spacer { width: 40px; }
@@ -189,9 +199,10 @@
       box-shadow: 0 25px 50px rgba(0,0,0,0.5);
       position: relative;
       overflow: hidden;
+      filter: contrast(var(--contrast));
     }
 
-    /* ===== iOS - СЛАБАЯ ОБВОДКА ДЛЯ ПАНЕЛИ ===== */
+    /* ТОНКАЯ ЧЕТКАЯ ОБВОДКА ДЛЯ ПАНЕЛИ */
     .card::after {
       content: '';
       position: absolute;
@@ -200,12 +211,12 @@
       right: 0;
       bottom: 0;
       border-radius: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       pointer-events: none;
       z-index: 6;
     }
 
-    /* ===== iOS - БЕГУЩАЯ ЗМЕЙКА ===== */
+    /* БЕГУЩАЯ ЗМЕЙКА */
     .card::before {
       content: '';
       position: absolute;
@@ -241,19 +252,9 @@
       100% { background-position: 300% 0; }
     }
 
-    /* ===== КАЧЕСТВО ТЕКСТА КАК В МЕНЮ ===== */
-    .card-title, .card-desc, .input-label, .text-input, .size-btn, .action-btn, .generate-btn, .star-badge, .title, .back-btn {
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
-      font-smooth: always;
-      letter-spacing: 0.3px;
-      font-weight: 500;
-    }
-
-    .card-title, .title, .generate-btn, .action-btn.primary {
-      font-weight: 700;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    /* УВЕЛИЧЕННАЯ НАСЫЩЕННОСТЬ */
+    .card, .size-btn, .generate-btn, .action-btn, .text-input {
+      filter: saturate(1.05) contrast(1.05);
     }
 
     .card-header {
@@ -277,6 +278,7 @@
       font-size: 22px;
       font-weight: 700;
       color: var(--text);
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
 
     .star-badge {
@@ -286,6 +288,8 @@
       padding: 4px 10px;
       border-radius: 20px;
       border: 1px solid rgba(255,215,0,0.3);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     .card-desc {
@@ -293,6 +297,7 @@
       color: var(--subtext);
       margin-bottom: 24px;
       line-height: 1.5;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     /* ПОЛЕ ВВОДА */
@@ -306,6 +311,7 @@
       color: var(--subtext);
       margin-bottom: 8px;
       display: block;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
     .input-wrapper {
@@ -318,12 +324,14 @@
       flex: 1;
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid var(--card-border);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       background: var(--input-bg);
       color: var(--text);
       font-size: 16px;
       transition: all 0.2s;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       
       /* КУРСОР */
       caret-color: var(--caret-color);
@@ -332,7 +340,7 @@
 
     .text-input:focus {
       outline: none;
-      border-color: var(--accent1);
+      border-color: rgba(255, 255, 255, 0.4);
     }
 
     .text-input::placeholder {
@@ -341,8 +349,8 @@
     }
 
     .clear-input {
-      background: var(--btn-bg);
-      border: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       color: var(--text);
       width: 50px;
       height: 50px;
@@ -354,9 +362,11 @@
       justify-content: center;
       transition: all 0.2s;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
-    /* ===== iOS - КНОПКИ ВЫБОРА РАЗМЕРА ===== */
+    /* ===== iOS - СТЕКЛЯННЫЕ КНОПКИ ВЫБОРА РАЗМЕРА ===== */
     .size-selector {
       display: flex;
       gap: 10px;
@@ -367,18 +377,19 @@
       flex: 1;
       padding: 14px;
       border-radius: 20px;
-      border: 1px solid var(--card-border);
-      background: var(--btn-bg);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
       color: var(--text);
       cursor: pointer;
       transition: all 0.2s ease;
       font-weight: 600;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      position: relative;
-      overflow: hidden;
+      backdrop-filter: blur(15px) saturate(180%);
+      -webkit-backdrop-filter: blur(15px) saturate(180%);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
-    /* ОБВОДКА ВОКРУГ КНОПОК */
+    /* ТОНКАЯ ЧЕТКАЯ ОБВОДКА */
     .size-btn::after {
       content: '';
       position: absolute;
@@ -387,19 +398,18 @@
       right: 0;
       bottom: 0;
       border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       pointer-events: none;
     }
 
-    /* АНИМАЦИЯ КНОПОК */
     .size-btn:hover {
       transform: translateY(-3px);
       box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+      background: rgba(255, 255, 255, 0.15);
     }
 
     .size-btn:active {
       transform: translateY(0);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
     .size-btn.active {
@@ -409,10 +419,10 @@
     }
 
     .size-btn.active::after {
-      border-color: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.6);
     }
 
-    /* ===== iOS - КНОПКА ГЕНЕРАЦИИ ===== */
+    /* ===== iOS - СТЕКЛЯННАЯ КНОПКА ГЕНЕРАЦИИ ===== */
     .generate-btn {
       width: 100%;
       padding: 18px;
@@ -430,11 +440,12 @@
       justify-content: center;
       gap: 8px;
       box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
       position: relative;
-      overflow: hidden;
     }
 
-    /* ОБВОДКА ВОКРУГ КНОПКИ ГЕНЕРАЦИИ */
     .generate-btn::after {
       content: '';
       position: absolute;
@@ -443,11 +454,10 @@
       right: 0;
       bottom: 0;
       border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       pointer-events: none;
     }
 
-    /* АНИМАЦИЯ КНОПКИ ГЕНЕРАЦИИ */
     .generate-btn:hover {
       transform: translateY(-3px);
       box-shadow: 0 25px 40px rgba(0,0,0,0.6);
@@ -455,7 +465,6 @@
 
     .generate-btn:active {
       transform: scale(0.98);
-      box-shadow: 0 20px 35px rgba(0,0,0,0.5);
     }
 
     /* ===== iOS - КНОПКИ ДЕЙСТВИЙ ===== */
@@ -468,20 +477,22 @@
       flex: 1;
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid var(--card-border);
-      background: var(--btn-bg);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
       color: var(--text);
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(15px) saturate(180%);
+      -webkit-backdrop-filter: blur(15px) saturate(180%);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
       position: relative;
-      overflow: hidden;
     }
 
     .action-btn::after {
@@ -492,18 +503,18 @@
       right: 0;
       bottom: 0;
       border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       pointer-events: none;
     }
 
     .action-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+      background: rgba(255, 255, 255, 0.15);
     }
 
     .action-btn:active {
       transform: translateY(0);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
     .action-btn.primary {
@@ -513,7 +524,7 @@
     }
 
     .action-btn.primary::after {
-      border-color: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
     }
 
     /* РЕЗУЛЬТАТ */
@@ -570,15 +581,29 @@
     html.android-mode .card::after,
     html.android-mode .size-btn::after,
     html.android-mode .generate-btn::after,
-    html.android-mode .action-btn::after {
+    html.android-mode .action-btn::after,
+    html.android-mode .back-btn {
       display: none !important;
+    }
+
+    html.android-mode .header {
+      background: rgba(0,0,0,0.3) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    html.android-mode .size-btn,
+    html.android-mode .action-btn,
+    html.android-mode .generate-btn {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: rgba(255,255,255,0.08) !important;
     }
 
     html.android-mode .size-btn:hover,
     html.android-mode .generate-btn:hover,
     html.android-mode .action-btn:hover {
       transform: none !important;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
     }
 
     html.android-mode .card {
@@ -588,10 +613,6 @@
 
     html.android-mode .text-input {
       border: none !important;
-    }
-
-    html.android-mode .loading-overlay {
-      background: rgba(0,0,0,0.95) !important;
     }
   </style>
 </head>
