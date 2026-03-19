@@ -60,9 +60,36 @@
       min-height: 100vh;
     }
 
-    :root[data-theme="blue"] { --accent1: #5aaeff; --accent2: #3496ff; }
-    :root[data-theme="black"] { --accent1: #8bb8ff; --accent2: #5a98ff; }
-    :root[data-theme="light"] { --accent1: #3a8cff; --accent2: #1a6cff; }
+    /* ===== ТЕМЫ ===== */
+    :root[data-theme="blue"] { 
+      --accent1: #5aaeff; 
+      --accent2: #3496ff;
+      --bg-card: rgba(90, 174, 255, 0.1);
+      --border-color: rgba(90, 174, 255, 0.3);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255,255,255,0.7);
+      --btn-bg: rgba(90, 174, 255, 0.2);
+    }
+    
+    :root[data-theme="black"] { 
+      --accent1: #8bb8ff; 
+      --accent2: #5a98ff;
+      --bg-card: rgba(139, 184, 255, 0.1);
+      --border-color: rgba(139, 184, 255, 0.3);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255,255,255,0.7);
+      --btn-bg: rgba(139, 184, 255, 0.2);
+    }
+    
+    :root[data-theme="light"] { 
+      --accent1: #3a8cff; 
+      --accent2: #1a6cff;
+      --bg-card: rgba(255,255,255,0.8);
+      --border-color: rgba(0,0,0,0.1);
+      --text-primary: #2c3e50;
+      --text-secondary: #4a5a6a;
+      --btn-bg: rgba(58, 140, 255, 0.1);
+    }
 
     /* ШАПКА */
     .header {
@@ -77,11 +104,11 @@
       padding-top: calc(12px + env(safe-area-inset-top));
       background: rgba(0,0,0,0.3);
       backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid var(--border-color);
     }
 
     .back-btn {
-      color: white;
+      color: var(--text-primary);
       text-decoration: none;
       font-size: 24px;
       width: 40px;
@@ -96,6 +123,7 @@
       text-align: center;
       font-weight: 600;
       font-size: 18px;
+      color: var(--text-primary);
     }
 
     .spacer { width: 40px; }
@@ -107,11 +135,13 @@
 
     /* КАРТОЧКА */
     .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 24px;
       padding: 24px;
       margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     .card-icon {
@@ -125,11 +155,12 @@
       font-weight: 700;
       text-align: center;
       margin-bottom: 8px;
+      color: var(--text-primary);
     }
 
     .card-desc {
       font-size: 14px;
-      color: rgba(255,255,255,0.6);
+      color: var(--text-secondary);
       text-align: center;
       margin-bottom: 24px;
     }
@@ -147,17 +178,19 @@
       min-width: 70px;
       padding: 12px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.1);
-      color: white;
+      border: 1px solid var(--border-color);
+      background: var(--btn-bg);
+      color: var(--text-primary);
       cursor: pointer;
       transition: all 0.2s;
       font-size: 14px;
+      backdrop-filter: blur(5px);
     }
 
     .race-btn.active {
       background: var(--accent1);
       border-color: var(--accent1);
+      color: white;
     }
 
     /* ВЫБОР ПОЛА */
@@ -171,16 +204,18 @@
       flex: 1;
       padding: 12px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.1);
-      color: white;
+      border: 1px solid var(--border-color);
+      background: var(--btn-bg);
+      color: var(--text-primary);
       cursor: pointer;
       transition: all 0.2s;
+      backdrop-filter: blur(5px);
     }
 
     .gender-btn.active {
       background: var(--accent1);
       border-color: var(--accent1);
+      color: white;
     }
 
     /* ВЫБОР ЦВЕТА ВОЛОС */
@@ -201,7 +236,7 @@
     }
 
     .hair-btn.active {
-      border-color: white;
+      border-color: var(--accent1);
       transform: scale(1.1);
     }
 
@@ -212,21 +247,22 @@
     .hair-btn.silver { background: #c0c0c0; }
     .hair-btn.blue { background: #6699ff; }
 
-    /* ОБЛАСТЬ ЗАГРУЗКИ (ОПЦИОНАЛЬНО) */
+    /* ОБЛАСТЬ ЗАГРУЗКИ */
     .upload-area {
-      background: rgba(255,255,255,0.05);
-      border: 2px dashed rgba(255,255,255,0.2);
+      background: var(--btn-bg);
+      border: 2px dashed var(--border-color);
       border-radius: 16px;
       padding: 20px;
       text-align: center;
       cursor: pointer;
       margin-bottom: 20px;
       transition: all 0.2s;
+      backdrop-filter: blur(5px);
     }
 
     .upload-area:hover {
       border-color: var(--accent1);
-      background: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.15);
     }
 
     .upload-icon {
@@ -236,16 +272,17 @@
 
     .upload-text {
       font-size: 12px;
-      color: rgba(255,255,255,0.6);
+      color: var(--text-secondary);
     }
 
     .upload-hint {
       font-size: 11px;
-      color: rgba(255,255,255,0.4);
+      color: var(--text-secondary);
+      opacity: 0.8;
       margin-top: 4px;
     }
 
-    /* ПРЕВЬЮ (если загрузили фото) */
+    /* ПРЕВЬЮ */
     .preview-container {
       display: none;
       margin-bottom: 20px;
@@ -276,16 +313,21 @@
       width: 100%;
       padding: 16px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.1);
-      color: white;
+      border: 1px solid var(--border-color);
+      background: var(--btn-bg);
+      color: var(--text-primary);
       font-size: 16px;
       margin-bottom: 20px;
+      backdrop-filter: blur(5px);
     }
 
     .prompt-input:focus {
       outline: none;
       border-color: var(--accent1);
+    }
+
+    .prompt-input::placeholder {
+      color: var(--text-secondary);
     }
 
     /* КНОПКА ГЕНЕРАЦИИ */
@@ -305,6 +347,11 @@
 
     .generate-btn:active {
       transform: scale(0.98);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     /* РЕЗУЛЬТАТ */
@@ -329,13 +376,14 @@
       flex: 1;
       padding: 14px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.1);
-      color: white;
+      border: 1px solid var(--border-color);
+      background: var(--btn-bg);
+      color: var(--text-primary);
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      backdrop-filter: blur(5px);
     }
 
     .action-btn:hover {
@@ -345,38 +393,7 @@
     .action-btn.primary {
       background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
       border: none;
-    }
-
-    /* СВЕТЛАЯ ТЕМА */
-    :root[data-theme="light"] {
-      --text-primary: #2c3e50;
-    }
-    :root[data-theme="light"] body {
-      color: var(--text-primary);
-    }
-    :root[data-theme="light"] .race-btn,
-    :root[data-theme="light"] .gender-btn {
-      background: rgba(255,255,255,0.8);
-      color: var(--text-primary);
-      border: 1px solid rgba(0,0,0,0.15);
-    }
-    :root[data-theme="light"] .upload-area {
-      background: rgba(255,255,255,0.8);
-      border: 2px dashed rgba(0,0,0,0.2);
-    }
-    :root[data-theme="light"] .upload-text,
-    :root[data-theme="light"] .upload-hint {
-      color: #4a5a6a;
-    }
-    :root[data-theme="light"] .prompt-input {
-      background: rgba(255,255,255,0.8);
-      color: var(--text-primary);
-      border: 1px solid rgba(0,0,0,0.15);
-    }
-    :root[data-theme="light"] .action-btn {
-      background: rgba(255,255,255,0.8);
-      color: var(--text-primary);
-      border: 1px solid rgba(0,0,0,0.15);
+      color: white;
     }
 
     /* ANDROID */
@@ -384,9 +401,9 @@
     html.android-mode .race-btn,
     html.android-mode .gender-btn,
     html.android-mode .upload-area,
-    html.android-mode .prompt-input {
+    html.android-mode .prompt-input,
+    html.android-mode .action-btn {
       backdrop-filter: none !important;
-      background: rgba(255,255,255,0.08) !important;
     }
   </style>
 </head>
@@ -460,9 +477,77 @@
     </div>
   </div>
 
-  <script type="module" src="./js/image-card.js"></script>
-
   <script>
+    // ===== ФУНКЦИИ ДЛЯ РАБОТЫ С API =====
+    const API_BASE = "https://fayrat-production.up.railway.app";
+
+    function getTelegramUser() {
+      const tg = window.Telegram?.WebApp;
+      if (!tg || !tg.initDataUnsafe?.user) return null;
+      return tg.initDataUnsafe.user;
+    }
+
+    async function generateImage(prompt, mode = "txt2img", imageFile = null) {
+      const user = getTelegramUser();
+      if (!user) {
+        alert("Ошибка: не удалось получить данные пользователя");
+        return null;
+      }
+
+      // Показываем загрузку
+      const generateBtn = document.getElementById('generateBtn');
+      const originalText = generateBtn.textContent;
+      generateBtn.textContent = '⏳ Генерация...';
+      generateBtn.disabled = true;
+
+      try {
+        const formData = new FormData();
+        formData.append('tg_user_id', user.id);
+        formData.append('tg_username', user.username || '');
+        formData.append('tg_first_name', user.first_name || '');
+        formData.append('prompt', prompt);
+        formData.append('mode', mode);
+
+        if (imageFile) {
+          formData.append('image', imageFile);
+        }
+
+        const response = await fetch(`${API_BASE}/api/image`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.error === 'insufficient_stars') {
+            throw new Error('Недостаточно звезд');
+          } else {
+            throw new Error(data.message || 'Ошибка генерации');
+          }
+        }
+
+        return data.image_base64;
+
+      } catch (error) {
+        alert('Ошибка: ' + error.message);
+        return null;
+      } finally {
+        generateBtn.textContent = originalText;
+        generateBtn.disabled = false;
+      }
+    }
+
+    async function saveImage(base64Data, filename = 'image.png') {
+      const blob = await fetch(base64Data).then(res => res.blob());
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
     // ===== ПЕРЕВОДЫ =====
     const I18N = {
       ru: {
@@ -502,25 +587,6 @@
         raceDruid: "🌿 Druid",
         genderFemale: "👩 Female",
         genderMale: "👨 Male"
-      },
-      kk: {
-        title: "Фэнтези кейіпкер",
-        cardTitle: "Фэнтези кейіпкер",
-        cardDesc: "Өзіңнің сиқырлы кейіпкеріңді жаса",
-        generate: "✨ Кейіпкер жаса",
-        save: "💾 Сақтау",
-        new: "🔄 Жаңа",
-        loading: "Кейіпкер жасалуда...",
-        promptPlaceholder: "Детальдар қос... (міндетті емес)",
-        uploadText: "Фотоңды жүкте (міндетті емес)",
-        uploadHint: "кейіпкер саған ұқсайды",
-        raceElf: "🧝 Эльф",
-        raceDwarf: "⚒️ Дварф",
-        raceWizard: "🧙 Сиқыршы",
-        raceKnight: "⚔️ Сарбаз",
-        raceDruid: "🌿 Друид",
-        genderFemale: "👩 Әйел",
-        genderMale: "👨 Ер"
       }
     };
 
@@ -532,26 +598,27 @@
       catch(e) { return "ru"; }
     }
 
-    const lang = getLang();
-    const t = I18N[lang] || I18N.ru;
+    function updateLanguage() {
+      const lang = getLang();
+      const t = I18N[lang] || I18N.ru;
 
-    // Применяем переводы
-    document.getElementById('title').textContent = t.title;
-    document.getElementById('cardTitle').textContent = t.cardTitle;
-    document.getElementById('cardDesc').textContent = t.cardDesc;
-    document.getElementById('generateBtn').textContent = t.generate;
-    document.getElementById('saveBtn').textContent = t.save;
-    document.getElementById('newBtn').textContent = t.new;
-    document.getElementById('promptInput').placeholder = t.promptPlaceholder;
-    document.getElementById('uploadText').textContent = t.uploadText;
-    document.getElementById('uploadHint').textContent = t.uploadHint;
-    document.getElementById('raceElf').textContent = t.raceElf;
-    document.getElementById('raceDwarf').textContent = t.raceDwarf;
-    document.getElementById('raceWizard').textContent = t.raceWizard;
-    document.getElementById('raceKnight').textContent = t.raceKnight;
-    document.getElementById('raceDruid').textContent = t.raceDruid;
-    document.getElementById('genderFemale').textContent = t.genderFemale;
-    document.getElementById('genderMale').textContent = t.genderMale;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('cardTitle').textContent = t.cardTitle;
+      document.getElementById('cardDesc').textContent = t.cardDesc;
+      document.getElementById('generateBtn').textContent = t.generate;
+      document.getElementById('saveBtn').textContent = t.save;
+      document.getElementById('newBtn').textContent = t.new;
+      document.getElementById('promptInput').placeholder = t.promptPlaceholder;
+      document.getElementById('uploadText').textContent = t.uploadText;
+      document.getElementById('uploadHint').textContent = t.uploadHint;
+      document.getElementById('raceElf').textContent = t.raceElf;
+      document.getElementById('raceDwarf').textContent = t.raceDwarf;
+      document.getElementById('raceWizard').textContent = t.raceWizard;
+      document.getElementById('raceKnight').textContent = t.raceKnight;
+      document.getElementById('raceDruid').textContent = t.raceDruid;
+      document.getElementById('genderFemale').textContent = t.genderFemale;
+      document.getElementById('genderMale').textContent = t.genderMale;
+    }
 
     // ===== ЛОГИКА =====
     const uploadArea = document.getElementById('uploadArea');
@@ -611,11 +678,11 @@
 
     // Промпты для разных рас
     const racePrompts = {
-      elf: "fantasy elf character, {gender}, {hair} hair, pointy ears, magical, ethereal, beautiful, detailed",
-      dwarf: "fantasy dwarf character, {gender}, {hair} hair, bearded if male, strong, warrior, detailed",
-      wizard: "fantasy wizard character, {gender}, {hair} hair, magical robes, staff, intelligent, detailed",
-      knight: "fantasy knight character, {gender}, {hair} hair, shining armor, sword, heroic, detailed",
-      druid: "fantasy druid character, {gender}, {hair} hair, nature magic, forest clothes, animals, detailed"
+      elf: "fantasy elf character, {gender}, {hair} hair, pointy ears, magical, ethereal, beautiful, detailed, 8k",
+      dwarf: "fantasy dwarf character, {gender}, {hair} hair, bearded if male, strong, warrior, detailed, 8k",
+      wizard: "fantasy wizard character, {gender}, {hair} hair, magical robes, staff, intelligent, detailed, 8k",
+      knight: "fantasy knight character, {gender}, {hair} hair, shining armor, sword, heroic, detailed, 8k",
+      druid: "fantasy druid character, {gender}, {hair} hair, nature magic, forest clothes, animals, detailed, 8k"
     };
 
     // Загрузка фото
@@ -661,16 +728,16 @@
       
       const additionalPrompt = promptInput.value.trim();
       const fullPrompt = additionalPrompt 
-        ? `${basePrompt}, ${additionalPrompt}, fantasy art, highly detailed, 8k, masterpiece`
-        : `${basePrompt}, fantasy art, highly detailed, 8k, masterpiece`;
+        ? `${basePrompt}, ${additionalPrompt}`
+        : basePrompt;
 
       let imageBase64;
       
       if (currentFile) {
-        // Если есть фото - делаем img2img с лицом
+        // Если есть фото - делаем img2img
         imageBase64 = await generateImage(fullPrompt, "img2img", currentFile);
       } else {
-        // Если нет фото - просто txt2img
+        // Если нет фото - txt2img
         imageBase64 = await generateImage(fullPrompt, "txt2img");
       }
       
@@ -700,6 +767,12 @@
       currentFile = null;
       currentImageBase64 = null;
     });
+
+    // Обновляем язык при загрузке
+    updateLanguage();
+
+    // Слушаем изменение языка (если нужно)
+    window.addEventListener('languageChanged', updateLanguage);
   </script>
 </body>
 </html>
