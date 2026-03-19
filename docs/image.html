@@ -583,6 +583,17 @@
         updateLanguage();
       }
     });
+
+    // ✅ ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ЯЗЫКА КАЖДЫЕ 500мс
+    let lastLang = getLang();
+    setInterval(() => {
+      const currentLang = getLang();
+      if (currentLang !== lastLang) {
+        console.log("Язык изменился:", currentLang);
+        lastLang = currentLang;
+        updateLanguage();
+      }
+    }, 500);
   </script>
 </body>
 </html>
