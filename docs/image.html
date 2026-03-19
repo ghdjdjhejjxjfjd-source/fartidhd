@@ -60,6 +60,7 @@
       min-height: 100vh;
     }
 
+    /* ===== ТЕМЫ ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
@@ -267,6 +268,9 @@
       color: var(--text);
       margin-bottom: 4px;
       text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .star-badge {
@@ -282,7 +286,25 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
-    /* ===== ТЕСТОВЫЕ КНОПКИ ===== */
+    /* ТЕСТОВАЯ ПАНЕЛЬ */
+    .test-panel {
+      position: fixed;
+      top: 80px;
+      left: 10px;
+      z-index: 9999;
+      background: rgba(0,0,0,0.9);
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 15px;
+      font-size: 12px;
+      max-width: 300px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      border: 2px solid #00ff00;
+      box-shadow: 0 0 20px rgba(0,255,0,0.3);
+    }
+    
     .test-button {
       position: fixed;
       bottom: 20px;
@@ -309,27 +331,31 @@
       right: 380px;
     }
     
-    .log-panel {
+    .lang-indicator {
       position: fixed;
-      top: 100px;
-      left: 10px;
+      top: 20px;
+      right: 20px;
       z-index: 9999;
-      background: rgba(0,0,0,0.8);
-      color: #00ff00;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 12px;
-      max-width: 300px;
-      max-height: 200px;
-      overflow-y: auto;
-      font-family: monospace;
+      background: var(--accent1);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
 
-  <!-- ТЕСТОВАЯ ПАНЕЛЬ ЛОГОВ -->
-  <div class="log-panel" id="logPanel"></div>
+  <!-- ИНДИКАТОР ТЕКУЩЕГО ЯЗЫКА -->
+  <div class="lang-indicator" id="langIndicator">🇷🇺 RU</div>
+
+  <!-- ТЕСТОВАЯ ПАНЕЛЬ -->
+  <div class="test-panel" id="testPanel">
+    <b>🔧 ТЕСТОВЫЙ РЕЖИМ</b><br>
+    <div id="testLogs"></div>
+  </div>
 
   <!-- ТЕСТОВЫЕ КНОПКИ -->
   <button class="test-button" id="testLangBtn">🔍 Показать язык</button>
@@ -404,11 +430,11 @@
   </div>
 
   <script>
-    // ===== ФУНКЦИЯ ДЛЯ ЛОГИРОВАНИЯ =====
-    function addLog(message) {
-      const panel = document.getElementById('logPanel');
+    // ===== ФУНКЦИЯ ДЛЯ ТЕСТОВЫХ ЛОГОВ =====
+    function addTestLog(message) {
+      const logsDiv = document.getElementById('testLogs');
       const time = new Date().toLocaleTimeString();
-      panel.innerHTML = `<div>[${time}] ${message}</div>` + panel.innerHTML;
+      logsDiv.innerHTML = `<div style="border-bottom:1px solid #333; padding:3px;">[${time}] ${message}</div>` + logsDiv.innerHTML;
       console.log(message);
     }
 
@@ -441,23 +467,38 @@
         card4Desc: "Create magical flowers and petals of any colors",
         card5Title: "Fantasy character",
         card5Desc: "Become an elf, wizard, knight or other hero"
+      },
+      kk: {
+        title: "Сурет генерациясы",
+        sectionTitle: "🎨 Стиль таңда",
+        card1Title: "Еркін промпт",
+        card1Desc: "Қалағаныңды жаз — ИИ кез келген стильде салады",
+        card2Title: "Фото → Аниме",
+        card2Desc: "Фотоңды аниме кейіпкеріне айналдыр",
+        card3Title: "Фото → Сурет",
+        card3Desc: "Қарындашпен, акварельмен немесе маймен салынғандай бол",
+        card4Title: "Гүлді фантазия",
+        card4Desc: "Сиқырлы гүлдер мен жапырақтар жаса",
+        card5Title: "Фэнтези кейіпкер",
+        card5Desc: "Эльф, сиқыршы, сарбаз немесе басқа кейіпкер бол"
       }
     };
 
     // ===== ПОЛУЧЕНИЕ ЯЗЫКА =====
     function getLang() {
-      // Из URL
+      // Сначала проверяем URL
       const url = new URL(window.location.href);
       const urlLang = url.searchParams.get("lang");
       
-      // Из localStorage
+      // Проверяем localStorage
       let storedLang = null;
       try { storedLang = localStorage.getItem("miniapp_lang_v1"); } catch(e) {}
       
-      addLog(`URL lang: ${urlLang || 'нет'}, localStorage: ${storedLang || 'нет'}`);
+      addTestLog(`URL lang: ${urlLang || 'нет'}, localStorage: ${storedLang || 'нет'}`);
       
       // Приоритет: URL > localStorage > ru
       if (urlLang) {
+        // Синхронизируем с localStorage
         try { localStorage.setItem("miniapp_lang_v1", urlLang); } catch(e) {}
         return urlLang;
       }
@@ -472,50 +513,78 @@
       const lang = getLang();
       const t = I18N[lang] || I18N.ru;
       
-      addLog(`🔄 Обновление языка на: ${lang}`);
+      addTestLog(`🔄 ОБНОВЛЕНИЕ ЯЗЫКА НА: ${lang.toUpperCase()}`);
       
-      document.getElementById('title').textContent = t.title;
-      document.getElementById('sectionTitle').textContent = t.sectionTitle;
-      document.getElementById('card1Title').textContent = t.card1Title;
-      document.getElementById('card1Desc').textContent = t.card1Desc;
-      document.getElementById('card2Title').textContent = t.card2Title;
-      document.getElementById('card2Desc').textContent = t.card2Desc;
-      document.getElementById('card3Title').textContent = t.card3Title;
-      document.getElementById('card3Desc').textContent = t.card3Desc;
-      document.getElementById('card4Title').textContent = t.card4Title;
-      document.getElementById('card4Desc').textContent = t.card4Desc;
-      document.getElementById('card5Title').textContent = t.card5Title;
-      document.getElementById('card5Desc').textContent = t.card5Desc;
+      // Обновляем индикатор
+      const langIndicator = document.getElementById('langIndicator');
+      if (langIndicator) {
+        const flags = { ru: '🇷🇺', en: '🇬🇧', kk: '🇰🇿' };
+        langIndicator.textContent = `${flags[lang] || '🏳️'} ${lang.toUpperCase()}`;
+      }
+      
+      // Обновляем все элементы с проверкой
+      const elements = [
+        { id: 'title', value: t.title },
+        { id: 'sectionTitle', value: t.sectionTitle },
+        { id: 'card1Title', value: t.card1Title },
+        { id: 'card1Desc', value: t.card1Desc },
+        { id: 'card2Title', value: t.card2Title },
+        { id: 'card2Desc', value: t.card2Desc },
+        { id: 'card3Title', value: t.card3Title },
+        { id: 'card3Desc', value: t.card3Desc },
+        { id: 'card4Title', value: t.card4Title },
+        { id: 'card4Desc', value: t.card4Desc },
+        { id: 'card5Title', value: t.card5Title },
+        { id: 'card5Desc', value: t.card5Desc }
+      ];
+      
+      elements.forEach(el => {
+        const element = document.getElementById(el.id);
+        if (element) {
+          const oldText = element.textContent;
+          element.textContent = el.value;
+          addTestLog(`  ✅ ${el.id}: "${oldText}" → "${el.value}"`);
+        } else {
+          addTestLog(`  ❌ ${el.id} не найден!`);
+        }
+      });
+      
+      addTestLog(`✅ Обновление завершено`);
     }
 
     // ===== ТЕСТОВЫЕ ФУНКЦИИ =====
     function showCurrentLang() {
       const lang = getLang();
-      addLog(`📍 Текущий язык: ${lang}`);
-      alert(`Текущий язык: ${lang}`);
+      addTestLog(`📍 Текущий язык: ${lang}`);
+      alert(`Текущий язык: ${lang.toUpperCase()}`);
     }
     
     function forceLang(lang) {
-      addLog(`🔧 Принудительная установка языка: ${lang}`);
-      try { localStorage.setItem("miniapp_lang_v1", lang); } catch(e) {}
+      addTestLog(`🔧 ПРИНУДИТЕЛЬНАЯ УСТАНОВКА: ${lang}`);
+      try { 
+        localStorage.setItem("miniapp_lang_v1", lang);
+        addTestLog(`✅ localStorage обновлен: ${lang}`);
+      } catch(e) {
+        addTestLog(`❌ Ошибка localStorage: ${e}`);
+      }
       updateLanguage();
     }
 
     // ===== ИНИЦИАЛИЗАЦИЯ =====
     document.addEventListener('DOMContentLoaded', () => {
-      addLog("🚀 Страница загружена");
+      addTestLog("🚀 Страница загружена");
       updateLanguage();
     });
     
     // ===== СЛУШАТЕЛИ СОБЫТИЙ =====
     window.addEventListener('languageChanged', () => {
-      addLog("📡 ПОЛУЧЕНО СОБЫТИЕ languageChanged");
+      addTestLog("📡 ПОЛУЧЕНО СОБЫТИЕ languageChanged");
       updateLanguage();
     });
 
     window.addEventListener('storage', (e) => {
       if (e.key === 'miniapp_lang_v1') {
-        addLog(`💾 Изменение localStorage: ${e.oldValue} → ${e.newValue}`);
+        addTestLog(`💾 Изменение localStorage: ${e.oldValue} → ${e.newValue}`);
         updateLanguage();
       }
     });
@@ -525,7 +594,7 @@
     setInterval(() => {
       const currentLang = getLang();
       if (currentLang !== lastLang) {
-        addLog(`⏱️ setInterval обнаружил изменение: ${lastLang} → ${currentLang}`);
+        addTestLog(`⏱️ setInterval: ${lastLang} → ${currentLang}`);
         lastLang = currentLang;
         updateLanguage();
       }
@@ -535,6 +604,15 @@
     document.getElementById('testLangBtn').addEventListener('click', showCurrentLang);
     document.getElementById('testForceEnBtn').addEventListener('click', () => forceLang('en'));
     document.getElementById('testForceRuBtn').addEventListener('click', () => forceLang('ru'));
+    
+    // Добавляем кнопку для казахского
+    const testKzBtn = document.createElement('button');
+    testKzBtn.className = 'test-button';
+    testKzBtn.style.right = '560px';
+    testKzBtn.style.background = '#880088';
+    testKzBtn.textContent = '🇰🇿 Принудительно KZ';
+    testKzBtn.onclick = () => forceLang('kk');
+    document.body.appendChild(testKzBtn);
   </script>
 </body>
 </html>
