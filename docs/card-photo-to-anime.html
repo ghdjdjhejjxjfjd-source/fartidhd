@@ -561,7 +561,7 @@
         <span class="star-badge">10⭐</span>
       </div>
       
-      <div class="card-desc" id="cardDesc">Преврати своё фото в аниме с сохранением черт лица</div>
+      <div class="card-desc" id="cardDesc">Преврати своё фото в аниме</div>
 
       <!-- Область загрузки -->
       <div class="upload-area" id="uploadArea">
@@ -616,7 +616,7 @@
       ru: {
         title: "Фото → Аниме",
         cardTitle: "Фото → Аниме",
-        cardDesc: "Преврати своё фото в аниме с сохранением черт лица",
+        cardDesc: "Преврати своё фото в аниме",
         uploadText: "Нажми чтобы выбрать фото",
         uploadHint: "PNG, JPG (макс 5MB)",
         generate: "Превратить в аниме",
@@ -631,7 +631,7 @@
       en: {
         title: "Photo → Anime",
         cardTitle: "Photo → Anime",
-        cardDesc: "Turn your photo into anime while preserving facial features",
+        cardDesc: "Turn your photo into anime",
         uploadText: "Click to select photo",
         uploadHint: "PNG, JPG (max 5MB)",
         generate: "Turn into anime",
@@ -646,7 +646,7 @@
       kk: {
         title: "Фото → Аниме",
         cardTitle: "Фото → Аниме",
-        cardDesc: "Фотоңды анимеге айналдыр, бет ерекшеліктерін сақта",
+        cardDesc: "Фотоңды анимеге айналдыр",
         uploadText: "Фото таңдау үшін бас",
         uploadHint: "PNG, JPG (макс 5MB)",
         generate: "Анимеге айналдыр",
@@ -661,7 +661,7 @@
       tr: {
         title: "Fotoğraf → Anime",
         cardTitle: "Fotoğraf → Anime",
-        cardDesc: "Fotoğrafını animeye dönüştür, yüz özelliklerini koru",
+        cardDesc: "Fotografını animeye dönüştür",
         uploadText: "Fotoğraf seçmek için tıkla",
         uploadHint: "PNG, JPG (maks 5MB)",
         generate: "Animeye dönüştür",
@@ -676,7 +676,7 @@
       uk: {
         title: "Фото → Аніме",
         cardTitle: "Фото → Аніме",
-        cardDesc: "Перетвори своє фото на аніме, зберігаючи риси обличчя",
+        cardDesc: "Перетвори своє фото на аніме",
         uploadText: "Натисни щоб вибрати фото",
         uploadHint: "PNG, JPG (макс 5MB)",
         generate: "Перетворити в аніме",
@@ -691,7 +691,7 @@
       fr: {
         title: "Photo → Anime",
         cardTitle: "Photo → Anime",
-        cardDesc: "Transforme ta photo en anime tout en préservant les traits du visage",
+        cardDesc: "Transforme ta photo en anime",
         uploadText: "Clique pour sélectionner une photo",
         uploadHint: "PNG, JPG (max 5MB)",
         generate: "Transformer en anime",
@@ -816,11 +816,9 @@
           return null;
         }
 
-        // УЛУЧШЕННЫЙ ПРОМПТ С СОХРАНЕНИЕМ ЧЕРТ ЛИЦА
-        const fullPrompt = "transform this photo into anime artwork, same person, same gender, preserve facial features, identical face, same eyes, same nose, same mouth, perfectly detailed hands and fingers, 5 fingers on each hand, correct anatomy, beautiful anime style, vibrant colors, detailed, masterpiece, 8k";
-
-        // Негативный промпт для исправления анатомии
-        const negativePrompt = "bad anatomy, extra fingers, missing fingers, deformed hands, wrong gender, different person, mutated, ugly, disfigured, bad proportions, deformed face, blurry, low quality";
+        // ОПТИМАЛЬНЫЙ ПРОМПТ - как было, но с negative prompt для анатомии
+        const fullPrompt = "transform this photo into anime style, anime character, japanese anime art style, vibrant colors, big eyes, detailed, masterpiece";
+        const negativePrompt = "bad anatomy, extra fingers, missing fingers, deformed hands, mutated, ugly, disfigured";
 
         console.log("🎨 Prompt:", fullPrompt);
 
@@ -831,7 +829,7 @@
         formData.append('prompt', fullPrompt);
         formData.append('negative_prompt', negativePrompt);
         formData.append('mode', 'img2img');
-        formData.append('strength', '0.75'); // Баланс между сохранением и изменением
+        formData.append('strength', '0.65'); // Оптимальное значение
         formData.append('image', imageFile);
 
         const response = await fetch(`${API_BASE}/api/image`, {
@@ -987,11 +985,6 @@
       currentFile = null;
       currentImageBase64 = null;
       generateBtn.disabled = true;
-    });
-
-    // Закрытие клавиатуры (на всякий случай)
-    document.addEventListener('click', function(event) {
-      // Здесь ничего не делаем, так как поля ввода нет
     });
   </script>
 </body>
