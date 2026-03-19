@@ -1,4 +1,4 @@
-# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
+# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (с улучшенным send-photo)
 from flask import request, jsonify
 from datetime import datetime
 import re
@@ -21,6 +21,7 @@ from openai_client import ask_openai
 from payments import get_balance, spend_stars
 
 import requests
+import traceback
 
 # Rate limiting
 RATE_LIMIT = {}
@@ -311,46 +312,67 @@ def api_memory_clear():
     return jsonify({"ok": True, "message": "Memory cleared"})
 
 # =========================
-# SEND PHOTO TO TELEGRAM
+# SEND PHOTO TO TELEGRAM - ИСПРАВЛЕННАЯ ВЕРСИЯ
 # =========================
 @api.post("/api/send-photo")
 def api_send_photo():
     try:
         user_id = request.form.get('user_id')
         image_file = request.files.get('image')
-        filename = request.form.get('filename', 'image.jpg')
+        filename = request.form.get('filename', 'image.png')
+        
+        print(f"📸 Send photo request: user_id={user_id}, filename={filename}, file exists={image_file is not None}")
         
         if not user_id or not validate_user_id(user_id) or not image_file:
+            print(f"❌ Missing data: user_id={user_id}, file={image_file is not None}")
             return jsonify({"error": "Missing data"}), 400
             
         image_data = image_file.read()
+        print(f"✅ Image read: {len(image_data)} bytes")
         
         bot_token = BOT_TOKEN
         if not bot_token:
+            print("❌ BOT_TOKEN not configured")
             return jsonify({"error": "BOT_TOKEN not configured"}), 500
-            
+        
+        # Определяем MIME тип
+        if filename.endswith('.png'):
+            mime_type = 'image/png'
+        else:
+            mime_type = 'image/jpeg'
+            if not filename.endswith('.jpg') and not filename.endswith('.jpeg'):
+                filename = 'image.jpg'
+        
         url = f"https://api.telegram.org/bot{bot_token}/sendPhoto"
         
         files = {
-            'photo': (filename, image_data, 'image/jpeg')
+            'photo': (filename, image_data, mime_type)
         }
         data = {
             'chat_id': user_id,
-            'caption': f'✨ Улучшенное изображение\nОтправлено из Mini App'
+            'caption': f'✨ Сгенерированное изображение\nОтправлено из Mini App'
         }
         
-        response = requests.post(url, files=files, data=data)
+        print(f"📤 Sending to Telegram: chat_id={user_id}, mime={mime_type}")
+        
+        response = requests.post(url, files=files, data=data, timeout=30)
+        
+        print(f"📥 Telegram response: status={response.status_code}")
         
         if response.status_code == 200:
+            print("✅ Photo sent successfully")
             return jsonify({"success": True})
         else:
             error_data = response.json()
+            print(f"❌ Telegram API error: {error_data}")
             return jsonify({
                 "error": "Telegram API error", 
                 "details": error_data
             }), 500
             
     except Exception as e:
+        print(f"❌ Error in api_send_photo: {e}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 # =========================
