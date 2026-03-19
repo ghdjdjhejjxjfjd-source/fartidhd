@@ -452,6 +452,9 @@ function setLang(lang){
   
   closeLang();
   showNotification(`🌐 ${I18N[lang]?.sheetLang || "Language"}: ${LANGS.find(l => l.code === lang)?.label || lang}`);
+  
+  // ✅ ВАЖНО: отправляем событие о смене языка для всех страниц
+  window.dispatchEvent(new CustomEvent('languageChanged'));
 }
 
 // ===== Установка темы =====
