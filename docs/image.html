@@ -439,7 +439,7 @@
       <a href="./card-text-to-image.html" class="card" id="card1">
         <div class="card-image" data-card="1"></div>
         <div class="card-content">
-          <div class="card-title" id="card1Title">Свободный промпт</div>
+          <div class="card-title" id="card1Title">Свободный промпт <span style="font-size: 14px; color: #FFD700;">10⭐</span></div>
           <div class="card-desc" id="card1Desc">Напиши что хочешь увидеть — ИИ нарисует в любом стиле</div>
         </div>
       </a>
@@ -448,7 +448,7 @@
       <a href="./card-photo-to-anime.html" class="card" id="card2">
         <div class="card-image" data-card="2"></div>
         <div class="card-content">
-          <div class="card-title" id="card2Title">Фото → Аниме</div>
+          <div class="card-title" id="card2Title">Фото → Аниме <span style="font-size: 14px; color: #FFD700;">10⭐</span></div>
           <div class="card-desc" id="card2Desc">Преврати своё фото в аниме персонажа с большими глазами</div>
         </div>
       </a>
@@ -457,7 +457,7 @@
       <a href="./card-photo-to-drawing.html" class="card" id="card3">
         <div class="card-image" data-card="3"></div>
         <div class="card-content">
-          <div class="card-title" id="card3Title">Фото → Рисунок</div>
+          <div class="card-title" id="card3Title">Фото → Рисунок <span style="font-size: 14px; color: #FFD700;">10⭐</span></div>
           <div class="card-desc" id="card3Desc">Стань нарисованным карандашом, акварелью или маслом</div>
         </div>
       </a>
@@ -466,7 +466,7 @@
       <a href="./card-flowers.html" class="card" id="card4">
         <div class="card-image" data-card="4"></div>
         <div class="card-content">
-          <div class="card-title" id="card4Title">Цветочная фантазия</div>
+          <div class="card-title" id="card4Title">Цветочная фантазия <span style="font-size: 14px; color: #FFD700;">10⭐</span></div>
           <div class="card-desc" id="card4Desc">Создай волшебные цветы и лепестки любых оттенков</div>
         </div>
       </a>
@@ -475,7 +475,7 @@
       <a href="./card-fantasy.html" class="card" id="card5">
         <div class="card-image" data-card="5"></div>
         <div class="card-content">
-          <div class="card-title" id="card5Title">Фэнтези персонаж</div>
+          <div class="card-title" id="card5Title">Фэнтези персонаж <span style="font-size: 14px; color: #FFD700;">10⭐</span></div>
           <div class="card-desc" id="card5Desc">Стань эльфом, магом, рыцарем или другим героем</div>
         </div>
       </a>
@@ -523,22 +523,35 @@
       catch(e) { return "ru"; }
     }
 
-    const lang = getLang();
-    const t = I18N[lang] || I18N.ru;
+    function updateLanguage() {
+      const lang = getLang();
+      const t = I18N[lang] || I18N.ru;
 
-    // Применяем переводы
-    document.getElementById('title').textContent = t.title;
-    document.getElementById('sectionTitle').textContent = t.sectionTitle;
-    document.getElementById('card1Title').textContent = t.card1Title;
-    document.getElementById('card1Desc').textContent = t.card1Desc;
-    document.getElementById('card2Title').textContent = t.card2Title;
-    document.getElementById('card2Desc').textContent = t.card2Desc;
-    document.getElementById('card3Title').textContent = t.card3Title;
-    document.getElementById('card3Desc').textContent = t.card3Desc;
-    document.getElementById('card4Title').textContent = t.card4Title;
-    document.getElementById('card4Desc').textContent = t.card4Desc;
-    document.getElementById('card5Title').textContent = t.card5Title;
-    document.getElementById('card5Desc').textContent = t.card5Desc;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('sectionTitle').textContent = t.sectionTitle;
+      
+      // Обновляем карточки
+      document.getElementById('card1Title').innerHTML = `${t.card1Title} <span style="font-size: 14px; color: #FFD700;">10⭐</span>`;
+      document.getElementById('card1Desc').textContent = t.card1Desc;
+      
+      document.getElementById('card2Title').innerHTML = `${t.card2Title} <span style="font-size: 14px; color: #FFD700;">10⭐</span>`;
+      document.getElementById('card2Desc').textContent = t.card2Desc;
+      
+      document.getElementById('card3Title').innerHTML = `${t.card3Title} <span style="font-size: 14px; color: #FFD700;">10⭐</span>`;
+      document.getElementById('card3Desc').textContent = t.card3Desc;
+      
+      document.getElementById('card4Title').innerHTML = `${t.card4Title} <span style="font-size: 14px; color: #FFD700;">10⭐</span>`;
+      document.getElementById('card4Desc').textContent = t.card4Desc;
+      
+      document.getElementById('card5Title').innerHTML = `${t.card5Title} <span style="font-size: 14px; color: #FFD700;">10⭐</span>`;
+      document.getElementById('card5Desc').textContent = t.card5Desc;
+    }
+
+    // Обновляем язык при загрузке
+    document.addEventListener('DOMContentLoaded', updateLanguage);
+    
+    // Слушаем изменение языка
+    window.addEventListener('languageChanged', updateLanguage);
   </script>
 </body>
 </html>
