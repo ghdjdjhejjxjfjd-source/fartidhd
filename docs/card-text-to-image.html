@@ -60,41 +60,57 @@
       min-height: 100vh;
     }
 
-    /* ===== ТЕМЫ ===== */
+    /* ===== ТЕМЫ - КАК В МЕНЮ И ЧАТЕ ===== */
     :root[data-theme="blue"] { 
-      --accent1: #5aaeff; 
+      --bg-top: #27384b;
+      --bg-mid: #1d2b3a;
+      --bg-bot: #16212d;
+      --accent1: #5aaeff;
       --accent2: #3496ff;
-      --bg-card: rgba(90, 174, 255, 0.1);
-      --border-color: rgba(90, 174, 255, 0.3);
-      --text-primary: #ffffff;
-      --text-secondary: rgba(255,255,255,0.7);
+      --text: #f7fbff;
+      --subtext: rgba(247, 251, 255, 0.68);
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(255, 255, 255, 0.08);
       --btn-bg: rgba(90, 174, 255, 0.2);
-      --input-bg: rgba(90, 174, 255, 0.15);
       --star-color: #ffffff;
     }
     
     :root[data-theme="black"] { 
-      --accent1: #8bb8ff; 
+      --bg-top: #1b2430;
+      --bg-mid: #141b24;
+      --bg-bot: #0e141c;
+      --accent1: #8bb8ff;
       --accent2: #5a98ff;
-      --bg-card: rgba(139, 184, 255, 0.1);
-      --border-color: rgba(139, 184, 255, 0.3);
-      --text-primary: #ffffff;
-      --text-secondary: rgba(255,255,255,0.7);
-      --btn-bg: rgba(139, 184, 255, 0.2);
-      --input-bg: rgba(139, 184, 255, 0.15);
+      --text: #f7fbff;
+      --subtext: rgba(247, 251, 255, 0.68);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(255, 255, 255, 0.06);
+      --btn-bg: rgba(139, 184, 255, 0.15);
       --star-color: #ffffff;
     }
     
     :root[data-theme="light"] { 
-      --accent1: #3a8cff; 
+      --bg-top: #e8edf5;
+      --bg-mid: #d9e0eb;
+      --bg-bot: #cad1de;
+      --accent1: #3a8cff;
       --accent2: #1a6cff;
-      --bg-card: rgba(255,255,255,0.8);
-      --border-color: rgba(0,0,0,0.1);
-      --text-primary: #2c3e50;
-      --text-secondary: #4a5a6a;
+      --text: #2c3e50;
+      --subtext: #4a5a6a;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-border: rgba(0, 0, 0, 0.1);
+      --input-bg: rgba(255, 255, 255, 0.95);
       --btn-bg: rgba(58, 140, 255, 0.1);
-      --input-bg: rgba(255,255,255,0.9);
       --star-color: #2c3e50;
+    }
+
+    /* ГРАДИЕНТ ФОНА КАК В МЕНЮ */
+    body {
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
     }
 
     /* ШАПКА */
@@ -108,13 +124,13 @@
       align-items: center;
       padding: 12px 16px;
       padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.2);
       backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--card-border);
     }
 
     .back-btn {
-      color: var(--text-primary);
+      color: var(--text);
       text-decoration: none;
       font-size: 24px;
       width: 40px;
@@ -129,7 +145,7 @@
       text-align: center;
       font-weight: 600;
       font-size: 18px;
-      color: var(--text-primary);
+      color: var(--text);
     }
 
     .spacer { width: 40px; }
@@ -137,17 +153,19 @@
     /* КОНТЕЙНЕР */
     .container {
       padding: 80px 16px 20px;
+      min-height: 100vh;
     }
 
     /* КАРТОЧКА */
     .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 24px;
       padding: 24px;
       margin-bottom: 20px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px) saturate(118%);
+      -webkit-backdrop-filter: blur(12px) saturate(118%);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.28);
     }
 
     .card-header {
@@ -170,13 +188,13 @@
     .card-title {
       font-size: 22px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: var(--text);
     }
 
     .star-badge {
       font-size: 16px;
       color: var(--star-color);
-      background: rgba(255,215,0,0.2);
+      background: rgba(255,215,0,0.15);
       padding: 4px 10px;
       border-radius: 20px;
       border: 1px solid rgba(255,215,0,0.3);
@@ -184,7 +202,7 @@
 
     .card-desc {
       font-size: 14px;
-      color: var(--text-secondary);
+      color: var(--subtext);
       margin-bottom: 24px;
       line-height: 1.5;
     }
@@ -197,7 +215,7 @@
 
     .input-label {
       font-size: 14px;
-      color: var(--text-secondary);
+      color: var(--subtext);
       margin-bottom: 8px;
       display: block;
     }
@@ -212,11 +230,12 @@
       flex: 1;
       padding: 16px;
       border-radius: 16px;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--card-border);
       background: var(--input-bg);
-      color: var(--text-primary);
+      color: var(--text);
       font-size: 16px;
       transition: all 0.2s;
+      backdrop-filter: blur(5px);
     }
 
     .text-input:focus {
@@ -224,10 +243,14 @@
       border-color: var(--accent1);
     }
 
+    .text-input::placeholder {
+      color: var(--subtext);
+    }
+
     .clear-input {
       background: var(--btn-bg);
-      border: 1px solid var(--border-color);
-      color: var(--text-secondary);
+      border: 1px solid var(--card-border);
+      color: var(--text);
       width: 46px;
       height: 46px;
       border-radius: 16px;
@@ -237,6 +260,7 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
+      backdrop-filter: blur(5px);
     }
 
     .clear-input:hover {
@@ -254,9 +278,9 @@
       flex: 1;
       padding: 14px;
       border-radius: 16px;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--card-border);
       background: var(--btn-bg);
-      color: var(--text-primary);
+      color: var(--text);
       cursor: pointer;
       transition: all 0.2s;
       font-weight: 600;
@@ -308,6 +332,7 @@
       border-radius: 20px;
       background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
       margin-bottom: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
     .action-buttons {
@@ -319,9 +344,9 @@
       flex: 1;
       padding: 16px;
       border-radius: 16px;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--card-border);
       background: var(--btn-bg);
-      color: var(--text-primary);
+      color: var(--text);
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
@@ -383,16 +408,26 @@
     html.android-mode .card,
     html.android-mode .size-btn,
     html.android-mode .action-btn,
-    html.android-mode .clear-input {
+    html.android-mode .clear-input,
+    html.android-mode .text-input {
       backdrop-filter: none !important;
     }
 
     html.android-mode .card {
-      background: rgba(255,255,255,0.08) !important;
+      background: rgba(0,0,0,0.3) !important;
+      border: 1px solid rgba(255,255,255,0.15) !important;
     }
 
     html.android-mode .text-input {
-      background: rgba(255,255,255,0.08) !important;
+      background: rgba(0,0,0,0.2) !important;
+    }
+
+    html.android-mode[data-theme="light"] .card {
+      background: rgba(255,255,255,0.9) !important;
+    }
+
+    html.android-mode[data-theme="light"] .text-input {
+      background: rgba(255,255,255,0.95) !important;
     }
   </style>
 </head>
@@ -483,7 +518,8 @@
         loading: "Генерация...",
         clear: "Очистить",
         insufficientStars: "❌ Недостаточно звезд. Нужно 10⭐",
-        error: "Ошибка генерации"
+        error: "Ошибка генерации",
+        saved: "✅ Сохранено в галерею"
       },
       en: {
         title: "Free prompt",
@@ -500,7 +536,8 @@
         loading: "Generating...",
         clear: "Clear",
         insufficientStars: "❌ Insufficient stars. Need 10⭐",
-        error: "Generation error"
+        error: "Generation error",
+        saved: "✅ Saved to gallery"
       },
       kk: {
         title: "Еркін промпт",
@@ -517,7 +554,8 @@
         loading: "Жасалуда...",
         clear: "Тазалау",
         insufficientStars: "❌ Жұлдыздар жеткіліксіз. 10⭐ керек",
-        error: "Қате"
+        error: "Қате",
+        saved: "✅ Галереяға сақталды"
       },
       tr: {
         title: "Serbest prompt",
@@ -534,7 +572,8 @@
         loading: "Oluşturuluyor...",
         clear: "Temizle",
         insufficientStars: "❌ Yetersiz yıldız. 10⭐ gerekli",
-        error: "Hata"
+        error: "Hata",
+        saved: "✅ Galeriye kaydedildi"
       },
       uk: {
         title: "Вільний промпт",
@@ -551,7 +590,8 @@
         loading: "Створення...",
         clear: "Очистити",
         insufficientStars: "❌ Недостатньо зірок. Потрібно 10⭐",
-        error: "Помилка"
+        error: "Помилка",
+        saved: "✅ Збережено в галерею"
       },
       fr: {
         title: "Prompt libre",
@@ -568,7 +608,8 @@
         loading: "Génération...",
         clear: "Effacer",
         insufficientStars: "❌ Étoiles insuffisantes. Besoin de 10⭐",
-        error: "Erreur"
+        error: "Erreur",
+        saved: "✅ Enregistré dans la galerie"
       }
     };
 
@@ -664,8 +705,9 @@
         formData.append('tg_first_name', user.first_name || '');
         formData.append('prompt', prompt);
         formData.append('mode', 'txt2img');
-        formData.append('width', size.split('x')[0]);
-        formData.append('height', size.split('x')[1]);
+        const [width, height] = size.split('x');
+        formData.append('width', width);
+        formData.append('height', height);
 
         const response = await fetch(`${API_BASE}/api/image`, {
           method: 'POST',
@@ -702,29 +744,35 @@
 
     // ===== СОХРАНЕНИЕ В ГАЛЕРЕЮ =====
     async function saveToGallery(base64Data) {
-      const blob = await fetch(base64Data).then(res => res.blob());
+      const t = I18N[getLang()] || I18N.ru;
       
-      // Пробуем через Telegram WebApp
-      const tg = window.Telegram?.WebApp;
-      if (tg && tg.sendData) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64 = reader.result.split(',')[1];
-          tg.sendData(JSON.stringify({
-            type: 'photo',
-            file: base64,
-            filename: 'image.png'
-          }));
-        };
-        reader.readAsDataURL(blob);
-      } else {
-        // Fallback - скачивание
+      try {
+        // Конвертируем base64 в blob
+        const base64Response = await fetch(base64Data);
+        const blob = await base64Response.blob();
+        
+        // Создаем временную ссылку
         const url = URL.createObjectURL(blob);
+        
+        // Создаем тег <a> для скачивания
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'image.png';
+        link.download = `image_${Date.now()}.png`;
+        
+        // Добавляем в документ, кликаем и удаляем
+        document.body.appendChild(link);
         link.click();
-        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+        
+        // Освобождаем память
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+        // Показываем уведомление
+        alert(t.saved);
+        
+      } catch (e) {
+        console.error("Save error:", e);
+        alert("Ошибка при сохранении");
       }
     }
 
@@ -747,6 +795,16 @@
       document.getElementById('loadingText').textContent = t.loading;
       document.getElementById('clearInputBtn').title = t.clear;
     }
+
+    // ===== ЗАКРЫТИЕ КЛАВИАТУРЫ ПРИ ТАПЕ ВНЕ ПОЛЯ =====
+    document.addEventListener('click', function(event) {
+      const input = document.getElementById('promptInput');
+      const isClickInside = input.contains(event.target);
+      
+      if (!isClickInside && document.activeElement === input) {
+        input.blur();
+      }
+    });
 
     // ===== ИНИЦИАЛИЗАЦИЯ =====
     document.addEventListener('DOMContentLoaded', updateLanguage);
