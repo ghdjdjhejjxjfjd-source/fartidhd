@@ -1,4 +1,4 @@
-# api/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С REMOVE_BG
+# api/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С REMOVE_BG И OPENAI
 from flask import request, jsonify
 from datetime import datetime
 import time
@@ -7,6 +7,17 @@ import re
 from .config import api, STABILITY_AVAILABLE, send_log_to_group
 from .db import get_access
 from payments import spend_stars
+
+# Импортируем OpenAI
+try:
+    from openai_image import generate_image_dalle, is_openai_available
+    OPENAI_AVAILABLE = is_openai_available()
+except ImportError:
+    OPENAI_AVAILABLE = False
+    print("⚠️ OpenAI DALL-E not available - openai_image.py not found")
+except Exception as e:
+    OPENAI_AVAILABLE = False
+    print(f"⚠️ OpenAI import error: {e}")
 
 IMAGE_RATE_LIMIT = {}
 RATE_LIMIT_WINDOW = 300
@@ -40,12 +51,16 @@ def validate_user_id(user_id):
 
 @api.post("/api/image")
 def api_image():
-    if not STABILITY_AVAILABLE:
+    # Проверяем доступность хотя бы одного сервиса
+    if not STABILITY_AVAILABLE and not OPENAI_AVAILABLE:
         return jsonify({"error": "image_generation_not_available"}), 503
     
     tg_user_id = request.form.get("tg_user_id") or 0
     prompt = (request.form.get("prompt") or "").strip()
     mode = (request.form.get("mode") or "txt2img").strip().lower()
+    
+    # Параметр для выбора модели (по умолчанию OpenAI)
+    model = request.form.get("model") or "openai"
     
     if not validate_user_id(tg_user_id):
         return jsonify({"error": "invalid_user_id"}), 400
@@ -104,6 +119,11 @@ def api_image():
             return jsonify({"error": "file_too_large", "message": "Файл слишком большой (макс 5MB)"}), 400
         image_data = image_file.read()
     
+    # Для OpenAI нужны только txt2img режимы
+    if model == "openai" and mode not in ["txt2img"]:
+        return jsonify({"error": "openai_only_supports_txt2img", 
+                        "message": "OpenAI DALL-E поддерживает только генерацию по тексту"}), 400
+    
     if mode in ["img2img", "remove_bg", "inpaint", "upscale"] and not image_data:
         return jsonify({"error": "image_required_for_this_mode"}), 400
     
@@ -135,43 +155,66 @@ def api_image():
     
     negative_prompt = request.form.get("negative_prompt") or None
     
+    # Формируем размер для OpenAI
+    size = f"{width}x{height}"
+    
     try:
-        # ✅ ИМПОРТИРУЕМ ВСЕ ФУНКЦИИ
-        from stability_client import generate_image, generate_image_from_image, remove_background
+        image_base64 = None
         
-        # ===== ОБРАБОТКА РАЗНЫХ РЕЖИМОВ =====
-        if mode == "txt2img":
-            # Генерация по тексту
-            image_base64 = generate_image(
-                prompt=prompt,
-                negative_prompt=negative_prompt,
-                steps=steps,
-                cfg_scale=cfg_scale,
-                width=width,
-                height=height,
+        # ===== ВЫБОР МОДЕЛИ =====
+        if model == "openai" and OPENAI_AVAILABLE:
+            # Используем OpenAI DALL-E 3
+            print(f"🤖 Using OpenAI DALL-E 3 for user {tg_user_id_int}")
+            
+            if mode != "txt2img":
+                return jsonify({"error": "openai_only_supports_txt2img"}), 400
+            
+            # Улучшаем промпт для DALL-E
+            enhanced_prompt = f"{prompt}, high quality, detailed, 8k, masterpiece"
+            
+            image_base64 = generate_image_dalle(
+                prompt=enhanced_prompt,
+                size=size
             )
             
-        elif mode == "remove_bg":
-            # ⭐ УДАЛЕНИЕ ФОНА
-            print(f"🖼 Processing remove_bg for user {tg_user_id_int}")
-            image_base64 = remove_background(
-                init_image=image_data,
-                prompt=prompt or "subject on transparent background, white background",
-                strength=0.6,  # Низкий strength чтобы сохранить объект
-                steps=steps,
-            )
-            
-        elif mode in ["img2img", "inpaint", "upscale"]:
-            # Обычный image-to-image
-            image_base64 = generate_image_from_image(
-                prompt=prompt,
-                init_image=image_data,
-                strength=strength if mode == "img2img" else 0.6,
-                steps=steps,
-                cfg_scale=cfg_scale,
-            )
         else:
-            return jsonify({"error": "unsupported_mode"}), 400
+            # Используем Stability AI
+            if not STABILITY_AVAILABLE:
+                return jsonify({"error": "stability_ai_not_available"}), 503
+            
+            from stability_client import generate_image, generate_image_from_image, remove_background
+            
+            print(f"🎨 Using Stability AI for user {tg_user_id_int}")
+            
+            if mode == "txt2img":
+                image_base64 = generate_image(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    steps=steps,
+                    cfg_scale=cfg_scale,
+                    width=width,
+                    height=height,
+                )
+                
+            elif mode == "remove_bg":
+                print(f"🖼 Processing remove_bg for user {tg_user_id_int}")
+                image_base64 = remove_background(
+                    init_image=image_data,
+                    prompt=prompt or "subject on transparent background, white background",
+                    strength=0.6,
+                    steps=steps,
+                )
+                
+            elif mode in ["img2img", "inpaint", "upscale"]:
+                image_base64 = generate_image_from_image(
+                    prompt=prompt,
+                    init_image=image_data,
+                    strength=strength if mode == "img2img" else 0.6,
+                    steps=steps,
+                    cfg_scale=cfg_scale,
+                )
+            else:
+                return jsonify({"error": "unsupported_mode"}), 400
         
         if not image_base64:
             return jsonify({"error": "generation_failed"}), 500
@@ -183,10 +226,13 @@ def api_image():
         tg_username = request.form.get("tg_username") or "—"
         tg_first_name = request.form.get("tg_first_name") or "—"
         
+        model_name = "OpenAI DALL-E 3" if model == "openai" else "Stability AI"
+        
         send_log_to_group(
             f"🖼 Изображение сгенерировано\n"
             f"👤 {tg_first_name} (@{tg_username})\n"
             f"🆔 {tg_user_id_int}\n"
+            f"🤖 Модель: {model_name}\n"
             f"📝 Режим: {mode}, стоимость: {cost}⭐\n"
             f"💬 Промпт: {prompt[:80]}..."
         )
@@ -196,6 +242,7 @@ def api_image():
             "image_base64": image_base64,
             "prompt": prompt,
             "mode": mode,
+            "model": model
         })
         
     except Exception as e:
@@ -209,5 +256,7 @@ def api_image():
             return jsonify({"error": "insufficient_balance", "message": "Закончились кредиты на сервере"}), 402
         elif "timeout" in error_msg.lower():
             return jsonify({"error": "timeout", "message": "Сервер долго не отвечает. Попробуйте позже."}), 504
+        elif "safety" in error_msg.lower() or "blocked" in error_msg.lower():
+            return jsonify({"error": "blocked_content", "message": "Запрос содержит запрещенный контент"}), 400
         else:
             return jsonify({"error": "generation_failed", "message": "Не удалось сгенерировать. Попробуйте другой промпт."}), 500
