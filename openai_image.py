@@ -1,21 +1,27 @@
-# openai_image.py — ФИНАЛЬНЫЙ РАБОЧИЙ (исправлены ВСЕ ошибки)
+# openai_image.py — ФИНАЛ (PNG FIX)
 
 import os
 import base64
 import requests
 from openai import OpenAI
 from typing import Optional
+from PIL import Image
+import io
 
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
 print(f"🔑 OPENAI_API_KEY loaded: {'Yes' if OPENAI_API_KEY else 'No'}")
 
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-SIZE_MAP = {
-    "1024x1024": "1024x1024",
-    "832x1040": "1024x1024",
-    "1024x576": "1024x1024",
-}
+
+def convert_to_png(image_bytes: bytes) -> bytes:
+    """Конвертируем любое изображение в PNG"""
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+    
+    output = io.BytesIO()
+    image.save(output, format="PNG")
+    
+    return output.getvalue()
 
 
 def edit_image_gpt(
@@ -24,36 +30,34 @@ def edit_image_gpt(
     size: str = "1024x1024",
     quality: str = "low"
 ) -> str:
-    """Фото → стиль (img2img через DALL·E 2)"""
 
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
 
-    openai_size = SIZE_MAP.get(size, "1024x1024")
-
     try:
-        print(f"🎨 DALL-E 2 edit: {openai_size}")
-        print(f"📦 Image size: {len(image_bytes)} bytes")
+        print("🔄 Конвертация в PNG...")
+        image_bytes = convert_to_png(image_bytes)
 
-        # ✅ ФИНАЛЬНЫЙ ФИКС: правильный mime + filename
+        print(f"📦 PNG size: {len(image_bytes)} bytes")
+
+        # ⚠️ проверка размера
+        if len(image_bytes) > 4 * 1024 * 1024:
+            raise RuntimeError("Image too large (>4MB)")
+
+        print("🎨 DALL-E 2 edit...")
+
         response = client.images.edit(
             model="dall-e-2",
             image=("image.png", image_bytes, "image/png"),
             prompt=prompt,
-            size=openai_size
+            size="1024x1024"
         )
 
-        if not response or not response.data or len(response.data) == 0:
-            raise RuntimeError("Empty response from OpenAI")
+        if not response.data:
+            raise RuntimeError("Empty response")
 
         image_url = response.data[0].url
 
-        if not image_url:
-            raise RuntimeError("No URL returned")
-
-        print("✅ URL получен")
-
-        # скачиваем изображение
         img_response = requests.get(image_url, timeout=30)
         img_response.raise_for_status()
 
@@ -62,59 +66,30 @@ def edit_image_gpt(
         return f"data:image/png;base64,{image_base64}"
 
     except Exception as e:
-        print(f"❌ Ошибка OpenAI edit: {e}")
-        raise RuntimeError(f"Failed to edit image: {str(e)}")
+        print("❌ ERROR:", e)
+        raise RuntimeError(str(e))
 
 
-def generate_image_dalle(
-    prompt: str,
-    size: str = "1024x1024",
-    quality: str = "standard"
-) -> str:
-    """Генерация через DALL·E 3"""
-
+def generate_image_dalle(prompt: str) -> str:
     if not client:
         raise RuntimeError("OPENAI_API_KEY is not set")
 
-    try:
-        print(f"🎨 DALL-E 3: {size}")
+    response = client.images.generate(
+        model="dall-e-3",
+        prompt=prompt,
+        size="1024x1024"
+    )
 
-        response = client.images.generate(
-            model="dall-e-3",
-            prompt=prompt,
-            size=size,
-            quality=quality
-        )
+    image_url = response.data[0].url
 
-        if not response or not response.data or len(response.data) == 0:
-            raise RuntimeError("Empty response from OpenAI")
+    img_response = requests.get(image_url)
+    image_base64 = base64.b64encode(img_response.content).decode("utf-8")
 
-        image_url = response.data[0].url
-
-        img_response = requests.get(image_url, timeout=30)
-        img_response.raise_for_status()
-
-        image_base64 = base64.b64encode(img_response.content).decode("utf-8")
-
-        return f"data:image/png;base64,{image_base64}"
-
-    except Exception as e:
-        print(f"❌ DALL-E error: {e}")
-        raise RuntimeError(f"Failed to generate image: {str(e)}")
-
-
-def remove_bg_gpt(
-    image_bytes: bytes,
-    prompt: Optional[str] = None,
-    size: str = "1024x1024"
-) -> str:
-    """Удаление фона"""
-    bg_prompt = prompt or "remove background, transparent background"
-    return edit_image_gpt(bg_prompt, image_bytes, size)
+    return f"data:image/png;base64,{image_base64}"
 
 
 def is_openai_available() -> bool:
     return bool(OPENAI_API_KEY)
 
 
-print("✅ openai_image.py загружен!")
+print("✅ openai_image.py FINAL FIX LOADED")
