@@ -1,9 +1,11 @@
-# stability_client.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С УДАЛЕНИЕМ ФОНА
+# stability_client.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (с автоматическим ресайзом)
 import os
 import base64
 import time
+import io
 from typing import Optional
 import requests
+from PIL import Image
 
 STABILITY_API_KEY = (os.getenv("STABILITY_API_KEY") or "").strip()
 
@@ -12,6 +14,19 @@ print(f"🔧 STABILITY_API_KEY loaded: {'Yes' if STABILITY_API_KEY else 'No'}")
 MAX_RETRIES = 2
 RETRY_DELAY = 1
 TIMEOUT = 60
+
+# Разрешенные размеры для Stability AI
+ALLOWED_SIZES = [
+    (1024, 1024),
+    (1152, 896),
+    (1216, 832),
+    (1344, 768),
+    (1536, 640),
+    (640, 1536),
+    (768, 1344),
+    (832, 1216),
+    (896, 1152)
+]
 
 MODELS = [
     {
@@ -41,6 +56,40 @@ MODELS = [
         "params": {}
     }
 ]
+
+def resize_to_allowed_dimensions(image_bytes, target_size=None):
+    """
+    Изменяет размер изображения до разрешенного Stability AI
+    """
+    try:
+        # Открываем изображение
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # Конвертируем в RGB если нужно
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Если передан конкретный target_size, используем его
+        if target_size and target_size in [f"{w}x{h}" for w, h in ALLOWED_SIZES]:
+            w, h = map(int, target_size.split('x'))
+            target = (w, h)
+        else:
+            # Иначе выбираем наиболее подходящий размер
+            # По умолчанию 1024x1024
+            target = ALLOWED_SIZES[0]
+        
+        # Изменяем размер
+        img = img.resize(target, Image.Resampling.LANCZOS)
+        
+        # Сохраняем в байты
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='PNG')
+        print(f"✅ Image resized from original to {target[0]}x{target[1]}")
+        return img_byte_arr.getvalue()
+        
+    except Exception as e:
+        print(f"⚠️ Error resizing image: {e}")
+        return image_bytes  # Возвращаем оригинал если ошибка
 
 def translate_text(text: str) -> str:
     if not text or not text.strip():
@@ -285,6 +334,9 @@ def generate_image_from_image(
     if not init_image:
         raise ValueError("Init image is required")
     
+    # Изменяем размер изображения до разрешенного
+    resized_image = resize_to_allowed_dimensions(init_image)
+    
     translated = translate_text(prompt)
     
     url = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image"
@@ -295,7 +347,7 @@ def generate_image_from_image(
     }
     
     files = {
-        "init_image": ("image.png", init_image, "image/png")
+        "init_image": ("image.png", resized_image, "image/png")
     }
     
     data = {
@@ -331,7 +383,7 @@ def generate_image_from_image(
                 continue
             raise RuntimeError(f"Image-to-image generation failed: {str(e)}")
 
-# ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ ФОНА ==========
+# ========== ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ ФОНА ==========
 def remove_background(
     init_image: bytes,
     prompt: Optional[str] = None,
@@ -348,6 +400,9 @@ def remove_background(
     if not init_image:
         raise ValueError("Init image is required")
     
+    # Изменяем размер изображения
+    resized_image = resize_to_allowed_dimensions(init_image)
+    
     # Промпт для удаления фона
     bg_prompt = prompt or "subject on transparent background, white background, no background, isolated object"
     
@@ -362,10 +417,9 @@ def remove_background(
     }
     
     files = {
-        "init_image": ("image.png", init_image, "image/png")
+        "init_image": ("image.png", resized_image, "image/png")
     }
     
-    # ⚠️ ВАЖНО: strength НЕ передается в data, он идет в отдельном поле для image-to-image
     data = {
         "text_prompts[0][text]": translated,
         "text_prompts[0][weight]": "1.0",
@@ -374,9 +428,6 @@ def remove_background(
         "style_preset": "photographic",
         "samples": "1"
     }
-    
-    # Strength передается отдельно, но в requests он должен быть в data
-    # Для Stability API strength - это отдельный параметр, но в форме
     
     for attempt in range(MAX_RETRIES + 1):
         try:
