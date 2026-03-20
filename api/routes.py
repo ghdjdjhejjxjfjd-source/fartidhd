@@ -4,6 +4,7 @@ from datetime import datetime
 import re
 from functools import wraps
 from time import time
+import os  # ← ЭТО НУЖНО ДОБАВИТЬ!
 
 from .config import api, BOT_TOKEN, GROUP_ID, send_log_to_group
 from .db import (
