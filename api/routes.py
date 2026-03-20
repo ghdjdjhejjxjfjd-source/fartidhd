@@ -1,4 +1,4 @@
-# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (с улучшенным send-photo)
+# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (с улучшенным send-photo и Pixian.ai)
 from flask import request, jsonify
 from datetime import datetime
 import re
@@ -20,8 +20,24 @@ from groq_client import ask_groq
 from openai_client import ask_openai
 from payments import get_balance, spend_stars
 
+# ✅ Добавляем Pixian.ai для удаления фона
+try:
+    from pixian_client import remove_background_pixian
+    PIXIAN_AVAILABLE = bool(os.getenv("PIXIAN_API_KEY"))
+    if PIXIAN_AVAILABLE:
+        print("✅ Pixian.ai загружен (удаление фона)")
+    else:
+        print("⚠️ Pixian.ai: ключ не найден")
+except ImportError:
+    PIXIAN_AVAILABLE = False
+    print("⚠️ Pixian.ai не загружен (файл pixian_client.py не найден)")
+except Exception as e:
+    PIXIAN_AVAILABLE = False
+    print(f"⚠️ Ошибка загрузки Pixian.ai: {e}")
+
 import requests
 import traceback
+import os  # ← добавлено для os.getenv
 
 # Rate limiting
 RATE_LIMIT = {}
@@ -588,3 +604,51 @@ def api_set_user_ai_mode():
             "message": "Не удалось сменить режим. Попробуйте позже.",
             "current_mode": get_ai_mode(int(user_id))  # Возвращаем актуальный режим
         }), 500
+
+# =========================
+# ЭНДПОИНТ ДЛЯ УДАЛЕНИЯ ФОНА ЧЕРЕЗ PIXIAN.AI
+# =========================
+@api.post("/api/remove-bg")
+def api_remove_bg():
+    """
+    Удаление фона через Pixian.ai
+    """
+    try:
+        # Получаем данные
+        user_id = request.form.get('user_id')
+        image_file = request.files.get('image')
+        
+        if not user_id or not validate_user_id(user_id):
+            return jsonify({"error": "invalid_user_id"}), 400
+        
+        if not image_file:
+            return jsonify({"error": "image_required"}), 400
+        
+        # Проверяем доступность Pixian
+        if not PIXIAN_AVAILABLE:
+            return jsonify({"error": "pixian_not_available"}), 503
+        
+        # Читаем изображение
+        image_data = image_file.read()
+        
+        if len(image_data) > 5 * 1024 * 1024:
+            return jsonify({"error": "file_too_large", "message": "Максимум 5MB"}), 400
+        
+        # Удаляем фон
+        result_base64 = remove_background_pixian(image_data)
+        
+        # Логируем
+        send_log_to_group(
+            f"🧹 Удаление фона через Pixian\n"
+            f"👤 Пользователь: {user_id}\n"
+            f"📦 Размер: {len(image_data)} байт"
+        )
+        
+        return jsonify({
+            "success": True,
+            "image_base64": result_base64
+        })
+        
+    except Exception as e:
+        print(f"❌ Ошибка в api_remove_bg: {e}")
+        return jsonify({"error": str(e)}), 500
