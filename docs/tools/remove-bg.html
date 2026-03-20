@@ -215,7 +215,7 @@
 
       <!-- Сообщение об успехе -->
       <div class="success-message" id="successMessage">
-        ✅ Фото сохранено в галерею
+        ✅ Фото обработано
       </div>
 
       <button class="btn btn-primary" id="processBtn">✨ Удалить фон</button>
@@ -243,7 +243,7 @@
         download: "💾 Сохранить",
         new: "📸 Новое фото",
         loading: "Удаляю фон...",
-        success: "✅ Фото сохранено в галерею"
+        success: "✅ Фото обработано"
       },
       en: {
         title: "Remove Background",
@@ -252,7 +252,7 @@
         download: "💾 Save",
         new: "📸 New Photo",
         loading: "Removing background...",
-        success: "✅ Photo saved to gallery"
+        success: "✅ Image processed"
       }
     };
 
@@ -280,6 +280,7 @@
     document.getElementById('downloadBtn').textContent = t.download;
     document.getElementById('newBtn').textContent = t.new;
     document.getElementById('loadingText').textContent = t.loading;
+    document.getElementById('successMessage').textContent = t.success;
 
     // Элементы
     const uploadArea = document.getElementById('uploadArea');
@@ -319,7 +320,7 @@
       }
     });
 
-    // Удаление фона через Stability AI
+    // Удаление фона через новый эндпоинт Pixian.ai
     processBtn.addEventListener('click', async () => {
       if (!currentFile || !user) {
         alert('Нужно авторизоваться в Telegram');
@@ -331,14 +332,10 @@
 
       try {
         const formData = new FormData();
-        formData.append('tg_user_id', user.id);
-        formData.append('tg_username', user.username || '');
-        formData.append('tg_first_name', user.first_name || '');
-        formData.append('prompt', 'remove background, transparent background');
-        formData.append('mode', 'remove_bg');
+        formData.append('user_id', user.id);
         formData.append('image', currentFile);
 
-        const response = await fetch(`${API_BASE}/api/image`, {
+        const response = await fetch(`${API_BASE}/api/remove-bg`, {
           method: 'POST',
           body: formData
         });
@@ -346,11 +343,7 @@
         const data = await response.json();
 
         if (!response.ok) {
-          if (data.error === 'insufficient_stars') {
-            throw new Error('Недостаточно звезд');
-          } else {
-            throw new Error(data.message || 'Ошибка обработки');
-          }
+          throw new Error(data.message || 'Ошибка обработки');
         }
 
         // Показываем результат
