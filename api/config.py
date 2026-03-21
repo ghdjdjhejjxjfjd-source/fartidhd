@@ -36,7 +36,13 @@ DB_PATH = os.getenv("ACCESS_DB_PATH") or "access.db"
 
 # Flask приложение
 api = Flask(__name__)
-CORS(api, origins=["https://fayrat11.github.io", "https://*.github.io"])
+
+# ===== ИСПРАВЛЕННЫЙ CORS =====
+CORS(api, origins=[
+    "https://fayrat11.github.io",
+    "https://*.github.io",
+    "https://ghdjdjhejjxjfjd-source.github.io"
+])
 
 # =========================
 # LOG FUNCTION
