@@ -424,10 +424,9 @@
         </div>
       </div>
 
+      <!-- ТОЛЬКО 1:1 -->
       <div class="size-selector">
         <button class="size-btn active" data-size="1024x1024" id="sizeSquare">1:1</button>
-        <button class="size-btn" data-size="832x1040" id="sizePortrait">4:5</button>
-        <button class="size-btn" data-size="1024x576" id="sizeLandscape">16:9</button>
       </div>
 
       <button class="generate-btn" id="generateBtn">
@@ -462,8 +461,6 @@
         promptLabel: "Твой промпт",
         promptPlaceholder: "например: красивый закат в горах",
         sizeSquare: "1:1",
-        sizePortrait: "4:5",
-        sizeLandscape: "16:9",
         generate: "Сгенерировать",
         save: "Сохранить",
         repeat: "Повторить",
@@ -480,8 +477,6 @@
         promptLabel: "Your prompt",
         promptPlaceholder: "e.g.: beautiful sunset in mountains",
         sizeSquare: "1:1",
-        sizePortrait: "4:5",
-        sizeLandscape: "16:9",
         generate: "Generate",
         save: "Save",
         repeat: "Repeat",
@@ -516,8 +511,6 @@
       document.getElementById('promptLabel').textContent = t.promptLabel;
       document.getElementById('promptInput').placeholder = t.promptPlaceholder;
       document.getElementById('sizeSquare').textContent = t.sizeSquare;
-      document.getElementById('sizePortrait').textContent = t.sizePortrait;
-      document.getElementById('sizeLandscape').textContent = t.sizeLandscape;
       document.getElementById('generateText').textContent = t.generate;
       document.getElementById('saveText').textContent = t.save;
       document.getElementById('repeatText').textContent = t.repeat;
@@ -570,7 +563,7 @@
       } catch (e) { throw e; }
     }
 
-    async function generateImage(prompt, size) {
+    async function generateImage(prompt) {
       const user = getUser();
       if (!user) {
         alert("Ошибка: не удалось получить данные пользователя");
@@ -590,9 +583,9 @@
         formData.append('tg_first_name', user.first_name || '');
         formData.append('prompt', prompt);
         formData.append('mode', 'txt2img');
-        const [width, height] = size.split('x');
-        formData.append('width', width);
-        formData.append('height', height);
+        formData.append('width', '1024');
+        formData.append('height', '1024');
+        
         const response = await fetch(`${API_BASE}/api/image`, { method: 'POST', body: formData });
         const data = await response.json();
         if (!response.ok) {
@@ -652,20 +645,11 @@
     const saveBtn = document.getElementById('saveBtn');
     const repeatBtn = document.getElementById('repeatBtn');
     const clearInputBtn = document.getElementById('clearInputBtn');
-    let currentSize = '1024x1024';
     let currentImageBase64 = null;
 
     clearInputBtn.addEventListener('click', () => {
       promptInput.value = '';
       promptInput.focus();
-    });
-
-    document.querySelectorAll('.size-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentSize = btn.dataset.size;
-      });
     });
 
     generateBtn.addEventListener('click', async () => {
@@ -675,7 +659,7 @@
         return;
       }
       const fullPrompt = `${prompt}, high quality, detailed, 8k, masterpiece`;
-      const imageBase64 = await generateImage(fullPrompt, currentSize);
+      const imageBase64 = await generateImage(fullPrompt);
       if (imageBase64) {
         currentImageBase64 = imageBase64;
         resultImg.src = imageBase64;
