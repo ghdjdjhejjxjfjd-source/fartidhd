@@ -1,10 +1,10 @@
-# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (с улучшенным send-photo и Pixian.ai)
+# api/routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (с очисткой памяти при смене характера/стиля)
 from flask import request, jsonify
 from datetime import datetime
 import re
 from functools import wraps
 from time import time
-import os  # ← ЭТО НУЖНО ДОБАВИТЬ!
+import os
 
 from .config import api, BOT_TOKEN, GROUP_ID, send_log_to_group
 from .db import (
@@ -38,7 +38,6 @@ except Exception as e:
 
 import requests
 import traceback
-import os  # ← добавлено для os.getenv
 
 # Rate limiting
 RATE_LIMIT = {}
@@ -445,6 +444,12 @@ def api_set_user_persona():
             return jsonify({"error": "limit_exceeded", "message": "Лимит изменений характера на сегодня исчерпан (5/5)"}), 429
     
     set_user_persona(int(user_id), persona)
+    
+    # ✅ ОЧИЩАЕМ ИСТОРИЮ ЧАТА ПРИ СМЕНЕ ХАРАКТЕРА
+    from .memory import mem_clear
+    mem_clear(int(user_id))
+    print(f"🧹 Очищена память для пользователя {user_id} при смене характера")
+    
     return jsonify({
         "success": True,
         "user_id": user_id,
@@ -552,6 +557,11 @@ def api_style_change():
     
     set_user_style(int(user_id), style)
     
+    # ✅ ОЧИЩАЕМ ИСТОРИЮ ЧАТА ПРИ СМЕНЕ СТИЛЯ
+    from .memory import mem_clear
+    mem_clear(int(user_id))
+    print(f"🧹 Очищена память для пользователя {user_id} при смене стиля")
+    
     return jsonify({
         "success": True,
         "style": style,
@@ -603,7 +613,7 @@ def api_set_user_ai_mode():
         return jsonify({
             "error": "failed_to_set_mode",
             "message": "Не удалось сменить режим. Попробуйте позже.",
-            "current_mode": get_ai_mode(int(user_id))  # Возвращаем актуальный режим
+            "current_mode": get_ai_mode(int(user_id))
         }), 500
 
 # =========================
