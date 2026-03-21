@@ -1,4 +1,4 @@
-# api/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (только 1:1, правильное списание)
+# api/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (только одно списание, только 1:1)
 from flask import request, jsonify
 from datetime import datetime
 import time
@@ -97,7 +97,7 @@ def api_image():
         elif error_code == "blocked_content":
             return jsonify({"error": "blocked_content", "message": "Запрос содержит запрещенные слова"}), 400
     
-    # Проверка баланса ТОЛЬКО для платных пользователей
+    # Проверка баланса ТОЛЬКО для платных пользователей (перед генерацией)
     if not a["is_free"]:
         from payments import get_balance
         balance = get_balance(tg_user_id_int)
@@ -124,6 +124,7 @@ def api_image():
             return jsonify({"error": "generation_failed"}), 500
         
         # ===== СПИСЫВАЕМ ЗВЕЗДЫ ТОЛЬКО ПОСЛЕ УСПЕШНОЙ ГЕНЕРАЦИИ =====
+        # НЕТ дополнительных проверок — только одно списание
         if not a["is_free"]:
             spend_stars(tg_user_id_int, COST)
         
