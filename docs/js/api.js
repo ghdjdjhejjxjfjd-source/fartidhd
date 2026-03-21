@@ -1,5 +1,5 @@
 // docs/js/api.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
-const API_BASE = "https://fayrat-production.up.railway.app";
+const API_BASE = "https://ghdjdjhejjxjfjd-source.github.io/fartidhd/";
 const API_CHAT = API_BASE + "/api/chat";
 const API_CLEAR_MEMORY = API_BASE + "/api/memory/clear";
 const API_BALANCE = API_BASE + "/api/stars/balance";
