@@ -35,9 +35,9 @@ async def inline_image_start(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await query.message.reply_text("⛔ Доступ заблокирован.")
         return
     
-    if not a.get("is_free") and balance < 2:
+    if not a.get("is_free") and balance < 10:
         await query.message.reply_text(
-            "❌ Недостаточно звезд (нужно 2).\n"
+            "❌ Недостаточно звезд (нужно 10).\n"
             "Купи звезды в меню: ⭐ Купить звезды"
         )
         return
@@ -50,7 +50,7 @@ async def inline_image_start(update: Update, context: ContextTypes.DEFAULT_TYPE)
         "🖼 **Генерация картинки**\n\n"
         "Напиши описание того, что хочешь увидеть.\n"
         "Например: *красивый закат в горах*\n\n"
-        "Стоимость: 2⭐"
+        "Стоимость: 10⭐"
     )
     
     # Кнопка "Назад"
@@ -78,17 +78,17 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         await update.message.reply_text("❌ Сервис генерации временно недоступен.")
         return
     
-    # Удаляем кнопку со стартового экрана
+    # Удаляем стартовое сообщение с инструкцией
     if "image_start_message_id" in context.user_data:
         try:
-            await context.bot.edit_message_reply_markup(
+            await context.bot.delete_message(
                 chat_id=uid,
-                message_id=context.user_data["image_start_message_id"],
-                reply_markup=None
+                message_id=context.user_data["image_start_message_id"]
             )
-            print(f"✅ Кнопка удалена со стартового экрана")
+            print(f"✅ Стартовое сообщение удалено")
+            del context.user_data["image_start_message_id"]
         except Exception as e:
-            print(f"⚠️ Не удалось удалить кнопку: {e}")
+            print(f"⚠️ Не удалось удалить стартовое сообщение: {e}")
     
     # Отправляем сообщение о начале генерации
     status_msg = await update.message.reply_text("🎨 Генерирую картинку...")
@@ -118,6 +118,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
                     message_id=last_bot_message_with_button[uid],
                     reply_markup=None
                 )
+                print(f"✅ Кнопка удалена с предыдущего сообщения {last_bot_message_with_button[uid]}")
             except Exception as e:
                 print(f"⚠️ Не удалось убрать кнопку: {e}")
         
@@ -139,10 +140,10 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         # Обновляем статистику
         increment_images(uid)
         
-        # Списываем звезды
+        # Списываем звезды (10 звезд)
         if not a.get("is_free"):
-            spend_stars(uid, 2)
-            add_stars_spent(uid, 2)
+            spend_stars(uid, 10)
+            add_stars_spent(uid, 10)
             
         # Логируем
         send_log_http(f"🖼 Генерация: {uid} -> {prompt[:50]}...")
@@ -154,7 +155,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         
         if "insufficient_stars" in error_msg.lower():
             await update.message.reply_text(
-                "❌ Недостаточно звезд (нужно 2).\n"
+                "❌ Недостаточно звезд (нужно 10).\n"
                 "Купи звезды в меню: ⭐ Купить звезды"
             )
         elif "API key" in error_msg.lower():
