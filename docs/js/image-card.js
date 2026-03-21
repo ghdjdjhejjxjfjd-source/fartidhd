@@ -1,5 +1,5 @@
 // docs/js/image-card.js
-const API_BASE = "https://ghdjdjhejjxjfjd-source.github.io/fartidhd/";
+const API_BASE = "https://fartidhd-production.up.railway.app";
 
 // ===== TELEGRAM =====
 const tg = window.Telegram?.WebApp;
