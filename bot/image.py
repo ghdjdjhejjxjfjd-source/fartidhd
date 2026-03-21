@@ -1,4 +1,4 @@
-# bot/image.py - КАК В ЧАТЕ
+# bot/image.py - КНОПКА ОТДЕЛЬНЫМ СООБЩЕНИЕМ (как в чате)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import base64
@@ -15,8 +15,8 @@ except ImportError:
 
 from .config import send_log_http
 
-# Хранилище: user_id -> message_id последней картинки с кнопкой (как в чате)
-last_image_message = {}
+# Хранилище: user_id -> message_id последней КНОПКИ (отдельное сообщение)
+last_button_message = {}
 
 
 async def inline_image_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -81,30 +81,37 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         
         await status_msg.delete()
         
-        # ===== КАК В ЧАТЕ: удаляем кнопку у ПРЕДЫДУЩЕЙ картинки =====
-        if uid in last_image_message and last_image_message[uid]:
+        # ===== УДАЛЯЕМ ПРЕДЫДУЩУЮ КНОПКУ (отдельное сообщение) =====
+        if uid in last_button_message and last_button_message[uid]:
             try:
                 await context.bot.edit_message_reply_markup(
                     chat_id=uid,
-                    message_id=last_image_message[uid],
+                    message_id=last_button_message[uid],
                     reply_markup=None
                 )
-                print(f"✅ Кнопка удалена у предыдущей картинки {last_image_message[uid]}")
+                print(f"✅ Кнопка удалена у предыдущего сообщения {last_button_message[uid]}")
             except Exception as e:
-                print(f"⚠️ Не удалось удалить кнопку: {e}")
+                print(f"⚠️ Не удалось удалить предыдущую кнопку: {e}")
         
-        # Отправляем новую картинку с кнопкой
-        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image")]])
-        sent_msg = await context.bot.send_photo(
+        # 1. Отправляем КАРТИНКУ без кнопки
+        sent_photo = await context.bot.send_photo(
             chat_id=uid,
             photo=image_data,
-            caption=f"🖼 {prompt[:100]}...",
+            caption=f"🖼 {prompt[:100]}..."
+        )
+        print(f"✅ Картинка отправлена для {uid}, ID: {sent_photo.message_id}")
+        
+        # 2. Отправляем ОТДЕЛЬНОЕ сообщение с кнопкой "Назад"
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image")]])
+        sent_button = await context.bot.send_message(
+            chat_id=uid,
+            text="⬅️ Нажмите для выхода",
             reply_markup=keyboard
         )
         
-        # Запоминаем ID этой картинки как последнюю с кнопкой (как в чате)
-        last_image_message[uid] = sent_msg.message_id
-        print(f"✅ Новая картинка отправлена для {uid}, ID: {sent_msg.message_id}")
+        # Запоминаем ID сообщения с кнопкой (а не картинки!)
+        last_button_message[uid] = sent_button.message_id
+        print(f"✅ Кнопка отправлена для {uid}, ID: {sent_button.message_id}")
         
         # Списание звезд
         increment_images(uid)
@@ -112,7 +119,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
             spend_stars(uid, 10)
             add_stars_spent(uid, 10)
         
-        # Остаёмся в режиме (как в чате)
+        # Остаёмся в режиме
         context.user_data["in_image_mode"] = True
         
         send_log_http(f"🖼 Генерация картинки: {uid} -> {prompt[:50]}...")
@@ -127,24 +134,31 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
 async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """
     Выход при нажатии кнопки "Назад" под картинкой.
-    ТОЧНО КАК В ЧАТЕ: удаляем кнопку у последней картинки и показываем меню.
+    Удаляем ТОЛЬКО сообщение с кнопкой, картинка остаётся.
     """
     print(f"🚪 Выход из генерации для {uid} (нажата кнопка Назад)")
     
-    # ===== КАК В ЧАТЕ: удаляем кнопку с последнего сообщения =====
-    if uid in last_image_message and last_image_message[uid]:
+    # ===== УДАЛЯЕМ СООБЩЕНИЕ С КНОПКОЙ (а не картинку) =====
+    if uid in last_button_message and last_button_message[uid]:
         try:
+            # Пробуем удалить кнопку (убрать reply_markup)
             await context.bot.edit_message_reply_markup(
                 chat_id=uid,
-                message_id=last_image_message[uid],
+                message_id=last_button_message[uid],
                 reply_markup=None
             )
-            print(f"✅ Кнопка удалена с картинки {last_image_message[uid]}")
+            print(f"✅ Кнопка удалена у сообщения {last_button_message[uid]}")
         except Exception as e:
             print(f"⚠️ Не удалось удалить кнопку: {e}")
+            # Если не получилось удалить кнопку, удаляем всё сообщение
+            try:
+                await context.bot.delete_message(uid, last_button_message[uid])
+                print(f"✅ Сообщение с кнопкой удалено {last_button_message[uid]}")
+            except Exception as e2:
+                print(f"⚠️ Не удалось удалить сообщение: {e2}")
         
-        # Удаляем запись о последней картинке (как в чате)
-        del last_image_message[uid]
+        # Удаляем запись о кнопке
+        del last_button_message[uid]
     
     # Очищаем стартовое сообщение из памяти если есть
     if "image_start_message_id" in context.user_data:
@@ -159,7 +173,7 @@ async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: in
     # Отправляем НОВОЕ сообщение с главным меню
     await send_fresh_menu(context.bot, uid)
     
-    print(f"✅ Новое меню отправлено для {uid}")
+    print(f"✅ Выход из режима картинок завершен для {uid}")
 
 
 async def exit_image_from_start(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
@@ -187,3 +201,9 @@ async def exit_image_from_start(update: Update, context: ContextTypes.DEFAULT_TY
     await send_fresh_menu(context.bot, uid)
     
     print(f"✅ Выход из стартового экрана завершен для {uid}")
+
+
+async def cleanup_image_state(uid: int, bot):
+    """Очистить состояние (опционально)"""
+    if uid in last_button_message:
+        del last_button_message[uid]
