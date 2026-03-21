@@ -1,3 +1,4 @@
+# bot/handlers/tabs/profile.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (баланс форматируется)
 from telegram import Update
 from telegram.ext import ContextTypes
 from datetime import datetime
@@ -9,7 +10,7 @@ from api import (
 from payments import get_balance
 from bot.menu import tab_kb, TAB_TEXT
 from bot.utils import set_last_menu, send_fresh_menu
-from bot.helpers import format_balance  # ← ДОБАВИЛИ
+from bot.helpers import format_balance  # ← импортируем функцию форматирования
 
 
 async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
@@ -18,7 +19,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     # Получаем свежие данные из БД
     a = get_access(user_id)
     balance = get_balance(user_id)
-    formatted_balance = format_balance(balance)  # ← ДОБАВИЛИ
+    formatted_balance = format_balance(balance)  # ← ФОРМАТИРУЕМ БАЛАНС
     persona = get_user_persona(user_id)
     lang = get_user_lang(user_id)
     use_mini_app = get_use_mini_app(user_id)
@@ -48,7 +49,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         f"💬 Сообщений: {a.get('total_messages', 0)}\n"
         f"🎨 Картинок: {a.get('total_images', 0)}\n"
         f"💸 Потрачено: {a.get('total_stars_spent', 0)} ⭐\n"
-        f"💰 Баланс: {formatted_balance} ⭐\n\n"  # ← ИЗМЕНИЛИ
+        f"💰 Баланс: {formatted_balance} ⭐\n\n"  # ← ИСПОЛЬЗУЕМ ФОРМАТИРОВАННЫЙ БАЛАНС
         
         f"        ⚙️ ТЕКУЩЕЕ\n"
         f"🌐 Язык: {lang}\n"
@@ -57,16 +58,13 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     )
     
     try:
-        # Отправляем/обновляем сообщение с профилем
         await query.message.edit_text(
             text=text,
             reply_markup=tab_kb(user_id)
         )
-        # Сохраняем ID сообщения для последующего удаления
         set_last_menu(user_id, user_id, query.message.message_id)
         print(f"✅ Профиль показан для {user_id}")
         
     except Exception as e:
         print(f"⚠️ Ошибка при показе профиля: {e}")
-        # Если не получилось отредактировать - отправляем новое меню
         await send_fresh_menu(context.bot, user_id)
