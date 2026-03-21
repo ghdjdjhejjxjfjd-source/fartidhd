@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>Генерация картинок</title>
+  <title>Генерация картинки</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -15,6 +15,13 @@
         tg.ready();
         tg.expand();
         tg.disableVerticalSwipes();
+        
+        document.body.style.overflow = 'hidden';
+        const container = document.querySelector('.container');
+        if (container) {
+          container.style.overflowY = 'auto';
+          container.style.webkitOverflowScrolling = 'touch';
+        }
       }
     })();
   </script>
@@ -58,9 +65,9 @@
       color: white;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
+      overflow: hidden;
     }
 
-    /* ===== ТЕМЫ ===== */
     :root[data-theme="blue"] { 
       --bg-top: #27384b;
       --bg-mid: #1d2b3a;
@@ -69,10 +76,13 @@
       --accent2: #3496ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
-      --card-bg: rgba(255, 255, 255, 0.15);
-      --card-border: rgba(255, 255, 255, 0.2);
-      --panel-bg: rgba(255, 255, 255, 0.1);
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(255, 255, 255, 0.08);
+      --btn-bg: rgba(90, 174, 255, 0.2);
       --star-color: #ffffff;
+      --header-text: #f7fbff;
+      --caret-color: #ffffff;
     }
     
     :root[data-theme="black"] { 
@@ -83,10 +93,13 @@
       --accent2: #5a98ff;
       --text: #f7fbff;
       --subtext: rgba(247, 251, 255, 0.68);
-      --card-bg: rgba(255, 255, 255, 0.15);
-      --card-border: rgba(255, 255, 255, 0.2);
-      --panel-bg: rgba(255, 255, 255, 0.1);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(255, 255, 255, 0.06);
+      --btn-bg: rgba(139, 184, 255, 0.15);
       --star-color: #ffffff;
+      --header-text: #f7fbff;
+      --caret-color: #ffffff;
     }
     
     :root[data-theme="light"] { 
@@ -97,20 +110,20 @@
       --accent2: #1a6cff;
       --text: #2c3e50;
       --subtext: #4a5a6a;
-      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-bg: rgba(255, 255, 255, 0.9);
       --card-border: rgba(0, 0, 0, 0.1);
-      --panel-bg: rgba(255, 255, 255, 0.5);
+      --input-bg: rgba(255, 255, 255, 0.95);
+      --btn-bg: rgba(58, 140, 255, 0.1);
       --star-color: #2c3e50;
+      --header-text: #2c3e50;
+      --caret-color: #3a8cff;
     }
 
-    /* ФИКСИРОВАННЫЙ ГРАДИЕНТ */
     body {
       background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-bot) 100%);
       background-attachment: fixed;
-      min-height: 100vh;
     }
 
-    /* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
     .header {
       position: fixed;
       top: 0;
@@ -119,460 +132,568 @@
       z-index: 20;
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 10px 20px;
-      padding-top: calc(10px + env(safe-area-inset-top));
-      width: 70%;
-      margin: 0 auto;
-      left: 0;
-      right: 0;
-      border-radius: 40px;
-      top: 10px;
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: transparent;
+      backdrop-filter: none;
+      height: 60px;
     }
 
     .back-btn {
-      color: var(--text);
+      color: var(--header-text);
       text-decoration: none;
-      font-size: 20px;
-      width: 32px;
-      height: 32px;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: absolute;
-      left: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .title {
-      font-weight: 600;
-      font-size: 16px;
-      color: var(--text);
-      text-align: center;
-    }
-
-    .spacer { 
-      width: 32px; 
-      position: absolute;
-      right: 12px;
-    }
-
-    /* КОНТЕЙНЕР */
-    .container {
-      min-height: 100vh;
-      padding-top: 100px;
-      padding-bottom: 20px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ===== ЗАГОЛОВОК "ВЫБЕРИ СТИЛЬ" ===== */
-    .section-title {
-      font-size: 22px;
-      font-weight: 700;
-      margin: 0 16px 20px 16px;
-      padding: 12px 24px;
-      display: inline-block;
-      width: fit-content;
-      border-radius: 40px;
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(12px) saturate(115%);
-      -webkit-backdrop-filter: blur(12px) saturate(115%);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 8px 25px rgba(90, 174, 255, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2);
-      color: var(--text);
-      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    }
-
-    /* КАРТОЧКИ - В СТОЛБИК */
-    .cards-list {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      padding: 0 16px 20px 16px;
       flex: 1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--header-text);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin: 0 12px;
     }
 
-    /* ===== КАРТОЧКА ===== */
-    .card {
-      display: block;
-      text-decoration: none;
-      color: var(--text);
-      background: transparent;
-      border: none;
-      border-radius: 28px;
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
-      width: 100%;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-      position: relative;
-    }
+    .spacer { width: 40px; }
 
-    /* iOS - стеклянный эффект */
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
+    .container {
+      position: fixed;
+      top: 60px;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 28px;
-      z-index: 1;
-      pointer-events: none;
+      padding: 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* iOS - блик */
-    .card::after {
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      padding: 24px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50%;
-      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
-      border-radius: 28px 28px 0 0;
-      z-index: 2;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 30px;
+      padding: 2px;
+      background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff, #ff0000);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: snakeMove 3s linear infinite;
+      background-size: 300% 100%;
+      opacity: 0.7;
       pointer-events: none;
     }
 
-    .card:active {
-      transform: scale(0.98);
+    @keyframes snakeMove {
+      0% { background-position: 0% 0; }
+      100% { background-position: 300% 0; }
     }
 
-    /* КАРТИНКА-ПРИМЕР */
-    .card-image {
-      width: 100%;
-      aspect-ratio: 16/9;
-      background-size: cover;
-      background-position: center;
-      position: relative;
-      z-index: 3;
-      border-radius: 28px 28px 0 0;
-      background-color: rgba(0, 0, 0, 0.2);
-    }
-
-    /* ПЛЕЙСХОЛДЕРЫ */
-    .card-image[data-card="1"] { background-image: linear-gradient(135deg, #667eea, #764ba2); }
-    .card-image[data-card="2"] { background-image: linear-gradient(135deg, #f093fb, #f5576c); }
-    .card-image[data-card="3"] { background-image: linear-gradient(135deg, #4facfe, #00f2fe); }
-    .card-image[data-card="4"] { background-image: linear-gradient(135deg, #43e97b, #38f9d7); }
-    .card-image[data-card="5"] { background-image: linear-gradient(135deg, #fa709a, #fee140); }
-
-    /* ПАНЕЛЬ КАРТОЧКИ */
-    .card-content {
-      padding: 18px;
-      position: relative;
-      z-index: 3;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .card-title {
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--text);
-      margin-bottom: 4px;
-      text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    .card-header {
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 16px;
     }
 
+    .card-title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-icon { font-size: 32px; }
+    .card-title { font-size: 22px; font-weight: 700; color: var(--text); }
+
     .star-badge {
-      font-size: 14px;
+      font-size: 16px;
       color: var(--star-color);
-      margin-left: 6px;
+      background: rgba(255,215,0,0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,215,0,0.3);
     }
 
     .card-desc {
       font-size: 14px;
       color: var(--subtext);
+      margin-bottom: 24px;
       line-height: 1.5;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
-    /* ANDROID */
-    html.android-mode .card::before {
-      content: none;
+    .input-group { margin-bottom: 20px; }
+    .input-label { font-size: 14px; color: var(--subtext); margin-bottom: 8px; display: block; }
+    .input-wrapper { display: flex; align-items: center; gap: 8px; }
+
+    .text-input {
+      flex: 1;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 16px;
+      transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      caret-color: var(--caret-color);
     }
 
-    html.android-mode .card::after {
-      content: none;
+    .text-input:focus { outline: none; border-color: var(--accent1); }
+    .text-input::placeholder { color: var(--subtext); opacity: 0.7; }
+
+    .clear-input {
+      background: var(--btn-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      width: 50px;
+      height: 50px;
+      border-radius: 20px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
-    html.android-mode .card {
-      background: transparent;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    .size-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
-    html.android-mode .card-content {
-      background: rgba(255, 255, 255, 0.15) !important;
-      backdrop-filter: none !important;
-      border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    .size-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: var(--btn-bg);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
+
+    .size-btn.active {
+      background: var(--accent1);
+      border-color: var(--accent1);
+      color: white;
+    }
+
+    .generate-btn {
+      width: 100%;
+      padding: 18px;
+      border-radius: 24px;
+      border: none;
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 20px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+    }
+
+    .generate-btn:active { transform: scale(0.98); }
+
+    .result { display: none; margin-top: 20px; }
+    .result-image {
+      width: 100%;
+      border-radius: 24px;
+      background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .action-buttons { display: flex; gap: 12px; }
+    .action-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
+      border: none;
+      color: white;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent1);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text { color: white; font-size: 18px; font-weight: 600; }
+
+    html.android-mode .card::before { display: none !important; }
+    html.android-mode .header { background: transparent !important; backdrop-filter: none !important; }
+    html.android-mode .back-btn, html.android-mode .title { background: transparent !important; backdrop-filter: none !important; border: none !important; }
+    html.android-mode .card { backdrop-filter: none !important; }
   </style>
 </head>
 <body>
 
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
   <div class="header">
     <a href="./index.html" class="back-btn">←</a>
-    <div class="title" id="title">Генерация картинок</div>
+    <div class="title" id="title">Генерация картинки</div>
     <div class="spacer"></div>
   </div>
 
   <div class="container">
-    <div class="section-title" id="sectionTitle">🎨 Выбери стиль</div>
-
-    <div class="cards-list">
-      <!-- Карточка 1: Свободный промпт -->
-      <a href="./card-text-to-image.html" class="card" id="card1">
-        <div class="card-image" data-card="1"></div>
-        <div class="card-content">
-          <div class="card-title">
-            <span id="card1Title">Свободный промпт</span>
-            <span class="star-badge">10⭐</span>
-          </div>
-          <div class="card-desc" id="card1Desc">Напиши что хочешь увидеть — ИИ нарисует в любом стиле</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title-wrapper">
+          <span class="card-icon">🖋️</span>
+          <span class="card-title" id="cardTitle">Свободный промпт</span>
         </div>
-      </a>
+        <span class="star-badge">10⭐</span>
+      </div>
+      
+      <div class="card-desc" id="cardDesc">Напиши что хочешь увидеть — ИИ нарисует в любом стиле</div>
 
-      <!-- Карточка 2: Фото → Аниме -->
-      <a href="./card-photo-to-anime.html" class="card" id="card2">
-        <div class="card-image" data-card="2"></div>
-        <div class="card-content">
-          <div class="card-title">
-            <span id="card2Title">Фото → Аниме</span>
-            <span class="star-badge">10⭐</span>
-          </div>
-          <div class="card-desc" id="card2Desc">Преврати своё фото в аниме персонажа с большими глазами</div>
+      <div class="input-group">
+        <label class="input-label" id="promptLabel">Твой промпт</label>
+        <div class="input-wrapper">
+          <input type="text" class="text-input" id="promptInput" placeholder="например: красивый закат в горах">
+          <button class="clear-input" id="clearInputBtn" title="Очистить">✕</button>
         </div>
-      </a>
+      </div>
 
-      <!-- Карточка 3: Фото → Рисунок -->
-      <a href="./card-photo-to-drawing.html" class="card" id="card3">
-        <div class="card-image" data-card="3"></div>
-        <div class="card-content">
-          <div class="card-title">
-            <span id="card3Title">Фото → Рисунок</span>
-            <span class="star-badge">10⭐</span>
-          </div>
-          <div class="card-desc" id="card3Desc">Стань нарисованным карандашом, акварелью или маслом</div>
-        </div>
-      </a>
+      <div class="size-selector">
+        <button class="size-btn active" data-size="1024x1024" id="sizeSquare">1:1</button>
+        <button class="size-btn" data-size="832x1040" id="sizePortrait">4:5</button>
+        <button class="size-btn" data-size="1024x576" id="sizeLandscape">16:9</button>
+      </div>
 
-      <!-- Карточка 4: Цветочная фантазия -->
-      <a href="./card-flowers.html" class="card" id="card4">
-        <div class="card-image" data-card="4"></div>
-        <div class="card-content">
-          <div class="card-title">
-            <span id="card4Title">Цветочная фантазия</span>
-            <span class="star-badge">10⭐</span>
-          </div>
-          <div class="card-desc" id="card4Desc">Создай волшебные цветы и лепестки любых оттенков</div>
-        </div>
-      </a>
+      <button class="generate-btn" id="generateBtn">
+        <span>✨</span>
+        <span id="generateText">Сгенерировать</span>
+      </button>
 
-      <!-- Карточка 5: Фэнтези персонаж -->
-      <a href="./card-fantasy.html" class="card" id="card5">
-        <div class="card-image" data-card="5"></div>
-        <div class="card-content">
-          <div class="card-title">
-            <span id="card5Title">Фэнтези персонаж</span>
-            <span class="star-badge">10⭐</span>
-          </div>
-          <div class="card-desc" id="card5Desc">Стань эльфом, магом, рыцарем или другим героем</div>
+      <div class="result" id="result">
+        <img class="result-image" id="resultImg" src="">
+        <div class="action-buttons">
+          <button class="action-btn" id="saveBtn"><span>💾</span><span id="saveText">Сохранить</span></button>
+          <button class="action-btn primary" id="repeatBtn"><span>🔄</span><span id="repeatText">Повторить</span></button>
         </div>
-      </a>
+      </div>
     </div>
   </div>
 
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">Генерация...</div>
+  </div>
+
   <script>
-    // ===== ПЕРЕВОДЫ ДЛЯ ВСЕХ 6 ЯЗЫКОВ =====
+    const API_BASE = "https://fartidhd-production.up.railway.app";
+    const COST = 10;
+
     const I18N = {
       ru: {
-        title: "Генерация картинок",
-        sectionTitle: "🎨 Выбери стиль",
-        card1Title: "Свободный промпт",
-        card1Desc: "Напиши что хочешь увидеть — ИИ нарисует в любом стиле",
-        card2Title: "Фото → Аниме",
-        card2Desc: "Преврати своё фото в аниме персонажа с большими глазами",
-        card3Title: "Фото → Рисунок",
-        card3Desc: "Стань нарисованным карандашом, акварелью или маслом",
-        card4Title: "Цветочная фантазия",
-        card4Desc: "Создай волшебные цветы и лепестки любых оттенков",
-        card5Title: "Фэнтези персонаж",
-        card5Desc: "Стань эльфом, магом, рыцарем или другим героем"
+        title: "Генерация картинки",
+        cardTitle: "Свободный промпт",
+        cardDesc: "Напиши что хочешь увидеть — ИИ нарисует в любом стиле",
+        promptLabel: "Твой промпт",
+        promptPlaceholder: "например: красивый закат в горах",
+        sizeSquare: "1:1",
+        sizePortrait: "4:5",
+        sizeLandscape: "16:9",
+        generate: "Сгенерировать",
+        save: "Сохранить",
+        repeat: "Повторить",
+        loading: "Генерация...",
+        clear: "Очистить",
+        insufficientStars: "❌ Недостаточно звезд. Нужно 10⭐",
+        error: "Ошибка генерации",
+        saved: "✅ Отправлено в бота"
       },
       en: {
         title: "Image generation",
-        sectionTitle: "🎨 Choose style",
-        card1Title: "Free prompt",
-        card1Desc: "Write what you want to see — AI will draw in any style",
-        card2Title: "Photo → Anime",
-        card2Desc: "Turn your photo into anime character with big eyes",
-        card3Title: "Photo → Drawing",
-        card3Desc: "Become drawn with pencil, watercolor or oil",
-        card4Title: "Flower fantasy",
-        card4Desc: "Create magical flowers and petals of any colors",
-        card5Title: "Fantasy character",
-        card5Desc: "Become an elf, wizard, knight or other hero"
-      },
-      kk: {
-        title: "Сурет генерациясы",
-        sectionTitle: "🎨 Стиль таңда",
-        card1Title: "Еркін промпт",
-        card1Desc: "Қалағаныңды жаз — ИИ кез келген стильде салады",
-        card2Title: "Фото → Аниме",
-        card2Desc: "Фотоңды аниме кейіпкеріне айналдыр",
-        card3Title: "Фото → Сурет",
-        card3Desc: "Қарындашпен, акварельмен немесе маймен салынғандай бол",
-        card4Title: "Гүлді фантазия",
-        card4Desc: "Сиқырлы гүлдер мен жапырақтар жаса",
-        card5Title: "Фэнтези кейіпкер",
-        card5Desc: "Эльф, сиқыршы, сарбаз немесе басқа кейіпкер бол"
-      },
-      tr: {
-        title: "Görsel oluşturma",
-        sectionTitle: "🎨 Stil seç",
-        card1Title: "Serbest prompt",
-        card1Desc: "Ne görmek istediğini yaz — AI her stilde çizecek",
-        card2Title: "Fotoğraf → Anime",
-        card2Desc: "Fotografını anime karakterine dönüştür",
-        card3Title: "Fotoğraf → Çizim",
-        card3Desc: "Kurşun kalem, sulu boya veya yağlı boya ile çizilmiş gibi ol",
-        card4Title: "Çiçek fantezisi",
-        card4Desc: "Sihirli çiçekler ve yapraklar oluştur",
-        card5Title: "Fantazi karakter",
-        card5Desc: "Elf, büyücü, şövalye veya başka bir kahraman ol"
-      },
-      uk: {
-        title: "Генерація зображень",
-        sectionTitle: "🎨 Обери стиль",
-        card1Title: "Вільний промпт",
-        card1Desc: "Напиши що хочеш побачити — AI намалює в будь-якому стилі",
-        card2Title: "Фото → Аніме",
-        card2Desc: "Перетвори своє фото на аніме персонажа",
-        card3Title: "Фото → Малюнок",
-        card3Desc: "Стань намальованим олівцем, аквареллю або маслом",
-        card4Title: "Квіткова фантазія",
-        card4Desc: "Створи чарівні квіти та пелюстки",
-        card5Title: "Фентезі персонаж",
-        card5Desc: "Стань ельфом, магом, лицарем або іншим героєм"
-      },
-      fr: {
-        title: "Génération d'images",
-        sectionTitle: "🎨 Choisis un style",
-        card1Title: "Prompt libre",
-        card1Desc: "Écris ce que tu veux voir — L'IA dessinera dans n'importe quel style",
-        card2Title: "Photo → Anime",
-        card2Desc: "Transforme ta photo en personnage d'anime",
-        card3Title: "Photo → Dessin",
-        card3Desc: "Deviens dessiné au crayon, à l'aquarelle ou à l'huile",
-        card4Title: "Fantaisie florale",
-        card4Desc: "Crée des fleurs et des pétales magiques",
-        card5Title: "Personnage fantastique",
-        card5Desc: "Deviens un elfe, un magicien, un chevalier ou un autre héros"
+        cardTitle: "Free prompt",
+        cardDesc: "Write what you want to see — AI will draw in any style",
+        promptLabel: "Your prompt",
+        promptPlaceholder: "e.g.: beautiful sunset in mountains",
+        sizeSquare: "1:1",
+        sizePortrait: "4:5",
+        sizeLandscape: "16:9",
+        generate: "Generate",
+        save: "Save",
+        repeat: "Repeat",
+        loading: "Generating...",
+        clear: "Clear",
+        insufficientStars: "❌ Insufficient stars. Need 10⭐",
+        error: "Generation error",
+        saved: "✅ Sent to bot"
       }
     };
 
-    // ===== ПОЛУЧЕНИЕ ЯЗЫКА =====
     function getLang() {
-      // Сначала из URL
       const url = new URL(window.location.href);
       const urlLang = url.searchParams.get("lang");
       if (urlLang) {
         try { localStorage.setItem("miniapp_lang_v1", urlLang); } catch(e) {}
         return urlLang;
       }
-      
-      // Потом из localStorage
       try { 
         const stored = localStorage.getItem("miniapp_lang_v1");
         if (stored) return stored;
       } catch(e) {}
-      
       return "ru";
     }
 
-    // ===== ОБНОВЛЕНИЕ ЯЗЫКА =====
     function updateLanguage() {
       const lang = getLang();
       const t = I18N[lang] || I18N.ru;
-      
-      console.log("Обновление языка на:", lang);
-      
-      // Обновляем все элементы
-      const titleEl = document.getElementById('title');
-      if (titleEl) titleEl.textContent = t.title;
-      
-      const sectionTitleEl = document.getElementById('sectionTitle');
-      if (sectionTitleEl) sectionTitleEl.textContent = t.sectionTitle;
-      
-      const card1Title = document.getElementById('card1Title');
-      if (card1Title) card1Title.textContent = t.card1Title;
-      
-      const card1Desc = document.getElementById('card1Desc');
-      if (card1Desc) card1Desc.textContent = t.card1Desc;
-      
-      const card2Title = document.getElementById('card2Title');
-      if (card2Title) card2Title.textContent = t.card2Title;
-      
-      const card2Desc = document.getElementById('card2Desc');
-      if (card2Desc) card2Desc.textContent = t.card2Desc;
-      
-      const card3Title = document.getElementById('card3Title');
-      if (card3Title) card3Title.textContent = t.card3Title;
-      
-      const card3Desc = document.getElementById('card3Desc');
-      if (card3Desc) card3Desc.textContent = t.card3Desc;
-      
-      const card4Title = document.getElementById('card4Title');
-      if (card4Title) card4Title.textContent = t.card4Title;
-      
-      const card4Desc = document.getElementById('card4Desc');
-      if (card4Desc) card4Desc.textContent = t.card4Desc;
-      
-      const card5Title = document.getElementById('card5Title');
-      if (card5Title) card5Title.textContent = t.card5Title;
-      
-      const card5Desc = document.getElementById('card5Desc');
-      if (card5Desc) card5Desc.textContent = t.card5Desc;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('cardTitle').textContent = t.cardTitle;
+      document.getElementById('cardDesc').textContent = t.cardDesc;
+      document.getElementById('promptLabel').textContent = t.promptLabel;
+      document.getElementById('promptInput').placeholder = t.promptPlaceholder;
+      document.getElementById('sizeSquare').textContent = t.sizeSquare;
+      document.getElementById('sizePortrait').textContent = t.sizePortrait;
+      document.getElementById('sizeLandscape').textContent = t.sizeLandscape;
+      document.getElementById('generateText').textContent = t.generate;
+      document.getElementById('saveText').textContent = t.save;
+      document.getElementById('repeatText').textContent = t.repeat;
+      document.getElementById('loadingText').textContent = t.loading;
+      document.getElementById('clearInputBtn').title = t.clear;
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
     document.addEventListener('DOMContentLoaded', updateLanguage);
-    
-    // ===== СЛУШАТЕЛЬ СОБЫТИЯ ИЗ МЕНЮ =====
     window.addEventListener('languageChanged', updateLanguage);
-    
-    // ===== ПРОВЕРКА LOCALSTORAGE =====
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'miniapp_lang_v1') {
-        updateLanguage();
-      }
-    });
 
-    // ===== ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА КАЖДУЮ СЕКУНДУ =====
     let lastLang = getLang();
     setInterval(() => {
       const currentLang = getLang();
       if (currentLang !== lastLang) {
-        console.log("Язык изменился (setInterval):", currentLang);
         lastLang = currentLang;
         updateLanguage();
       }
     }, 1000);
+
+    function getUser() {
+      const tg = window.Telegram?.WebApp;
+      if (!tg || !tg.initDataUnsafe?.user) return null;
+      return tg.initDataUnsafe.user;
+    }
+
+    async function checkBalance() {
+      const user = getUser();
+      if (!user) return false;
+      try {
+        const response = await fetch(`${API_BASE}/api/stars/balance/${user.id}`);
+        const data = await response.json();
+        return data.balance >= COST;
+      } catch (e) { return false; }
+    }
+
+    async function spendStars() {
+      const user = getUser();
+      if (!user) return false;
+      try {
+        const response = await fetch(`${API_BASE}/api/stars/spend`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tg_user_id: user.id, amount: COST })
+        });
+        if (!response.ok) {
+          if (response.status === 402) throw new Error('insufficient_stars');
+          return false;
+        }
+        return true;
+      } catch (e) { throw e; }
+    }
+
+    async function generateImage(prompt, size) {
+      const user = getUser();
+      if (!user) {
+        alert("Ошибка: не удалось получить данные пользователя");
+        return null;
+      }
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      try {
+        const hasBalance = await checkBalance();
+        if (!hasBalance) {
+          const t = I18N[getLang()] || I18N.ru;
+          alert(t.insufficientStars);
+          return null;
+        }
+        const formData = new FormData();
+        formData.append('tg_user_id', user.id);
+        formData.append('tg_username', user.username || '');
+        formData.append('tg_first_name', user.first_name || '');
+        formData.append('prompt', prompt);
+        formData.append('mode', 'txt2img');
+        const [width, height] = size.split('x');
+        formData.append('width', width);
+        formData.append('height', height);
+        const response = await fetch(`${API_BASE}/api/image`, { method: 'POST', body: formData });
+        const data = await response.json();
+        if (!response.ok) {
+          if (data.error === 'insufficient_stars') throw new Error('insufficient_stars');
+          else throw new Error(data.message || 'Ошибка генерации');
+        }
+        await spendStars();
+        return data.image_base64;
+      } catch (error) {
+        if (error.message === 'insufficient_stars') {
+          const t = I18N[getLang()] || I18N.ru;
+          alert(t.insufficientStars);
+        } else {
+          alert('Ошибка: ' + error.message);
+        }
+        return null;
+      } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+      }
+    }
+
+    async function sendToBot(base64Data) {
+      const t = I18N[getLang()] || I18N.ru;
+      const user = getUser();
+      if (!user) {
+        alert("Ошибка: пользователь не найден");
+        return;
+      }
+      try {
+        const base64Response = await fetch(base64Data);
+        const blob = await base64Response.blob();
+        const formData = new FormData();
+        formData.append('user_id', user.id);
+        formData.append('image', blob, `image_${Date.now()}.png`);
+        formData.append('filename', `image_${Date.now()}.png`);
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('loadingText').textContent = t.loading;
+        const response = await fetch(`${API_BASE}/api/send-photo`, { method: 'POST', body: formData });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          alert(t.saved);
+        } else {
+          alert("Ошибка при отправке в бота");
+        }
+      } catch (e) {
+        alert("Ошибка при отправке в бота");
+      } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('loadingText').textContent = t.loading;
+      }
+    }
+
+    const promptInput = document.getElementById('promptInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const result = document.getElementById('result');
+    const resultImg = document.getElementById('resultImg');
+    const saveBtn = document.getElementById('saveBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    const clearInputBtn = document.getElementById('clearInputBtn');
+    let currentSize = '1024x1024';
+    let currentImageBase64 = null;
+
+    clearInputBtn.addEventListener('click', () => {
+      promptInput.value = '';
+      promptInput.focus();
+    });
+
+    document.querySelectorAll('.size-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSize = btn.dataset.size;
+      });
+    });
+
+    generateBtn.addEventListener('click', async () => {
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        alert('Введите промпт');
+        return;
+      }
+      const fullPrompt = `${prompt}, high quality, detailed, 8k, masterpiece`;
+      const imageBase64 = await generateImage(fullPrompt, currentSize);
+      if (imageBase64) {
+        currentImageBase64 = imageBase64;
+        resultImg.src = imageBase64;
+        result.style.display = 'block';
+        generateBtn.style.display = 'none';
+      }
+    });
+
+    saveBtn.addEventListener('click', () => {
+      if (currentImageBase64) {
+        sendToBot(currentImageBase64);
+      }
+    });
+
+    repeatBtn.addEventListener('click', () => {
+      result.style.display = 'none';
+      generateBtn.style.display = 'flex';
+    });
   </script>
 </body>
 </html>
