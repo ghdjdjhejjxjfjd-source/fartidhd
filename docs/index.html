@@ -86,7 +86,6 @@
       color: var(--text);
       display: flex;
       flex-direction: column;
-      /* МАКСИМАЛЬНАЯ ЧЕТКОСТЬ ДЛЯ ВСЕХ ТЕМ (iOS/Android) */
       font-weight: 800 !important;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -113,80 +112,213 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    .header, .top, .tool-header {
-      padding-top: 12px !important;
+    /* Кнопки */
+    .btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 16px 16px;
+      border-radius: 20px;
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 18%, white 8%) 0%, rgba(255,255,255,.08) 100%);
+      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      box-shadow: 0 10px 22px rgba(0,0,0,.14), 0 0 14px color-mix(in srgb, var(--accent1) 16%, transparent);
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
     }
 
-    /* Убираем размытие с кнопок */
-    .btn, .tools-btn, .tool-item, .langPill, .themePill, .platformPill {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      font-weight: 800 !important; /* Максимально жирные */
-      border: 1px solid rgba(255, 255, 255, 0.35) !important; /* Узкая обводка для всех тем */
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      letter-spacing: 0.3px;
+    .btn:active {
+      transform: scale(.995);
     }
 
-    /* ЧЕРНАЯ ТЕМА - такая же обводка как у синей */
-    :root[data-theme="black"] .btn,
-    :root[data-theme="black"] .tools-btn,
-    :root[data-theme="black"] .tool-item,
-    :root[data-theme="black"] .langPill,
-    :root[data-theme="black"] .themePill,
-    :root[data-theme="black"] .platformPill {
-      border: 1px solid rgba(255, 255, 255, 0.35) !important; /* Такая же как у синей */
+    .btn:hover {
+      border-color: color-mix(in srgb, var(--accent1) 35%, rgba(255,255,255,.18));
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 22%, white 10%) 0%, rgba(255,255,255,.10) 100%);
     }
 
-    /* СИНЯЯ ТЕМА - стандартная обводка */
-    :root[data-theme="blue"] .btn,
-    :root[data-theme="blue"] .tools-btn,
-    :root[data-theme="blue"] .tool-item,
-    :root[data-theme="blue"] .langPill,
-    :root[data-theme="blue"] .themePill,
-    :root[data-theme="blue"] .platformPill {
-      border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    .sub {
+      margin-top: 16px;
+      text-align: center;
+      color: var(--subtext);
+      font-size: 14px;
     }
 
-    /* СВЕТЛАЯ ТЕМА - темная обводка */
+    .ver {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.5;
+      color: var(--subtext);
+    }
+
+    /* БЛОК ЯЗЫКА */
+    .langBlock {
+      margin-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, .10);
+      padding-top: 12px;
+    }
+
+    .langTitle {
+      font-size: 13px;
+      color: var(--subtext);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .langPill {
+      width: 100%;
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, .10);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: var(--text);
+      outline: none;
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .chev {
+      opacity: .8;
+    }
+
+    /* БЛОК ПЛАТФОРМЫ */
+    .platformBlock {
+      margin-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, .10);
+      padding-top: 12px;
+    }
+
+    .platformTitle {
+      font-size: 13px;
+      color: var(--subtext);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .platformPill {
+      width: 100%;
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, .10);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: var(--text);
+      outline: none;
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    /* КНОПКА ТЕМЫ */
+    .themePill {
+      position: fixed;
+      top: calc(10px + env(safe-area-inset-top));
+      left: 10px;
+      z-index: 10000;
+      padding: 10px 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 16%, white 8%) 0%, rgba(255,255,255,.08) 100%);
+      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+      color: var(--text);
+      backdrop-filter: blur(12px) saturate(115%);
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    /* Светлая тема */
     :root[data-theme="light"] .btn,
-    :root[data-theme="light"] .tools-btn,
-    :root[data-theme="light"] .tool-item,
     :root[data-theme="light"] .langPill,
-    :root[data-theme="light"] .themePill,
-    :root[data-theme="light"] .platformPill {
-      border: 1px solid rgba(0, 0, 0, 0.3) !important;
-      color: #1a2634 !important;
+    :root[data-theme="light"] .platformPill,
+    :root[data-theme="light"] .themePill {
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid #c0c0c0;
+      color: #3a4a5a;
     }
 
-    /* ДЛЯ ANDROID - чуть ярче */
-    html.android-mode[data-theme="blue"] {
-      filter: brightness(1.08);
-    }
-    
-    html.android-mode[data-theme="black"] {
-      filter: brightness(1.1);
+    :root[data-theme="light"] .sub,
+    :root[data-theme="light"] .ver,
+    :root[data-theme="light"] .langTitle,
+    :root[data-theme="light"] .platformTitle {
+      color: #5a6a7a;
     }
 
-    /* Текст максимально четкий для всех элементов */
-    body, .sub, .ver, .langTitle, .platformTitle, 
-    .btn, .tools-btn, .tool-text, .langPill span, .themePill span, .platformPill span,
-    .title, .gear, a, button, span, div {
-      font-weight: 800 !important;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
-      letter-spacing: 0.3px !important;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
+    /* Android */
+    html.android-mode .btn,
+    html.android-mode .langPill,
+    html.android-mode .platformPill,
+    html.android-mode .themePill {
+      backdrop-filter: none !important;
+      background: rgba(255,255,255,0.08) !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
     }
+
+    html.android-mode[data-theme="light"] .btn,
+    html.android-mode[data-theme="light"] .langPill,
+    html.android-mode[data-theme="light"] .platformPill,
+    html.android-mode[data-theme="light"] .themePill {
+      background: rgba(255,255,255,0.8) !important;
+      border: 1.5px solid #c0c0c0 !important;
+      color: #3a4a5a !important;
+    }
+
+    /* КУБИКИ */
+    .cube {
+      position: absolute;
+      width: 108px;
+      height: 108px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--accent1) 18%, white 10%);
+      border: 1px solid color-mix(in srgb, var(--accent1) 42%, white 20%);
+      backdrop-filter: blur(8px) saturate(120%);
+      pointer-events: none;
+      opacity: .72;
+    }
+    .cube.small { width: 56px; height: 56px; opacity: .52; }
+    .cube.tiny { width: 30px; height: 30px; opacity: .38; }
+    .f1 { animation: drift1 14s ease-in-out infinite; }
+    .f2 { animation: drift2 16s ease-in-out infinite; }
+    .f3 { animation: drift3 15s ease-in-out infinite; }
+    .f4 { animation: drift4 17s ease-in-out infinite; }
+    .f5 { animation: drift5 13s ease-in-out infinite; }
+    .f6 { animation: drift6 18s ease-in-out infinite; }
+
+    @keyframes drift1{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(12px,-14px)} }
+    @keyframes drift2{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-14px,-10px)} }
+    @keyframes drift3{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(10px,12px)} }
+    @keyframes drift4{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-12px,14px)} }
+    @keyframes drift5{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(8px,-10px)} }
+    @keyframes drift6{ 0%,100%{transform: translate(0,0)} 50%{transform: translate(-8px,10px)} }
+
+    html.android-mode .cube { display: none !important; }
   </style>
 
   <link rel="stylesheet" href="./css/base.css?v=3">
   <link rel="stylesheet" href="./css/index.css?v=6">
-  <link rel="stylesheet" href="./css/tools.css?v=1">
 </head>
-
 <body>
-  <!-- КНОПКА ТЕМЫ -->
+
   <button class="themePill" id="themeBtn" type="button">
     <span id="themeBtnText">Цвет: Синий</span> <span class="chev">▾</span>
   </button>
@@ -202,7 +334,6 @@
   <div class="cube small f2" style="left:75%; top:55%"></div>
   <div class="cube tiny f3" style="left:85%; top:15%"></div>
   <div class="cube f4" style="left:92%; top:75%"></div>
-  
   <div class="cube f5" style="left:8%; top:70%"></div>
   <div class="cube small f6" style="left:18%; top:85%"></div>
   <div class="cube tiny f1" style="left:28%; top:50%"></div>
@@ -216,54 +347,12 @@
 
   <div class="wrap">
     <div class="card">
-      <!-- ОБЫЧНЫЕ КНОПКИ -->
       <button class="btn" id="chatBtn" onclick="openPage('chat.html')">💬 Чат с ИИ</button>
       <button class="btn" id="imgBtn" onclick="openPage('image.html')">🎨 Генерация картинки</button>
-      
-      <!-- КНОПКА ИНСТРУМЕНТОВ -->
-      <div class="tools-container">
-        <button class="btn tools-btn" id="toolsBtn" type="button">
-          <span id="toolsBtnText">🔧 Инструменты</span> <span class="chev" id="toolsChev">▼</span>
-        </button>
-        
-        <div class="tools-dropdown" id="toolsDropdown">
-          <div class="tool-item" onclick="openTool('remove-bg.html')">
-            <span class="tool-icon">📸</span>
-            <span class="tool-text" id="toolRemoveBgText">Удаление фона</span>
-            <span class="tool-arrow">▶</span>
-          </div>
-          <div class="tool-item" onclick="openTool('text-from-image.html')">
-            <span class="tool-icon">🎨</span>
-            <span class="tool-text" id="toolTextFromImageText">Текст с фото</span>
-            <span class="tool-arrow">▶</span>
-          </div>
-          <div class="tool-item" onclick="openTool('selfie-filters.html')">
-            <span class="tool-icon">🤳</span>
-            <span class="tool-text" id="toolSelfieFiltersText">Селфи фильтры</span>
-            <span class="tool-arrow">▶</span>
-          </div>
-          <div class="tool-item" onclick="openTool('music.html')">
-            <span class="tool-icon">🎵</span>
-            <span class="tool-text" id="toolMusicText">Создание музыки</span>
-            <span class="tool-arrow">▶</span>
-          </div>
-          <div class="tool-item" onclick="openTool('meme.html')">
-            <span class="tool-icon">📝</span>
-            <span class="tool-text" id="toolMemeText">Создание мемов</span>
-            <span class="tool-arrow">▶</span>
-          </div>
-          <div class="tool-item" onclick="openTool('qr.html')">
-            <span class="tool-icon">📱</span>
-            <span class="tool-text" id="toolQrText">QR коды</span>
-            <span class="tool-arrow">▶</span>
-          </div>
-        </div>
-      </div>
 
       <div class="sub" id="subText">Быстрые ответы • Память • Заметки</div>
       <div class="ver" id="verText">miniapp v3</div>
 
-      <!-- БЛОК ЯЗЫКА -->
       <div class="langBlock">
         <div class="langTitle" id="langTitle">Язык интерфейса</div>
         <button class="langPill" id="langBtn" type="button">
@@ -271,7 +360,6 @@
         </button>
       </div>
 
-      <!-- БЛОК ПЛАТФОРМЫ (iOS/Android) -->
       <div class="platformBlock">
         <div class="platformTitle" id="platformTitle">Режим</div>
         <button class="platformPill" id="platformBtn" type="button">
@@ -303,7 +391,7 @@
     </div>
   </div>
 
-  <!-- Оверлей платформы (iOS/Android) -->
+  <!-- Оверлей платформы -->
   <div class="platformOverlay" id="platformOverlay">
     <div class="platformSheet">
       <div class="platformSheetHeader">
@@ -315,102 +403,30 @@
   </div>
 
   <script>
-    // Функция открытия страниц внутри Telegram
     function openPage(page) {
-      const tg = window.Telegram?.WebApp;
       const lang = getSavedLang();
       const theme = getSavedTheme();
       const platform = getSavedPlatform();
-      
       const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
       const fullUrl = `${baseUrl}${page}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&platform=${encodeURIComponent(platform)}`;
-      
       window.location.href = fullUrl;
     }
 
-    // Функция открытия инструментов
-    function openTool(toolPage) {
-      const tg = window.Telegram?.WebApp;
-      const lang = getSavedLang();
-      const theme = getSavedTheme();
-      const platform = getSavedPlatform();
-      
-      const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-      const fullUrl = `${baseUrl}tools/${toolPage}?lang=${encodeURIComponent(lang)}&theme=${encodeURIComponent(theme)}&platform=${encodeURIComponent(platform)}`;
-      
-      window.location.href = fullUrl;
-    }
-
-    // Получение сохраненного языка
     function getSavedLang() {
       try { return localStorage.getItem("miniapp_lang_v1") || "ru"; } 
       catch(e) { return "ru"; }
     }
 
-    // Получение сохраненной темы
     function getSavedTheme() {
       try { return localStorage.getItem("miniapp_theme_v1") || "blue"; } 
       catch(e) { return "blue"; }
     }
 
-    // Получение сохраненной платформы (iOS/Android)
     function getSavedPlatform() {
       try { return localStorage.getItem("miniapp_platform_v1") || "ios"; } 
       catch(e) { return "ios"; }
     }
 
-    // Инициализация выпадающего меню
-    (function() {
-      const toolsBtn = document.getElementById('toolsBtn');
-      const toolsDropdown = document.getElementById('toolsDropdown');
-      const toolsChev = document.getElementById('toolsChev');
-      
-      if (!toolsBtn || !toolsDropdown) return;
-      
-      let isOpen = false;
-      try {
-        isOpen = localStorage.getItem('tools_menu_open') === 'true';
-      } catch(e) {}
-      
-      function toggleTools(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        isOpen = !isOpen;
-        
-        if (isOpen) {
-          toolsDropdown.classList.add('open');
-          toolsBtn.classList.add('active');
-          toolsChev.classList.add('rotate');
-          toolsChev.textContent = '▲';
-        } else {
-          toolsDropdown.classList.remove('open');
-          toolsBtn.classList.remove('active');
-          toolsChev.classList.remove('rotate');
-          toolsChev.textContent = '▼';
-        }
-        
-        try {
-          localStorage.setItem('tools_menu_open', isOpen);
-        } catch(e) {}
-      }
-      
-      toolsBtn.addEventListener('click', toggleTools);
-      
-      document.addEventListener('click', (e) => {
-        if (isOpen && !toolsBtn.contains(e.target) && !toolsDropdown.contains(e.target)) {
-          toggleTools(e);
-        }
-      });
-      
-      if (isOpen) {
-        toolsDropdown.classList.add('open');
-        toolsBtn.classList.add('active');
-        toolsChev.textContent = '▲';
-      }
-    })();
-
-    // ===== ДОБАВЛЕН ПЕРЕВОД ДЛЯ "РЕЖИМ" =====
     const I18N = {
       ru: { platform: "Режим" },
       kk: { platform: "Режим" },
@@ -424,17 +440,13 @@
       const lang = getSavedLang();
       const t = I18N[lang] || I18N.ru;
       const platformTitle = document.getElementById('platformTitle');
-      if (platformTitle) {
-        platformTitle.textContent = t.platform;
-      }
+      if (platformTitle) platformTitle.textContent = t.platform;
     }
 
-    // Обновляем при загрузке и при смене языка
     document.addEventListener('DOMContentLoaded', updatePlatformTitle);
     window.addEventListener('languageChanged', updatePlatformTitle);
   </script>
 
-  <!-- Подключаем index.js -->
   <script type="module" src="./js/index.js?v=7"></script>
 </body>
 </html>
