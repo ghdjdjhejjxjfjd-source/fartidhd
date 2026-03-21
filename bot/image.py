@@ -1,4 +1,4 @@
-# bot/image.py - ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ
+# bot/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (удаляем только кнопку)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import base64
@@ -39,7 +39,6 @@ async def inline_image_start(update: Update, context: ContextTypes.DEFAULT_TYPE)
     text = "🖼 Напиши описание картинки.\nСтоимость: 10⭐"
     keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image_from_start")]])
     
-    # Отправляем или редактируем
     try:
         sent_msg = await query.message.edit_text(text, reply_markup=keyboard)
     except Exception:
@@ -48,7 +47,6 @@ async def inline_image_start(update: Update, context: ContextTypes.DEFAULT_TYPE)
     context.user_data["image_start_message_id"] = sent_msg.message_id
     context.user_data["in_image_mode"] = True
     
-    # Инициализируем
     if uid not in last_image_message:
         last_image_message[uid] = None
     
@@ -64,19 +62,16 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         context.user_data["in_image_mode"] = False
         return
     
-    # Удаляем стартовое сообщение с кнопкой (если есть)
     if "image_start_message_id" in context.user_data:
         try:
             await context.bot.delete_message(uid, context.user_data["image_start_message_id"])
             del context.user_data["image_start_message_id"]
-            print(f"✅ Стартовое сообщение удалено для {uid}")
         except Exception as e:
             print(f"⚠️ Не удалось удалить стартовое сообщение: {e}")
     
     status_msg = await update.message.reply_text("🎨 Генерирую...")
     
     try:
-        # Генерация картинки
         image_base64 = generate_image_dalle(prompt, "1024x1024", "standard")
         
         if image_base64.startswith("data:image/png;base64,"):
@@ -86,7 +81,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         
         await status_msg.delete()
         
-        # ===== УДАЛЯЕМ КНОПКУ У ПРЕДЫДУЩЕЙ КАРТИНКИ =====
+        # Удаляем кнопку у ПРЕДЫДУЩЕЙ картинки
         if uid in last_image_message and last_image_message[uid]:
             try:
                 await context.bot.edit_message_reply_markup(
@@ -98,7 +93,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
             except Exception as e:
                 print(f"⚠️ Не удалось удалить кнопку: {e}")
         
-        # Отправляем НОВУЮ картинку С КНОПКОЙ
+        # Отправляем новую картинку с кнопкой
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image")]])
         sent_msg = await context.bot.send_photo(
             chat_id=uid,
@@ -107,20 +102,17 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
             reply_markup=keyboard
         )
         
-        # Запоминаем ID новой картинки как последнюю с кнопкой
         last_image_message[uid] = sent_msg.message_id
         print(f"✅ Новая картинка отправлена для {uid}, ID: {sent_msg.message_id}")
         
-        # Списание звезд
         increment_images(uid)
         if not a.get("is_free"):
             spend_stars(uid, 10)
             add_stars_spent(uid, 10)
         
-        # ✅ ОСТАЁМСЯ В РЕЖИМЕ — можно отправлять следующие запросы
+        # Остаёмся в режиме
         context.user_data["in_image_mode"] = True
         
-        # Лог
         send_log_http(f"🖼 Генерация картинки: {uid} -> {prompt[:50]}...")
         
     except Exception as e:
@@ -133,19 +125,20 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
 async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """
     Выход при нажатии кнопки "Назад" под картинкой.
-    Удаляем КНОПКУ у этой картинки и возвращаемся в меню.
+    Удаляем ТОЛЬКО КНОПКУ, картинка остаётся.
     """
     print(f"🚪 Выход из генерации для {uid} (нажата кнопка Назад)")
     
     query = update.callback_query
     current_message_id = query.message.message_id if query.message else None
     
-    # 1. Удаляем кнопку у ТЕКУЩЕЙ картинки (на которой нажали)
-    try:
-        await query.message.edit_reply_markup(reply_markup=None)
-        print(f"✅ Кнопка удалена у картинки {current_message_id}")
-    except Exception as e:
-        print(f"⚠️ Не удалось удалить кнопку у текущей картинки: {e}")
+    # 1. Удаляем ТОЛЬКО КНОПКУ у текущей картинки (картинка остаётся)
+    if current_message_id:
+        try:
+            await query.message.edit_reply_markup(reply_markup=None)
+            print(f"✅ Кнопка удалена у картинки {current_message_id}")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить кнопку: {e}")
     
     # 2. Очищаем запись о последней картинке (если это она)
     if uid in last_image_message and last_image_message[uid] == current_message_id:
@@ -164,26 +157,28 @@ async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: in
 
 async def exit_image_from_start(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """
-    Выход при нажатии кнопки "Назад" в стартовом экране (до первой генерации).
+    Выход при нажатии кнопки "Назад" в стартовом экране.
     """
     print(f"🚪 Выход из стартового экрана генерации для {uid}")
     
     query = update.callback_query
     
-    # Удаляем стартовое сообщение
     if query and query.message:
         try:
             await query.message.delete()
-            print(f"✅ Стартовое сообщение удалено")
         except Exception as e:
             print(f"⚠️ Не удалось удалить стартовое сообщение: {e}")
     
-    # Очищаем данные
     context.user_data.pop("image_start_message_id", None)
     context.user_data["in_image_mode"] = False
     
-    # Удаляем старые меню и показываем новое
     await delete_all_menus(context.bot, uid)
     await send_fresh_menu(context.bot, uid)
     
     print(f"✅ Выход из стартового экрана завершен для {uid}")
+
+
+async def cleanup_image_state(uid: int, bot):
+    """Очистить состояние (опционально)"""
+    if uid in last_image_message:
+        del last_image_message[uid]
