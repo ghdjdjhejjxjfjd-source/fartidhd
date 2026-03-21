@@ -1,4 +1,4 @@
-# bot/chat.py
+# bot/chat.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (только одно меню)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from datetime import datetime
@@ -13,7 +13,7 @@ from groq_client import ask_groq
 from openai_client import ask_openai
 from .config import send_log_http
 from .menu import main_menu_for_user
-from .utils import send_fresh_menu, delete_prev_menu, delete_all_menus
+from .utils import send_fresh_menu, delete_prev_menu
 
 # Глобальное хранилище ID последнего сообщения с кнопкой
 last_bot_message_with_button = {}
@@ -196,18 +196,15 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             
             increment_messages(uid)
             
-            # ===== ПОДРОБНЫЙ ЛОГ НА РУССКОМ С ОТСТУПАМИ =====
+            # ===== ПОДРОБНЫЙ ЛОГ =====
             from api.config import send_log_to_group
             
-            # Получаем данные пользователя
             user = update.effective_user
             username = f"@{user.username}" if user.username else "—"
             first_name = user.first_name or "—"
             
-            # Получаем новый баланс
             new_balance = get_balance(uid)
             
-            # Формируем лог на русском с отступами
             time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             log_text = (
                 f"🕒 {time_str}\n"
@@ -233,9 +230,9 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["in_chat_mode"] = False
 
 async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
-    """Выход из чата в главное меню (с последнего ответа ИИ)"""
+    """Выход из чата в главное меню (только одно меню)"""
     
-    print(f"🚪 Выход из чата для {uid} (с ответа ИИ)")
+    print(f"🚪 Выход из чата для {uid}")
     
     # 1. Удаляем кнопку с последнего ответа ИИ (НО НЕ САМО СООБЩЕНИЕ)
     if uid in last_bot_message_with_button:
@@ -258,12 +255,9 @@ async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int
     # 3. Выходим из режима чата
     context.user_data["in_chat_mode"] = False
     
-    # 4. Удаляем все старые меню
-    await delete_all_menus(context.bot, uid)
-    
-    # 5. Отправляем НОВОЕ сообщение с главным меню
+    # 4. Отправляем/обновляем меню (send_fresh_menu сам удалит старое)
     await send_fresh_menu(context.bot, uid)
-    print(f"✅ Новое меню отправлено для {uid}")
+    print(f"✅ Меню отправлено для {uid}")
 
 async def exit_chat_from_start(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """Выход из чата со стартового экрана"""
@@ -284,7 +278,6 @@ async def exit_chat_from_start(update: Update, context: ContextTypes.DEFAULT_TYP
     
     context.user_data["in_chat_mode"] = False
     
-    # Удаляем все старые меню и отправляем новое
-    await delete_all_menus(context.bot, uid)
+    # Отправляем/обновляем меню (send_fresh_menu сам удалит старое)
     await send_fresh_menu(context.bot, uid)
-    print(f"✅ Новое меню отправлено для {uid}")
+    print(f"✅ Меню отправлено для {uid}")
