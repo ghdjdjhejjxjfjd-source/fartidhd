@@ -24,6 +24,13 @@ from .tabs.buy_stars import show_buy_stars, buy_stars_package
 from .tabs.style import show_style_settings, set_style
 from .tabs.ai_lang import show_ai_lang_settings, set_ai_lang
 
+# ===== ФУНКЦИЯ ДЛЯ ФОРМАТИРОВАНИЯ БАЛАНСА =====
+def format_balance(balance):
+    """Убирает лишние нули: 50.0 → 50, 50.5 → 50.5"""
+    if balance == int(balance):
+        return str(int(balance))
+    return f"{balance:.1f}"
+
 BOT_USERNAME = "@NextAIO_Bot"
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -44,11 +51,9 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("copy_ref_"):
         user_id = int(data.split("_")[2])
         
-        # Берем ссылку из context.user_data (сохранена в show_ref)
         ref_link = context.user_data.get(f"ref_link_{user_id}")
         
         if ref_link:
-            # Отправляем ссылку как отдельное сообщение для копирования
             await context.bot.send_message(
                 chat_id=user_id,
                 text=f"📋 Твоя реферальная ссылка:\n`{ref_link}`",
@@ -113,7 +118,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         context.user_data['current_tab'] = key
         
-        # Специальная обработка для поддержки
         if key == "support":
             await support_start(update, context)
         else:
@@ -130,7 +134,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("set_lang:"):
         lang = data.split("set_lang:", 1)[1].strip()
         await handle_set_lang(update, context, query, uid, lang)
-        # Возвращаемся в настройки
         await open_tab(context, query, uid, "settings")
         return
     
@@ -138,7 +141,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("set_ai_lang:"):
         lang = data.split("set_ai_lang:", 1)[1].strip()
         await set_ai_lang(update, context, query, uid, lang)
-        # Возвращаемся в настройки
         await open_tab(context, query, uid, "settings")
         return
     
@@ -146,7 +148,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("set_persona:"):
         persona = data.split("set_persona:", 1)[1].strip()
         
-        # Проверяем лимит перед сменой
         limits = get_user_limits(uid)
         if limits.get("groq_persona", 0) >= 5:
             await query.message.edit_text(
@@ -156,7 +157,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         
         await handle_set_persona(update, context, query, uid, persona)
-        # Возвращаемся в настройки с обновленными лимитами
         await open_tab(context, query, uid, "settings")
         return
     
@@ -164,7 +164,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("set_style:"):
         style = data.split("set_style:", 1)[1].strip()
         
-        # Проверяем лимит перед сменой
         limits = get_user_limits(uid)
         ai_mode = get_ai_mode(uid)
         
@@ -184,7 +183,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
         
         await set_style(update, context, query, uid, style)
-        # Возвращаемся в настройки с обновленными лимитами
         await open_tab(context, query, uid, "settings")
         return
     
@@ -230,8 +228,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📊 Сегодня осталось смен режима: {changes_left - 1}/8",
             reply_markup=tab_kb(uid)
         )
-        
-        # Не обновляем меню, просто показываем сообщение
         return
     
     # ===== ПЕРЕКЛЮЧЕНИЕ РЕЖИМА РАБОТЫ =====
@@ -324,7 +320,8 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         return
     elif tab_key == "balance":
         balance = get_balance(user_id)
-        text = f"⭐ Ваш баланс: {balance} звезд"
+        formatted_balance = format_balance(balance)  # ← ФОРМАТИРУЕМ БАЛАНС
+        text = f"⭐ Ваш баланс: {formatted_balance} звезд"
         try:
             await query.message.edit_text(text, reply_markup=tab_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
