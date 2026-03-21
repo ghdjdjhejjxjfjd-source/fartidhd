@@ -2,7 +2,7 @@
 import { askAI, getStarsBalance, clearAIMemory, changeStyle, changePersona, getUserLimits, changeAiMode, getCurrentMode } from "./api.js";
 import { tg } from "./telegram.js";
 
-const API_BASE = "https://fayrat-production.up.railway.app";
+const API_BASE = "https://ghdjdjhejjxjfjd-source.github.io/fartidhd/";
 
 export const STORAGE_KEY = "chat_history_v1";
 const MAX_RETRIES = 3;
