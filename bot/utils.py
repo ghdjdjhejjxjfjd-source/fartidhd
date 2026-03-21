@@ -1,6 +1,11 @@
-# bot/utils.py
+# bot/utils.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (защита от дублей меню)
 from api import get_last_menu, set_last_menu, clear_last_menu
 from telegram.ext import ContextTypes
+import time
+
+# Глобальное хранилище для отслеживания последнего отправленного меню
+_last_sent_menu = {}
+
 
 async def delete_prev_menu(bot, user_id: int):
     """Удалить предыдущее меню пользователя"""
@@ -23,25 +28,29 @@ async def delete_prev_menu(bot, user_id: int):
         clear_last_menu(user_id)
         return False
 
+
 async def delete_all_menus(bot, user_id: int):
     """Удалить ТОЛЬКО меню пользователя (НЕ удаляет сообщения пользователя)"""
     print(f"🧹 Удаляю меню для {user_id}")
-    
-    # Только удаляем сохраненное меню
-    await delete_prev_menu(bot, user_id)
-    
-    # Убрал массовое удаление!
-    
-    return True
+    return await delete_prev_menu(bot, user_id)
+
 
 async def send_fresh_menu(bot, user_id: int, text: str = None):
-    """Отправить новое меню (отредактировав старое если есть)"""
+    """Отправить новое меню (отредактировав старое если есть) - ГАРАНТИРОВАННО ОДНО МЕНЮ"""
     from .menu import main_menu_for_user
     
-    chat_id, msg_id = get_last_menu(user_id)
+    # ===== ЗАЩИТА ОТ ДУБЛЕЙ: если меню отправлялось менее 1 секунды назад - пропускаем =====
+    current_time = time.time()
+    if user_id in _last_sent_menu:
+        last_time = _last_sent_menu[user_id]
+        if current_time - last_time < 1.0:
+            print(f"⚠️ Пропущен дубль меню для {user_id} (менее 1 секунды)")
+            return None
     
     if text is None:
         text = "💫 NextAI\n\nВыбирай действие кнопками ниже 👇"
+    
+    chat_id, msg_id = get_last_menu(user_id)
     
     # Если есть сохраненное меню - пробуем отредактировать
     if chat_id and msg_id:
@@ -53,31 +62,42 @@ async def send_fresh_menu(bot, user_id: int, text: str = None):
                 reply_markup=main_menu_for_user(user_id)
             )
             print(f"✅ Отредактировано меню для {user_id} (ID: {msg_id})")
-            # ID не меняется, поэтому не обновляем в БД
-            return
+            _last_sent_menu[user_id] = current_time
+            return None
         except Exception as e:
             print(f"⚠️ Не удалось отредактировать меню {msg_id}: {e}")
             # Если не получилось - удаляем старое и создаем новое
             await delete_prev_menu(bot, user_id)
     
+    # Удаляем старое меню если есть (на всякий случай)
+    await delete_prev_menu(bot, user_id)
+    
     # Создаем новое меню
-    m = await bot.send_message(
-        chat_id=user_id,
-        text=text,
-        reply_markup=main_menu_for_user(user_id),
-    )
-    set_last_menu(user_id, user_id, m.message_id)
-    print(f"✅ Отправлено НОВОЕ меню для {user_id} (ID: {m.message_id})")
-    return m
+    try:
+        m = await bot.send_message(
+            chat_id=user_id,
+            text=text,
+            reply_markup=main_menu_for_user(user_id),
+        )
+        set_last_menu(user_id, user_id, m.message_id)
+        print(f"✅ Отправлено НОВОЕ меню для {user_id} (ID: {m.message_id})")
+        _last_sent_menu[user_id] = current_time
+        return m
+    except Exception as e:
+        print(f"❌ Ошибка отправки меню для {user_id}: {e}")
+        return None
+
 
 async def update_user_menu(bot, user_id: int):
     """Обновить меню пользователя"""
     await send_fresh_menu(bot, user_id)
 
+
 async def send_block_notice(bot, user_id: int):
     """Отправить уведомление о блокировке"""
     await delete_prev_menu(bot, user_id)
     await bot.send_message(chat_id=user_id, text="⛔ Доступ заблокирован.")
+
 
 async def edit_to_menu(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     """Редактировать текущее сообщение в главное меню"""
@@ -87,7 +107,7 @@ async def edit_to_menu(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     
     try:
         await query.message.edit_text(
-            "🤖 InstaGroq AI\n\nВыбирай действие кнопками ниже 👇",
+            "💫 NextAI\n\nВыбирай действие кнопками ниже 👇",
             reply_markup=main_menu_for_user(user_id)
         )
         set_last_menu(user_id, user_id, query.message.message_id)
@@ -95,6 +115,7 @@ async def edit_to_menu(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     except Exception as e:
         print(f"⚠️ Не удалось отредактировать в меню: {e}")
         await send_fresh_menu(context.bot, user_id)
+
 
 async def edit_to_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
     """Редактировать текущее сообщение в указанную вкладку"""
