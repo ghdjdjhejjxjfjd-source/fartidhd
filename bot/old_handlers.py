@@ -1,3 +1,4 @@
+# bot/old_handlers.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
 from telegram import Update
 from telegram.ext import ContextTypes
 import os
@@ -429,8 +430,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         from .image import handle_image_generation
         await handle_image_generation(update, context, uid, update.message.text)
         
-        # Выходим из режима генерации
-        context.user_data["in_image_mode"] = False
+        # ✅ НЕ ВЫХОДИМ ИЗ РЕЖИМА! Оставляем True для следующих запросов
+        # context.user_data["in_image_mode"] = False  # ← УБРАНО!
         return
     
     # ===== ПРОВЕРКА НА РЕЖИМ ПОДДЕРЖКИ =====
