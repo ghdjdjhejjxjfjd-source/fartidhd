@@ -446,7 +446,7 @@
 
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
-    <div class="loading-text" id="loadingText">Генерация...</div>
+    <div class="loading-text" id="loadingText">Генерация (10-30 сек)...</div>
   </div>
 
   <script>
@@ -464,7 +464,8 @@
         generate: "Сгенерировать",
         save: "Сохранить",
         repeat: "Повторить",
-        loading: "Генерация...",
+        loading: "Генерация (10-30 сек)...",
+        sending: "📤 Отправка в бота...",
         clear: "Очистить",
         insufficientStars: "❌ Недостаточно звезд. Нужно 10⭐",
         error: "Ошибка генерации",
@@ -480,7 +481,8 @@
         generate: "Generate",
         save: "Save",
         repeat: "Repeat",
-        loading: "Generating...",
+        loading: "Generating (10-30 sec)...",
+        sending: "📤 Sending to bot...",
         clear: "Clear",
         insufficientStars: "❌ Insufficient stars. Need 10⭐",
         error: "Generation error",
@@ -521,15 +523,6 @@
     document.addEventListener('DOMContentLoaded', updateLanguage);
     window.addEventListener('languageChanged', updateLanguage);
 
-    let lastLang = getLang();
-    setInterval(() => {
-      const currentLang = getLang();
-      if (currentLang !== lastLang) {
-        lastLang = currentLang;
-        updateLanguage();
-      }
-    }, 1000);
-
     function getUser() {
       const tg = window.Telegram?.WebApp;
       if (!tg || !tg.initDataUnsafe?.user) return null;
@@ -542,6 +535,8 @@
         alert("Ошибка: не удалось получить данные пользователя");
         return null;
       }
+      const t = I18N[getLang()] || I18N.ru;
+      document.getElementById('loadingText').textContent = t.loading;
       document.getElementById('loadingOverlay').style.display = 'flex';
       try {
         const formData = new FormData();
@@ -558,7 +553,6 @@
         
         if (!response.ok) {
           if (data.error === 'insufficient_stars') {
-            const t = I18N[getLang()] || I18N.ru;
             alert(t.insufficientStars);
           } else {
             throw new Error(data.message || 'Ошибка генерации');
@@ -569,14 +563,14 @@
         return data.image_base64;
       } catch (error) {
         console.error("Generation error:", error);
-        alert('Ошибка: ' + error.message);
+        alert(t.error + ': ' + error.message);
         return null;
       } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
       }
     }
 
-    async function sendToBot(base64Data) {
+    async function sendToBot(imageBase64) {
       const t = I18N[getLang()] || I18N.ru;
       const user = getUser();
       if (!user) {
@@ -584,14 +578,23 @@
         return;
       }
       try {
-        const base64Response = await fetch(base64Data);
-        const blob = await base64Response.blob();
+        document.getElementById('loadingText').textContent = t.sending;
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        
+        // Прямо из base64 создаём blob, без лишнего fetch
+        const base64Data = imageBase64.split(',')[1];
+        const binaryData = atob(base64Data);
+        const bytes = new Uint8Array(binaryData.length);
+        for (let i = 0; i < binaryData.length; i++) {
+          bytes[i] = binaryData.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'image/png' });
+        
         const formData = new FormData();
         formData.append('user_id', user.id);
         formData.append('image', blob, `image_${Date.now()}.png`);
         formData.append('filename', `image_${Date.now()}.png`);
-        document.getElementById('loadingOverlay').style.display = 'flex';
-        document.getElementById('loadingText').textContent = t.loading;
+        
         const response = await fetch(`${API_BASE}/api/send-photo`, { method: 'POST', body: formData });
         const data = await response.json();
         if (response.ok && data.success) {
@@ -600,10 +603,10 @@
           alert("Ошибка при отправке в бота");
         }
       } catch (e) {
+        console.error("Send to bot error:", e);
         alert("Ошибка при отправке в бота");
       } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
-        document.getElementById('loadingText').textContent = t.loading;
       }
     }
 
