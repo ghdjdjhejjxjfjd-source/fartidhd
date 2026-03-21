@@ -536,33 +536,6 @@
       return tg.initDataUnsafe.user;
     }
 
-    async function checkBalance() {
-      const user = getUser();
-      if (!user) return false;
-      try {
-        const response = await fetch(`${API_BASE}/api/stars/balance/${user.id}`);
-        const data = await response.json();
-        return data.balance >= COST;
-      } catch (e) { return false; }
-    }
-
-    async function spendStars() {
-      const user = getUser();
-      if (!user) return false;
-      try {
-        const response = await fetch(`${API_BASE}/api/stars/spend`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tg_user_id: user.id, amount: COST })
-        });
-        if (!response.ok) {
-          if (response.status === 402) throw new Error('insufficient_stars');
-          return false;
-        }
-        return true;
-      } catch (e) { throw e; }
-    }
-
     async function generateImage(prompt) {
       const user = getUser();
       if (!user) {
@@ -571,12 +544,6 @@
       }
       document.getElementById('loadingOverlay').style.display = 'flex';
       try {
-        const hasBalance = await checkBalance();
-        if (!hasBalance) {
-          const t = I18N[getLang()] || I18N.ru;
-          alert(t.insufficientStars);
-          return null;
-        }
         const formData = new FormData();
         formData.append('tg_user_id', user.id);
         formData.append('tg_username', user.username || '');
@@ -588,19 +555,21 @@
         
         const response = await fetch(`${API_BASE}/api/image`, { method: 'POST', body: formData });
         const data = await response.json();
+        
         if (!response.ok) {
-          if (data.error === 'insufficient_stars') throw new Error('insufficient_stars');
-          else throw new Error(data.message || 'Ошибка генерации');
+          if (data.error === 'insufficient_stars') {
+            const t = I18N[getLang()] || I18N.ru;
+            alert(t.insufficientStars);
+          } else {
+            throw new Error(data.message || 'Ошибка генерации');
+          }
+          return null;
         }
-        await spendStars();
+        
         return data.image_base64;
       } catch (error) {
-        if (error.message === 'insufficient_stars') {
-          const t = I18N[getLang()] || I18N.ru;
-          alert(t.insufficientStars);
-        } else {
-          alert('Ошибка: ' + error.message);
-        }
+        console.error("Generation error:", error);
+        alert('Ошибка: ' + error.message);
         return null;
       } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
