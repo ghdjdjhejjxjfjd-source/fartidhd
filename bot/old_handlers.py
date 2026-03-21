@@ -17,7 +17,7 @@ from .menu import (
 )
 from .settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from .chat import inline_chat_start, exit_chat
-from .image import inline_image_start
+from .image import inline_image_start, exit_image, exit_image_from_start
 from .utils import delete_prev_menu, send_fresh_menu, update_user_menu, edit_to_menu, send_block_notice
 from .support import support_start, forward_to_support
 
@@ -66,6 +66,15 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     print(f"🖱️ Нажата кнопка: {data} от {uid}")
+    
+    # ===== ВЫХОД ИЗ ГЕНЕРАЦИИ КАРТИНКИ =====
+    if data == "exit_image":
+        await exit_image(update, context, uid)
+        return
+    
+    if data == "exit_image_from_start":
+        await exit_image_from_start(update, context, uid)
+        return
     
     # ===== ВЫХОД ИЗ ЧАТА =====
     if data == "exit_chat":
