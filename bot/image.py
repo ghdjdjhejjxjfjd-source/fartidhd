@@ -87,7 +87,8 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
             spend_stars(uid, 10)
             add_stars_spent(uid, 10)
         
-        # Режим остается активным для следующих запросов
+        # ✅ ОСТАЁМСЯ В РЕЖИМЕ — можно отправлять следующие запросы
+        context.user_data["in_image_mode"] = True
         
     except Exception as e:
         await status_msg.delete()
@@ -97,19 +98,19 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
 
 async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """Выход при нажатии кнопки Назад под картинкой"""
-    # Удаляем кнопку с последней картинки
+    # ✅ Удаляем кнопку с последней картинки
     if uid in last_bot_message_with_button:
         try:
             await context.bot.edit_message_reply_markup(uid, last_bot_message_with_button[uid], reply_markup=None)
             del last_bot_message_with_button[uid]
-        except:
-            pass
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить кнопку: {e}")
     
     # Очищаем данные
     context.user_data.pop("image_start_message_id", None)
     context.user_data["in_image_mode"] = False
     
-    # Удаляем старые меню и показываем новое
+    # ✅ Удаляем старые меню и показываем новое
     await delete_all_menus(context.bot, uid)
     await send_fresh_menu(context.bot, uid)
 
