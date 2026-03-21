@@ -1,4 +1,4 @@
-# bot/image.py - КНОПКА ОТДЕЛЬНЫМ СООБЩЕНИЕМ (как в чате)
+# bot/image.py - КНОПКА ОТДЕЛЬНО (без текста)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import base64
@@ -81,7 +81,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         
         await status_msg.delete()
         
-        # ===== УДАЛЯЕМ ПРЕДЫДУЩУЮ КНОПКУ (отдельное сообщение) =====
+        # ===== УДАЛЯЕМ ПРЕДЫДУЩУЮ КНОПКУ =====
         if uid in last_button_message and last_button_message[uid]:
             try:
                 await context.bot.edit_message_reply_markup(
@@ -92,6 +92,12 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
                 print(f"✅ Кнопка удалена у предыдущего сообщения {last_button_message[uid]}")
             except Exception as e:
                 print(f"⚠️ Не удалось удалить предыдущую кнопку: {e}")
+                # Если не получилось удалить кнопку, удаляем всё сообщение
+                try:
+                    await context.bot.delete_message(uid, last_button_message[uid])
+                    print(f"✅ Сообщение с кнопкой удалено {last_button_message[uid]}")
+                except Exception as e2:
+                    print(f"⚠️ Не удалось удалить сообщение: {e2}")
         
         # 1. Отправляем КАРТИНКУ без кнопки
         sent_photo = await context.bot.send_photo(
@@ -101,15 +107,15 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         )
         print(f"✅ Картинка отправлена для {uid}, ID: {sent_photo.message_id}")
         
-        # 2. Отправляем ОТДЕЛЬНОЕ сообщение с кнопкой "Назад"
+        # 2. Отправляем ОТДЕЛЬНОЕ сообщение ТОЛЬКО С КНОПКОЙ (без текста)
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image")]])
         sent_button = await context.bot.send_message(
             chat_id=uid,
-            text="⬅️ Нажмите для выхода",
+            text="",  # Пустое сообщение, только кнопка
             reply_markup=keyboard
         )
         
-        # Запоминаем ID сообщения с кнопкой (а не картинки!)
+        # Запоминаем ID сообщения с кнопкой
         last_button_message[uid] = sent_button.message_id
         print(f"✅ Кнопка отправлена для {uid}, ID: {sent_button.message_id}")
         
@@ -138,24 +144,24 @@ async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: in
     """
     print(f"🚪 Выход из генерации для {uid} (нажата кнопка Назад)")
     
-    # ===== УДАЛЯЕМ СООБЩЕНИЕ С КНОПКОЙ (а не картинку) =====
+    # ===== УДАЛЯЕМ СООБЩЕНИЕ С КНОПКОЙ =====
     if uid in last_button_message and last_button_message[uid]:
         try:
-            # Пробуем удалить кнопку (убрать reply_markup)
-            await context.bot.edit_message_reply_markup(
-                chat_id=uid,
-                message_id=last_button_message[uid],
-                reply_markup=None
-            )
-            print(f"✅ Кнопка удалена у сообщения {last_button_message[uid]}")
+            # Удаляем сообщение с кнопкой (оно пустое, только кнопка)
+            await context.bot.delete_message(uid, last_button_message[uid])
+            print(f"✅ Сообщение с кнопкой удалено {last_button_message[uid]}")
         except Exception as e:
-            print(f"⚠️ Не удалось удалить кнопку: {e}")
-            # Если не получилось удалить кнопку, удаляем всё сообщение
+            print(f"⚠️ Не удалось удалить сообщение с кнопкой: {e}")
+            # Альтернативный способ: убрать кнопку
             try:
-                await context.bot.delete_message(uid, last_button_message[uid])
-                print(f"✅ Сообщение с кнопкой удалено {last_button_message[uid]}")
+                await context.bot.edit_message_reply_markup(
+                    chat_id=uid,
+                    message_id=last_button_message[uid],
+                    reply_markup=None
+                )
+                print(f"✅ Кнопка удалена (альтернативно) у {last_button_message[uid]}")
             except Exception as e2:
-                print(f"⚠️ Не удалось удалить сообщение: {e2}")
+                print(f"⚠️ Не удалось удалить кнопку альтернативно: {e2}")
         
         # Удаляем запись о кнопке
         del last_button_message[uid]
