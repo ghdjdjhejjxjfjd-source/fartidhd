@@ -1,4 +1,4 @@
-# bot/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (удаляем только кнопку)
+# bot/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (кнопка удаляется как в чате)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import base64
@@ -62,6 +62,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         context.user_data["in_image_mode"] = False
         return
     
+    # Удаляем стартовое сообщение
     if "image_start_message_id" in context.user_data:
         try:
             await context.bot.delete_message(uid, context.user_data["image_start_message_id"])
@@ -91,7 +92,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
                 )
                 print(f"✅ Кнопка удалена у предыдущей картинки {last_image_message[uid]}")
             except Exception as e:
-                print(f"⚠️ Не удалось удалить кнопку: {e}")
+                print(f"⚠️ Не удалось удалить кнопку у предыдущей: {e}")
         
         # Отправляем новую картинку с кнопкой
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image")]])
@@ -125,22 +126,33 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
 async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """
     Выход при нажатии кнопки "Назад" под картинкой.
-    Удаляем ТОЛЬКО КНОПКУ, картинка остаётся.
+    Удаляем ТОЛЬКО КНОПКУ, картинка остаётся (как в чате с ИИ).
     """
     print(f"🚪 Выход из генерации для {uid} (нажата кнопка Назад)")
     
     query = update.callback_query
     current_message_id = query.message.message_id if query.message else None
     
-    # 1. Удаляем ТОЛЬКО КНОПКУ у текущей картинки (картинка остаётся)
+    # 1. Удаляем ТОЛЬКО КНОПКУ у текущей картинки (как в чате)
     if current_message_id:
         try:
+            # Пробуем удалить кнопку через edit_reply_markup
             await query.message.edit_reply_markup(reply_markup=None)
             print(f"✅ Кнопка удалена у картинки {current_message_id}")
         except Exception as e:
-            print(f"⚠️ Не удалось удалить кнопку: {e}")
+            print(f"⚠️ Не удалось удалить кнопку через edit_reply_markup: {e}")
+            # Альтернативный способ: через bot.edit_message_reply_markup
+            try:
+                await context.bot.edit_message_reply_markup(
+                    chat_id=uid,
+                    message_id=current_message_id,
+                    reply_markup=None
+                )
+                print(f"✅ Кнопка удалена (альтернативный способ) у картинки {current_message_id}")
+            except Exception as e2:
+                print(f"⚠️ Не удалось удалить кнопку альтернативным способом: {e2}")
     
-    # 2. Очищаем запись о последней картинке (если это она)
+    # 2. Очищаем запись о последней картинке
     if uid in last_image_message and last_image_message[uid] == current_message_id:
         last_image_message[uid] = None
     
