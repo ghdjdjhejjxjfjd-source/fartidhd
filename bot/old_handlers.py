@@ -411,6 +411,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     print(f"📨 handle_message: uid={uid}, type={msg_type}, content='{content}'")
     
+    # ===== ПРОВЕРКА НА РЕЖИМ ГЕНЕРАЦИИ КАРТИНКИ =====
+    if context.user_data.get("in_image_mode", False):
+        if not update.message.text:
+            await update.message.reply_text("❌ Отправьте текстовое описание картинки")
+            return
+        
+        from .image import handle_image_generation
+        await handle_image_generation(update, context, uid, update.message.text)
+        
+        # Выходим из режима генерации
+        context.user_data["in_image_mode"] = False
+        return
+    
     # ===== ПРОВЕРКА НА РЕЖИМ ПОДДЕРЖКИ =====
     if context.user_data.get("in_support_mode", False):
         await forward_to_support(update, context)
