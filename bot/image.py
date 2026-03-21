@@ -1,11 +1,11 @@
-# bot/image.py - КНОПКА ОТДЕЛЬНЫМ СООБЩЕНИЕМ, КАРТИНКИ НЕ УДАЛЯЮТСЯ
+# bot/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (только одно меню)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import base64
 
 from api import get_access, increment_images, add_stars_spent
 from payments import get_balance, spend_stars
-from .utils import delete_all_menus, send_fresh_menu
+from .utils import send_fresh_menu  # ← только send_fresh_menu, без delete_all_menus
 
 try:
     from openai_image import generate_image_dalle
@@ -101,7 +101,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image")]])
         sent_button = await context.bot.send_message(
             chat_id=uid,
-            text="⬅️ Нажмите для выхода",  # Небольшой текст, чтобы сообщение было видно
+            text="⬅️ Нажмите для выхода",
             reply_markup=keyboard
         )
         
@@ -162,10 +162,11 @@ async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: in
     # Выходим из режима генерации
     context.user_data["in_image_mode"] = False
     
-    # Удаляем все старые меню
-    await delete_all_menus(context.bot, uid)
+    # ===== ВАЖНО: НЕ УДАЛЯЕМ МЕНЮ ВРУЧНУЮ! =====
+    # send_fresh_menu сам удалит/отредактирует старое меню
+    # await delete_all_menus(context.bot, uid)  # ← УБРАНО!
     
-    # Отправляем НОВОЕ сообщение с главным меню
+    # Отправляем/обновляем меню (только одно!)
     await send_fresh_menu(context.bot, uid)
     
     print(f"✅ Выход из режима картинок завершен для {uid}")
@@ -191,8 +192,10 @@ async def exit_image_from_start(update: Update, context: ContextTypes.DEFAULT_TY
     context.user_data.pop("image_start_message_id", None)
     context.user_data["in_image_mode"] = False
     
-    # Удаляем старые меню и показываем новое
-    await delete_all_menus(context.bot, uid)
+    # ===== ВАЖНО: НЕ УДАЛЯЕМ МЕНЮ ВРУЧНУЮ! =====
+    # await delete_all_menus(context.bot, uid)  # ← УБРАНО!
+    
+    # Отправляем/обновляем меню (только одно!)
     await send_fresh_menu(context.bot, uid)
     
     print(f"✅ Выход из стартового экрана завершен для {uid}")
