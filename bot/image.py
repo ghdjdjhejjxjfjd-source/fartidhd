@@ -1,4 +1,4 @@
-# bot/image.py - КНОПКА ОТДЕЛЬНО (без текста)
+# bot/image.py - КНОПКА ОТДЕЛЬНЫМ СООБЩЕНИЕМ, КАРТИНКИ НЕ УДАЛЯЮТСЯ
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import base64
@@ -81,25 +81,15 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         
         await status_msg.delete()
         
-        # ===== УДАЛЯЕМ ПРЕДЫДУЩУЮ КНОПКУ =====
+        # ===== УДАЛЯЕМ ПРЕДЫДУЩУЮ КНОПКУ (НО НЕ КАРТИНКУ) =====
         if uid in last_button_message and last_button_message[uid]:
             try:
-                await context.bot.edit_message_reply_markup(
-                    chat_id=uid,
-                    message_id=last_button_message[uid],
-                    reply_markup=None
-                )
-                print(f"✅ Кнопка удалена у предыдущего сообщения {last_button_message[uid]}")
+                await context.bot.delete_message(uid, last_button_message[uid])
+                print(f"✅ Предыдущая кнопка удалена {last_button_message[uid]}")
             except Exception as e:
                 print(f"⚠️ Не удалось удалить предыдущую кнопку: {e}")
-                # Если не получилось удалить кнопку, удаляем всё сообщение
-                try:
-                    await context.bot.delete_message(uid, last_button_message[uid])
-                    print(f"✅ Сообщение с кнопкой удалено {last_button_message[uid]}")
-                except Exception as e2:
-                    print(f"⚠️ Не удалось удалить сообщение: {e2}")
         
-        # 1. Отправляем КАРТИНКУ без кнопки
+        # 1. Отправляем КАРТИНКУ без кнопки (остаётся навсегда)
         sent_photo = await context.bot.send_photo(
             chat_id=uid,
             photo=image_data,
@@ -107,11 +97,11 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         )
         print(f"✅ Картинка отправлена для {uid}, ID: {sent_photo.message_id}")
         
-        # 2. Отправляем ОТДЕЛЬНОЕ сообщение ТОЛЬКО С КНОПКОЙ (без текста)
+        # 2. Отправляем ОТДЕЛЬНОЕ сообщение с кнопкой "Назад"
         keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image")]])
         sent_button = await context.bot.send_message(
             chat_id=uid,
-            text="",  # Пустое сообщение, только кнопка
+            text="⬅️ Нажмите для выхода",  # Небольшой текст, чтобы сообщение было видно
             reply_markup=keyboard
         )
         
@@ -139,15 +129,14 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
 
 async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """
-    Выход при нажатии кнопки "Назад" под картинкой.
-    Удаляем ТОЛЬКО сообщение с кнопкой, картинка остаётся.
+    Выход при нажатии кнопки "Назад".
+    Удаляем ТОЛЬКО сообщение с кнопкой, все картинки остаются.
     """
     print(f"🚪 Выход из генерации для {uid} (нажата кнопка Назад)")
     
     # ===== УДАЛЯЕМ СООБЩЕНИЕ С КНОПКОЙ =====
     if uid in last_button_message and last_button_message[uid]:
         try:
-            # Удаляем сообщение с кнопкой (оно пустое, только кнопка)
             await context.bot.delete_message(uid, last_button_message[uid])
             print(f"✅ Сообщение с кнопкой удалено {last_button_message[uid]}")
         except Exception as e:
