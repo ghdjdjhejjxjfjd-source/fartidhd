@@ -71,7 +71,7 @@ async def inline_image_start(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, prompt: str):
-    """Обработка генерации картинки"""
+    """Обработка генерации картинки (остаёмся в режиме)"""
     a = get_access(uid)
     
     if not OPENAI_AVAILABLE:
@@ -148,6 +148,16 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         # Логируем
         send_log_http(f"🖼 Генерация: {uid} -> {prompt[:50]}...")
         
+        # ===== ВАЖНО: ОСТАЁМСЯ В РЕЖИМЕ ГЕНЕРАЦИИ =====
+        # Не выключаем in_image_mode, чтобы можно было отправлять новые промпты
+        # Просто удаляем стартовое сообщение, но режим остаётся активным
+        
+        # Отправляем подсказку для следующего промпта
+        await update.message.reply_text(
+            "📝 Можешь отправить ещё одно описание, чтобы сгенерировать новую картинку.\n"
+            "Или нажми кнопку «Назад» под картинкой, чтобы выйти в меню."
+        )
+        
     except Exception as e:
         await status_msg.delete()
         error_msg = str(e)
@@ -158,6 +168,8 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
                 "❌ Недостаточно звезд (нужно 10).\n"
                 "Купи звезды в меню: ⭐ Купить звезды"
             )
+            # При ошибке звёзд выходим из режима
+            context.user_data["in_image_mode"] = False
         elif "API key" in error_msg.lower():
             await update.message.reply_text(
                 "❌ Ошибка API. Попробуйте позже."
@@ -171,7 +183,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
 
 
 async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
-    """Выход из режима генерации (после отправки картинки)"""
+    """Выход из режима генерации (нажата кнопка Назад под картинкой)"""
     print(f"🚪 Выход из режима генерации для {uid}")
     
     # Удаляем кнопку с последнего сообщения с картинкой
@@ -191,6 +203,7 @@ async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: in
     if "image_start_message_id" in context.user_data:
         del context.user_data["image_start_message_id"]
     
+    # ВЫХОДИМ ИЗ РЕЖИМА ГЕНЕРАЦИИ
     context.user_data["in_image_mode"] = False
     
     # Удаляем все старые меню
@@ -217,6 +230,7 @@ async def exit_image_from_start(update: Update, context: ContextTypes.DEFAULT_TY
     if "image_start_message_id" in context.user_data:
         del context.user_data["image_start_message_id"]
     
+    # ВЫХОДИМ ИЗ РЕЖИМА ГЕНЕРАЦИИ
     context.user_data["in_image_mode"] = False
     
     # Удаляем все старые меню
