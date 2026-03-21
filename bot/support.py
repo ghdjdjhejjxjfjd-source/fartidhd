@@ -1,4 +1,4 @@
-# bot/support.py
+# bot/support.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (только одно меню)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import os
@@ -24,7 +24,6 @@ def load_blocks():
         if os.path.exists(BLOCKS_FILE):
             with open(BLOCKS_FILE, 'r') as f:
                 data = json.load(f)
-                # Конвертируем строки обратно в datetime
                 for uid, until_str in data.items():
                     support_blocks[int(uid)] = datetime.fromisoformat(until_str)
             print(f"✅ Загружено {len(support_blocks)} блокировок поддержки")
@@ -36,7 +35,7 @@ def save_blocks():
     try:
         data = {}
         for uid, until in support_blocks.items():
-            if datetime.now() < until:  # Сохраняем только активные
+            if datetime.now() < until:
                 data[str(uid)] = until.isoformat()
         
         with open(BLOCKS_FILE, 'w') as f:
@@ -68,10 +67,9 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     uid = user.id
     
-    # Очищаем истекшие
     cleanup_blocks()
     
-    # ==== ПРОВЕРКА БЛОКИРОВКИ ТОЛЬКО ДЛЯ ПОДДЕРЖКИ ====
+    # Проверка блокировки
     if uid in support_blocks:
         block_until = support_blocks[uid]
         if datetime.now() < block_until:
@@ -88,7 +86,6 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             del support_blocks[uid]
             save_blocks()
     
-    # Текст с инструкцией
     text = (
         "💬 Поддержка\n\n"
         "Опиши свою проблему или вопрос в одном сообщении.\n\n"
@@ -96,18 +93,15 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "⚠️ Принимаются только текстовые сообщения"
     )
     
-    # КНОПКА НАЗАД
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("⬅️ Назад", callback_data="exit_support")]
     ])
     
-    # Отправляем/редактируем сообщение с инструкцией и кнопкой
     sent_msg = await query.message.edit_text(
         text=text,
         reply_markup=keyboard
     )
     
-    # Запоминаем ID сообщения с инструкцией
     context.user_data["support_message_id"] = sent_msg.message_id
     context.user_data["in_support_mode"] = True
     print(f"✅ Режим поддержки включен для {uid}")
@@ -122,10 +116,9 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user = update.effective_user
     uid = user.id
     
-    # Очищаем истекшие
     cleanup_blocks()
     
-    # ==== ПРОВЕРКА БЛОКИРОВКИ ТОЛЬКО ДЛЯ ПОДДЕРЖКИ ====
+    # Проверка блокировки
     if uid in support_blocks:
         block_until = support_blocks[uid]
         if datetime.now() < block_until:
@@ -141,7 +134,6 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             del support_blocks[uid]
             save_blocks()
     
-    # Проверяем что это текст
     if not update.message.text:
         await update.message.reply_text(
             "❌ В поддержку можно отправлять только текстовые сообщения."
@@ -151,7 +143,6 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
     username = f"@{user.username}" if user.username else "—"
     first_name = user.first_name or "—"
     
-    # Формируем шапку с информацией о пользователе
     header = (
         f"🆔 ID: {uid}\n"
         f"👤 Имя: {first_name}\n"
@@ -160,13 +151,8 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
         f"———————————————\n\n"
     )
     
-    # Формируем команду внизу (только reply, без block)
-    commands = (
-        f"\n\n———————————————\n"
-        f"/reply {uid}"
-    )
+    commands = f"\n\n———————————————\n/reply {uid}"
     
-    # Отправляем в группу поддержки
     try:
         full_text = header + update.message.text + commands
         await context.bot.send_message(
@@ -174,7 +160,7 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=full_text
         )
         
-        # ===== УДАЛЯЕМ СООБЩЕНИЕ-ИНСТРУКЦИЮ =====
+        # Удаляем сообщение-инструкцию
         if "support_message_id" in context.user_data:
             try:
                 await context.bot.delete_message(
@@ -185,26 +171,19 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
             except Exception as e:
                 print(f"⚠️ Не удалось удалить инструкцию: {e}")
             finally:
-                # Очищаем ID независимо от результата
                 del context.user_data["support_message_id"]
         
-        # ===== УДАЛЯЕМ СТАРОЕ МЕНЮ =====
-        from .utils import delete_all_menus
-        await delete_all_menus(context.bot, uid)
+        # ===== ИСПОЛЬЗУЕМ send_fresh_menu вместо прямой отправки =====
+        from .utils import send_fresh_menu
         
-        # ===== ОТПРАВЛЯЕМ ПОДТВЕРЖДЕНИЕ =====
+        # Отправляем подтверждение
         await context.bot.send_message(
             chat_id=uid,
             text="✅ Сообщение отправлено в поддержку.\nОжидайте ответа."
         )
         
-        # ===== ОТПРАВЛЯЕМ НОВОЕ МЕНЮ =====
-        from .menu import main_menu_for_user
-        await context.bot.send_message(
-            chat_id=uid,
-            text="💫 NextAI\n\nВыбирай действие кнопками ниже 👇",
-            reply_markup=main_menu_for_user(uid)
-        )
+        # Отправляем/обновляем меню (только одно!)
+        await send_fresh_menu(context.bot, uid)
         
     except Exception as e:
         print(f"❌ Ошибка при отправке в поддержку: {e}")
@@ -213,16 +192,12 @@ async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         return
     
-    # Выходим из режима поддержки после отправки
     context.user_data["in_support_mode"] = False
-    
-    # Логируем
     send_log_http(f"📨 Поддержка: {uid} -> {update.message.text[:50]}")
 
 async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка команд в группе поддержки"""
     
-    # Проверяем что сообщение из группы поддержки
     if not SUPPORT_GROUP_ID or update.effective_chat.id != SUPPORT_GROUP_ID:
         return
     
@@ -232,7 +207,6 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
     text = update.message.text.strip()
     admin = update.effective_user
     
-    # ===== КОМАНДА /reply =====
     if text.startswith('/reply'):
         parts = text.split(maxsplit=2)
         if len(parts) < 3:
@@ -256,7 +230,6 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
         except Exception as e:
             await update.message.reply_text(f"❌ Ошибка: {e}")
     
-    # ===== КОМАНДА /block (ТОЛЬКО ДЛЯ ПОДДЕРЖКИ) =====
     elif text.startswith('/block'):
         parts = text.split()
         if len(parts) < 3:
@@ -271,10 +244,9 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
                 await update.message.reply_text("❌ Часы должны быть больше 0")
                 return
             
-            # Устанавливаем временную блокировку ТОЛЬКО для поддержки
             block_until = datetime.now() + timedelta(hours=hours)
             support_blocks[user_id] = block_until
-            save_blocks()  # Сохраняем в файл
+            save_blocks()
             
             await update.message.reply_text(
                 f"✅ Пользователь {user_id} заблокирован в ПОДДЕРЖКЕ на {hours} часов\n"
@@ -282,7 +254,6 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
                 f"Остальные функции бота работают."
             )
             
-            # Уведомляем пользователя
             try:
                 await context.bot.send_message(
                     chat_id=user_id,
@@ -299,7 +270,6 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
         except Exception as e:
             await update.message.reply_text(f"❌ Ошибка: {e}")
     
-    # ===== КОМАНДА /unblock (ТОЛЬКО ДЛЯ ПОДДЕРЖКИ) =====
     elif text.startswith('/unblock'):
         parts = text.split()
         if len(parts) < 2:
@@ -309,13 +279,11 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
         try:
             user_id = int(parts[1])
             
-            # Убираем временную блокировку поддержки
             if user_id in support_blocks:
                 del support_blocks[user_id]
-                save_blocks()  # Сохраняем в файл
+                save_blocks()
                 await update.message.reply_text(f"✅ Пользователь {user_id} разблокирован в поддержке")
                 
-                # Уведомляем пользователя
                 try:
                     await context.bot.send_message(
                         chat_id=user_id,
