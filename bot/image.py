@@ -78,7 +78,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         await update.message.reply_text("❌ Сервис генерации временно недоступен.")
         return
     
-    # Удаляем стартовое сообщение с инструкцией
+    # Удаляем стартовое сообщение с инструкцией (если ещё есть)
     if "image_start_message_id" in context.user_data:
         try:
             await context.bot.delete_message(
@@ -150,13 +150,8 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         
         # ===== ВАЖНО: ОСТАЁМСЯ В РЕЖИМЕ ГЕНЕРАЦИИ =====
         # Не выключаем in_image_mode, чтобы можно было отправлять новые промпты
-        # Просто удаляем стартовое сообщение, но режим остаётся активным
         
-        # Отправляем подсказку для следующего промпта
-        await update.message.reply_text(
-            "📝 Можешь отправить ещё одно описание, чтобы сгенерировать новую картинку.\n"
-            "Или нажми кнопку «Назад» под картинкой, чтобы выйти в меню."
-        )
+        # ❌ УБРАНО СООБЩЕНИЕ "Можешь отправить ещё..."
         
     except Exception as e:
         await status_msg.delete()
