@@ -148,7 +148,7 @@ def api_image():
             print(f"🎨 Using DALL-E 3 for txt2img user {tg_user_id_int}")
             size = f"{width}x{height}"
             enhanced_prompt = f"{prompt}, high quality, detailed, 8k, masterpiece"
-            image_base64 = generate_image_dalle(enhanced_prompt, size, quality="medium")
+            image_base64 = generate_image_dalle(enhanced_prompt, size, quality="standard")
             model_used = "openai-dalle"
             
         elif mode == "img2img":
