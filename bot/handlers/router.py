@@ -6,8 +6,9 @@ from payments import get_balance
 from bot.menu import (
     main_menu_for_user, tab_kb, stars_kb, mode_settings_kb,
     persona_settings_kb, lang_settings_kb, settings_kb, ai_lang_settings_kb,
-    ai_mode_settings_kb, confirm_ai_mode_kb, TAB_TEXT, style_settings_kb
+    ai_mode_settings_kb, confirm_ai_mode_kb, style_settings_kb
 )
+from bot.locales import get_text  # ← добавили импорт локализации
 from bot.utils import edit_to_menu, send_fresh_menu, set_last_menu, update_user_menu, edit_to_tab
 from bot.settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from bot.chat import inline_chat_start, exit_chat
@@ -23,13 +24,6 @@ from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
 from .tabs.style import show_style_settings, set_style
 from .tabs.ai_lang import show_ai_lang_settings, set_ai_lang
-
-# ===== ФУНКЦИЯ ДЛЯ ФОРМАТИРОВАНИЯ БАЛАНСА =====
-def format_balance(balance):
-    """Убирает лишние нули: 50.0 → 50, 50.5 → 50.5"""
-    if balance == int(balance):
-        return str(int(balance))
-    return f"{balance:.1f}"
 
 BOT_USERNAME = "@NextAIO_Bot"
 
@@ -50,7 +44,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== КОПИРОВАНИЕ РЕФЕРАЛЬНОЙ ССЫЛКИ =====
     if data.startswith("copy_ref_"):
         user_id = int(data.split("_")[2])
-        
         ref_link = context.user_data.get(f"ref_link_{user_id}")
         
         if ref_link:
@@ -81,7 +74,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== ЛИМИТ ИСЧЕРПАН =====
     if data == "limit_exceeded":
         await query.message.edit_text(
-            text=TAB_TEXT["limit_exceeded"],
+            text=get_text(uid, "limit_exceeded"),  # ← используем get_text
             reply_markup=tab_kb(uid)
         )
         return
@@ -151,7 +144,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         limits = get_user_limits(uid)
         if limits.get("groq_persona", 0) >= 5:
             await query.message.edit_text(
-                text=TAB_TEXT["limit_exceeded"],
+                text=get_text(uid, "limit_exceeded"),  # ← используем get_text
                 reply_markup=tab_kb(uid)
             )
             return
@@ -170,14 +163,14 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if ai_mode == "fast":
             if limits.get("groq_style", 0) >= 5:
                 await query.message.edit_text(
-                    text=TAB_TEXT["limit_exceeded"],
+                    text=get_text(uid, "limit_exceeded"),  # ← используем get_text
                     reply_markup=tab_kb(uid)
                 )
                 return
         else:
             if limits.get("openai_style", 0) >= 7:
                 await query.message.edit_text(
-                    text=TAB_TEXT["limit_exceeded"],
+                    text=get_text(uid, "limit_exceeded"),  # ← используем get_text
                     reply_markup=tab_kb(uid)
                 )
                 return
@@ -191,8 +184,8 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         new_mode = data.split("confirm_ai_mode:", 1)[1].strip()
         current_mode = get_ai_mode(uid) or "fast"
         
-        mode_names = {"fast": "🚀 Быстрый", "quality": "💎 Качественный"}
-        text = TAB_TEXT["confirm_ai_mode_change"].format(
+        mode_names = {"fast": get_text(uid, "ai_mode_fast"), "quality": get_text(uid, "ai_mode_quality")}
+        text = get_text(uid, "confirm_ai_mode_change").format(
             new_mode=mode_names.get(new_mode, new_mode),
             current_mode=mode_names.get(current_mode, current_mode)
         )
@@ -211,7 +204,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         changes_left = await get_ai_mode_changes(uid)
         if changes_left <= 0:
             await query.message.edit_text(
-                text=TAB_TEXT["limit_exceeded"],
+                text=get_text(uid, "limit_exceeded"),
                 reply_markup=tab_kb(uid)
             )
             return
@@ -221,11 +214,12 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         set_ai_mode(uid, new_mode)
         
-        mode_names = {"fast": "🚀 Быстрый", "quality": "💎 Качественный"}
+        mode_names = {"fast": get_text(uid, "ai_mode_fast"), "quality": get_text(uid, "ai_mode_quality")}
         await query.message.edit_text(
-            f"✅ Режим изменен на {mode_names.get(new_mode, new_mode)}\n\n"
-            f"🧹 История чата очищена.\n"
-            f"📊 Сегодня осталось смен режима: {changes_left - 1}/8",
+            get_text(uid, "ai_mode_changed").format(
+                mode=mode_names.get(new_mode, new_mode),
+                left=changes_left - 1
+            ),
             reply_markup=tab_kb(uid)
         )
         return
@@ -278,7 +272,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         await show_ai_lang_settings(context, query, user_id)
         return
     elif tab_key == "settings":
-        text = "⚙️ Настройки\n\nВыбери раздел:"
+        text = get_text(user_id, "settings")
         try:
             await query.message.edit_text(text, reply_markup=settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -287,7 +281,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         return
     elif tab_key == "ai_mode_settings":
         changes_left = await get_ai_mode_changes(user_id)
-        text = TAB_TEXT["ai_mode_settings"].format(changes_left=changes_left)
+        text = get_text(user_id, "ai_mode_settings").format(changes_left=changes_left)
         try:
             await query.message.edit_text(text, reply_markup=ai_mode_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -295,7 +289,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
         return
     elif tab_key == "mode_settings":
-        text = TAB_TEXT.get(tab_key, "🔄 Режим работы\n\nВыбери как пользоваться ботом:")
+        text = get_text(user_id, "mode_settings")
         try:
             await query.message.edit_text(text, reply_markup=mode_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -303,7 +297,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
         return
     elif tab_key == "persona_settings":
-        text = TAB_TEXT.get(tab_key, "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:")
+        text = get_text(user_id, "persona_settings")
         try:
             await query.message.edit_text(text, reply_markup=persona_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -311,7 +305,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
         return
     elif tab_key == "lang_settings":
-        text = TAB_TEXT.get(tab_key, "🌐 Язык интерфейса\n\nВыбери язык меню и кнопок:")
+        text = get_text(user_id, "lang_settings")
         try:
             await query.message.edit_text(text, reply_markup=lang_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -320,7 +314,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         return
     elif tab_key == "balance":
         balance = get_balance(user_id)
-        formatted_balance = format_balance(balance)  # ← ФОРМАТИРУЕМ БАЛАНС
+        formatted_balance = format_balance(balance) if 'format_balance' in dir() else str(int(balance)) if balance == int(balance) else f"{balance:.1f}"
         text = f"⭐ Ваш баланс: {formatted_balance} звезд"
         try:
             await query.message.edit_text(text, reply_markup=tab_kb(user_id))
@@ -329,7 +323,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
         return
     else:
-        text = TAB_TEXT.get(tab_key, "Раздел в разработке.")
+        text = get_text(user_id, tab_key) if tab_key in ['blocked', 'need_stars_chat', 'need_stars_miniapp', 'buy_stars'] else "Раздел в разработке."
         try:
             await query.message.edit_text(text, reply_markup=tab_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
