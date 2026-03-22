@@ -124,6 +124,136 @@
       background-attachment: fixed;
     }
 
+    /* КНОПКА ТЕМЫ */
+    .themePill {
+      position: fixed;
+      top: calc(10px + env(safe-area-inset-top));
+      right: 10px;
+      z-index: 10000;
+      padding: 10px 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 16%, white 8%) 0%, rgba(255,255,255,.08) 100%);
+      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+      color: var(--text);
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
+    }
+
+    :root[data-theme="light"] .themePill {
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid #c0c0c0;
+      color: #3a4a5a;
+    }
+
+    .themePill:active {
+      transform: scale(0.98);
+    }
+
+    /* Оверлей темы */
+    .themeOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,.34);
+      display: none;
+    }
+    .themeOverlay.show {
+      display: block !important;
+    }
+    .themeSheet {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      border-radius: 18px;
+      background: rgba(24, 31, 40, .97);
+      border: 1.5px solid rgba(255, 255, 255, .10);
+      backdrop-filter: blur(16px) saturate(118%);
+      -webkit-backdrop-filter: blur(16px) saturate(118%);
+      overflow: hidden;
+      transform: translateY(110%);
+      opacity: 0;
+      transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
+    }
+    .themeOverlay.show .themeSheet {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .themeSheetHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px;
+      border-bottom: 1.5px solid rgba(255, 255, 255, .10);
+    }
+    .themeSheetTitle {
+      font-weight: 800;
+      color: #f7fbff;
+    }
+    .themeClose {
+      border: 0;
+      background: rgba(255, 255, 255, .08);
+      color: #f7fbff;
+      border: 1.5px solid rgba(255, 255, 255, .10);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .themeList {
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+    .themeItem {
+      width: 100%;
+      text-align: left;
+      padding: 14px;
+      border: 0;
+      border-bottom: 1.5px solid rgba(255, 255, 255, .10);
+      background: transparent;
+      color: #f7fbff;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .themeItem:last-child {
+      border-bottom: none;
+    }
+    .themeItem .check {
+      opacity: 0;
+      transform: scale(.9);
+      transition: .15s ease;
+      color: #5aaeff;
+    }
+    .themeItem.selected .check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    :root[data-theme="light"] .themeSheet {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    :root[data-theme="light"] .themeSheetTitle,
+    :root[data-theme="light"] .themeItem {
+      color: #3a4a5a;
+    }
+    :root[data-theme="light"] .themeItem .check {
+      color: #3a8cff;
+    }
+
     .header {
       position: fixed;
       top: 0;
@@ -394,9 +524,14 @@
     html.android-mode .header { background: transparent !important; backdrop-filter: none !important; }
     html.android-mode .back-btn, html.android-mode .title { background: transparent !important; backdrop-filter: none !important; border: none !important; }
     html.android-mode .card { backdrop-filter: none !important; }
+    html.android-mode .themePill { backdrop-filter: none !important; }
   </style>
 </head>
 <body>
+
+  <button class="themePill" id="themeBtn" type="button">
+    <span id="themeBtnText">Цвет: Синий</span> <span class="chev">▾</span>
+  </button>
 
   <div class="header">
     <a href="./index.html" class="back-btn">←</a>
@@ -424,7 +559,6 @@
         </div>
       </div>
 
-      <!-- ТОЛЬКО 1:1 -->
       <div class="size-selector">
         <button class="size-btn active" data-size="1024x1024" id="sizeSquare">1:1</button>
       </div>
@@ -446,12 +580,30 @@
 
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
-    <div class="loading-text" id="loadingText">Генерация (10-30 сек)...</div>
+    <div class="loading-text" id="loadingText">Генерация...</div>
+  </div>
+
+  <div class="themeOverlay" id="themeOverlay">
+    <div class="themeSheet">
+      <div class="themeSheetHeader">
+        <div class="themeSheetTitle" id="themeSheetTitle">Цвет</div>
+        <button class="themeClose" id="themeClose" type="button">✕</button>
+      </div>
+      <div class="themeList" id="themeList"></div>
+    </div>
   </div>
 
   <script>
     const API_BASE = "https://fartidhd-production.up.railway.app";
     const COST = 10;
+
+    const STORAGE_THEME = "miniapp_theme_v1";
+
+    const THEMES = [
+      { code: "blue", label: { ru: "Синий", en: "Blue", kk: "Көк", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
+      { code: "black", label: { ru: "Черный", en: "Black", kk: "Қара", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
+      { code: "light", label: { ru: "Светлый", en: "Light", kk: "Ашық", tr: "Açık", uk: "Світлий", fr: "Clair" } }
+    ];
 
     const I18N = {
       ru: {
@@ -464,12 +616,13 @@
         generate: "Сгенерировать",
         save: "Сохранить",
         repeat: "Повторить",
-        loading: "Генерация (10-30 сек)...",
+        loading: "Генерация...",
         sending: "📤 Отправка в бота...",
         clear: "Очистить",
         insufficientStars: "❌ Недостаточно звезд. Нужно 10⭐",
         error: "Ошибка генерации",
-        saved: "✅ Отправлено в бота"
+        saved: "✅ Отправлено в бота",
+        theme: "Цвет"
       },
       en: {
         title: "Image generation",
@@ -481,12 +634,85 @@
         generate: "Generate",
         save: "Save",
         repeat: "Repeat",
-        loading: "Generating (10-30 sec)...",
+        loading: "Generating...",
         sending: "📤 Sending to bot...",
         clear: "Clear",
         insufficientStars: "❌ Insufficient stars. Need 10⭐",
         error: "Generation error",
-        saved: "✅ Sent to bot"
+        saved: "✅ Sent to bot",
+        theme: "Color"
+      },
+      kk: {
+        title: "Сурет генерациясы",
+        cardTitle: "Еркін промпт",
+        cardDesc: "Көргіңіз келетінді жазыңыз — ИИ кез келген стильде салады",
+        promptLabel: "Сіздің промпт",
+        promptPlaceholder: "мысалы: тауларда әдемі күн бату",
+        sizeSquare: "1:1",
+        generate: "Жасау",
+        save: "Сақтау",
+        repeat: "Қайталау",
+        loading: "Жасалуда...",
+        sending: "📤 Ботқа жіберу...",
+        clear: "Тазалау",
+        insufficientStars: "❌ Жұлдыздар жеткіліксіз. 10⭐ қажет",
+        error: "Жасау қатесі",
+        saved: "✅ Ботқа жіберілді",
+        theme: "Түс"
+      },
+      tr: {
+        title: "Görsel oluşturma",
+        cardTitle: "Serbest komut",
+        cardDesc: "Görmek istediğini yaz — Yapay Zeka her tarzda çizer",
+        promptLabel: "Komutun",
+        promptPlaceholder: "örnek: dağlarda güzel gün batımı",
+        sizeSquare: "1:1",
+        generate: "Oluştur",
+        save: "Kaydet",
+        repeat: "Tekrarla",
+        loading: "Oluşturuluyor...",
+        sending: "📤 Bot'a gönderiliyor...",
+        clear: "Temizle",
+        insufficientStars: "❌ Yetersiz yıldız. 10⭐ gerekli",
+        error: "Oluşturma hatası",
+        saved: "✅ Bot'a gönderildi",
+        theme: "Renk"
+      },
+      uk: {
+        title: "Генерація зображення",
+        cardTitle: "Вільний промпт",
+        cardDesc: "Напиши що хочеш побачити — ШІ намалює в будь-якому стилі",
+        promptLabel: "Твій промпт",
+        promptPlaceholder: "наприклад: красивий захід сонця в горах",
+        sizeSquare: "1:1",
+        generate: "Згенерувати",
+        save: "Зберегти",
+        repeat: "Повторити",
+        loading: "Генерація...",
+        sending: "📤 Відправка в бота...",
+        clear: "Очистити",
+        insufficientStars: "❌ Недостатньо зірок. Потрібно 10⭐",
+        error: "Помилка генерації",
+        saved: "✅ Відправлено в бота",
+        theme: "Колір"
+      },
+      fr: {
+        title: "Génération d'image",
+        cardTitle: "Prompt libre",
+        cardDesc: "Écris ce que tu veux voir — L'IA dessinera dans n'importe quel style",
+        promptLabel: "Ton prompt",
+        promptPlaceholder: "ex: beau coucher de soleil dans les montagnes",
+        sizeSquare: "1:1",
+        generate: "Générer",
+        save: "Enregistrer",
+        repeat: "Répéter",
+        loading: "Génération...",
+        sending: "📤 Envoi au bot...",
+        clear: "Effacer",
+        insufficientStars: "❌ Pas assez d'étoiles. 10⭐ nécessaires",
+        error: "Erreur de génération",
+        saved: "✅ Envoyé au bot",
+        theme: "Couleur"
       }
     };
 
@@ -504,7 +730,25 @@
       return "ru";
     }
 
-    function updateLanguage() {
+    function getSavedTheme() {
+      try{ return localStorage.getItem(STORAGE_THEME) || "blue"; } catch(e){ return "blue"; }
+    }
+
+    function saveTheme(theme) {
+      try{ localStorage.setItem(STORAGE_THEME, theme); } catch(e){}
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme || "blue");
+    }
+
+    function getThemeLabel(themeCode, lang) {
+      const theme = THEMES.find(t => t.code === themeCode);
+      if (!theme) return themeCode;
+      return theme.label[lang] || theme.label.ru || themeCode;
+    }
+
+    function updateUILanguage() {
       const lang = getLang();
       const t = I18N[lang] || I18N.ru;
       document.getElementById('title').textContent = t.title;
@@ -518,10 +762,95 @@
       document.getElementById('repeatText').textContent = t.repeat;
       document.getElementById('loadingText').textContent = t.loading;
       document.getElementById('clearInputBtn').title = t.clear;
+      document.getElementById('themeSheetTitle').textContent = t.theme;
+      
+      const currentTheme = getSavedTheme();
+      document.getElementById('themeBtnText').textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
+      
+      updateThemeList(lang);
     }
 
-    document.addEventListener('DOMContentLoaded', updateLanguage);
-    window.addEventListener('languageChanged', updateLanguage);
+    function updateThemeList(lang) {
+      const themeList = document.getElementById('themeList');
+      if (!themeList) return;
+      const items = themeList.querySelectorAll('.themeItem');
+      items.forEach(item => {
+        const code = item.getAttribute('data-theme');
+        const labelSpan = item.querySelector('.theme-label');
+        if (labelSpan) labelSpan.textContent = getThemeLabel(code, lang);
+      });
+    }
+
+    function paintSelectedTheme(theme) {
+      const themeList = document.getElementById('themeList');
+      if (!themeList) return;
+      const items = themeList.querySelectorAll(".themeItem");
+      items.forEach(btn => {
+        const code = btn.getAttribute("data-theme");
+        btn.classList.toggle("selected", code === theme);
+      });
+    }
+
+    function buildThemeList() {
+      const themeList = document.getElementById('themeList');
+      if (!themeList) return;
+      themeList.innerHTML = "";
+      THEMES.forEach(theme => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "themeItem";
+        btn.setAttribute("data-theme", theme.code);
+        const currentLang = getLang();
+        const labelText = theme.label[currentLang] || theme.label.ru;
+        btn.innerHTML = `<span class="theme-label">${labelText}</span><span class="check">✓</span>`;
+        btn.addEventListener("click", () => setTheme(theme.code));
+        themeList.appendChild(btn);
+      });
+    }
+
+    function setTheme(theme) {
+      applyTheme(theme);
+      saveTheme(theme);
+      paintSelectedTheme(theme);
+      const currentLang = getLang();
+      const t = I18N[currentLang] || I18N.ru;
+      document.getElementById('themeBtnText').textContent = `${t.theme}: ${getThemeLabel(theme, currentLang)}`;
+      closeTheme();
+    }
+
+    function openTheme() {
+      const overlay = document.getElementById('themeOverlay');
+      if (overlay) {
+        overlay.classList.add("show");
+      }
+    }
+
+    function closeTheme() {
+      const overlay = document.getElementById('themeOverlay');
+      if (overlay) {
+        overlay.classList.remove("show");
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      buildThemeList();
+      const savedTheme = getSavedTheme();
+      applyTheme(savedTheme);
+      paintSelectedTheme(savedTheme);
+      updateUILanguage();
+      
+      const themeBtn = document.getElementById('themeBtn');
+      const themeClose = document.getElementById('themeClose');
+      const themeOverlay = document.getElementById('themeOverlay');
+      
+      if (themeBtn) themeBtn.addEventListener('click', openTheme);
+      if (themeClose) themeClose.addEventListener('click', closeTheme);
+      if (themeOverlay) themeOverlay.addEventListener('click', (e) => {
+        if (e.target === themeOverlay) closeTheme();
+      });
+    });
+
+    window.addEventListener('languageChanged', updateUILanguage);
 
     function getUser() {
       const tg = window.Telegram?.WebApp;
@@ -581,7 +910,6 @@
         document.getElementById('loadingText').textContent = t.sending;
         document.getElementById('loadingOverlay').style.display = 'flex';
         
-        // Прямо из base64 создаём blob, без лишнего fetch
         const base64Data = imageBase64.split(',')[1];
         const binaryData = atob(base64Data);
         const bytes = new Uint8Array(binaryData.length);
