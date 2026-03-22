@@ -112,7 +112,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     typing_msg = await update.message.reply_text(get_text(uid, "typing"))
     
     try:
-        history = mem_get(uid, limit=20)
+        history = mem_get(uid, limit=100)
         prompt_with_memory = build_memory_prompt(history, text)
         
         if ai_mode == "fast":
