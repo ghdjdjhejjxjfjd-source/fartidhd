@@ -1,4 +1,4 @@
-# bot/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С ЛОКАЛИЗАЦИЕЙ
+# bot/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ С ЛОКАЛИЗАЦИЕЙ И ОБРАБОТКОЙ SAFETY ОШИБКИ
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import base64
@@ -123,7 +123,15 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         
     except Exception as e:
         await status_msg.delete()
-        await update.message.reply_text(get_text(uid, "error").format(error=str(e)[:100]))
+        
+        error_msg = str(e).lower()
+        
+        # Проверяем на safety ошибку (запрещенный контент)
+        if "safety" in error_msg or "blocked" in error_msg or "rejected" in error_msg:
+            await update.message.reply_text(get_text(uid, "image_safety_error"))
+        else:
+            await update.message.reply_text(get_text(uid, "error").format(error=str(e)[:100]))
+        
         context.user_data["in_image_mode"] = False
         print(f"❌ Ошибка генерации для {uid}: {e}")
 
