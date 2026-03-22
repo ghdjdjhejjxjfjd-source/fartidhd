@@ -1,4 +1,4 @@
-# bot/handlers/router.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (удален статус)
+# bot/handlers/router.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (добавлена помощь с разделами)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
@@ -18,7 +18,7 @@ from bot.locales import get_text, get_button_text, get_mode_name
 from .state import navigation_stack
 from .navigation import back_to_previous, back_to_menu, ignore
 from .tabs.profile import show_profile
-from .tabs.help import show_help
+from .tabs.help import show_help_menu, show_help_section
 from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
@@ -104,6 +104,16 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     if data == "ignore":
+        return
+    
+    # ===== ПОМОЩЬ - РАЗДЕЛЫ =====
+    if data.startswith("help_section:"):
+        section = data.split("help_section:", 1)[1].strip()
+        await show_help_section(context, query, uid, section)
+        return
+    
+    if data == "back_to_help_menu":
+        await show_help_menu(context, query, uid)
         return
     
     # ===== ВКЛАДКИ =====
@@ -257,7 +267,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         await show_profile(context, query, user_id)
         return
     elif tab_key == "help":
-        await show_help(context, query, user_id)
+        await show_help_menu(context, query, user_id)
         return
     elif tab_key == "ref":
         await show_ref(context, query, user_id)
