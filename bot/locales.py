@@ -716,6 +716,166 @@ TEXTS = {
         "tr": "📨 Destekten yanıt:\n\n{reply}",
         "uk": "📨 Відповідь від підтримки:\n\n{reply}",
         "fr": "📨 Réponse du support:\n\n{reply}"
+    },
+    
+    # ========== НОВЫЕ КЛЮЧИ ДЛЯ ПОМОЩИ ==========
+    
+    # Заголовок меню помощи
+    "help_title": {
+        "ru": "❓ ПОМОЩЬ\n\nВыбери раздел:",
+        "en": "❓ HELP\n\nSelect a section:",
+        "kk": "❓ КӨМЕК\n\nБөлімді таңдаңыз:",
+        "tr": "❓ YARDIM\n\nBir bölüm seçin:",
+        "uk": "❓ ДОПОМОГА\n\nОберіть розділ:",
+        "fr": "❓ AIDE\n\nChoisis une section:"
+    },
+    
+    # Кнопки разделов помощи
+    "help_chat_btn": {
+        "ru": "💬 Чат с ИИ",
+        "en": "💬 AI Chat",
+        "kk": "💬 AI чат",
+        "tr": "💬 YZ Sohbet",
+        "uk": "💬 Чат з ШІ",
+        "fr": "💬 Chat IA"
+    },
+    "help_image_btn": {
+        "ru": "🖼 Генерация картинки",
+        "en": "🖼 Image generation",
+        "kk": "🖼 Сурет генерациялау",
+        "tr": "🖼 Görsel oluşturma",
+        "uk": "🖼 Генерація зображення",
+        "fr": "🖼 Génération d'image"
+    },
+    "help_fast_mode_btn": {
+        "ru": "🚀 Быстрый режим",
+        "en": "🚀 Fast mode",
+        "kk": "🚀 Жылдам режим",
+        "tr": "🚀 Hızlı mod",
+        "uk": "🚀 Швидкий режим",
+        "fr": "🚀 Mode rapide"
+    },
+    "help_quality_mode_btn": {
+        "ru": "💎 Качественный режим",
+        "en": "💎 Quality mode",
+        "kk": "💎 Сапалы режим",
+        "tr": "💎 Kaliteli mod",
+        "uk": "💎 Якісний режим",
+        "fr": "💎 Mode qualité"
+    },
+    "help_personas_btn": {
+        "ru": "🎭 Характеры",
+        "en": "🎭 Personalities",
+        "kk": "🎭 Мінездер",
+        "tr": "🎭 Karakterler",
+        "uk": "🎭 Характери",
+        "fr": "🎭 Personnalités"
+    },
+    "help_styles_btn": {
+        "ru": "📝 Стили ответов",
+        "en": "📝 Response styles",
+        "kk": "📝 Жауап стильдері",
+        "tr": "📝 Yanıt stilleri",
+        "uk": "📝 Стилі відповідей",
+        "fr": "📝 Styles de réponse"
+    },
+    "help_stars_btn": {
+        "ru": "⭐ Звезды и баланс",
+        "en": "⭐ Stars and balance",
+        "kk": "⭐ Жұлдыздар және баланс",
+        "tr": "⭐ Yıldızlar ve bakiye",
+        "uk": "⭐ Зірки та баланс",
+        "fr": "⭐ Étoiles et solde"
+    },
+    "help_referrals_btn": {
+        "ru": "🎁 Рефералы",
+        "en": "🎁 Referrals",
+        "kk": "🎁 Рефералдар",
+        "tr": "🎁 Referanslar",
+        "uk": "🎁 Реферали",
+        "fr": "🎁 Parrainages"
+    },
+    "help_modes_btn": {
+        "ru": "📱 Режимы работы",
+        "en": "📱 Work modes",
+        "kk": "📱 Жұмыс режимдері",
+        "tr": "📱 Çalışma modları",
+        "uk": "📱 Режими роботи",
+        "fr": "📱 Modes de travail"
+    },
+    
+    # Тексты разделов помощи
+    "help_chat_text": {
+        "ru": "💬 ЧАТ С ИИ\n\nБот поддерживает два режима работы:\n• Быстрый режим — 0.3⭐ за сообщение\n• Качественный режим — 1⭐ за сообщение\n\nКак пользоваться:\n1. Выбери режим работы (Mini App или Встроенный)\n2. Нажми «💬 Чат с ИИ»\n3. Напиши сообщение — бот ответит\n4. После ответа нажми «⬅️ Назад» для выхода\n\nОсобенности:\n• Помнит историю диалога (до 100 сообщений)\n• Можно менять характер и стиль ответа\n• История сохраняется в памяти бота",
+        "en": "💬 AI CHAT\n\nThe bot supports two modes:\n• Fast mode — 0.3⭐ per message\n• Quality mode — 1⭐ per message\n\nHow to use:\n1. Choose work mode (Mini App or Inline)\n2. Click «💬 AI Chat»\n3. Write a message — bot will reply\n4. After reply click «⬅️ Back» to exit\n\nFeatures:\n• Remembers chat history (up to 100 messages)\n• Can change personality and response style\n• History is saved in bot memory",
+        "kk": "💬 AI ЧАТ\n\nБот екі режимді қолдайды:\n• Жылдам режим — 0.3⭐ хабарламаға\n• Сапалы режим — 1⭐ хабарламаға\n\nҚалай пайдалану:\n1. Жұмыс режимін таңдаңыз (Mini App немесе Кіріктірілген)\n2. «💬 AI Чат» батырмасын басыңыз\n3. Хабарлама жазыңыз — бот жауап береді\n4. Жауаптан кейін шығу үшін «⬅️ Артқа» басыңыз\n\nЕрекшеліктер:\n• Чат тарихын есте сақтайды (100 хабарламаға дейін)\n• Мінез бен жауап стилін өзгертуге болады\n• Тарих бот жадында сақталады",
+        "tr": "💬 YZ SOHBET\n\nBot iki modu destekler:\n• Hızlı mod — mesaj başına 0.3⭐\n• Kaliteli mod — mesaj başına 1⭐\n\nNasıl kullanılır:\n1. Çalışma modunu seçin (Mini App veya Yerleşik)\n2. «💬 YZ Sohbet» düğmesine tıklayın\n3. Bir mesaj yazın — bot yanıt verecek\n4. Yanıttan sonra çıkmak için «⬅️ Geri» tıklayın\n\nÖzellikler:\n• Sohbet geçmişini hatırlar (100 mesaja kadar)\n• Karakter ve yanıt stili değiştirilebilir\n• Geçmiş bot hafızasında saklanır",
+        "uk": "💬 ЧАТ З ШІ\n\nБот підтримує два режими:\n• Швидкий режим — 0.3⭐ за повідомлення\n• Якісний режим — 1⭐ за повідомлення\n\nЯк користуватися:\n1. Виберіть режим роботи (Mini App або Вбудований)\n2. Натисніть «💬 Чат з ШІ»\n3. Напишіть повідомлення — бот відповість\n4. Після відповіді натисніть «⬅️ Назад» для виходу\n\nОсобливості:\n• Пам'ятає історію діалогу (до 100 повідомлень)\n• Можна змінювати характер і стиль відповіді\n• Історія зберігається в пам'яті бота",
+        "fr": "💬 CHAT IA\n\nLe bot prend en charge deux modes:\n• Mode rapide — 0.3⭐ par message\n• Mode qualité — 1⭐ par message\n\nComment utiliser:\n1. Choisis le mode de travail (Mini App ou Intégré)\n2. Clique sur «💬 Chat IA»\n3. Écris un message — le bot répondra\n4. Après la réponse, clique sur «⬅️ Retour» pour sortir\n\nCaractéristiques:\n• Se souvient de l'historique des messages (jusqu'à 100 messages)\n• Peut changer la personnalité et le style de réponse\n• L'historique est sauvegardé dans la mémoire du bot"
+    },
+    "help_image_text": {
+        "ru": "🎨 ГЕНЕРАЦИЯ КАРТИНКИ\n\nСтоимость: 10⭐ за одну картинку\n\nКак пользоваться:\n1. Выбери режим работы (Mini App или Встроенный)\n2. Нажми «🖼 Генерация картинки»\n3. Введи описание того, что хочешь увидеть\n4. Нажми «Сгенерировать»\n5. После генерации можно сохранить в бота или повторить\n\nСоветы для хорошего промпта:\n• Пиши подробно: «красивый закат в горах, розовое небо, снежные вершины»\n• Добавляй стили: «в стиле аниме», «фотореалистично», «акварель»\n• Указывай детали: «котик в очках читает книгу»\n\nРезультат отправляется в Telegram бота, чтобы сохранить в галерею.",
+        "en": "🎨 IMAGE GENERATION\n\nCost: 10⭐ per image\n\nHow to use:\n1. Choose work mode (Mini App or Inline)\n2. Click «🖼 Image generation»\n3. Enter a description of what you want to see\n4. Click «Generate»\n5. After generation, you can save to bot or repeat\n\nTips for a good prompt:\n• Be detailed: «beautiful sunset in mountains, pink sky, snow peaks»\n• Add styles: «anime style», «photorealistic», «watercolor»\n• Specify details: «cat in glasses reading a book»\n\nThe result is sent to Telegram bot to save to gallery.",
+        "kk": "🎨 СУРЕТ ГЕНЕРАЦИЯСЫ\n\nҚұны: 10⭐ бір суретке\n\nҚалай пайдалану:\n1. Жұмыс режимін таңдаңыз (Mini App немесе Кіріктірілген)\n2. «🖼 Сурет генерациялау» батырмасын басыңыз\n3. Көргіңіз келетін нәрсенің сипаттамасын енгізіңіз\n4. «Жасау» батырмасын басыңыз\n5. Жасалғаннан кейін ботқа сақтауға немесе қайталауға болады\n\nЖақсы промпт үшін кеңестер:\n• Егжей-тегжейлі жазыңыз: «тауларда әдемі күн бату, қызғылт аспан, қарлы шыңдар»\n• Стильдерді қосыңыз: «аниме стилінде», «фотореалистік», «акварель»\n• Детальдарды көрсетіңіз: «көзілдіріктегі мысық кітап оқиды»\n\nНәтиже Telegram ботына галереяда сақтау үшін жіберіледі.",
+        "tr": "🎨 GÖRSEL OLUŞTURMA\n\nMaliyet: Görsel başına 10⭐\n\nNasıl kullanılır:\n1. Çalışma modunu seçin (Mini App veya Yerleşik)\n2. «🖼 Görsel oluşturma» düğmesine tıklayın\n3. Görmek istediğin şeyin açıklamasını girin\n4. «Oluştur» düğmesine tıklayın\n5. Oluşturulduktan sonra bota kaydedebilir veya tekrarlayabilirsin\n\nİyi bir komut için ipuçları:\n• Ayrıntılı yazın: «dağlarda güzel gün batımı, pembe gökyüzü, karlı zirveler»\n• Stiller ekleyin: «anime tarzında», «fotogerçekçi», «suluboya»\n• Detayları belirtin: «gözlüklü kedi kitap okuyor»\n\nSonuç, galeriye kaydetmek için Telegram botuna gönderilir.",
+        "uk": "🎨 ГЕНЕРАЦІЯ ЗОБРАЖЕННЯ\n\nВартість: 10⭐ за одне зображення\n\nЯк користуватися:\n1. Виберіть режим роботи (Mini App або Вбудований)\n2. Натисніть «🖼 Генерація зображення»\n3. Введіть опис того, що хочете побачити\n4. Натисніть «Згенерувати»\n5. Після генерації можна зберегти в бота або повторити\n\nПоради для гарного промпту:\n• Пишіть детально: «красивий захід сонця в горах, рожеве небо, сніжні вершини»\n• Додавайте стилі: «в стилі аніме», «фотореалістично», «акварель»\n• Вказуйте деталі: «котик в окулярах читає книгу»\n\nРезультат надсилається в Telegram бота, щоб зберегти в галерею.",
+        "fr": "🎨 GÉNÉRATION D'IMAGE\n\nCoût: 10⭐ par image\n\nComment utiliser:\n1. Choisis le mode de travail (Mini App ou Intégré)\n2. Clique sur «🖼 Génération d'image»\n3. Saisis une description de ce que tu veux voir\n4. Clique sur «Générer»\n5. Après génération, tu peux enregistrer dans le bot ou répéter\n\nConseils pour un bon prompt:\n• Sois détaillé: «beau coucher de soleil dans les montagnes, ciel rose, sommets enneigés»\n• Ajoute des styles: «style anime», «photorealistic», «aquarelle»\n• Spécifie les détails: «chat aux lunettes lisant un livre»\n\nLe résultat est envoyé au bot Telegram pour être sauvegardé dans la galerie."
+    },
+    "help_fast_mode_text": {
+        "ru": "⚡ БЫСТРЫЙ РЕЖИМ\n\nСтоимость: 0.3⭐ за сообщение\n\nВозможности:\n• ✅ Можно менять характер (Общительный, Весёлый, Умный, Строгий)\n• ✅ Можно менять стиль ответа (Коротко, По шагам, Подробно)\n• ✅ Можно выбирать язык ответов ИИ\n• ✅ Очень быстрые ответы (1-3 секунды)\n• ✅ Лимит изменений: 5 смен характера в день, 5 смен стиля в день\n\nДля кого подходит:\n• Тем, кто ценит скорость\n• Кому важно менять характер и стиль общения\n• Для повседневных вопросов и диалогов",
+        "en": "⚡ FAST MODE\n\nCost: 0.3⭐ per message\n\nFeatures:\n• ✅ Change personality (Friendly, Fun, Smart, Strict)\n• ✅ Change response style (Short, Step by step, Detailed)\n• ✅ Choose AI response language\n• ✅ Very fast responses (1-3 seconds)\n• ✅ Change limits: 5 personality changes per day, 5 style changes per day\n\nWho it's for:\n• Those who value speed\n• Those who want to change personality and communication style\n• For everyday questions and conversations",
+        "kk": "⚡ ЖЫЛДАМ РЕЖИМ\n\nҚұны: 0.3⭐ хабарламаға\n\nМүмкіндіктер:\n• ✅ Мінезді өзгертуге болады (Көпшіл, Көңілді, Ақылды, Қатал)\n• ✅ Жауап стилін өзгертуге болады (Қысқа, Қадамдық, Егжей-тегжейлі)\n• ✅ AI жауап тілін таңдауға болады\n• ✅ Өте жылдам жауаптар (1-3 секунд)\n• ✅ Өзгерту лимиті: күніне 5 мінез өзгерту, 5 стиль өзгерту\n\nКімге жараса:\n• Жылдамдықты бағалайтындарға\n• Мінез бен қарым-қатынас стилін өзгерту маңыздыларға\n• Күнделікті сұрақтар мен диалогтар үшін",
+        "tr": "⚡ HIZLI MOD\n\nMaliyet: mesaj başına 0.3⭐\n\nÖzellikler:\n• ✅ Karakter değiştirilebilir (Arkadaş canlısı, Eğlenceli, Zeki, Sert)\n• ✅ Yanıt stili değiştirilebilir (Kısa, Adım adım, Detaylı)\n• ✅ YZ yanıt dili seçilebilir\n• ✅ Çok hızlı yanıtlar (1-3 saniye)\n• ✅ Değişim limitleri: günde 5 karakter değişimi, 5 stil değişimi\n\nKimler için uygun:\n• Hızı önemseyenler için\n• Karakter ve iletişim stilini değiştirmek isteyenler için\n• Günlük sorular ve sohbetler için",
+        "uk": "⚡ ШВИДКИЙ РЕЖИМ\n\nВартість: 0.3⭐ за повідомлення\n\nМожливості:\n• ✅ Можна міняти характер (Товариський, Веселий, Розумний, Суворий)\n• ✅ Можна міняти стиль відповіді (Коротко, По кроках, Детально)\n• ✅ Можна вибирати мову відповідей ШІ\n• ✅ Дуже швидкі відповіді (1-3 секунди)\n• ✅ Ліміт змін: 5 змін характеру на день, 5 змін стилю на день\n\nДля кого підходить:\n• Для тих, хто цінує швидкість\n• Кому важливо міняти характер і стиль спілкування\n• Для повсякденних питань і діалогів",
+        "fr": "⚡ MODE RAPIDE\n\nCoût: 0.3⭐ par message\n\nFonctionnalités:\n• ✅ Changer la personnalité (Amical, Drôle, Intelligent, Strict)\n• ✅ Changer le style de réponse (Court, Pas à pas, Détaillé)\n• ✅ Choisir la langue de réponse IA\n• ✅ Réponses très rapides (1-3 secondes)\n• ✅ Limites de changement: 5 changements de personnalité par jour, 5 changements de style par jour\n\nPour qui:\n• Ceux qui apprécient la rapidité\n• Ceux qui veulent changer de personnalité et de style de communication\n• Pour les questions quotidiennes et les conversations"
+    },
+    "help_quality_mode_text": {
+        "ru": "💎 КАЧЕСТВЕННЫЙ РЕЖИМ\n\nСтоимость: 1⭐ за сообщение\n\nВозможности:\n• ✅ Более глубокие и продуманные ответы\n• ✅ Можно менять стиль ответа (Коротко, По шагам, Подробно)\n• ✅ Поддерживает множество языков\n• ✅ Лимит изменений стиля: 7 смен в день\n\nДля кого подходит:\n• Для сложных вопросов и развернутых ответов\n• Когда важна глубина и качество текста\n• Для творческих задач и анализа",
+        "en": "💎 QUALITY MODE\n\nCost: 1⭐ per message\n\nFeatures:\n• ✅ Deeper and more thoughtful responses\n• ✅ Change response style (Short, Step by step, Detailed)\n• ✅ Supports many languages\n• ✅ Style change limit: 7 changes per day\n\nWho it's for:\n• For complex questions and detailed answers\n• When depth and text quality matter\n• For creative tasks and analysis",
+        "kk": "💎 САПАЛЫ РЕЖИМ\n\nҚұны: 1⭐ хабарламаға\n\nМүмкіндіктер:\n• ✅ Тереңірек және ойластырылған жауаптар\n• ✅ Жауап стилін өзгертуге болады (Қысқа, Қадамдық, Егжей-тегжейлі)\n• ✅ Көптеген тілдерді қолдайды\n• ✅ Стиль өзгерту лимиті: күніне 7 өзгерту\n\nКімге жараса:\n• Күрделі сұрақтар мен толық жауаптар үшін\n• Мәтіннің тереңдігі мен сапасы маңызды болғанда\n• Шығармашылық тапсырмалар мен талдау үшін",
+        "tr": "💎 KALİTELİ MOD\n\nMaliyet: mesaj başına 1⭐\n\nÖzellikler:\n• ✅ Daha derin ve düşünceli yanıtlar\n• ✅ Yanıt stili değiştirilebilir (Kısa, Adım adım, Detaylı)\n• ✅ Birçok dili destekler\n• ✅ Stil değişim limiti: günde 7 değişim\n\nKimler için uygun:\n• Karmaşık sorular ve detaylı cevaplar için\n• Metin derinliği ve kalitesi önemli olduğunda\n• Yaratıcı görevler ve analiz için",
+        "uk": "💎 ЯКІСНИЙ РЕЖИМ\n\nВартість: 1⭐ за повідомлення\n\nМожливості:\n• ✅ Глибші та продуманіші відповіді\n• ✅ Можна міняти стиль відповіді (Коротко, По кроках, Детально)\n• ✅ Підтримує багато мов\n• ✅ Ліміт змін стилю: 7 змін на день\n\nДля кого підходить:\n• Для складних питань і розгорнутих відповідей\n• Коли важлива глибина та якість тексту\n• Для творчих завдань та аналізу",
+        "fr": "💎 MODE QUALITÉ\n\nCoût: 1⭐ par message\n\nFonctionnalités:\n• ✅ Réponses plus profondes et réfléchies\n• ✅ Changer le style de réponse (Court, Pas à pas, Détaillé)\n• ✅ Supporte de nombreuses langues\n• ✅ Limite de changement de style: 7 changements par jour\n\nPour qui:\n• Pour les questions complexes et les réponses détaillées\n• Quand la profondeur et la qualité du texte comptent\n• Pour les tâches créatives et l'analyse"
+    },
+    "help_personas_text": {
+        "ru": "🎭 ХАРАКТЕРЫ (доступны в Быстром режиме)\n\n😊 Общительный\n• Дружелюбный и тёплый стиль общения\n• Использует эмодзи\n• Поддерживает диалог, задаёт вопросы\n• Идеален для обычного общения\n\n😂 Весёлый\n• Легкий, юмористический тон\n• Шутит, использует иронию\n• Поднимает настроение\n• Хорош для непринуждённой беседы\n\n🧐 Умный\n• Экспертный, аналитический стиль\n• Объясняет сложное простыми словами\n• Приводит примеры и факты\n• Подходит для обучения и разбора тем\n\n😐 Строгий\n• По делу, без лишних слов\n• Чёткие и короткие ответы\n• Только полезная информация\n• Для тех, кто ценит лаконичность\n\nЛимит: 5 изменений характера в день",
+        "en": "🎭 PERSONALITIES (available in Fast mode)\n\n😊 Friendly\n• Friendly and warm communication style\n• Uses emojis\n• Engages in dialogue, asks questions\n• Ideal for everyday conversation\n\n😂 Fun\n• Light, humorous tone\n• Jokes, uses irony\n• Lifts the mood\n• Great for casual conversation\n\n🧐 Smart\n• Expert, analytical style\n• Explains complex things simply\n• Gives examples and facts\n• Suitable for learning and topic analysis\n\n😐 Strict\n• To the point, no unnecessary words\n• Clear and short answers\n• Only useful information\n• For those who value brevity\n\nLimit: 5 personality changes per day",
+        "kk": "🎭 МІНЕЗДЕР (Жылдам режимде қолжетімді)\n\n😊 Көпшіл\n• Достық және жылы сөйлесу стилі\n• Эмодзи қолданады\n• Диалогты қолдайды, сұрақтар қояды\n• Кәдімгі сөйлесу үшін өте қолайлы\n\n😂 Көңілді\n• Жеңіл, әзіл-оспақ тон\n• Әзілдейді, ирония қолданады\n• Көңіл-күйді көтереді\n• Еркін әңгіме үшін жақсы\n\n🧐 Ақылды\n• Сараптамалық, аналитикалық стиль\n• Күрделі нәрселерді қарапайым тілмен түсіндіреді\n• Мысалдар мен фактілер келтіреді\n• Оқу және тақырыптарды талдау үшін қолайлы\n\n😐 Қатал\n• Іске, қосымша сөздерсіз\n• Нақты және қысқа жауаптар\n• Тек пайдалы ақпарат\n• Қысқалықты бағалайтындар үшін\n\nЛимит: күніне 5 мінез өзгерту",
+        "tr": "🎭 KARAKTERLER (Hızlı modda mevcuttur)\n\n😊 Arkadaş canlısı\n• Samimi ve sıcak iletişim tarzı\n• Emoji kullanır\n• Diyaloğu destekler, sorular sorar\n• Günlük sohbet için ideal\n\n😂 Eğlenceli\n• Hafif, esprili ton\n• Şakalar yapar, ironi kullanır\n• Moral yükseltir\n• Rahat sohbetler için harika\n\n🧐 Zeki\n• Uzman, analitik stil\n• Karmaşık şeyleri basitçe açıklar\n• Örnekler ve gerçekler sunar\n• Öğrenme ve konu analizi için uygundur\n\n😐 Sert\n• Konuya doğrudan, gereksiz kelime yok\n• Net ve kısa cevaplar\n• Sadece faydalı bilgiler\n• Kısa ve öz olanı sevenler için\n\nLimit: Günde 5 karakter değişikliği",
+        "uk": "🎭 ХАРАКТЕРИ (доступні в Швидкому режимі)\n\n😊 Товариський\n• Дружній і теплий стиль спілкування\n• Використовує емодзі\n• Підтримує діалог, задає питання\n• Ідеальний для звичайного спілкування\n\n😂 Веселий\n• Легкий, гумористичний тон\n• Жартує, використовує іронію\n• Піднімає настрій\n• Добре підходить для невимушеної бесіди\n\n🧐 Розумний\n• Експертний, аналітичний стиль\n• Пояснює складне простими словами\n• Наводить приклади та факти\n• Підходить для навчання та розбору тем\n\n😐 Суворий\n• По суті, без зайвих слів\n• Чіткі та короткі відповіді\n• Тільки корисна інформація\n• Для тих, хто цінує лаконічність\n\nЛіміт: 5 змін характеру на день",
+        "fr": "🎭 PERSONNALITÉS (disponibles en mode Rapide)\n\n😊 Amical\n• Style de communication amical et chaleureux\n• Utilise des emojis\n• Engage le dialogue, pose des questions\n• Idéal pour la conversation quotidienne\n\n😂 Drôle\n• Ton léger et humoristique\n• Blague, utilise l'ironie\n• Remonte le moral\n• Parfait pour une conversation décontractée\n\n🧐 Intelligent\n• Style expert et analytique\n• Explique les choses complexes simplement\n• Donne des exemples et des faits\n• Adapté pour l'apprentissage et l'analyse de sujets\n\n😐 Strict\n• Va droit au but, pas de mots inutiles\n• Réponses claires et courtes\n• Seulement des informations utiles\n• Pour ceux qui apprécient la concision\n\nLimite: 5 changements de personnalité par jour"
+    },
+    "help_styles_text": {
+        "ru": "📝 СТИЛИ ОТВЕТОВ\n\n📏 Коротко\n• 1-3 предложения\n• Только суть, без воды\n• Максимальная лаконичность\n• Подходит для быстрых ответов\n\n📋 По шагам\n• Структурированный ответ\n• Разбивка на пункты\n• Пошаговое объяснение\n• Идеально для инструкций и алгоритмов\n\n📚 Подробно\n• Развёрнутое объяснение\n• Примеры и детали\n• 3-5 предложений\n• Для глубокого понимания темы\n\nЛимит в Быстром режиме: 5 изменений в день\nЛимит в Качественном режиме: 7 изменений в день",
+        "en": "📝 RESPONSE STYLES\n\n📏 Short\n• 1-3 sentences\n• Just the essence, no fluff\n• Maximum conciseness\n• Suitable for quick answers\n\n📋 Step by step\n• Structured response\n• Broken down into points\n• Step-by-step explanation\n• Perfect for instructions and algorithms\n\n📚 Detailed\n• Detailed explanation\n• Examples and details\n• 3-5 sentences\n• For deep understanding of the topic\n\nLimit in Fast mode: 5 changes per day\nLimit in Quality mode: 7 changes per day",
+        "kk": "📝 ЖАУАП СТИЛЬДЕРІ\n\n📏 Қысқа\n• 1-3 сөйлем\n• Тек мәні, артық сөздерсіз\n• Максималды қысқалық\n• Жылдам жауаптар үшін қолайлы\n\n📋 Қадамдық\n• Құрылымдалған жауап\n• Пункттерге бөлінген\n• Қадамдық түсініктеме\n• Нұсқаулықтар мен алгоритмдер үшін өте қолайлы\n\n📚 Егжей-тегжейлі\n• Толық түсініктеме\n• Мысалдар мен детальдар\n• 3-5 сөйлем\n• Тақырыпты терең түсіну үшін\n\nЖылдам режимдегі лимит: күніне 5 өзгерту\nСапалы режимдегі лимит: күніне 7 өзгерту",
+        "tr": "📝 YANIT STİLLERİ\n\n📏 Kısa\n• 1-3 cümle\n• Sadece öz, gereksiz kelime yok\n• Maksimum kısalık\n• Hızlı cevaplar için uygundur\n\n📋 Adım adım\n• Yapılandırılmış yanıt\n• Maddelere ayrılmış\n• Adım adım açıklama\n• Talimatlar ve algoritmalar için ideal\n\n📚 Detaylı\n• Ayrıntılı açıklama\n• Örnekler ve detaylar\n• 3-5 cümle\n• Konuyu derinlemesine anlamak için\n\nHızlı modda limit: günde 5 değişiklik\nKaliteli modda limit: günde 7 değişiklik",
+        "uk": "📝 СТИЛІ ВІДПОВІДЕЙ\n\n📏 Коротко\n• 1-3 речення\n• Тільки суть, без води\n• Максимальна лаконічність\n• Підходить для швидких відповідей\n\n📋 По кроках\n• Структурована відповідь\n• Розбивка на пункти\n• Покрокове пояснення\n• Ідеально для інструкцій та алгоритмів\n\n📚 Детально\n• Розгорнуте пояснення\n• Приклади та деталі\n• 3-5 речень\n• Для глибокого розуміння теми\n\nЛіміт у Швидкому режимі: 5 змін на день\nЛіміт у Якісному режимі: 7 змін на день",
+        "fr": "📝 STYLES DE RÉPONSE\n\n📏 Court\n• 1-3 phrases\n• Juste l'essentiel, sans superflu\n• Concision maximale\n• Adapté pour les réponses rapides\n\n📋 Pas à pas\n• Réponse structurée\n• Décomposée en points\n• Explication étape par étape\n• Parfait pour les instructions et les algorithmes\n\n📚 Détaillé\n• Explication détaillée\n• Exemples et détails\n• 3-5 phrases\n• Pour une compréhension approfondie du sujet\n\nLimite en mode Rapide: 5 changements par jour\nLimite en mode Qualité: 7 changements par jour"
+    },
+    "help_stars_text": {
+        "ru": "⭐ ЗВЕЗДЫ И БАЛАНС\n\nЗа что списываются звезды:\n• Сообщение в Быстром режиме — 0.3⭐\n• Сообщение в Качественном режиме — 1⭐\n• Генерация картинки — 10⭐\n\nКак заработать звезды:\n• 🎁 Пригласи друга по реферальной ссылке — +10⭐\n• 💰 Пополнение через Telegram Stars (в разработке)\n\nГде посмотреть баланс:\n• В главном меню кнопка «⭐ Баланс: X звезд»\n• В профиле также отображается баланс\n\nВажно:\n• При недостатке звезд чат и генерация будут недоступны\n• Баланс обновляется автоматически после каждого действия",
+        "en": "⭐ STARS AND BALANCE\n\nWhat stars are spent on:\n• Message in Fast mode — 0.3⭐\n• Message in Quality mode — 1⭐\n• Image generation — 10⭐\n\nHow to earn stars:\n• 🎁 Invite a friend via referral link — +10⭐\n• 💰 Top up via Telegram Stars (in development)\n\nWhere to check balance:\n• In main menu button «⭐ Balance: X stars»\n• Balance is also displayed in profile\n\nImportant:\n• If stars are insufficient, chat and generation will be unavailable\n• Balance updates automatically after each action",
+        "kk": "⭐ ЖҰЛДЫЗДАР ЖӘНЕ БАЛАНС\n\nНеге жұлдыздар жұмсалады:\n• Жылдам режимдегі хабарлама — 0.3⭐\n• Сапалы режимдегі хабарлама — 1⭐\n• Сурет генерациялау — 10⭐\n\nЖұлдыздарды қалай табуға болады:\n• 🎁 Досыңызды рефералдық сілтеме арқылы шақырыңыз — +10⭐\n• 💰 Telegram Stars арқылы толтыру (әзірленуде)\n\nБалансты қайдан көруге болады:\n• Негізгі мәзірдегі «⭐ Баланс: {balance} жұлдыз» батырмасы\n• Профильде де баланс көрсетіледі\n\nМаңызды:\n• Жұлдыздар жеткіліксіз болса, чат және генерация қолжетімсіз болады\n• Баланс әр әрекеттен кейін автоматты түрде жаңартылады",
+        "tr": "⭐ YILDIZLAR VE BAKİYE\n\nYıldızlar ne için harcanır:\n• Hızlı modda mesaj — 0.3⭐\n• Kaliteli modda mesaj — 1⭐\n• Görsel oluşturma — 10⭐\n\nYıldız nasıl kazanılır:\n• 🎁 Arkadaşını referans bağlantısıyla davet et — +10⭐\n• 💰 Telegram Stars ile yükleme (geliştiriliyor)\n\nBakiye nereden kontrol edilir:\n• Ana menüde «⭐ Bakiye: {balance} yıldız» düğmesi\n• Profilde de bakiye görüntülenir\n\nÖnemli:\n• Yıldızlar yetersizse sohbet ve oluşturma kullanılamaz\n• Bakiye her işlemden sonra otomatik güncellenir",
+        "uk": "⭐ ЗІРКИ ТА БАЛАНС\n\nНа що витрачаються зірки:\n• Повідомлення в Швидкому режимі — 0.3⭐\n• Повідомлення в Якісному режимі — 1⭐\n• Генерація зображення — 10⭐\n\nЯк заробити зірки:\n• 🎁 Запроси друга за реферальним посиланням — +10⭐\n• 💰 Поповнення через Telegram Stars (в розробці)\n\nДе подивитися баланс:\n• У головному меню кнопка «⭐ Баланс: {balance} зірок»\n• У профілі також відображається баланс\n\nВажливо:\n• При недостачі зірок чат і генерація будуть недоступні\n• Баланс оновлюється автоматично після кожної дії",
+        "fr": "⭐ ÉTOILES ET SOLDE\n\nÀ quoi servent les étoiles:\n• Message en mode Rapide — 0.3⭐\n• Message en mode Qualité — 1⭐\n• Génération d'image — 10⭐\n\nComment gagner des étoiles:\n• 🎁 Invite un ami avec un lien de parrainage — +10⭐\n• 💰 Recharge via Telegram Stars (en développement)\n\nOù vérifier le solde:\n• Dans le menu principal, bouton «⭐ Solde: {balance} étoiles»\n• Le solde est également affiché dans le profil\n\nImportant:\n• Si les étoiles sont insuffisantes, le chat et la génération seront indisponibles\n• Le solde se met à jour automatiquement après chaque action"
+    },
+    "help_referrals_text": {
+        "ru": "🎁 РЕФЕРАЛЫ\n\nКак это работает:\n1. Перейди в раздел «🎁 Рефералы»\n2. Скопируй свою уникальную ссылку\n3. Отправь ссылку другу\n4. Когда друг впервые запустит бота по твоей ссылке — ты получишь 10⭐\n\nБонусы:\n• Пригласивший получает 10⭐ на баланс\n• Новый пользователь получает уведомление\n• Количество приглашённых не ограничено\n\nСтатистика:\n• В разделе «Рефералы» видно, сколько друзей пригласил\n• Также отображается общая сумма заработанных звезд",
+        "en": "🎁 REFERRALS\n\nHow it works:\n1. Go to «🎁 Referrals» section\n2. Copy your unique link\n3. Send the link to a friend\n4. When a friend launches the bot for the first time via your link — you get 10⭐\n\nBonuses:\n• The inviter gets 10⭐ added to balance\n• The new user receives a notification\n• Number of invites is unlimited\n\nStatistics:\n• The «Referrals» section shows how many friends you've invited\n• Also shows the total amount of stars earned",
+        "kk": "🎁 РЕФЕРАЛДАР\n\nҚалай жұмыс істейді:\n1. «🎁 Рефералдар» бөліміне өтіңіз\n2. Өзіңіздің бірегей сілтемеңізді көшіріңіз\n3. Сілтемені досыңызға жіберіңіз\n4. Досыңыз ботты сіздің сілтемеңіз арқылы алғаш рет іске қосқанда — сіз 10⭐ аласыз\n\nБонустар:\n• Шақырушы 10⭐ алады\n• Жаңа пайдаланушы хабарландыру алады\n• Шақырылғандар саны шектелмеген\n\nСтатистика:\n• «Рефералдар» бөлімінде қанша дос шақырғаныңызды көруге болады\n• Сондай-ақ табылған жұлдыздардың жалпы сомасы көрсетіледі",
+        "tr": "🎁 REFERANSLAR\n\nNasıl çalışır:\n1. «🎁 Referanslar» bölümüne gidin\n2. Benzersiz bağlantınızı kopyalayın\n3. Bağlantıyı arkadaşınıza gönderin\n4. Arkadaşınız botu sizin bağlantınızla ilk kez başlattığında — 10⭐ kazanırsınız\n\nBonuslar:\n• Davet eden 10⭐ alır\n• Yeni kullanıcı bildirim alır\n• Davet edilen sayısı sınırsızdır\n\nİstatistikler:\n• «Referanslar» bölümünde kaç arkadaş davet ettiğinizi görebilirsiniz\n• Ayrıca kazanılan toplam yıldız miktarı gösterilir",
+        "uk": "🎁 РЕФЕРАЛИ\n\nЯк це працює:\n1. Перейди в розділ «🎁 Реферали»\n2. Скопіюй своє унікальне посилання\n3. Надішли посилання другу\n4. Коли друг вперше запустить бота за твоїм посиланням — ти отримаєш 10⭐\n\nБонуси:\n• Той, хто запросив, отримує 10⭐ на баланс\n• Новий користувач отримує сповіщення\n• Кількість запрошених не обмежена\n\nСтатистика:\n• У розділі «Реферали» видно, скільки друзів ти запросив\n• Також відображається загальна сума зароблених зірок",
+        "fr": "🎁 PARRAINAGES\n\nComment ça marche:\n1. Va dans la section «🎁 Parrainages»\n2. Copie ton lien unique\n3. Envoie le lien à un ami\n4. Quand ton ami lance le bot pour la première fois avec ton lien — tu reçois 10⭐\n\nBonus:\n• Le parrain reçoit 10⭐ sur son solde\n• Le nouvel utilisateur reçoit une notification\n• Le nombre d'invitations est illimité\n\nStatistiques:\n• La section «Parrainages» montre combien d'amis tu as invités\n• Affiche également le montant total des étoiles gagnées"
+    },
+    "help_modes_text": {
+        "ru": "📱 РЕЖИМЫ РАБОТЫ\n\n📱 Mini App (Telegram Web App)\n• Открывается внутри Telegram\n• Полноэкранный интерфейс\n• Удобный чат с историей\n• Генерация картинок\n• Все настройки в интерфейсе\n\n💬 Встроенный режим\n• Общение через Telegram чат\n• Кнопки и меню в сообщениях\n• Настройки через кнопки\n• Требует интернет-соединения\n\nКак переключить:\n1. Зайди в «⚙️ Настройки»\n2. Нажми «🔄 Режим работы»\n3. Выбери удобный вариант\n\nОба режима используют один баланс звезд и общую историю чата.",
+        "en": "📱 WORK MODES\n\n📱 Mini App (Telegram Web App)\n• Opens inside Telegram\n• Full-screen interface\n• Convenient chat with history\n• Image generation\n• All settings in the interface\n\n💬 Inline mode\n• Communication via Telegram chat\n• Buttons and menu in messages\n• Settings via buttons\n• Requires internet connection\n\nHow to switch:\n1. Go to «⚙️ Settings»\n2. Click «🔄 Work mode»\n3. Choose the convenient option\n\nBoth modes use the same star balance and shared chat history.",
+        "kk": "📱 ЖҰМЫС РЕЖИМДЕРІ\n\n📱 Mini App (Telegram Web App)\n• Telegram ішінде ашылады\n• Толық экранды интерфейс\n• Тарихы бар ыңғайлы чат\n• Сурет генерациялау\n• Барлық баптаулар интерфейсте\n\n💬 Кіріктірілген режим\n• Telegram чат арқылы қарым-қатынас\n• Хабарламалардағы батырмалар мен мәзір\n• Баптаулар батырмалар арқылы\n• Интернет байланысын қажет етеді\n\nҚалай ауыстыру:\n1. «⚙️ Баптаулар» бөліміне өтіңіз\n2. «🔄 Жұмыс режимі» батырмасын басыңыз\n3. Ыңғайлы нұсқаны таңдаңыз\n\nЕкі режим де бір жұлдыз балансын және ортақ чат тарихын пайдаланады.",
+        "tr": "📱 ÇALIŞMA MODLARI\n\n📱 Mini App (Telegram Web App)\n• Telegram içinde açılır\n• Tam ekran arayüz\n• Geçmişli kullanışlı sohbet\n• Görsel oluşturma\n• Tüm ayarlar arayüzde\n\n💬 Yerleşik mod\n• Telegram sohbeti üzerinden iletişim\n• Mesajlardaki butonlar ve menü\n• Ayarlar butonlar aracılığıyla\n• İnternet bağlantısı gerektirir\n\nNasıl değiştirilir:\n1. «⚙️ Ayarlar» bölümüne gidin\n2. «🔄 Çalışma modu» düğmesine tıklayın\n3. Uygun seçeneği seçin\n\nHer iki mod da aynı yıldız bakiyesini ve ortak sohbet geçmişini kullanır.",
+        "uk": "📱 РЕЖИМИ РОБОТИ\n\n📱 Mini App (Telegram Web App)\n• Відкривається всередині Telegram\n• Повноекранний інтерфейс\n• Зручний чат з історією\n• Генерація зображень\n• Всі налаштування в інтерфейсі\n\n💬 Вбудований режим\n• Спілкування через Telegram чат\n• Кнопки та меню в повідомленнях\n• Налаштування через кнопки\n• Потребує інтернет-з'єднання\n\nЯк переключити:\n1. Зайди в «⚙️ Налаштування»\n2. Натисни «🔄 Режим роботи»\n3. Обери зручний варіант\n\nОбидва режими використовують один баланс зірок і спільну історію чату.",
+        "fr": "📱 MODES DE TRAVAIL\n\n📱 Mini App (Telegram Web App)\n• S'ouvre dans Telegram\n• Interface plein écran\n• Chat pratique avec historique\n• Génération d'images\n• Tous les paramètres dans l'interface\n\n💬 Mode intégré\n• Communication via le chat Telegram\n• Boutons et menu dans les messages\n• Paramètres via boutons\n• Nécessite une connexion internet\n\nComment changer:\n1. Va dans «⚙️ Paramètres»\n2. Clique sur «🔄 Mode de travail»\n3. Choisis l'option pratique\n\nLes deux modes utilisent le même solde d'étoiles et l'historique de chat commun."
     }
 }
 
