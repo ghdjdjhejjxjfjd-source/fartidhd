@@ -1,3 +1,4 @@
+# bot/menu.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (удалена кнопка Статус)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from api import get_use_mini_app, get_user_persona, get_user_lang, get_user_ai_lang, get_user_style, get_ai_mode, get_user_limits
 from payments import get_balance
@@ -20,7 +21,6 @@ TAB_TEXT = {
     "settings": "settings",
     "help": "help",
     "profile": "profile",
-    "status": "status",
     "ref": "ref",
     "support": "support",
     "support_blocked": "support_blocked",
@@ -304,14 +304,14 @@ def main_menu_for_user(user_id: int) -> InlineKeyboardMarkup:
     bottom_row1.append(InlineKeyboardButton(get_button_text(user_id, "help"), callback_data="tab:help"))
     keyboard.append(bottom_row1)
     
+    # Вторая строка: только Профиль и Рефералы (Статус удален)
     bottom_row2 = []
     bottom_row2.append(InlineKeyboardButton(get_button_text(user_id, "profile"), callback_data="tab:profile"))
-    bottom_row2.append(InlineKeyboardButton(get_button_text(user_id, "status"), callback_data="tab:status"))
+    bottom_row2.append(InlineKeyboardButton(get_button_text(user_id, "ref"), callback_data="tab:ref"))
     keyboard.append(bottom_row2)
     
-    # Нижние кнопки с проверкой блокировки поддержки
+    # Третья строка: Поддержка
     bottom_row3 = []
-    bottom_row3.append(InlineKeyboardButton(get_button_text(user_id, "ref"), callback_data="tab:ref"))
     
     # Проверяем блокировку поддержки
     is_support_blocked = False
