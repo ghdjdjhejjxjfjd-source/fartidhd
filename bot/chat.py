@@ -1,4 +1,4 @@
-# bot/chat.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (только одно меню)
+# bot/chat.py - ПОЛНАЯ ВЕРСИЯ С ЛОКАЛИЗАЦИЕЙ
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from datetime import datetime
@@ -14,9 +14,11 @@ from openai_client import ask_openai
 from .config import send_log_http
 from .menu import main_menu_for_user
 from .utils import send_fresh_menu, delete_prev_menu
+from .locales import get_text
 
 # Глобальное хранилище ID последнего сообщения с кнопкой
 last_bot_message_with_button = {}
+
 
 async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -31,30 +33,32 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cost = 0.3 if ai_mode == "fast" else 1.0
     
     if a.get("is_blocked"):
-        await query.message.reply_text("⛔ Доступ заблокирован.")
+        await query.message.reply_text(get_text(uid, "blocked_access"))
         return
     
     if not a.get("is_free") and balance < cost:
-        await query.message.reply_text(
-            f"❌ Недостаточно звезд (нужно {cost}⭐).\n"
-            "Купи звезды в меню: ⭐ Купить звезды"
-        )
+        text = get_text(uid, "insufficient_stars").format(cost=cost)
+        await query.message.reply_text(text)
         return
     
     mode_names = {
-        "fast": "🚀 Быстрый", 
-        "quality": "💎 Качественный"
+        "fast": get_text(uid, "ai_mode_fast"),
+        "quality": get_text(uid, "ai_mode_quality")
     }
     
     style_names = {
-        "short": "📏 Коротко", 
-        "steps": "📋 По шагам", 
-        "detail": "📚 Подробно"
+        "short": get_text(uid, "style_short"),
+        "steps": get_text(uid, "style_steps"),
+        "detail": get_text(uid, "style_detail")
     }
     
     lang_names = {
-        "ru": "🇷🇺 Русский", "en": "🇬🇧 English", "kk": "🇰🇿 Қазақша",
-        "tr": "🇹🇷 Türkçe", "uk": "🇺🇦 Українська", "fr": "🇫🇷 Français"
+        "ru": get_text(uid, "lang_ru"),
+        "en": get_text(uid, "lang_en"),
+        "kk": get_text(uid, "lang_kk"),
+        "tr": get_text(uid, "lang_tr"),
+        "uk": get_text(uid, "lang_uk"),
+        "fr": get_text(uid, "lang_fr")
     }
     
     current_style = get_user_style(uid)
@@ -64,24 +68,22 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Текст приглашения
     if ai_mode == "fast":
         current_ai_lang = get_user_ai_lang(uid)
-        text = (
-            f"💬 Напиши сообщение.\n\n"
-            f"Режим: {mode_names[ai_mode]}\n"
-            f"Язык ответов: {lang_names.get(current_ai_lang, 'Русский')}\n"
-            f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
-            f"Стоимость: {cost}⭐"
+        text = get_text(uid, "inline_chat_start_fast").format(
+            mode=mode_names[ai_mode],
+            lang=lang_names.get(current_ai_lang, get_text(uid, "lang_ru")),
+            style=style_names.get(current_style, get_text(uid, "style_steps")),
+            cost=cost
         )
     else:
-        text = (
-            f"💬 Напиши сообщение.\n\n"
-            f"Режим: {mode_names[ai_mode]}\n"
-            f"Стиль: {style_names.get(current_style, 'По шагам')}\n"
-            f"Стоимость: {cost}⭐"
+        text = get_text(uid, "inline_chat_start_quality").format(
+            mode=mode_names[ai_mode],
+            style=style_names.get(current_style, get_text(uid, "style_steps")),
+            cost=cost
         )
     
     # КНОПКА НАЗАД на стартовом экране
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("⬅️ Назад", callback_data="exit_chat_from_start")]
+        [InlineKeyboardButton(get_text(uid, "back_btn"), callback_data="exit_chat_from_start")]
     ])
     
     sent_msg = await query.message.edit_text(
@@ -94,6 +96,7 @@ async def inline_chat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["in_chat_mode"] = True
     print(f"✅ Чат режим включен для {uid}")
 
+
 async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int, text: str):
     a = get_access(uid)
     ai_lang = get_user_ai_lang(uid)
@@ -104,40 +107,38 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     # Названия для режима ИИ
     ai_mode_names = {
-        "fast": "🚀 Быстрый",
-        "quality": "💎 Качественный"
+        "fast": get_text(uid, "ai_mode_fast"),
+        "quality": get_text(uid, "ai_mode_quality")
     }
     
     # Названия для характера
     persona_names = {
-        "friendly": "😊 Общительный",
-        "fun": "😂 Весёлый",
-        "smart": "🧐 Умный",
-        "strict": "😐 Строгий"
+        "friendly": get_text(uid, "persona_friendly"),
+        "fun": get_text(uid, "persona_fun"),
+        "smart": get_text(uid, "persona_smart"),
+        "strict": get_text(uid, "persona_strict")
     }
     
     # Названия для стиля
     style_names = {
-        "short": "📏 Коротко",
-        "steps": "📋 По шагам",
-        "detail": "📚 Подробно"
+        "short": get_text(uid, "style_short"),
+        "steps": get_text(uid, "style_steps"),
+        "detail": get_text(uid, "style_detail")
     }
     
     if a.get("is_blocked"):
-        await update.message.reply_text("⛔ Доступ заблокирован.")
+        await update.message.reply_text(get_text(uid, "blocked_access"))
         context.user_data["in_chat_mode"] = False
         return
     
     balance = get_balance(uid)
     if not a.get("is_free") and balance < cost:
-        await update.message.reply_text(
-            f"❌ Недостаточно звезд (нужно {cost}⭐).\n"
-            "Купи звезды в меню: ⭐ Купить звезды"
-        )
+        text_msg = get_text(uid, "insufficient_stars").format(cost=cost)
+        await update.message.reply_text(text_msg)
         context.user_data["in_chat_mode"] = False
         return
     
-    # ===== УДАЛЯЕМ КНОПКУ СО СТАРТОВОГО ЭКРАНА =====
+    # Удаляем кнопку со стартового экрана
     if "start_message_id" in context.user_data:
         try:
             await context.bot.edit_message_reply_markup(
@@ -178,7 +179,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             
             # Отправляем новый ответ С КНОПКОЙ
             keyboard = InlineKeyboardMarkup([
-                [InlineKeyboardButton("⬅️ Назад", callback_data="exit_chat")]
+                [InlineKeyboardButton(get_text(uid, "back_btn"), callback_data="exit_chat")]
             ])
             
             sent_msg = await context.bot.send_message(
@@ -229,6 +230,7 @@ async def handle_chat_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         await typing_msg.edit_text(f"❌ Ошибка")
         context.user_data["in_chat_mode"] = False
 
+
 async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """Выход из чата в главное меню (только одно меню)"""
     
@@ -258,6 +260,7 @@ async def exit_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int
     # 4. Отправляем/обновляем меню (send_fresh_menu сам удалит старое)
     await send_fresh_menu(context.bot, uid)
     print(f"✅ Меню отправлено для {uid}")
+
 
 async def exit_chat_from_start(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: int):
     """Выход из чата со стартового экрана"""
