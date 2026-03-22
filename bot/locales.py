@@ -1,4 +1,4 @@
-# bot/locales.py
+# bot/locales.py - ПОЛНЫЙ ФАЙЛ ЛОКАЛИЗАЦИИ
 from api import get_user_lang
 
 # =========================
@@ -14,7 +14,9 @@ LANGUAGES = {
     "fr": "🇫🇷 Français"
 }
 
-# Основные тексты
+# =========================
+# ОСНОВНЫЕ ТЕКСТЫ
+# =========================
 TEXTS = {
     # Главное меню
     "menu_title": {
@@ -259,6 +261,22 @@ TEXTS = {
         "uk": "{name} (ліміт)",
         "fr": "{name} (limite)"
     },
+    "share": {
+        "ru": "📤 Поделиться",
+        "en": "📤 Share",
+        "kk": "📤 Бөлісу",
+        "tr": "📤 Paylaş",
+        "uk": "📤 Поділитися",
+        "fr": "📤 Partager"
+    },
+    "exit_hint": {
+        "ru": "⬅️ Нажмите для выхода",
+        "en": "⬅️ Click to exit",
+        "kk": "⬅️ Шығу үшін басыңыз",
+        "tr": "⬅️ Çıkmak için tıklayın",
+        "uk": "⬅️ Натисніть для виходу",
+        "fr": "⬅️ Cliquez pour sortir"
+    },
     
     # Тексты вкладок
     "blocked": {
@@ -300,6 +318,14 @@ TEXTS = {
         "tr": "⭐ Mini App için yeterli yıldız yok.\n\nMini App'e erişmek için en az 1 yıldıza ihtiyacınız var.\n\nAşağıdaki menüden yıldız satın alın 👇",
         "uk": "⭐ Недостатньо зірок для Mini App.\n\nДля доступу до Mini App потрібна хоча б 1 зірка.\n\nКупіть зірки в меню нижче 👇",
         "fr": "⭐ Pas assez d'étoiles pour Mini App.\n\nPour accéder à Mini App, tu as besoin d'au moins 1 étoile.\n\nAchète des étoiles dans le menu ci-dessous 👇"
+    },
+    "need_stars_image": {
+        "ru": "❌ Недостаточно звезд (нужно 10).",
+        "en": "❌ Not enough stars (need 10).",
+        "kk": "❌ Жұлдыздар жеткіліксіз (10 қажет).",
+        "tr": "❌ Yeterli yıldız yok (10 gerekli).",
+        "uk": "❌ Недостатньо зірок (потрібно 10).",
+        "fr": "❌ Pas assez d'étoiles (10 nécessaires)."
     },
     "buy_pack": {
         "ru": "💰 Купить пакет\n\nПакеты сообщений (пример):\n• 100 сообщений — 99₽\n• 500 сообщений — 399₽\n• 2000 сообщений — 999₽\n\nОплату подключим позже.",
@@ -389,6 +415,14 @@ TEXTS = {
         "uk": "⭐ Ваш баланс зірок",
         "fr": "⭐ Votre solde d'étoiles"
     },
+    "balance_text_with_value": {
+        "ru": "⭐ Ваш баланс: {balance} звезд",
+        "en": "⭐ Your balance: {balance} stars",
+        "kk": "⭐ Сіздің балансыңыз: {balance} жұлдыз",
+        "tr": "⭐ Bakiyeniz: {balance} yıldız",
+        "uk": "⭐ Ваш баланс: {balance} зірок",
+        "fr": "⭐ Votre solde: {balance} étoiles"
+    },
     "mode_settings": {
         "ru": "🔄 Режим работы\n\nВыбери как пользоваться ботом:",
         "en": "🔄 Work mode\n\nChoose how to use the bot:",
@@ -453,6 +487,62 @@ TEXTS = {
         "uk": "⛔ Ліміт вичерпано\n\nСьогодні більше не можна міняти це налаштування.\nСпробуй завтра після 00:00.",
         "fr": "⛔ Limite dépassée\n\nTu ne peux plus changer ce paramètre aujourd'hui.\nRéessaie demain après 00:00."
     },
+    "mode_changed": {
+        "ru": "✅ Режим изменен на {mode}\n\n🧹 История чата очищена.\n📊 Сегодня осталось смен режима: {remaining}/8",
+        "en": "✅ Mode changed to {mode}\n\n🧹 Chat history cleared.\n📊 Mode changes left today: {remaining}/8",
+        "kk": "✅ Режим {mode} өзгертілді\n\n🧹 Чат тарихы жойылды.\n📊 Бүгін қалған режим ауыстыру: {remaining}/8",
+        "tr": "✅ Mod {mode} olarak değiştirildi\n\n🧹 Sohbet geçmişi temizlendi.\n📊 Bugün kalan mod değişikliği: {remaining}/8",
+        "uk": "✅ Режим змінено на {mode}\n\n🧹 Історію чату очищено.\n📊 Сьогодні залишилось змін режиму: {remaining}/8",
+        "fr": "✅ Mode changé en {mode}\n\n🧹 Historique du chat effacé.\n📊 Changements de mode restants aujourd'hui: {remaining}/8"
+    },
+    "mode_changed_work": {
+        "ru": "✅ Режим работы переключен на {mode}!",
+        "en": "✅ Work mode switched to {mode}!",
+        "kk": "✅ Жұмыс режимі {mode} режиміне ауыстырылды!",
+        "tr": "✅ Çalışma modu {mode} olarak değiştirildi!",
+        "uk": "✅ Режим роботи переключено на {mode}!",
+        "fr": "✅ Mode de travail changé en {mode}!"
+    },
+    "lang_changed": {
+        "ru": "✅ Язык изменен",
+        "en": "✅ Language changed",
+        "kk": "✅ Тіл өзгертілді",
+        "tr": "✅ Dil değiştirildi",
+        "uk": "✅ Мову змінено",
+        "fr": "✅ Langue changée"
+    },
+    "persona_changed": {
+        "ru": "✅ Характер изменен на: {persona}",
+        "en": "✅ Personality changed to: {persona}",
+        "kk": "✅ Мінез {persona} өзгертілді",
+        "tr": "✅ Karakter {persona} olarak değiştirildi",
+        "uk": "✅ Характер змінено на: {persona}",
+        "fr": "✅ Personnalité changée en: {persona}"
+    },
+    "persona_not_available_quality": {
+        "ru": "❌ В качественном режиме (OpenAI) характер недоступен.\nПереключитесь на быстрый режим (Groq) чтобы изменить характер.",
+        "en": "❌ In quality mode (OpenAI) personality is not available.\nSwitch to fast mode (Groq) to change personality.",
+        "kk": "❌ Сапалы режимде (OpenAI) мінез қолжетімсіз.\nМінезді өзгерту үшін жылдам режимге (Groq) ауысыңыз.",
+        "tr": "❌ Kaliteli modda (OpenAI) karakter mevcut değil.\nKarakteri değiştirmek için hızlı moda (Groq) geçin.",
+        "uk": "❌ У якісному режимі (OpenAI) характер недоступний.\nПереключіться на швидкий режим (Groq) щоб змінити характер.",
+        "fr": "❌ En mode qualité (OpenAI) la personnalité n'est pas disponible.\nPasse en mode rapide (Groq) pour changer la personnalité."
+    },
+    "package_selected": {
+        "ru": "✅ Вы выбрали пакет {name}\n⭐ {stars} звезд за ${price}\n\nОплата через Telegram Stars будет доступна позже.",
+        "en": "✅ You selected {name} pack\n⭐ {stars} stars for ${price}\n\nPayment via Telegram Stars will be available later.",
+        "kk": "✅ Сіз {name} пакетін таңдадыңыз\n⭐ {stars} жұлдыз ${price}\n\nTelegram Stars арқылы төлем кейінірек қолжетімді болады.",
+        "tr": "✅ {name} paketini seçtiniz\n⭐ {stars} yıldız ${price}\n\nTelegram Stars ile ödeme daha sonra kullanıma sunulacaktır.",
+        "uk": "✅ Ви обрали пакет {name}\n⭐ {stars} зірок за ${price}\n\nОплата через Telegram Stars буде доступна пізніше.",
+        "fr": "✅ Vous avez sélectionné le pack {name}\n⭐ {stars} étoiles pour ${price}\n\nLe paiement via Telegram Stars sera disponible plus tard."
+    },
+    "package_not_found": {
+        "ru": "❌ Пакет не найден",
+        "en": "❌ Package not found",
+        "kk": "❌ Пакет табылмады",
+        "tr": "❌ Paket bulunamadı",
+        "uk": "❌ Пакет не знайдено",
+        "fr": "❌ Pack non trouvé"
+    },
     
     # Текст профиля
     "profile_template": {
@@ -462,10 +552,156 @@ TEXTS = {
         "tr": "        👤 PROFİL\n\nKullanıcı adı: {username}\n📅 {registered}\n\n        📊 İSTATİSTİKLER\n💬 Mesajlar: {messages}\n🎨 Görseller: {images}\n💸 Harcanan: {spent} ⭐\n💰 Bakiye: {balance} ⭐\n\n        ⚙️ GÜNCEL\n🌐 Dil: {lang}\n📱 Mod: {mode}\n🤖 YZ: {ai_mode}",
         "uk": "        👤 ПРОФІЛЬ\n\nНік: {username}\n📅 {registered}\n\n        📊 СТАТИСТИКА\n💬 Повідомлень: {messages}\n🎨 Картинок: {images}\n💸 Витрачено: {spent} ⭐\n💰 Баланс: {balance} ⭐\n\n        ⚙️ ПОТОЧНЕ\n🌐 Мова: {lang}\n📱 Режим: {mode}\n🤖 ШІ: {ai_mode}",
         "fr": "        👤 PROFIL\n\nPseudo: {username}\n📅 {registered}\n\n        📊 STATISTIQUES\n💬 Messages: {messages}\n🎨 Images: {images}\n💸 Dépensé: {spent} ⭐\n💰 Solde: {balance} ⭐\n\n        ⚙️ ACTUEL\n🌐 Langue: {lang}\n📱 Mode: {mode}\n🤖 IA: {ai_mode}"
+    },
+    
+    # Текст рефералов
+    "ref_template": {
+        "ru": "🎁 **РЕФЕРАЛЫ**\n\n📊 **Статистика**\n👥 Приглашено друзей: {count}\n⭐ Заработано звезд: {bonus}\n\n🔗 **Твоя реферальная ссылка:**\n{ref_link}\n\n👇 Нажми на ссылку чтобы скопировать",
+        "en": "🎁 **REFERRALS**\n\n📊 **Statistics**\n👥 Friends invited: {count}\n⭐ Stars earned: {bonus}\n\n🔗 **Your referral link:**\n{ref_link}\n\n👇 Click the link to copy",
+        "kk": "🎁 **РЕФЕРАЛДАР**\n\n📊 **Статистика**\n👥 Шақырылған достар: {count}\n⭐ Табылған жұлдыздар: {bonus}\n\n🔗 **Сіздің рефералдық сілтемеңіз:**\n{ref_link}\n\n👇 Көшіру үшін сілтемені басыңыз",
+        "tr": "🎁 **REFERANSLAR**\n\n📊 **İstatistikler**\n👥 Davet edilen arkadaşlar: {count}\n⭐ Kazanılan yıldızlar: {bonus}\n\n🔗 **Referans bağlantınız:**\n{ref_link}\n\n👇 Kopyalamak için bağlantıya tıklayın",
+        "uk": "🎁 **РЕФЕРАЛИ**\n\n📊 **Статистика**\n👥 Запрошено друзів: {count}\n⭐ Зароблено зірок: {bonus}\n\n🔗 **Твоє реферальне посилання:**\n{ref_link}\n\n👇 Натисни на посилання щоб скопіювати",
+        "fr": "🎁 **PARRAINAGES**\n\n📊 **Statistiques**\n👥 Amis invités: {count}\n⭐ Étoiles gagnées: {bonus}\n\n🔗 **Ton lien de parrainage:**\n{ref_link}\n\n👇 Clique sur le lien pour copier"
+    },
+    "share_text": {
+        "ru": "🎁 Присоединяйся ко мне в NextAI! {ref_link}",
+        "en": "🎁 Join me on NextAI! {ref_link}",
+        "kk": "🎁 Маған NextAI-да қосылыңыз! {ref_link}",
+        "tr": "🎁 NextAI'de bana katıl! {ref_link}",
+        "uk": "🎁 Приєднуйся до мене в NextAI! {ref_link}",
+        "fr": "🎁 Rejoins-moi sur NextAI! {ref_link}"
+    },
+    
+    # Тексты чата
+    "chat_start_fast": {
+        "ru": "💬 Напиши сообщение.\n\nРежим: {mode}\nЯзык ответов: {ai_lang}\nСтиль: {style}\nСтоимость: {cost}⭐",
+        "en": "💬 Write a message.\n\nMode: {mode}\nResponse language: {ai_lang}\nStyle: {style}\nCost: {cost}⭐",
+        "kk": "💬 Хабарлама жазыңыз.\n\nРежим: {mode}\nЖауап тілі: {ai_lang}\nСтиль: {style}\nҚұны: {cost}⭐",
+        "tr": "💬 Bir mesaj yazın.\n\nMod: {mode}\nYanıt dili: {ai_lang}\nStil: {style}\nMaliyet: {cost}⭐",
+        "uk": "💬 Напиши повідомлення.\n\nРежим: {mode}\nМова відповідей: {ai_lang}\nСтиль: {style}\nВартість: {cost}⭐",
+        "fr": "💬 Écris un message.\n\nMode: {mode}\nLangue de réponse: {ai_lang}\nStyle: {style}\nCoût: {cost}⭐"
+    },
+    "chat_start_quality": {
+        "ru": "💬 Напиши сообщение.\n\nРежим: {mode}\nСтиль: {style}\nСтоимость: {cost}⭐",
+        "en": "💬 Write a message.\n\nMode: {mode}\nStyle: {style}\nCost: {cost}⭐",
+        "kk": "💬 Хабарлама жазыңыз.\n\nРежим: {mode}\nСтиль: {style}\nҚұны: {cost}⭐",
+        "tr": "💬 Bir mesaj yazın.\n\nMod: {mode}\nStil: {style}\nMaliyet: {cost}⭐",
+        "uk": "💬 Напиши повідомлення.\n\nРежим: {mode}\nСтиль: {style}\nВартість: {cost}⭐",
+        "fr": "💬 Écris un message.\n\nMode: {mode}\nStyle: {style}\nCoût: {cost}⭐"
+    },
+    "typing": {
+        "ru": "⏳ Печатает...",
+        "en": "⏳ Typing...",
+        "kk": "⏳ Басып жатыр...",
+        "tr": "⏳ Yazıyor...",
+        "uk": "⏳ Друкує...",
+        "fr": "⏳ Écrit..."
+    },
+    "error": {
+        "ru": "❌ Ошибка: {error}",
+        "en": "❌ Error: {error}",
+        "kk": "❌ Қате: {error}",
+        "tr": "❌ Hata: {error}",
+        "uk": "❌ Помилка: {error}",
+        "fr": "❌ Erreur: {error}"
+    },
+    
+    # Тексты генерации картинок
+    "image_start": {
+        "ru": "🖼 Напиши описание картинки.\nСтоимость: 10⭐",
+        "en": "🖼 Write a description of the image.\nCost: 10⭐",
+        "kk": "🖼 Суреттің сипаттамасын жазыңыз.\nҚұны: 10⭐",
+        "tr": "🖼 Görselin açıklamasını yazın.\nMaliyet: 10⭐",
+        "uk": "🖼 Напиши опис картинки.\nВартість: 10⭐",
+        "fr": "🖼 Écris une description de l'image.\nCoût: 10⭐"
+    },
+    "image_unavailable": {
+        "ru": "❌ Сервис генерации недоступен.",
+        "en": "❌ Generation service is unavailable.",
+        "kk": "❌ Генерация қызметі қолжетімсіз.",
+        "tr": "❌ Oluşturma hizmeti kullanılamıyor.",
+        "uk": "❌ Сервіс генерації недоступний.",
+        "fr": "❌ Le service de génération n'est pas disponible."
+    },
+    "generating": {
+        "ru": "🎨 Генерирую...",
+        "en": "🎨 Generating...",
+        "kk": "🎨 Генерациялау...",
+        "tr": "🎨 Oluşturuluyor...",
+        "uk": "🎨 Генерую...",
+        "fr": "🎨 Génération..."
+    },
+    "image_caption": {
+        "ru": "🖼 {prompt}...",
+        "en": "🖼 {prompt}...",
+        "kk": "🖼 {prompt}...",
+        "tr": "🖼 {prompt}...",
+        "uk": "🖼 {prompt}...",
+        "fr": "🖼 {prompt}..."
+    },
+    
+    # Тексты поддержки
+    "support_start": {
+        "ru": "💬 Поддержка\n\nОпиши свою проблему или вопрос в одном сообщении.\n\nАдмины ответят как можно скорее.\n\n⚠️ Принимаются только текстовые сообщения",
+        "en": "💬 Support\n\nDescribe your problem or question in one message.\n\nAdmins will reply as soon as possible.\n\n⚠️ Only text messages are accepted",
+        "kk": "💬 Қолдау\n\nМәселеңізді немесе сұрағыңызды бір хабарламада сипаттаңыз.\n\nӘкімшілер мүмкіндігінше тезірек жауап береді.\n\n⚠️ Тек мәтіндік хабарламалар қабылданады",
+        "tr": "💬 Destek\n\nSorununuzu veya sorunuzu tek bir mesajda açıklayın.\n\nYöneticiler en kısa sürede cevap verecektir.\n\n⚠️ Sadece metin mesajları kabul edilir",
+        "uk": "💬 Підтримка\n\nОпиши свою проблему або питання в одному повідомленні.\n\nАдміни дадуть відповідь якнайшвидше.\n\n⚠️ Приймаються тільки текстові повідомлення",
+        "fr": "💬 Support\n\nDécris ton problème ou ta question en un seul message.\n\nLes administrateurs répondront dès que possible.\n\n⚠️ Seuls les messages texte sont acceptés"
+    },
+    "support_blocked": {
+        "ru": "⛔ Доступ в поддержку заблокирован.\nОсталось: {hours}ч {minutes}мин\n\nЧат с ИИ и другие функции работают.",
+        "en": "⛔ Support access is blocked.\nRemaining: {hours}h {minutes}min\n\nAI chat and other functions work.",
+        "kk": "⛔ Қолдауға кіру бұғатталды.\nҚалды: {hours}с {minutes}мин\n\nAI чат және басқа функциялар жұмыс істейді.",
+        "tr": "⛔ Destek erişimi engellendi.\nKalan: {hours}s {minutes}dk\n\nYZ sohbet ve diğer işlevler çalışıyor.",
+        "uk": "⛔ Доступ у підтримку заблоковано.\nЗалишилось: {hours}г {minutes}хв\n\nЧат з ШІ та інші функції працюють.",
+        "fr": "⛔ L'accès au support est bloqué.\nRestant: {hours}h {minutes}min\n\nLe chat IA et les autres fonctions fonctionnent."
+    },
+    "support_you_blocked": {
+        "ru": "⛔ Вы заблокированы в поддержке.\nОсталось: {hours}ч {minutes}мин",
+        "en": "⛔ You are blocked from support.\nRemaining: {hours}h {minutes}min",
+        "kk": "⛔ Сіз қолдаудан бұғатталдыңыз.\nҚалды: {hours}с {minutes}мин",
+        "tr": "⛔ Destekten engellendiniz.\nKalan: {hours}s {minutes}dk",
+        "uk": "⛔ Вас заблоковано в підтримці.\nЗалишилось: {hours}г {minutes}хв",
+        "fr": "⛔ Vous êtes bloqué du support.\nRestant: {hours}h {minutes}min"
+    },
+    "support_unavailable": {
+        "ru": "❌ Служба поддержки временно недоступна",
+        "en": "❌ Support service is temporarily unavailable",
+        "kk": "❌ Қолдау қызметі уақытша қолжетімсіз",
+        "tr": "❌ Destek hizmeti geçici olarak kullanılamıyor",
+        "uk": "❌ Служба підтримки тимчасово недоступна",
+        "fr": "❌ Le service de support est temporairement indisponible"
+    },
+    "support_text_only": {
+        "ru": "❌ В поддержку можно отправлять только текстовые сообщения.",
+        "en": "❌ Only text messages can be sent to support.",
+        "kk": "❌ Қолдауға тек мәтіндік хабарламаларды жіберуге болады.",
+        "tr": "❌ Desteğe yalnızca metin mesajları gönderilebilir.",
+        "uk": "❌ У підтримку можна відправляти тільки текстові повідомлення.",
+        "fr": "❌ Seuls les messages texte peuvent être envoyés au support."
+    },
+    "support_sent": {
+        "ru": "✅ Сообщение отправлено в поддержку.\nОжидайте ответа.",
+        "en": "✅ Message sent to support.\nWait for a response.",
+        "kk": "✅ Хабарлама қолдауға жіберілді.\nЖауап күтіңіз.",
+        "tr": "✅ Mesaj desteğe gönderildi.\nYanıt bekleyin.",
+        "uk": "✅ Повідомлення надіслано в підтримку.\nОчікуйте відповіді.",
+        "fr": "✅ Message envoyé au support.\nAttends une réponse."
+    },
+    "support_error": {
+        "ru": "❌ Ошибка при отправке. Попробуйте позже.",
+        "en": "❌ Error sending. Try again later.",
+        "kk": "❌ Жіберу кезінде қате. Кейінірек қайталаңыз.",
+        "tr": "❌ Gönderme hatası. Daha sonra tekrar deneyin.",
+        "uk": "❌ Помилка при відправленні. Спробуйте пізніше.",
+        "fr": "❌ Erreur lors de l'envoi. Réessaie plus tard."
     }
 }
 
-# Характеры
+# =========================
+# ХАРАКТЕРЫ
+# =========================
 PERSONAS = {
     "friendly": {
         "ru": "😊 Общительный",
@@ -501,7 +737,9 @@ PERSONAS = {
     }
 }
 
-# Стили ответов
+# =========================
+# СТИЛИ
+# =========================
 STYLES = {
     "short": {
         "ru": "📏 Коротко",
@@ -529,7 +767,9 @@ STYLES = {
     }
 }
 
-# Режимы ИИ
+# =========================
+# РЕЖИМЫ ИИ
+# =========================
 AI_MODES = {
     "fast": {
         "ru": "🚀 Быстрый",
@@ -549,7 +789,9 @@ AI_MODES = {
     }
 }
 
-# Режимы работы
+# =========================
+# РЕЖИМЫ РАБОТЫ
+# =========================
 WORK_MODES = {
     "miniapp": {
         "ru": "📱 Mini App",
@@ -613,7 +855,7 @@ def get_mode_name(user_id: int, mode_id: str) -> str:
     return mode.get(lang, mode.get("ru", mode_id))
 
 def get_ai_mode_name(user_id: int, mode_id: str) -> str:
-    """Алиас для get_mode_name (для обратной совместимости)"""
+    """Алиас для get_mode_name"""
     return get_mode_name(user_id, mode_id)
 
 def get_work_mode_name(user_id: int, mode_id: str) -> str:
@@ -624,5 +866,4 @@ def get_work_mode_name(user_id: int, mode_id: str) -> str:
 
 def get_lang_name(user_id: int, lang_code: str) -> str:
     """Получить название языка"""
-    lang = get_user_language(user_id)
     return LANGUAGES.get(lang_code, lang_code)
