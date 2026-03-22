@@ -1,12 +1,13 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.menu import tab_kb, TAB_TEXT
+from bot.menu import tab_kb
 from bot.utils import set_last_menu, send_fresh_menu
+from bot.locales import get_text
 
 async def show_status(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     """📌 Статус"""
-    text = TAB_TEXT.get("status", "📌 Статус\n\nРаздел в разработке.")
+    text = get_text(user_id, "status_text")
     
     try:
         await query.message.edit_text(text, reply_markup=tab_kb(user_id))
