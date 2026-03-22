@@ -612,6 +612,10 @@ def get_mode_name(user_id: int, mode_id: str) -> str:
     mode = AI_MODES.get(mode_id, {})
     return mode.get(lang, mode.get("ru", mode_id))
 
+def get_ai_mode_name(user_id: int, mode_id: str) -> str:
+    """Алиас для get_mode_name (для обратной совместимости)"""
+    return get_mode_name(user_id, mode_id)
+
 def get_work_mode_name(user_id: int, mode_id: str) -> str:
     """Получить название режима работы на языке пользователя"""
     lang = get_user_language(user_id)
