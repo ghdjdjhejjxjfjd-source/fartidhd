@@ -124,22 +124,134 @@
       background-attachment: fixed;
     }
 
-    /* iOS стили */
-    @supports (backdrop-filter: blur(20px)) {
-      .header, .back-btn, .title, .card, .generate-btn, .action-btn, .clear-input, .size-btn {
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        backdrop-filter: blur(20px) saturate(180%);
-      }
-      
-      .card {
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-      
-      :root[data-theme="light"] .card {
-        background: rgba(255, 255, 255, 0.85);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-      }
+    /* КНОПКА ТЕМЫ */
+    .themePill {
+      position: fixed;
+      top: calc(10px + env(safe-area-inset-top));
+      right: 10px;
+      z-index: 10000;
+      padding: 10px 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent1) 16%, white 8%) 0%, rgba(255,255,255,.08) 100%);
+      border: 1px solid color-mix(in srgb, var(--accent1) 24%, rgba(255,255,255,.12));
+      color: var(--text);
+      backdrop-filter: blur(12px) saturate(115%);
+      -webkit-backdrop-filter: blur(12px) saturate(115%);
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
+    }
+
+    :root[data-theme="light"] .themePill {
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid #c0c0c0;
+      color: #3a4a5a;
+    }
+
+    .themePill:active {
+      transform: scale(0.98);
+    }
+
+    /* Оверлей темы */
+    .themeOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,.34);
+      display: none;
+    }
+    .themeOverlay.show {
+      display: block !important;
+    }
+    .themeSheet {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      border-radius: 18px;
+      background: rgba(24, 31, 40, .97);
+      border: 1.5px solid rgba(255, 255, 255, .10);
+      backdrop-filter: blur(16px) saturate(118%);
+      -webkit-backdrop-filter: blur(16px) saturate(118%);
+      overflow: hidden;
+      transform: translateY(110%);
+      opacity: 0;
+      transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
+    }
+    .themeOverlay.show .themeSheet {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .themeSheetHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px;
+      border-bottom: 1.5px solid rgba(255, 255, 255, .10);
+    }
+    .themeSheetTitle {
+      font-weight: 800;
+      color: #f7fbff;
+    }
+    .themeClose {
+      border: 0;
+      background: rgba(255, 255, 255, .08);
+      color: #f7fbff;
+      border: 1.5px solid rgba(255, 255, 255, .10);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .themeList {
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+    .themeItem {
+      width: 100%;
+      text-align: left;
+      padding: 14px;
+      border: 0;
+      border-bottom: 1.5px solid rgba(255, 255, 255, .10);
+      background: transparent;
+      color: #f7fbff;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .themeItem:last-child {
+      border-bottom: none;
+    }
+    .themeItem .check {
+      opacity: 0;
+      transform: scale(.9);
+      transition: .15s ease;
+      color: #5aaeff;
+    }
+    .themeItem.selected .check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    :root[data-theme="light"] .themeSheet {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    :root[data-theme="light"] .themeSheetTitle,
+    :root[data-theme="light"] .themeItem {
+      color: #3a4a5a;
+    }
+    :root[data-theme="light"] .themeItem .check {
+      color: #3a8cff;
     }
 
     .header {
@@ -153,6 +265,7 @@
       padding: 12px 16px;
       padding-top: calc(12px + env(safe-area-inset-top));
       background: transparent;
+      backdrop-filter: none;
       height: 60px;
     }
 
@@ -160,37 +273,32 @@
       color: var(--header-text);
       text-decoration: none;
       font-size: 24px;
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      transition: all 0.2s ease;
-    }
-
-    .back-btn:active {
-      transform: scale(0.96);
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .title {
       flex: 1;
       text-align: center;
-      font-weight: 700;
+      font-weight: 600;
       font-size: 18px;
       color: var(--header-text);
-      background: rgba(255, 255, 255, 0.15);
-      padding: 10px 16px;
-      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      padding: 8px 16px;
+      border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.2);
       margin: 0 12px;
-      letter-spacing: -0.3px;
     }
 
-    .spacer { width: 44px; }
+    .spacer { width: 40px; }
 
     .container {
       position: fixed;
@@ -206,12 +314,37 @@
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 32px;
+      border-radius: 28px;
       padding: 24px;
       margin-bottom: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
       position: relative;
-      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 30px;
+      padding: 2px;
+      background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff, #ff0000);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: snakeMove 3s linear infinite;
+      background-size: 300% 100%;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    @keyframes snakeMove {
+      0% { background-position: 0% 0; }
+      100% { background-position: 300% 0; }
     }
 
     .card-header {
@@ -224,130 +357,122 @@
     .card-title-wrapper {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .card-icon { font-size: 36px; }
-    .card-title { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+    .card-icon { font-size: 32px; }
+    .card-title { font-size: 22px; font-weight: 700; color: var(--text); }
 
     .star-badge {
-      font-size: 15px;
-      font-weight: 600;
-      color: #ffd966;
-      background: rgba(255, 215, 0, 0.2);
-      padding: 6px 12px;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 215, 0, 0.4);
-      backdrop-filter: blur(10px);
+      font-size: 16px;
+      color: var(--star-color);
+      background: rgba(255,215,0,0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,215,0,0.3);
     }
 
     .card-desc {
       font-size: 14px;
       color: var(--subtext);
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       line-height: 1.5;
-      font-weight: 500;
     }
 
-    .input-group { margin-bottom: 24px; }
-    .input-label { font-size: 14px; font-weight: 600; color: var(--subtext); margin-bottom: 8px; display: block; letter-spacing: -0.2px; }
-    .input-wrapper { display: flex; align-items: center; gap: 10px; }
+    .input-group { margin-bottom: 20px; }
+    .input-label { font-size: 14px; color: var(--subtext); margin-bottom: 8px; display: block; }
+    .input-wrapper { display: flex; align-items: center; gap: 8px; }
 
     .text-input {
       flex: 1;
-      padding: 18px 16px;
-      border-radius: 24px;
+      padding: 16px;
+      border-radius: 20px;
       border: 1px solid var(--card-border);
       background: var(--input-bg);
       color: var(--text);
       font-size: 16px;
-      font-weight: 500;
       transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
       caret-color: var(--caret-color);
     }
 
-    .text-input:focus { outline: none; border-color: var(--accent1); transform: scale(1.01); }
+    .text-input:focus { outline: none; border-color: var(--accent1); }
+    .text-input::placeholder { color: var(--subtext); opacity: 0.7; }
 
     .clear-input {
       background: var(--btn-bg);
       border: 1px solid var(--card-border);
       color: var(--text);
-      width: 54px;
-      height: 54px;
-      border-radius: 24px;
+      width: 50px;
+      height: 50px;
+      border-radius: 20px;
       font-size: 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
-
-    .clear-input:active { transform: scale(0.94); background: var(--accent1); }
 
     .size-selector {
       display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
     .size-btn {
       flex: 1;
       padding: 14px;
-      border-radius: 24px;
+      border-radius: 20px;
       border: 1px solid var(--card-border);
       background: var(--btn-bg);
       color: var(--text);
       cursor: pointer;
-      font-weight: 700;
-      font-size: 16px;
-      transition: all 0.2s;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
     .size-btn.active {
       background: var(--accent1);
       border-color: var(--accent1);
       color: white;
-      box-shadow: 0 8px 20px rgba(90, 174, 255, 0.3);
     }
-
-    .size-btn:active { transform: scale(0.97); }
 
     .generate-btn {
       width: 100%;
-      padding: 20px;
-      border-radius: 28px;
+      padding: 18px;
+      border-radius: 24px;
       border: none;
-      background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 100%);
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
       color: white;
       font-size: 18px;
-      font-weight: 700;
-      margin: 24px 0;
+      font-weight: 600;
+      margin: 20px 0;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      transition: all 0.2s ease;
-      box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+      gap: 8px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.5);
     }
 
-    .generate-btn:active { transform: scale(0.97); }
+    .generate-btn:active { transform: scale(0.98); }
 
-    .result { display: none; margin-top: 24px; }
+    .result { display: none; margin-top: 20px; }
     .result-image {
       width: 100%;
-      border-radius: 28px;
+      border-radius: 24px;
       background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% / 20px 20px;
       margin-bottom: 16px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     }
 
     .action-buttons { display: flex; gap: 12px; }
     .action-btn {
       flex: 1;
       padding: 16px;
-      border-radius: 24px;
+      border-radius: 20px;
       border: 1px solid var(--card-border);
       background: var(--btn-bg);
       color: var(--text);
@@ -357,17 +482,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
+      gap: 6px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
     .action-btn.primary {
-      background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 100%);
+      background: linear-gradient(180deg, var(--accent1) 0%, var(--accent2) 100%);
       border: none;
       color: white;
     }
-
-    .action-btn:active { transform: scale(0.97); }
 
     .loading-overlay {
       position: fixed;
@@ -375,8 +498,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.92);
-      backdrop-filter: blur(20px);
+      background: rgba(0,0,0,0.95);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -385,47 +507,31 @@
     }
 
     .spinner {
-      width: 70px;
-      height: 70px;
-      border: 4px solid rgba(255,255,255,0.15);
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255,255,255,0.1);
       border-top-color: var(--accent1);
       border-radius: 50%;
-      animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-      margin-bottom: 24px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .loading-text { 
-      color: white; 
-      font-size: 18px; 
-      font-weight: 600;
-      background: rgba(255,255,255,0.1);
-      padding: 12px 24px;
-      border-radius: 40px;
-      backdrop-filter: blur(10px);
-      letter-spacing: -0.2px;
-    }
-
-    /* iOS специальные улучшения */
-    @supports (backdrop-filter: blur(20px)) {
-      .loading-overlay {
-        backdrop-filter: blur(40px);
-        background: rgba(0,0,0,0.7);
-      }
-      
-      .generate-btn, .action-btn, .size-btn, .clear-input {
-        -webkit-backdrop-filter: blur(20px);
-      }
-    }
+    .loading-text { color: white; font-size: 18px; font-weight: 600; }
 
     html.android-mode .card::before { display: none !important; }
     html.android-mode .header { background: transparent !important; backdrop-filter: none !important; }
     html.android-mode .back-btn, html.android-mode .title { background: transparent !important; backdrop-filter: none !important; border: none !important; }
     html.android-mode .card { backdrop-filter: none !important; }
+    html.android-mode .themePill { backdrop-filter: none !important; }
   </style>
 </head>
 <body>
+
+  <button class="themePill" id="themeBtn" type="button">
+    <span id="themeBtnText">Цвет: Синий</span> <span class="chev">▾</span>
+  </button>
 
   <div class="header">
     <a href="./index.html" class="back-btn">←</a>
@@ -478,9 +584,27 @@
     <div class="loading-text" id="loadingText">Генерация...</div>
   </div>
 
+  <div class="themeOverlay" id="themeOverlay">
+    <div class="themeSheet">
+      <div class="themeSheetHeader">
+        <div class="themeSheetTitle" id="themeSheetTitle">Цвет</div>
+        <button class="themeClose" id="themeClose" type="button">✕</button>
+      </div>
+      <div class="themeList" id="themeList"></div>
+    </div>
+  </div>
+
   <script>
     const API_BASE = "https://fartidhd-production.up.railway.app";
     const COST = 10;
+
+    const STORAGE_THEME = "miniapp_theme_v1";
+
+    const THEMES = [
+      { code: "blue", label: { ru: "Синий", en: "Blue", kk: "Көк", tr: "Mavi", uk: "Синій", fr: "Bleu" } },
+      { code: "black", label: { ru: "Черный", en: "Black", kk: "Қара", tr: "Siyah", uk: "Чорний", fr: "Noir" } },
+      { code: "light", label: { ru: "Светлый", en: "Light", kk: "Ашық", tr: "Açık", uk: "Світлий", fr: "Clair" } }
+    ];
 
     const I18N = {
       ru: {
@@ -498,7 +622,8 @@
         clear: "Очистить",
         insufficientStars: "❌ Недостаточно звезд. Нужно 10⭐",
         error: "Ошибка генерации",
-        saved: "✅ Отправлено в бота"
+        saved: "✅ Отправлено в бота",
+        theme: "Цвет"
       },
       en: {
         title: "Image generation",
@@ -515,7 +640,8 @@
         clear: "Clear",
         insufficientStars: "❌ Insufficient stars. Need 10⭐",
         error: "Generation error",
-        saved: "✅ Sent to bot"
+        saved: "✅ Sent to bot",
+        theme: "Color"
       },
       kk: {
         title: "Сурет генерациясы",
@@ -532,7 +658,8 @@
         clear: "Тазалау",
         insufficientStars: "❌ Жұлдыздар жеткіліксіз. 10⭐ қажет",
         error: "Жасау қатесі",
-        saved: "✅ Ботқа жіберілді"
+        saved: "✅ Ботқа жіберілді",
+        theme: "Түс"
       },
       tr: {
         title: "Görsel oluşturma",
@@ -549,7 +676,8 @@
         clear: "Temizle",
         insufficientStars: "❌ Yetersiz yıldız. 10⭐ gerekli",
         error: "Oluşturma hatası",
-        saved: "✅ Bot'a gönderildi"
+        saved: "✅ Bot'a gönderildi",
+        theme: "Renk"
       },
       uk: {
         title: "Генерація зображення",
@@ -566,7 +694,8 @@
         clear: "Очистити",
         insufficientStars: "❌ Недостатньо зірок. Потрібно 10⭐",
         error: "Помилка генерації",
-        saved: "✅ Відправлено в бота"
+        saved: "✅ Відправлено в бота",
+        theme: "Колір"
       },
       fr: {
         title: "Génération d'image",
@@ -583,7 +712,8 @@
         clear: "Effacer",
         insufficientStars: "❌ Pas assez d'étoiles. 10⭐ nécessaires",
         error: "Erreur de génération",
-        saved: "✅ Envoyé au bot"
+        saved: "✅ Envoyé au bot",
+        theme: "Couleur"
       }
     };
 
@@ -601,7 +731,25 @@
       return "ru";
     }
 
-    function updateLanguage() {
+    function getSavedTheme() {
+      try{ return localStorage.getItem(STORAGE_THEME) || "blue"; } catch(e){ return "blue"; }
+    }
+
+    function saveTheme(theme) {
+      try{ localStorage.setItem(STORAGE_THEME, theme); } catch(e){}
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme || "blue");
+    }
+
+    function getThemeLabel(themeCode, lang) {
+      const theme = THEMES.find(t => t.code === themeCode);
+      if (!theme) return themeCode;
+      return theme.label[lang] || theme.label.ru || themeCode;
+    }
+
+    function updateUILanguage() {
       const lang = getLang();
       const t = I18N[lang] || I18N.ru;
       document.getElementById('title').textContent = t.title;
@@ -615,10 +763,111 @@
       document.getElementById('repeatText').textContent = t.repeat;
       document.getElementById('loadingText').textContent = t.loading;
       document.getElementById('clearInputBtn').title = t.clear;
+      document.getElementById('themeSheetTitle').textContent = t.theme;
+      
+      const currentTheme = getSavedTheme();
+      document.getElementById('themeBtnText').textContent = `${t.theme}: ${getThemeLabel(currentTheme, lang)}`;
+      
+      updateThemeList(lang);
     }
 
-    document.addEventListener('DOMContentLoaded', updateLanguage);
-    window.addEventListener('languageChanged', updateLanguage);
+    function updateThemeList(lang) {
+      const themeList = document.getElementById('themeList');
+      if (!themeList) return;
+      const items = themeList.querySelectorAll('.themeItem');
+      items.forEach(item => {
+        const code = item.getAttribute('data-theme');
+        const labelSpan = item.querySelector('.theme-label');
+        if (labelSpan) labelSpan.textContent = getThemeLabel(code, lang);
+      });
+    }
+
+    function paintSelectedTheme(theme) {
+      const themeList = document.getElementById('themeList');
+      if (!themeList) return;
+      const items = themeList.querySelectorAll(".themeItem");
+      items.forEach(btn => {
+        const code = btn.getAttribute("data-theme");
+        btn.classList.toggle("selected", code === theme);
+      });
+    }
+
+    function buildThemeList() {
+      const themeList = document.getElementById('themeList');
+      if (!themeList) return;
+      themeList.innerHTML = "";
+      THEMES.forEach(theme => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "themeItem";
+        btn.setAttribute("data-theme", theme.code);
+        const currentLang = getLang();
+        const labelText = theme.label[currentLang] || theme.label.ru;
+        btn.innerHTML = `<span class="theme-label">${labelText}</span><span class="check">✓</span>`;
+        btn.addEventListener("click", () => setTheme(theme.code));
+        themeList.appendChild(btn);
+      });
+    }
+
+    function setTheme(theme) {
+      applyTheme(theme);
+      saveTheme(theme);
+      paintSelectedTheme(theme);
+      const currentLang = getLang();
+      const t = I18N[currentLang] || I18N.ru;
+      document.getElementById('themeBtnText').textContent = `${t.theme}: ${getThemeLabel(theme, currentLang)}`;
+      closeTheme();
+    }
+
+    function openTheme() {
+      const overlay = document.getElementById('themeOverlay');
+      if (overlay) {
+        overlay.classList.add("show");
+      }
+    }
+
+    function closeTheme() {
+      const overlay = document.getElementById('themeOverlay');
+      if (overlay) {
+        overlay.classList.remove("show");
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      buildThemeList();
+      const savedTheme = getSavedTheme();
+      applyTheme(savedTheme);
+      paintSelectedTheme(savedTheme);
+      updateUILanguage();
+      
+      const themeBtn = document.getElementById('themeBtn');
+      const themeClose = document.getElementById('themeClose');
+      const themeOverlay = document.getElementById('themeOverlay');
+      
+      if (themeBtn) themeBtn.addEventListener('click', openTheme);
+      if (themeClose) themeClose.addEventListener('click', closeTheme);
+      if (themeOverlay) themeOverlay.addEventListener('click', (e) => {
+        if (e.target === themeOverlay) closeTheme();
+      });
+      
+      // Закрытие клавиатуры при тапе вне поля ввода
+      const container = document.querySelector('.container');
+      const promptInput = document.getElementById('promptInput');
+      
+      container.addEventListener('click', (e) => {
+        if (promptInput && promptInput !== e.target && !promptInput.contains(e.target)) {
+          promptInput.blur();
+        }
+      });
+      
+      document.body.addEventListener('click', (e) => {
+        if (promptInput && promptInput !== e.target && !promptInput.contains(e.target)) {
+          promptInput.blur();
+        }
+      });
+    });
+
+    window.addEventListener('languageChanged', updateUILanguage);
 
     function getUser() {
       const tg = window.Telegram?.WebApp;
