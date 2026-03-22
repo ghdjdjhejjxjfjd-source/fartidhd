@@ -1,8 +1,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-from bot.menu import tab_kb, TAB_TEXT
+from bot.menu import tab_kb
 from bot.utils import set_last_menu, send_fresh_menu
+from bot.locales import get_text, get_button_text
 from api.db import db_connection
 from payments import get_balance
 
@@ -17,20 +18,17 @@ async def show_ref(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     # Генерируем реферальную ссылку
     ref_link = f"https://t.me/{BOT_USERNAME[1:]}?start=ref_{user_id}"
     
-    text = (
-        f"🎁 **РЕФЕРАЛЫ**\n\n"
-        f"📊 **Статистика**\n"
-        f"👥 Приглашено друзей: {stats['count']}\n"
-        f"⭐ Заработано звезд: {stats['bonus']}\n\n"
-        f"🔗 **Твоя реферальная ссылка:**\n"
-        f"{ref_link}\n\n"
-        f"👇 Нажми на ссылку чтобы скопировать"
+    # Текст с локализацией
+    text = get_text(user_id, "ref_template").format(
+        count=stats['count'],
+        bonus=stats['bonus'],
+        ref_link=ref_link
     )
     
-    # Клавиатура только с кнопкой поделиться и назад
+    # Клавиатура с кнопкой поделиться и назад
     keyboard = [
-        [InlineKeyboardButton("📤 Поделиться", switch_inline_query=f"🎁 Присоединяйся ко мне в NextAI! {ref_link}")],
-        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_previous")]
+        [InlineKeyboardButton(get_button_text(user_id, "share"), switch_inline_query=get_text(user_id, "share_text").format(ref_link=ref_link))],
+        [InlineKeyboardButton(get_button_text(user_id, "back"), callback_data="back_to_previous")]
     ]
     
     try:
