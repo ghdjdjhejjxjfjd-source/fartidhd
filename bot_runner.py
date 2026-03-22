@@ -1,7 +1,7 @@
 import os
 import time
 import asyncio
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 from telegram import Update, BotCommandScopeChat, BotCommand
 from telegram.error import Conflict, TimedOut, NetworkError
 
