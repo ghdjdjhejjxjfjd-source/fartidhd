@@ -4,7 +4,7 @@ from telegram.ext import ContextTypes
 
 from bot.utils import set_last_menu, send_fresh_menu
 from bot.locales import get_text, get_button_text
-from .state import navigation_stack
+from ..state import navigation_stack  # ← исправлено: ..state вместо .state
 
 # Список разделов помощи
 HELP_SECTIONS = [
