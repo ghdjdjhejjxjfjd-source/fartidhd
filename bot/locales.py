@@ -640,6 +640,16 @@ TEXTS = {
         "fr": "🖼 {prompt}..."
     },
     
+    # НОВЫЙ КЛЮЧ ДЛЯ SAFETY ОШИБКИ
+    "image_safety_error": {
+        "ru": "❌ Запрос заблокирован системой безопасности.\n\nВозможные причины:\n• Известные персонажи (Tom and Jerry, Mickey Mouse и т.д.)\n• Знаменитости\n• Защищённые бренды\n• Запрещённый контент\n\nПопробуйте переформулировать запрос.",
+        "en": "❌ Request blocked by safety system.\n\nPossible reasons:\n• Famous characters (Tom and Jerry, Mickey Mouse, etc.)\n• Celebrities\n• Protected brands\n• Prohibited content\n\nTry rephrasing your request.",
+        "kk": "❌ Сұраныс қауіпсіздік жүйесімен бұғатталды.\n\nМүмкін себептер:\n• Танымал кейіпкерлер (Том мен Джерри, Микки Маус және т.б.)\n• Атақты тұлғалар\n• Қорғалған брендтер\n• Тыйым салынған контент\n\nСұранысты қайта тұжырымдап көріңіз.",
+        "tr": "❌ İstek güvenlik sistemi tarafından engellendi.\n\nOlası nedenler:\n• Ünlü karakterler (Tom ve Jerry, Mickey Mouse vb.)\n• Ünlüler\n• Korunan markalar\n• Yasaklı içerik\n\nİsteğinizi yeniden ifade etmeyi deneyin.",
+        "uk": "❌ Запит заблоковано системою безпеки.\n\nМожливі причини:\n• Відомі персонажі (Том і Джеррі, Міккі Маус тощо)\n• Знаменитості\n• Захищені бренди\n• Заборонений контент\n\nСпробуйте переформулювати запит.",
+        "fr": "❌ Requête bloquée par le système de sécurité.\n\nRaisons possibles:\n• Personnages célèbres (Tom et Jerry, Mickey Mouse, etc.)\n• Célébrités\n• Marques protégées\n• Contenu interdit\n\nEssayez de reformuler votre demande."
+    },
+    
     # Тексты поддержки
     "support_start": {
         "ru": "💬 Поддержка\n\nОпиши свою проблему или вопрос в одном сообщении.\n\nАдмины ответят как можно скорее.\n\n⚠️ Принимаются только текстовые сообщения",
