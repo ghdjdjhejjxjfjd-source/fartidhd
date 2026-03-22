@@ -1,3 +1,4 @@
+# bot/handlers/router.py - ПОЛНАЯ ВЕРСИЯ С ЛОКАЛИЗАЦИЕЙ
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
@@ -8,12 +9,13 @@ from bot.menu import (
     persona_settings_kb, lang_settings_kb, settings_kb, ai_lang_settings_kb,
     ai_mode_settings_kb, confirm_ai_mode_kb, style_settings_kb
 )
-from bot.locales import get_text  # ← добавили импорт локализации
+from bot.locales import get_text
 from bot.utils import edit_to_menu, send_fresh_menu, set_last_menu, update_user_menu, edit_to_tab
 from bot.settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from bot.chat import inline_chat_start, exit_chat
 from bot.image import inline_image_start
 from bot.support import support_start, forward_to_support
+from bot.helpers import format_balance
 from .state import navigation_stack
 from .navigation import back_to_previous, back_to_menu, ignore
 from .tabs.profile import show_profile
@@ -26,6 +28,7 @@ from .tabs.style import show_style_settings, set_style
 from .tabs.ai_lang import show_ai_lang_settings, set_ai_lang
 
 BOT_USERNAME = "@NextAIO_Bot"
+
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -74,7 +77,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== ЛИМИТ ИСЧЕРПАН =====
     if data == "limit_exceeded":
         await query.message.edit_text(
-            text=get_text(uid, "limit_exceeded"),  # ← используем get_text
+            text=get_text(uid, "limit_exceeded"),
             reply_markup=tab_kb(uid)
         )
         return
@@ -144,7 +147,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         limits = get_user_limits(uid)
         if limits.get("groq_persona", 0) >= 5:
             await query.message.edit_text(
-                text=get_text(uid, "limit_exceeded"),  # ← используем get_text
+                text=get_text(uid, "limit_exceeded"),
                 reply_markup=tab_kb(uid)
             )
             return
@@ -163,14 +166,14 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if ai_mode == "fast":
             if limits.get("groq_style", 0) >= 5:
                 await query.message.edit_text(
-                    text=get_text(uid, "limit_exceeded"),  # ← используем get_text
+                    text=get_text(uid, "limit_exceeded"),
                     reply_markup=tab_kb(uid)
                 )
                 return
         else:
             if limits.get("openai_style", 0) >= 7:
                 await query.message.edit_text(
-                    text=get_text(uid, "limit_exceeded"),  # ← используем get_text
+                    text=get_text(uid, "limit_exceeded"),
                     reply_markup=tab_kb(uid)
                 )
                 return
@@ -246,6 +249,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await edit_to_menu(context, query, uid)
 
+
 async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_key: str):
     if tab_key == "profile":
         await show_profile(context, query, user_id)
@@ -314,7 +318,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         return
     elif tab_key == "balance":
         balance = get_balance(user_id)
-        formatted_balance = format_balance(balance) if 'format_balance' in dir() else str(int(balance)) if balance == int(balance) else f"{balance:.1f}"
+        formatted_balance = format_balance(balance)
         text = f"⭐ Ваш баланс: {formatted_balance} звезд"
         try:
             await query.message.edit_text(text, reply_markup=tab_kb(user_id))
