@@ -4,7 +4,7 @@ from .router import on_button, open_tab
 from .state import navigation_stack
 from .navigation import back_to_previous, back_to_menu, ignore
 from .tabs.profile import show_profile
-from .tabs.help import show_help
+from .tabs.help import show_help_menu, show_help_section
 from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
@@ -23,7 +23,8 @@ __all__ = [
     'back_to_menu',
     'ignore',
     'show_profile',
-    'show_help',
+    'show_help_menu',
+    'show_help_section',
     'show_ref',
     'show_support',
     'show_buy_stars',
