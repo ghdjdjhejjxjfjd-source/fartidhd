@@ -716,7 +716,7 @@ export function createChatController({ chatEl, inputEl, sendBtnEl }) {
     const persona = tempPersona || getPersona();
     const style = tempStyle || getStyle();
     
-    const maxHistory = 20;
+    const maxHistory = 100;
     const recentHistory = history.slice(-maxHistory);
     
     let conversationHistory = "";
