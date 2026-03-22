@@ -1,11 +1,12 @@
-# bot/image.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (только одно меню)
+# bot/image.py - ПОЛНАЯ ВЕРСИЯ С ЛОКАЛИЗАЦИЕЙ
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 import base64
 
 from api import get_access, increment_images, add_stars_spent
 from payments import get_balance, spend_stars
-from .utils import send_fresh_menu  # ← только send_fresh_menu, без delete_all_menus
+from .utils import send_fresh_menu
+from .locales import get_text
 
 try:
     from openai_image import generate_image_dalle
@@ -29,15 +30,16 @@ async def inline_image_start(update: Update, context: ContextTypes.DEFAULT_TYPE)
     balance = get_balance(uid)
     
     if a.get("is_blocked"):
-        await query.message.reply_text("⛔ Доступ заблокирован.")
+        await query.message.reply_text(get_text(uid, "blocked_access"))
         return
     
     if not a.get("is_free") and balance < 10:
-        await query.message.reply_text("❌ Недостаточно звезд (нужно 10).")
+        text = get_text(uid, "insufficient_stars").format(cost=10)
+        await query.message.reply_text(text)
         return
     
-    text = "🖼 Напиши описание картинки.\nСтоимость: 10⭐"
-    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image_from_start")]])
+    text = get_text(uid, "image_start")
+    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton(get_text(uid, "back_btn"), callback_data="exit_image_from_start")]])
     
     try:
         sent_msg = await query.message.edit_text(text, reply_markup=keyboard)
@@ -55,7 +57,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
     a = get_access(uid)
     
     if not OPENAI_AVAILABLE:
-        await update.message.reply_text("❌ Сервис генерации недоступен.")
+        await update.message.reply_text(get_text(uid, "error").format(error="Сервис недоступен"))
         context.user_data["in_image_mode"] = False
         return
     
@@ -68,7 +70,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         except Exception as e:
             print(f"⚠️ Не удалось удалить стартовое сообщение: {e}")
     
-    status_msg = await update.message.reply_text("🎨 Генерирую...")
+    status_msg = await update.message.reply_text(get_text(uid, "generating"))
     
     try:
         # Генерация картинки
@@ -81,7 +83,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         
         await status_msg.delete()
         
-        # ===== УДАЛЯЕМ ПРЕДЫДУЩУЮ КНОПКУ (НО НЕ КАРТИНКУ) =====
+        # Удаляем ПРЕДЫДУЩУЮ кнопку
         if uid in last_button_message and last_button_message[uid]:
             try:
                 await context.bot.delete_message(uid, last_button_message[uid])
@@ -89,23 +91,21 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
             except Exception as e:
                 print(f"⚠️ Не удалось удалить предыдущую кнопку: {e}")
         
-        # 1. Отправляем КАРТИНКУ без кнопки (остаётся навсегда)
-        sent_photo = await context.bot.send_photo(
+        # Отправляем картинку без кнопки
+        await context.bot.send_photo(
             chat_id=uid,
             photo=image_data,
             caption=f"🖼 {prompt[:100]}..."
         )
-        print(f"✅ Картинка отправлена для {uid}, ID: {sent_photo.message_id}")
         
-        # 2. Отправляем ОТДЕЛЬНОЕ сообщение с кнопкой "Назад"
-        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="exit_image")]])
+        # Отправляем отдельное сообщение с кнопкой
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton(get_text(uid, "back_btn"), callback_data="exit_image")]])
         sent_button = await context.bot.send_message(
             chat_id=uid,
-            text="⬅️ Нажмите для выхода",
+            text="⬅️",
             reply_markup=keyboard
         )
         
-        # Запоминаем ID сообщения с кнопкой
         last_button_message[uid] = sent_button.message_id
         print(f"✅ Кнопка отправлена для {uid}, ID: {sent_button.message_id}")
         
@@ -122,7 +122,7 @@ async def handle_image_generation(update: Update, context: ContextTypes.DEFAULT_
         
     except Exception as e:
         await status_msg.delete()
-        await update.message.reply_text(f"❌ Ошибка: {str(e)[:100]}")
+        await update.message.reply_text(get_text(uid, "error").format(error=str(e)[:100]))
         context.user_data["in_image_mode"] = False
         print(f"❌ Ошибка генерации для {uid}: {e}")
 
@@ -134,14 +134,13 @@ async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: in
     """
     print(f"🚪 Выход из генерации для {uid} (нажата кнопка Назад)")
     
-    # ===== УДАЛЯЕМ СООБЩЕНИЕ С КНОПКОЙ =====
+    # Удаляем сообщение с кнопкой
     if uid in last_button_message and last_button_message[uid]:
         try:
             await context.bot.delete_message(uid, last_button_message[uid])
             print(f"✅ Сообщение с кнопкой удалено {last_button_message[uid]}")
         except Exception as e:
             print(f"⚠️ Не удалось удалить сообщение с кнопкой: {e}")
-            # Альтернативный способ: убрать кнопку
             try:
                 await context.bot.edit_message_reply_markup(
                     chat_id=uid,
@@ -152,7 +151,6 @@ async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: in
             except Exception as e2:
                 print(f"⚠️ Не удалось удалить кнопку альтернативно: {e2}")
         
-        # Удаляем запись о кнопке
         del last_button_message[uid]
     
     # Очищаем стартовое сообщение из памяти если есть
@@ -162,11 +160,7 @@ async def exit_image(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: in
     # Выходим из режима генерации
     context.user_data["in_image_mode"] = False
     
-    # ===== ВАЖНО: НЕ УДАЛЯЕМ МЕНЮ ВРУЧНУЮ! =====
-    # send_fresh_menu сам удалит/отредактирует старое меню
-    # await delete_all_menus(context.bot, uid)  # ← УБРАНО!
-    
-    # Отправляем/обновляем меню (только одно!)
+    # Отправляем/обновляем меню
     await send_fresh_menu(context.bot, uid)
     
     print(f"✅ Выход из режима картинок завершен для {uid}")
@@ -192,10 +186,7 @@ async def exit_image_from_start(update: Update, context: ContextTypes.DEFAULT_TY
     context.user_data.pop("image_start_message_id", None)
     context.user_data["in_image_mode"] = False
     
-    # ===== ВАЖНО: НЕ УДАЛЯЕМ МЕНЮ ВРУЧНУЮ! =====
-    # await delete_all_menus(context.bot, uid)  # ← УБРАНО!
-    
-    # Отправляем/обновляем меню (только одно!)
+    # Отправляем/обновляем меню
     await send_fresh_menu(context.bot, uid)
     
     print(f"✅ Выход из стартового экрана завершен для {uid}")
