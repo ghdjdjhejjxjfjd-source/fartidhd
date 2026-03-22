@@ -1,3 +1,4 @@
+# bot/handlers/router.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (удален статус)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
@@ -18,7 +19,6 @@ from .state import navigation_stack
 from .navigation import back_to_previous, back_to_menu, ignore
 from .tabs.profile import show_profile
 from .tabs.help import show_help
-from .tabs.status import show_status
 from .tabs.ref import show_ref
 from .tabs.support import show_support
 from .tabs.buy_stars import show_buy_stars, buy_stars_package
@@ -111,7 +111,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         key = data.split("tab:", 1)[1].strip()
         
         current_tab = context.user_data.get('current_tab')
-        parent_tabs = ['settings', 'profile', 'help', 'status', 'ref', 'support', 'buy_stars', 'balance']
+        parent_tabs = ['settings', 'profile', 'help', 'ref', 'support', 'buy_stars', 'balance']
         child_tabs = ['ai_mode_settings', 'mode_settings', 'persona_settings', 'lang_settings', 'style_settings', 'ai_lang_settings']
         
         if current_tab in parent_tabs and key in child_tabs:
@@ -258,9 +258,6 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         return
     elif tab_key == "help":
         await show_help(context, query, user_id)
-        return
-    elif tab_key == "status":
-        await show_status(context, query, user_id)
         return
     elif tab_key == "ref":
         await show_ref(context, query, user_id)
