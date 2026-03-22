@@ -102,13 +102,13 @@ async def support_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def forward_to_support(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Переслать сообщение пользователя в группу поддержки"""
+    user = update.effective_user
+    uid = user.id
+    
     if not SUPPORT_GROUP_ID:
         print("❌ SUPPORT_GROUP_ID не настроен")
         await update.message.reply_text(get_text(uid, "support_unavailable"))
         return
-    
-    user = update.effective_user
-    uid = user.id
     
     cleanup_blocks()
     
@@ -206,9 +206,17 @@ async def handle_support_command(update: Update, context: ContextTypes.DEFAULT_T
             user_id = int(parts[1])
             reply_text = parts[2]
             
+            # Получаем язык пользователя для локализации ответа
+            from api import get_user_lang
+            user_lang = get_user_lang(user_id) or "ru"
+            
+            # Текст ответа на языке пользователя
+            from bot.locales import get_text
+            support_reply_text = get_text(user_id, "support_reply").format(reply=reply_text)
+            
             await context.bot.send_message(
                 chat_id=user_id,
-                text=f"📨 Ответ от поддержки:\n\n{reply_text}"
+                text=support_reply_text
             )
             
             await update.message.reply_text(f"✅ Ответ отправлен пользователю {user_id}")
