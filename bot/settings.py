@@ -3,13 +3,14 @@ from telegram.ext import ContextTypes
 from api import set_user_lang, set_user_persona, set_use_mini_app, get_ai_mode, increment_groq_persona
 from .utils import update_user_menu
 from .menu import tab_kb
+from .locales import get_text, get_button_text, get_persona_name, get_work_mode_name
 
 async def handle_set_lang(update: Update, context: ContextTypes.DEFAULT_TYPE, query, uid: int, lang: str):
     """Обработка смены языка"""
     set_user_lang(uid, lang)
     
     await query.message.edit_text(
-        f"✅ Язык изменен",
+        get_text(uid, "lang_changed"),
         reply_markup=tab_kb(uid)
     )
     await update_user_menu(context.bot, uid)
@@ -21,8 +22,7 @@ async def handle_set_persona(update: Update, context: ContextTypes.DEFAULT_TYPE,
     # Если качественный режим - блокируем смену характера
     if ai_mode == "quality":
         await query.message.edit_text(
-            "❌ В качественном режиме (OpenAI) характер недоступен.\n"
-            "Переключитесь на быстрый режим (Groq) чтобы изменить характер.",
+            get_text(uid, "persona_not_available_quality"),
             reply_markup=tab_kb(uid)
         )
         return
@@ -32,15 +32,8 @@ async def handle_set_persona(update: Update, context: ContextTypes.DEFAULT_TYPE,
     
     set_user_persona(uid, persona)
     
-    persona_names = {
-        "friendly": "😊 Общительный",
-        "fun": "😂 Весёлый",
-        "smart": "🧐 Умный",
-        "strict": "😐 Строгий"
-    }
-    
     await query.message.edit_text(
-        f"✅ Характер изменен на: {persona_names.get(persona, persona)}",
+        get_text(uid, "persona_changed").format(persona=get_persona_name(uid, persona)),
         reply_markup=tab_kb(uid)
     )
     # Убираем update_user_menu, чтобы не уходить в меню
@@ -50,9 +43,9 @@ async def handle_switch_mode(update: Update, context: ContextTypes.DEFAULT_TYPE,
     use_mini_app = (mode == "miniapp")
     set_use_mini_app(uid, use_mini_app)
     
-    mode_text = "Mini App" if use_mini_app else "встроенный"
+    mode_text = get_work_mode_name(uid, "miniapp" if use_mini_app else "inline")
     await query.message.edit_text(
-        f"✅ Режим работы переключен на {mode_text}!",
+        get_text(uid, "mode_changed_work").format(mode=mode_text),
         reply_markup=tab_kb(uid)
     )
     await update_user_menu(context.bot, uid)
