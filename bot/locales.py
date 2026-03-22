@@ -706,16 +706,19 @@ TEXTS = {
         "tr": "❌ Gönderme hatası. Daha sonra tekrar deneyin.",
         "uk": "❌ Помилка при відправленні. Спробуйте пізніше.",
         "fr": "❌ Erreur lors de l'envoi. Réessaie plus tard."
+    },
+    
+    # НОВЫЙ КЛЮЧ - ОТВЕТ ОТ ПОДДЕРЖКИ
+    "support_reply": {
+        "ru": "📨 Ответ от поддержки:\n\n{reply}",
+        "en": "📨 Reply from support:\n\n{reply}",
+        "kk": "📨 Қолдаудан жауап:\n\n{reply}",
+        "tr": "📨 Destekten yanıt:\n\n{reply}",
+        "uk": "📨 Відповідь від підтримки:\n\n{reply}",
+        "fr": "📨 Réponse du support:\n\n{reply}"
     }
 }
-"support_reply": {
-    "ru": "📨 Ответ от поддержки:\n\n{reply}",
-    "en": "📨 Reply from support:\n\n{reply}",
-    "kk": "📨 Қолдаудан жауап:\n\n{reply}",
-    "tr": "📨 Destekten yanıt:\n\n{reply}",
-    "uk": "📨 Відповідь від підтримки:\n\n{reply}",
-    "fr": "📨 Réponse du support:\n\n{reply}"
-}
+
 # =========================
 # ХАРАКТЕРЫ
 # =========================
