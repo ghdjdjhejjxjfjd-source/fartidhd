@@ -5,7 +5,7 @@ from payments import get_balance
 from .config import MINIAPP_URL, is_valid_https_url
 from datetime import datetime
 from .helpers import format_balance
-from .locales import get_text  # ← импортируем функцию локализации
+from .locales import get_text
 from bot.support import support_blocks
 
 
