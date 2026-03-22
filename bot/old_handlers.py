@@ -1,4 +1,4 @@
-# bot/old_handlers.py - ИСПРАВЛЕННАЯ ВЕРСИЯ (без TAB_TEXT)
+# bot/old_handlers.py - РАБОЧАЯ ВЕРСИЯ С ЛОКАЛИЗАЦИЕЙ
 from telegram import Update
 from telegram.ext import ContextTypes
 import os
@@ -14,9 +14,9 @@ from .config import send_log_http, build_start_log
 from .menu import (
     main_menu_for_user, tab_kb, stars_kb, mode_settings_kb, 
     persona_settings_kb, lang_settings_kb, settings_kb, 
-    ai_mode_settings_kb, confirm_ai_mode_kb
+    ai_mode_settings_kb, confirm_ai_mode_kb, TAB_TEXT
 )
-from .locales import get_text  # ← добавляем импорт
+from .locales import get_text
 from .settings import handle_set_lang, handle_set_persona, handle_switch_mode
 from .chat import inline_chat_start, exit_chat
 from .image import inline_image_start, exit_image, exit_image_from_start
@@ -32,7 +32,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     uid = user.id if user else 0
     
-    # Если это группа поддержки - игнорируем
     if update.effective_chat and update.effective_chat.id == SUPPORT_GROUP_ID:
         print(f"🚫 /start в группе поддержки проигнорирован")
         return
@@ -53,7 +52,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = (query.data or "").strip()
     
-    # Если это группа поддержки - игнорируем все кнопки
     if update.effective_chat and update.effective_chat.id == SUPPORT_GROUP_ID:
         print(f"🚫 Кнопка {data} в группе поддержки проигнорирована")
         await query.answer("❌ Кнопки не работают в группе поддержки")
@@ -126,7 +124,6 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         context.user_data['current_tab'] = key
         
-        # Специальная обработка для поддержки
         if key == "support":
             await support_start(update, context)
         else:
@@ -176,8 +173,8 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         new_mode = data.split("confirm_ai_mode:", 1)[1].strip()
         current_mode = get_ai_mode(uid) or "fast"
         
-        mode_names = {"fast": get_text(uid, "ai_mode_fast"), "quality": get_text(uid, "ai_mode_quality")}
-        text = get_text(uid, "confirm_ai_mode_change").format(
+        mode_names = {"fast": "🚀 Быстрый", "quality": "💎 Качественный"}
+        text = TAB_TEXT["confirm_ai_mode_change"].format(
             new_mode=mode_names.get(new_mode, new_mode),
             current_mode=mode_names.get(current_mode, current_mode)
         )
@@ -196,7 +193,7 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if changes_left <= 0:
             try:
                 await query.message.edit_text(
-                    get_text(uid, "limit_exceeded"),
+                    "⛔ Лимит смены режима на сегодня исчерпан",
                     reply_markup=tab_kb(uid)
                 )
                 set_last_menu(uid, uid, query.message.message_id)
@@ -208,13 +205,10 @@ async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         from api import set_ai_mode
         set_ai_mode(uid, new_mode)
         
-        mode_names = {"fast": get_text(uid, "ai_mode_fast"), "quality": get_text(uid, "ai_mode_quality")}
+        mode_names = {"fast": "🚀 Быстрый", "quality": "💎 Качественный"}
         try:
             await query.message.edit_text(
-                get_text(uid, "ai_mode_changed").format(
-                    mode=mode_names.get(new_mode, new_mode),
-                    left=changes_left - 1
-                ),
+                f"✅ Режим изменен на {mode_names.get(new_mode, new_mode)}",
                 reply_markup=tab_kb(uid)
             )
             set_last_menu(uid, uid, query.message.message_id)
@@ -254,7 +248,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
         await show_profile(context, query, user_id)
     
     elif tab_key == "need_stars_chat":
-        text = get_text(user_id, "need_stars_chat")
+        text = "⭐ Недостаточно звезд для чата с ИИ.\n\nКупите звезды в меню ниже 👇"
         try:
             await query.message.edit_text(text, reply_markup=tab_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -262,7 +256,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
     
     elif tab_key == "need_stars_miniapp":
-        text = get_text(user_id, "need_stars_miniapp")
+        text = "⭐ Недостаточно звезд для Mini App.\n\nКупите звезды в меню ниже 👇"
         try:
             await query.message.edit_text(text, reply_markup=tab_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -270,7 +264,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
     
     elif tab_key == "settings":
-        text = get_text(user_id, "settings")
+        text = "⚙️ Настройки\n\nВыбери раздел:"
         try:
             await query.message.edit_text(text, reply_markup=settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -279,7 +273,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
     
     elif tab_key == "ai_mode_settings":
         changes_left = await get_ai_mode_changes(user_id)
-        text = get_text(user_id, "ai_mode_settings").format(changes_left=changes_left)
+        text = TAB_TEXT["ai_mode_settings"].format(changes_left=changes_left)
         try:
             await query.message.edit_text(text, reply_markup=ai_mode_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -288,7 +282,6 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
     
     elif tab_key == "balance":
         balance = get_balance(user_id)
-        # Форматируем баланс
         if balance == int(balance):
             formatted_balance = str(int(balance))
         else:
@@ -301,7 +294,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
     
     elif tab_key == "mode_settings":
-        text = get_text(user_id, "mode_settings")
+        text = TAB_TEXT.get(tab_key, "🔄 Режим работы\n\nВыбери как пользоваться ботом:")
         try:
             await query.message.edit_text(text, reply_markup=mode_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -309,7 +302,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
     
     elif tab_key == "persona_settings":
-        text = get_text(user_id, "persona_settings")
+        text = TAB_TEXT.get(tab_key, "🎭 Характер ИИ\n\nВыбери как ИИ будет отвечать:")
         try:
             await query.message.edit_text(text, reply_markup=persona_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -317,7 +310,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
     
     elif tab_key == "lang_settings":
-        text = get_text(user_id, "lang_settings")
+        text = TAB_TEXT.get(tab_key, "🌐 Язык интерфейса\n\nВыбери язык меню и кнопок:")
         try:
             await query.message.edit_text(text, reply_markup=lang_settings_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -325,7 +318,7 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
             await send_fresh_menu(context.bot, user_id)
     
     else:
-        text = get_text(user_id, tab_key) if tab_key in ['blocked', 'help', 'status', 'ref', 'support', 'buy_stars'] else "Раздел в разработке."
+        text = TAB_TEXT.get(tab_key, "Раздел в разработке.")
         try:
             await query.message.edit_text(text, reply_markup=tab_kb(user_id))
             set_last_menu(user_id, user_id, query.message.message_id)
@@ -335,11 +328,13 @@ async def open_tab(context: ContextTypes.DEFAULT_TYPE, query, user_id: int, tab_
 
 async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     from datetime import datetime
-    from bot.helpers import format_balance
     
     a = get_access(user_id)
     balance = get_balance(user_id)
-    formatted_balance = format_balance(balance)
+    if balance == int(balance):
+        formatted_balance = str(int(balance))
+    else:
+        formatted_balance = f"{balance:.1f}"
     persona = get_user_persona(user_id)
     lang = get_user_lang(user_id)
     use_mini_app = get_use_mini_app(user_id)
@@ -347,24 +342,24 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
     changes_left = await get_ai_mode_changes(user_id)
     
     persona_names = {
-        "friendly": get_text(user_id, "persona_friendly"),
-        "fun": get_text(user_id, "persona_fun"),
-        "smart": get_text(user_id, "persona_smart"),
-        "strict": get_text(user_id, "persona_strict")
+        "friendly": "😊 Общительный",
+        "fun": "😂 Весёлый",
+        "smart": "🧐 Умный",
+        "strict": "😐 Строгий"
     }
     
     lang_names = {
-        "ru": get_text(user_id, "lang_ru"),
-        "en": get_text(user_id, "lang_en"),
-        "kk": get_text(user_id, "lang_kk"),
-        "tr": get_text(user_id, "lang_tr"),
-        "uk": get_text(user_id, "lang_uk"),
-        "fr": get_text(user_id, "lang_fr")
+        "ru": "🇷🇺 Русский",
+        "en": "🇬🇧 English",
+        "kk": "🇰🇿 Қазақша",
+        "tr": "🇹🇷 Türkçe",
+        "uk": "🇺🇦 Українська",
+        "fr": "🇫🇷 Français"
     }
     
     ai_mode_names = {
-        "fast": get_text(user_id, "ai_mode_fast"),
-        "quality": get_text(user_id, "ai_mode_quality")
+        "fast": "🚀 Быстрый (0.3 ⭐)",
+        "quality": "💎 Качественный (1 ⭐)"
     }
     
     registered = "неизвестно"
@@ -375,12 +370,11 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         except:
             registered = a["registered_at"][:10]
     
-    # Получаем username
     username = "—"
     if query.from_user and query.from_user.username:
         username = f"@{query.from_user.username}"
     
-    text = get_text(user_id, "profile").format(
+    text = TAB_TEXT["profile"].format(
         username=username,
         registered=registered,
         messages=a.get("total_messages", 0),
@@ -389,7 +383,7 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
         balance=formatted_balance,
         persona=persona_names.get(persona, persona),
         lang=lang_names.get(lang, lang),
-        mode=get_text(user_id, "mode_miniapp") if use_mini_app else get_text(user_id, "mode_inline"),
+        mode="📱 Mini App" if use_mini_app else "💬 Встроенный",
         ai_mode=f"{ai_mode_names.get(ai_mode, ai_mode)} (осталось смен: {changes_left}/8)"
     )
     
@@ -401,11 +395,9 @@ async def show_profile(context: ContextTypes.DEFAULT_TYPE, query, user_id: int):
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Если это группа поддержки - не обрабатываем как обычные сообщения
     if update.effective_chat and update.effective_chat.id == SUPPORT_GROUP_ID:
         return
     
-    # Проверяем наличие сообщения
     if not update.message:
         return
     
@@ -434,11 +426,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     a = get_access(uid)
     if a.get("is_blocked"):
-        await update.message.reply_text(get_text(uid, "blocked_access"))
+        await update.message.reply_text("⛔ Доступ заблокирован.")
         context.user_data.clear()
         return
     
-    # Для чата с ИИ нужен текст
     if not update.message.text:
         await update.message.reply_text("❌ В чате можно отправлять только текст")
         return
